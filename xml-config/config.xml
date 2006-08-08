@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<!DOCTYPE chatbot-config SYSTEM "chatbot-config.dtd">
+<chatbot>
+	<general>
+		<modul name="generalMod">
+			<param name="paraname" value="paravalue" />
+		</modul>
+		<modul name="answerMod" />
+		<modul name="commandsMod" />
+		<modul name="logMod" />
+		<modul name="rdfMod">
+			<param name="wait" value="10" />
+		</modul>
+		<nickname>chatBot</nickname>
+		<realname>der chattende Bot</realname>
+		<operators>
+			<nick>allo</nick>
+			<nick>cato</nick>
+		</operators>
+	</general>
+	<network name="netzwerk1">
+		<server>bots.somenetwork.net</server>
+		<port>6667</port>
+		<nickname>einnick</nickname>
+		<nickserv>password</nickserv>
+		<channel name="#channel1">
+			<modul name="logMod">
+				<enable>False</enable>
+			</modul>
+			<modul name="rdfMod">
+				<param name="feed" value="http://www.heise.de/newsticker/heise.rdf" />
+				<param name="feed" value="http://some.net/other.rdf" />
+			</modul>
+		</channel>	
+		<channel name="#channel2" />
+	</network>
+	<network name="freenode">
+		<server>irc.freenode.net</server>
+		<port>6667</port>
+		<nickname>ubot</nickname>
+		<nickserv>password</nickserv>
+		<channel name="#yacy">
+			<modul name="logMod">
+				<enable>False</enable>
+			</modul>
+		</channel>
+	</network>
+</chatbot>

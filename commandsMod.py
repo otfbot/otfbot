@@ -4,16 +4,15 @@
 #it under the terms of the GNU General Public License as published by
 #the Free Software Foundation; either version 2 of the License, or
 #(at your option) any later version.
-
+#
 #This program is distributed in the hope that it will be useful,
 #but WITHOUT ANY WARRANTY; without even the implied warranty of
 #MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #GNU General Public License for more details.
-
-#You should have received a copy of the GNU General Public License along
-#with this program; if not, write to the Free Software Foundation, Inc.,
-#51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-
+#
+#You should have received a copy of the GNU General Public License
+#along with this program; if not, write to the Free Software
+#Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 import string, re, functions
 
 def default_settings():
@@ -35,7 +34,7 @@ class chatMod:
 		user = user.split("!")[0] #only nick
 		if msg[0] == "!":
 			if msg == "!reload-commands":
-				print "commandsMod: reloading"
+				self.logger.info("reloading")
 				self.reload()
 				return
 			answer = self.respond(user, msg)

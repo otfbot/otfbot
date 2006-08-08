@@ -7,26 +7,50 @@
 #it under the terms of the GNU General Public License as published by
 #the Free Software Foundation; either version 2 of the License, or
 #(at your option) any later version.
-
+#
 #This program is distributed in the hope that it will be useful,
 #but WITHOUT ANY WARRANTY; without even the implied warranty of
 #MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #GNU General Public License for more details.
-
-#You should have received a copy of the GNU General Public License along
-#with this program; if not, write to the Free Software Foundation, Inc.,
-#51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+#You should have received a copy of the GNU General Public License
+#along with this program; if not, write to the Free Software
+#Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 """Chat Bot"""
 
-from twisted.protocols import irc
+from twisted.words.protocols import irc
 from twisted.internet import reactor, protocol
 
 import os, random, string, re, threading, time, sys
 import functions
-import generalMod, commandsMod, identifyMod, rdfMod, badwordsMod, answerMod, logMod, kiMod, authMod, configMod, modeMod, marvinMod
+import generalMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, authMod, configMod, modeMod, marvinMod , kiMod
 
-classes = [ identifyMod, generalMod, authMod, configMod, logMod, commandsMod, answerMod, badwordsMod, rdfMod, kiMod, modeMod, marvinMod ]
+classes = [ identifyMod, generalMod, authMod, configMod, logMod, commandsMod, answerMod, badwordsMod, modeMod, marvinMod , kiMod ]
+
+from optparse import OptionParser
+parser = OptionParser()
+parser.add_option("-c","--config",dest="configfile",metavar="FILE",help="Location of configfile",type="string")
+parser.add_option("-d","--debug",dest="debug",metavar="LEVEL",help="Show debug messages of level LEVEL (10, 20, 30, 40 or 50)", type="int")
+(options,args)=parser.parse_args()
+#if options.debug and not (options.debug == "DEBUG" or options.debug == "INFO" or options.debug == "WARNING" or options.debug == "ERROR" or options.debug == "CRITICAL"):
+#	parser.error("Unknown value for --debug")
+
+import logging
+# Basic settings for logging
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(name)-18s %(levelname)-8s %(message)s',
+                    filename='chatbot.log',
+                    filemode='a')
+if options.debug:
+	#logging to stdout
+	console = logging.StreamHandler()
+	console.setLevel(options.debug)
+	formatter = logging.Formatter('%(asctime)s %(name)-18s %(levelname)-8s %(message)s')
+	console.setFormatter(formatter)
+	logging.getLogger('').addHandler(console)
+
+corelogger = logging.getLogger('core')
 
 config={}
 def setConfig(option, value):
@@ -58,8 +82,8 @@ def loadConfig(myconfigfile):
 		for option in options:
 			file.write(option+"="+myconfig[option]+"\n")
 		file.close()
-		print "Default Settings loaded."
-		print "Edit config.txt to configure the bot."
+		corelogger.critical("Default Settings loaded.")
+		corelogger.critical("Edit config.txt to configure the bot.")
 		sys.exit(0)
 
 
@@ -87,6 +111,9 @@ class Bot(irc.IRCClient):
 		#loadConfig()
 
 		self.nickname=self.getConfig("nickname", "chatBot")
+		self.logging = logging
+		self.logger = logging.getLogger("core")
+		self.logger.info("Starting chatBot")
 		self.startMods()
 		
 	def startMods(self):
@@ -96,7 +123,8 @@ class Bot(irc.IRCClient):
 				self.mods[-1].start()
 			except AttributeError:
 				pass
-
+			self.mods[-1].logger = logging.getLogger("core."+chatModule.__name__)
+          	
 	def setConfig(self, option, value):
 		return setConfig(option, value)
 	def getConfig(self, option, defaultvalue=""):
@@ -142,6 +170,7 @@ class Bot(irc.IRCClient):
 		self.action(self.nickname, channel, action)
 
 	def connectionMade(self):
+		self.logger.info("made connection")
 		irc.IRCClient.connectionMade(self)
 		for mod in self.mods:
 			try:
@@ -150,6 +179,7 @@ class Bot(irc.IRCClient):
 				pass
 
 	def connectionLost(self, reason):
+		self.logger.info("lost connection: "+str(reason))
 		irc.IRCClient.connectionLost(self)
 		for mod in self.mods:
 			try:
@@ -158,7 +188,7 @@ class Bot(irc.IRCClient):
 				pass
 	
 	def signedOn(self):
-		print "connected"
+		self.logger.info("signed on")
 		self.join(self.factory.channel)
 		for mod in self.mods:
 			try:
@@ -167,12 +197,21 @@ class Bot(irc.IRCClient):
 				pass
 		
 	def joined(self, channel):
+		self.logger.info("joined "+channel)
 		for mod in self.mods:
 			try:
 				mod.joined(channel)
 			except AttributeError:
 				pass
-	
+			
+	def left(self, channel):
+		self.logger.info("left "+channel)
+		for mod in self.mods:
+			try:
+				mod.left(channel)
+			except AttributeError:
+				pass
+
 	def privmsg(self, user, channel, msg):
 		for mod in self.mods:
 			try:
@@ -182,7 +221,7 @@ class Bot(irc.IRCClient):
 
 		if channel == self.nickname and msg == "!reload":
 			for chatModule in self.classes:
-				print "core: reloading "+chatModule.__name__
+				self.logger.info("reloading "+chatModule.__name__)
 				reload(chatModule)
 			for chatMod in self.mods:
 				try:
@@ -233,7 +272,19 @@ class Bot(irc.IRCClient):
 				mod.userLeft(user, channel)
 			except AttributeError:
 				pass
-				
+		
+	def yourHost(self, info):
+		self.logger.debug(info)
+	
+	def ctcpQuery(self, user, channel, messages):
+		(query,t) = messages[0]
+		answer = None
+		if query == "VERSION":
+			answer = "chatBot - a python IRC-Bot"
+		if answer: 
+			self.ctcpMakeReply(user.split("!")[0], [(query,answer)])
+		self.logger.info("Answered to CTCP "+query+" Request from "+user.split("!")[0])
+		
 	def userRenamed(self, oldname, newname):
 		for mod in self.mods:
 			try:
@@ -257,11 +308,9 @@ class BotFactory(protocol.ClientFactory):
 	def __init__(self, channel):
 		self.channel = channel
 	def clientConnectionLost(self, connector, reason):
-		#print "connection lost: ", reason
 		connector.connect()
 		#reactor.stop() #for !stop
 	def clientConnectionFailed(self, connector, reason):
-		print "connection failed: ", reason
 		reactor.stop()
 
 if len(sys.argv)==2:
@@ -271,5 +320,5 @@ else:
 config=loadConfig(configfile)
 
 f = BotFactory(getConfig("channel", "#bot-test"))
-reactor.connectTCP(getConfig("server", "irc.insiderz.de"), 6667, f);
+reactor.connectTCP(getConfig("server", "bots.insiderz.de"), 6667, f);
 reactor.run()
