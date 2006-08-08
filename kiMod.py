@@ -4,16 +4,15 @@
 #it under the terms of the GNU General Public License as published by
 #the Free Software Foundation; either version 2 of the License, or
 #(at your option) any later version.
-
+#
 #This program is distributed in the hope that it will be useful,
 #but WITHOUT ANY WARRANTY; without even the implied warranty of
 #MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #GNU General Public License for more details.
-
-#You should have received a copy of the GNU General Public License along
-#with this program; if not, write to the Free Software Foundation, Inc.,
-#51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-
+#
+#You should have received a copy of the GNU General Public License
+#along with this program; if not, write to the Free Software
+#Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import string, re, random, time, functions
 
@@ -109,10 +108,10 @@ class citeResponder(responder):
 		#create tables, if needed
 		if not self.keywordsTable in tables:
 			self.cursor.execute("CREATE TABLE "+self.keywordsTable+"(keyword TEXT, stringid INT);");
-			print "kiMod: created keywords table:",self.keywordsTable
+			self.logger.info("created keywords table:"+self.keywordsTable)
 		if not self.stringsTable in tables:
 			self.cursor.execute("CREATE TABLE "+self.stringsTable+"(id INT AUTO_INCREMENT, string TEXT, PRIMARY KEY(id));");
-			print "kiMod: created strings table:",self.stringsTable
+			self.logger.info("created strings table:"+self.stringsTable)
 
 	def learn(self, string):
 		cursor=self.cursor;
@@ -175,6 +174,7 @@ class citeResponder(responder):
 class chatMod:
 	def __init__(self, bot):
 		self.bot=bot
+		self.logger = bot.logging.getLogger("core.kiMod")
 		self.channels=[]
 		self.wordpairsFile=bot.getConfig("kiMod_wordpairsFile", "wordpairs.txt")#XXX: this needs to be utf-8 encoded
 		self.wordpairs=functions.loadProperties(self.wordpairsFile)
@@ -186,16 +186,16 @@ class chatMod:
 				try:
 					self.responder=citeResponder(bot)
 				except "boterror":
-					print "kiMod: Error connecting the cite-DB."
+					self.logger.error("Error connecting the cite-DB.")
 					self.responder=responder() #null responder
 					#Fallback
 					if MEGAHAL:
-						print "kiMod: Using Megahal instead"
+						self.logger.warning("kiMod: Using Megahal instead")
 						self.responder=megahalResponder(bot)
 			else:
-				print "kiMod: Cannot use citeDB. Module MySQLdb not availible."
+				self.logger.error("Cannot use citeDB. Module MySQLdb not availible.")
 				if MEGAHAL:
-					print "kiMod: Using Megahal instead"
+					self.logger.warning("Using Megahal instead")
 					self.responder=megahalResponder(bot)
 				else:
 					self.responder=responder() #null responder
@@ -203,15 +203,15 @@ class chatMod:
 			if MEGAHAL:
 				self.responder=megahalResponder(bot)
 			else:
-				print "kiMod: Cannot use megahal. Module mh_python not availible."
+				self.logger.error("Cannot use megahal. Module mh_python not availible.")
 				self.responder=responder() #null responder
 				#Fallback
 				if CITE:
-					print "Trying citeDB instead."
+					self.logger.warning("Trying citeDB instead.")
 					try:
 						self.responder=citeResponder(bot)
 					except "boterror":
-						print "kiMod: Error connecting the cite-DB."
+						self.logger.error("Error connecting the cite-DB.")
 
 	def joined(self, channel):
 		self.channels.append(channel)

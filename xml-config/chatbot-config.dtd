@@ -1,0 +1,31 @@
+<!ELEMENT chatbot (general, (network)+)>
+
+<!ELEMENT general ((modul)*, nickname, realname, (operator)*)>
+
+<!ELEMENT modul (param)*>
+<!ATTLIST modul
+	name	CDATA #REQUIRED
+>
+<!ELEMENT param EMPTY>
+<!ATTLIST param
+	name	CDATA #REQUIRED
+	value	CDATA #REQUIRED
+>
+
+<!ELEMENT nickname (#PCDATA)>
+<!ELEMENT realname (#PCDATA)>
+
+<!ELEMENT operator (nick,auth,level)>
+<!ELEMENT nick (#PCDATA)>
+<!ELEMENT auth (#PCDATA | nickserv)>
+<!ELEMENT level (#PCDATA)>
+
+<!ELEMENT network (server, port, nickname, nickserv-pwd, (channel)+)>
+<!ATTLIST network
+	name CDATA #REQUIRED
+>
+
+<!ELEMENT server (#PCDATA)>
+<!ELEMENT port (#PCDATA)>
+<!ELEMENT nickserv-pwd (#PCDATA)>
+<!ELEMENT channel (modul)*>
