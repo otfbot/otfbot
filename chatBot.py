@@ -119,11 +119,11 @@ class Bot(irc.IRCClient):
 	def startMods(self):
 		for chatModule in self.classes:
 			self.mods.append( chatModule.chatMod(self) )
+			self.mods[-1].logger = logging.getLogger("core."+chatModule.__name__)
 			try:
 				self.mods[-1].start()
 			except AttributeError:
 				pass
-			self.mods[-1].logger = logging.getLogger("core."+chatModule.__name__)
           	
 	def setConfig(self, option, value):
 		return setConfig(option, value)
@@ -252,6 +252,11 @@ class Bot(irc.IRCClient):
 				mod.modeChanged(user, channel, set, modes, args)
 			except AttributeError:
 				pass
+		#if modes == "b" and set == True:
+		#	self.mode(channel,False,"b",None,None,args[0])
+		#	#self.mode(channel,True,"m")
+		#	self.logger.debug(str(user)+" "+str(channel)+" "+str(set)+" "+str(modes)+" "+str(args[0]))
+
 	def userKicked(self, kickee, channel, kicker, message):
 		for mod in self.mods:
 			try:

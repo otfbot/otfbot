@@ -174,13 +174,15 @@ class citeResponder(responder):
 class chatMod:
 	def __init__(self, bot):
 		self.bot=bot
-		self.logger = bot.logging.getLogger("core.kiMod")
+	
+	def start(self):
+		#self.logger = bot.logging.getLogger("core.kiMod")
 		self.channels=[]
-		self.wordpairsFile=bot.getConfig("kiMod_wordpairsFile", "wordpairs.txt")#XXX: this needs to be utf-8 encoded
+		self.wordpairsFile=self.bot.getConfig("kiMod_wordpairsFile", "wordpairs.txt")#XXX: this needs to be utf-8 encoded
 		self.wordpairs=functions.loadProperties(self.wordpairsFile)
 
-		module=bot.getConfig("kiMod_module", "megahal")
-		self.lnickname=string.lower(bot.nickname)
+		module=self.bot.getConfig("kiMod_module", "megahal")
+		self.lnickname=string.lower(self.bot.nickname)
 		if module=="cite":
 			if CITE:
 				try:
@@ -196,12 +198,12 @@ class chatMod:
 				self.logger.error("Cannot use citeDB. Module MySQLdb not availible.")
 				if MEGAHAL:
 					self.logger.warning("Using Megahal instead")
-					self.responder=megahalResponder(bot)
+					self.responder=megahalResponder(self.bot)
 				else:
 					self.responder=responder() #null responder
 		elif module=="megahal":
 			if MEGAHAL:
-				self.responder=megahalResponder(bot)
+				self.responder=megahalResponder(self.bot)
 			else:
 				self.logger.error("Cannot use megahal. Module mh_python not availible.")
 				self.responder=responder() #null responder
@@ -209,7 +211,7 @@ class chatMod:
 				if CITE:
 					self.logger.warning("Trying citeDB instead.")
 					try:
-						self.responder=citeResponder(bot)
+						self.responder=citeResponder(self.bot)
 					except "boterror":
 						self.logger.error("Error connecting the cite-DB.")
 
