@@ -13,17 +13,23 @@
 		</modul>
 		<nickname>chatBot</nickname>
 		<realname>der chattende Bot</realname>
-		<operators>
+		<operator>
 			<nick>allo</nick>
+			<auth>nickserv</auth>
+			<level>0</level>
+		</operator>
+		<operator>
 			<nick>cato</nick>
-		</operators>
+		</operator>
 	</general>
 	<network name="netzwerk1">
 		<server>bots.somenetwork.net</server>
 		<port>6667</port>
 		<nickname>einnick</nickname>
-		<nickserv>password</nickserv>
 		<channel name="#channel1">
+			<modul name="identifyMod">
+				<param name="password" value="pwd" />
+			</modul>
 			<modul name="logMod">
 				<enable>False</enable>
 			</modul>
@@ -38,8 +44,10 @@
 		<server>irc.freenode.net</server>
 		<port>6667</port>
 		<nickname>ubot</nickname>
-		<nickserv>password</nickserv>
 		<channel name="#yacy">
+			<modul name="identifyMod">
+				<param name="password" value="pwd" />
+			</modul>
 			<modul name="logMod">
 				<enable>False</enable>
 			</modul>
