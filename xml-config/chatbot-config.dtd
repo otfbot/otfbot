@@ -17,7 +17,7 @@
 
 <!ELEMENT operator (nick,auth,level)>
 <!ELEMENT nick (#PCDATA)>
-<!ELEMENT auth (#PCDATA | nickserv)>
+<!ELEMENT auth (#PCDATA)>
 <!ELEMENT level (#PCDATA)>
 
 <!ELEMENT network (server, port, nickname, nickserv-pwd, (channel)+)>
