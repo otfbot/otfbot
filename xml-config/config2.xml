@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!DOCTYPE config2 SYSTEM "config2.dtd">
+<chatbot>
+	<option name="nickname" value="chatBot" />
+	<network name="network1">
+		<option name="server" value="irc.somenetwork.net" />
+		<option name="nickname" value="OtfBot" />
+		<option module="badwords" name="file" value="badwords.txt" />
+		<channel name="#somechannel">
+			<option module="badwords" name="file" value="badwords_somechannel.txt" />
+		</channel>
+	</network>
+</chatbot>
