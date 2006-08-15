@@ -29,6 +29,7 @@ def getsuboptions(list):
 		except AttributeError:
 			print "Config Error: network/channel has no name"
 	return ret
+
 def get(option, default, network=None, channel=None):
 		try:
 			return channel_options[network][channel][option]
@@ -42,6 +43,12 @@ def get(option, default, network=None, channel=None):
 			return generic_options[option];
 		except KeyError:
 			pass
+		if network and channel:
+			channel_options[network][channel][option]=default
+		elif network:
+			network_options[network][option]=default
+		else:
+			generic_options[option]=default
 		return default
 			
 
