@@ -44,6 +44,10 @@ def get(option, default, network=None, channel=None):
 		except KeyError:
 			pass
 		if network and channel:
+			if not network in channel_options.keys():
+				channel_options[network]={}
+			if not channel in channel_options[network].keys():
+				channel_options[network][channel]={}
 			channel_options[network][channel][option]=default
 		elif network:
 			network_options[network][option]=default
