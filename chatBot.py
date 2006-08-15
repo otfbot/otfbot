@@ -62,7 +62,7 @@ def getConfig(option, defaultvalue="", module=None):
 	#if not config.has_key(option):
 	#	setConfig(option, defaultvalue)
 	#return config[option]
-	return theconfig.get(option, defaultvalue, module)
+	return theconfig.get(option, defaultvalue, module).encode("iso-8859-15") #XXX: twisted does not like unicode
 	
 def loadConfig(myconfigfile):
 	if os.path.exists(myconfigfile):
