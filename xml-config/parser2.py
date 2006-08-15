@@ -62,7 +62,10 @@ class config:
 				print "Config Error: network/channel has no name"
 		return ret
 	
-	def get(self, option, default, network=None, channel=None):
+	def get(self, option, default, module=None, network=None, channel=None):
+			if module:
+				option=module+".".option
+
 			try:
 				return self.channel_options[network][channel][option]
 			except KeyError:
@@ -90,7 +93,10 @@ class config:
 				self.generic_options[option]=default
 			return default
 	
-	def set(self, option, value, network=None, channel=None):
+	def set(self, option, value, module=None, network=None, channel=None):
+		if module:
+				option=module+".".option
+
 		if network and channel:
 			if not network in self.channel_options.keys():
 				self.channel_options[network]={}
