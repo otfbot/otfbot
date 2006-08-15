@@ -23,7 +23,7 @@ from twisted.words.protocols import irc
 from twisted.internet import reactor, protocol
 
 import os, random, string, re, threading, time, sys
-import functions
+import functions, config
 import generalMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, authMod, configMod, modeMod, marvinMod , kiMod
 
 classes = [ identifyMod, generalMod, authMod, configMod, logMod, commandsMod, answerMod, badwordsMod, modeMod, marvinMod , kiMod ]
@@ -40,7 +40,7 @@ import logging
 # Basic settings for logging
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(name)-18s %(levelname)-8s %(message)s',
-                    filename='chatbot.log',
+                    filename='otfbot.log',
                     filemode='a')
 if options.debug:
 	#logging to stdout
@@ -52,49 +52,49 @@ if options.debug:
 
 corelogger = logging.getLogger('core')
 
-config={}
-def setConfig(option, value):
-	config[option]=value
+theconfig=None
+def setConfig(option, value, module=None):
+	#config[option]=value
+	theconfig.set(option, value, module)
 	writeConfig()
 		
-def getConfig(option, defaultvalue=""):
-	if not config.has_key(option):
-		setConfig(option, defaultvalue)
-	return config[option]
+def getConfig(option, defaultvalue="", module=None):
+	#if not config.has_key(option):
+	#	setConfig(option, defaultvalue)
+	#return config[option]
+	return theconfig.get(option, defaultvalue, module)
 	
 def loadConfig(myconfigfile):
-	myconfig=functions.loadProperties(myconfigfile)
-	if not len(myconfig):
+	if os.path.exists(myconfigfile):
+		myconfig=config.config(myconfigfile)
+	else:
+		myconfig=config.config()
 		for myclass in classes:
 			try:
 				modconfig=myclass.default_settings()
 				for item in modconfig.keys():
-					myconfig[item]=modconfig[item]
+					myconfig.set(item, modconfig[item])
 			except AttributeError:
 				pass
-		myconfig['server']=''
-		myconfig['channel']=''
-		myconfig['nickname']='chatBot'
-		#write it
-		file=open(configfile, "w")
-		options=myconfig.keys()
-		options.sort()
-		for option in options:
-			file.write(option+"="+myconfig[option]+"\n")
+		myconfig.set('server', '')
+		myconfig.set('channel', '')
+		myconfig.set('nickname', 'OtfBot')
+		#theconfig is not set, yet. so we cannot use writeConfig()
+		file=open(myconfigfile, "w")
+		file.write(myconfig.getxml())
 		file.close()
 		corelogger.critical("Default Settings loaded.")
 		corelogger.critical("Edit config.txt to configure the bot.")
 		sys.exit(0)
-
-
 	return myconfig
 		
 def writeConfig():
 	file=open(configfile, "w")
-	options=config.keys()
-	options.sort()
-	for option in options:
-		file.write(option+"="+config[option]+"\n")
+	#options=config.keys()
+	#options.sort()
+	#for option in options:
+	#	file.write(option+"="+config[option]+"\n")
+	file.write(theconfig.getxml())
 	file.close()
 
 
@@ -321,8 +321,8 @@ class BotFactory(protocol.ClientFactory):
 if len(sys.argv)==2:
 	configfile=sys.argv[1]
 else:
-	configfile="config.txt"
-config=loadConfig(configfile)
+	configfile="config.xml"
+theconfig=loadConfig(configfile)
 
 f = BotFactory(getConfig("channel", "#bot-test"))
 reactor.connectTCP(getConfig("server", "bots.insiderz.de"), 6667, f);
