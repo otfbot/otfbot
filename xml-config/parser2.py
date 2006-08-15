@@ -1,8 +1,6 @@
 #!/usr/bin/python
 import handyxml
 
-doc=handyxml.xml("config2.xml")
-
 generic_options={}
 network_options={}
 channel_options={}
@@ -50,49 +48,71 @@ def get(option, default, network=None, channel=None):
 				channel_options[network][channel]={}
 			channel_options[network][channel][option]=default
 		elif network:
+			if not network in network_options.keys():
+				network_options[network]={}
 			network_options[network][option]=default
 		else:
 			generic_options[option]=default
 		return default
+
+def set(option, value, network=None, channel=None):
+	if network and channel:
+		if not network in channel_options.keys():
+			channel_options[network]={}
+		if not channel in channel_options[network].keys():
+			channel_options[network][channel]={}
+		channel_options[network][channel][option]=value
+	elif network:
+		if not network in network_options.keys():
+			network_options[network]={}
+		network_options[network][option]=value
+	else:
+		generic_options[option]=value
 			
-
-#generic options
-options=[]
-try:
-	options=doc.option
-except AttributeError:
-	pass
-generic_options=getoptions(options)
-
-#network specific
-networks=[]
-try:
-	networks=doc.network
-except AttributeError:
-	pass
-network_options=getsuboptions(networks);
-
-#channel specific (format = channel_options[network][channel])
-for network in networks:
-	channels=[]
+def loadfromxml(filename):
+	doc=handyxml.xml(filename)
+	#generic options
+	options=[]
 	try:
-		channels=network.channel
+		options=doc.option
 	except AttributeError:
 		pass
+	generic_options=getoptions(options)
+
+	#network specific
+	networks=[]
 	try:
-		channel_options[network.name]=getsuboptions(channels)
+		networks=doc.network
 	except AttributeError:
-		print "Config Error: network has no name"
-		
-print "Test:"
-print "Which channel?"
-channel=raw_input();
-print "Which Network?"
-network=raw_input()
-print "Which Setting?"
-setting=raw_input()
-print "Default String?"
-default=raw_input()
-print "Result:"
-print ""
-print get(setting, default, network, channel)
+		pass
+	network_options=getsuboptions(networks);
+
+	#channel specific (format = channel_options[network][channel])
+	for network in networks:
+		channels=[]
+		try:
+			channels=network.channel
+		except AttributeError:
+			pass
+		try:
+			channel_options[network.name]=getsuboptions(channels)
+		except AttributeError:
+			print "Config Error: network has no name"
+
+def test_get():
+	print "Test:"
+	print "Which channel?"
+	channel=raw_input();
+	print "Which Network?"
+	network=raw_input()
+	print "Which Setting?"
+	setting=raw_input()
+	print "Default String?"
+	default=raw_input()
+	print "Result:"
+	print ""
+	print get(setting, default, network, channel)
+
+	
+loadfromxml("config2.xml")
+#test_get()
