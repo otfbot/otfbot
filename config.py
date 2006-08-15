@@ -136,24 +136,3 @@ class config:
 		
 		ret+="</chatbot>\n"
 		return ret
-
-def test_get():
-	print "Test:"
-	print "Which channel?"
-	channel=raw_input();
-	print "Which Network?"
-	network=raw_input()
-	print "Which Setting?"
-	setting=raw_input()
-	print "Default String?"
-	default=raw_input()
-	print "Result:"
-	print ""
-	print get(setting, default, network, channel)
-
-
-myconfig=config("config2.xml")
-print myconfig.getxml()
-#print generic_options
-#print getxml();
-#test_get()
