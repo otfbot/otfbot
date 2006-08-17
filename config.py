@@ -74,7 +74,7 @@ class config:
 	
 	def get(self, option, default, module=None, network=None, channel=None):
 			if module:
-				option=module+".".option
+				option=module+"."+option
 
 			try:
 				return self.channel_options[network][channel][option]
