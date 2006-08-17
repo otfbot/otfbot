@@ -4,6 +4,37 @@ import handyxml
 
 
 class config:
+	#private
+	def getoptions(self, optionlist):
+		ret={}
+		for option in optionlist:
+			try:
+				ret[option.name]=option.value
+			except AttributeError:
+				print "Config Error: Option name or value missing"
+		return ret
+		
+	def getsuboptions(self, list):
+		ret={}
+		for item in list:
+			options=[]
+			try:
+				options=item.option
+			except AttributeError:
+				pass
+			tmp=self.getoptions(options)
+			try:
+				ret[item.name]=tmp
+			except AttributeError:
+				print "Config Error: network/channel has no name"
+		return ret
+
+	def sorted(self, list):
+		"""returns the sorted list"""
+		list.sort()
+		return list
+
+	#public
 	def __init__(self, filename=None):
 		"""Initialize the config class and load a xml config"""
 		self.generic_options={}
@@ -41,29 +72,6 @@ class config:
 			except AttributeError:
 				print "Config Error: network has no name"
 	
-	def getoptions(self, optionlist):
-		ret={}
-		for option in optionlist:
-			try:
-				ret[option.name]=option.value
-			except AttributeError:
-				print "Config Error: Option name or value missing"
-		return ret
-		
-	def getsuboptions(self, list):
-		ret={}
-		for item in list:
-			try:
-				options=item.option
-			except AttributeError:
-				pass
-			tmp=self.getoptions(options)
-			try:
-				ret[item.name]=tmp
-			except AttributeError:
-				print "Config Error: network/channel has no name"
-		return ret
-	
 	def get(self, option, default, module=None, network=None, channel=None):
 			if module:
 				option=module+".".option
@@ -97,7 +105,7 @@ class config:
 	
 	def set(self, option, value, module=None, network=None, channel=None):
 		if module:
-				option=module+".".option
+				option=module+"."+option
 
 		if network and channel:
 			if not network in self.channel_options.keys():
@@ -111,25 +119,48 @@ class config:
 			self.network_options[network][option]=value
 		else:
 			self.generic_options[option]=value
-				
 
-	def getxml(self):
+
+	def	getNetworks(self):
+		ret=[]
+		for network in self.network_options.keys():
+			ret.append(network)
+		#it is not sure, that we have a network in network and channel options
+		for network in self.channel_options.keys():
+			if not network in ret:
+				ret.append(network)
+		return ret
+	def getChannels(self, network):
+		if network in self.channel_options.keys():
+			try:
+				return self.channel_options[network].keys()
+			except AttributeError:
+				return []
+
+	def exportxml(self):
 		ret="<?xml version=\"1.0\"?>\n"
 		ret+="<chatbot>\n"
 		indent="	";
 		#generic options
-		for option in self.generic_options.keys():
+		for option in sorted(self.generic_options.keys()):
 			ret+=indent+"<option name=\""+option+"\" value=\""+self.generic_options[option]+"\" />\n"
-		#network specific
-		channel_networks=self.channel_options.keys() #get the networks, for which we have channel settings
-		for network in self.network_options.keys():
+			
+		channel_networks=self.channel_options.keys() #list of networks with *channel* settings
+		all_networks=self.network_options.keys() #list of *all* networks
+		for network in channel_networks:
+			all_networks.append(network)
+			
+		for network in all_networks:
 			ret+=indent+"<network name=\""+network+"\">\n"
-			for option in self.network_options[network].keys():
-				ret+=indent*2+"<option name=\""+option+"\" value=\""+self.network_options[network][option]+"\" />\n"
+			#network specific
+			if network in self.network_options.keys():
+				for option in sorted(self.network_options[network].keys()):
+					ret+=indent*2+"<option name=\""+option+"\" value=\""+self.network_options[network][option]+"\" />\n"
+			#channel specific
 			if network in channel_networks:
 				for channel in self.channel_options[network].keys():
 					ret+=indent*2+"<channel name=\""+channel+"\">\n"
-					for option in self.channel_options[network][channel].keys():
+					for option in sorted(self.channel_options[network][channel].keys()):
 						ret+=indent*3+"<option name=\""+option+"\" value=\""+self.channel_options[network][channel][option]+"\" />\n"
 					ret+=indent*2+"</channel>\n"
 			ret+=indent+"</network>\n"

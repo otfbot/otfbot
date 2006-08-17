@@ -76,12 +76,13 @@ def loadConfig(myconfigfile):
 					myconfig.set(item, modconfig[item])
 			except AttributeError:
 				pass
-		myconfig.set('server', '')
-		myconfig.set('channel', '')
+		myconfig.set('enabled', 'false', 'main', 'irc.samplenetwork', '#example')
+		#myconfig.set('server', '')
+		#myconfig.set('channel', '')
 		myconfig.set('nickname', 'OtfBot')
 		#theconfig is not set, yet. so we cannot use writeConfig()
 		file=open(myconfigfile, "w")
-		file.write(myconfig.getxml())
+		file.write(myconfig.exportxml())
 		file.close()
 		corelogger.critical("Default Settings loaded.")
 		corelogger.critical("Edit config.txt to configure the bot.")
@@ -94,7 +95,7 @@ def writeConfig():
 	#options.sort()
 	#for option in options:
 	#	file.write(option+"="+config[option]+"\n")
-	file.write(theconfig.getxml())
+	file.write(theconfig.exportxml())
 	file.close()
 
 
@@ -189,7 +190,9 @@ class Bot(irc.IRCClient):
 	
 	def signedOn(self):
 		self.logger.info("signed on")
-		self.join(self.factory.channel)
+		for channel in self.factory.channels:
+			#TODO: check for "enabled"
+			self.join(unicode(channel).encode("iso-8859-1"))
 		for mod in self.mods:
 			try:
 				mod.signedOn()
@@ -310,8 +313,8 @@ class BotFactory(protocol.ClientFactory):
 	"""The Factory for the Bot"""
 	protocol = Bot
 
-	def __init__(self, channel):
-		self.channel = channel
+	def __init__(self, channels):
+		self.channels = channels
 	def clientConnectionLost(self, connector, reason):
 		connector.connect()
 		#reactor.stop() #for !stop
@@ -324,6 +327,14 @@ else:
 	configfile="config.xml"
 theconfig=loadConfig(configfile)
 
-f = BotFactory(getConfig("channel", "#bot-test"))
-reactor.connectTCP(getConfig("server", "bots.insiderz.de"), 6667, f);
-reactor.run()
+#f = BotFactory(getConfig("channel", "#bot-test"))
+#reactor.connectTCP(getConfig("server", "bots.insiderz.de"), 6667, f);
+#reactor.run()
+networks=theconfig.getNetworks()
+#TODO: multinetwork support
+if networks:
+	channels=theconfig.getChannels(networks[0])
+	if channels:
+		f = BotFactory(channels)
+		reactor.connectTCP(networks[0], 6667, f);
+		reactor.run()
