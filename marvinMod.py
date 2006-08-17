@@ -20,21 +20,21 @@ import functions
 
 def default_settings():
 	settings={};
-	settings['marvinMod_filename']='marvin.txt'
-	settings['marvinMod_percent']='20'
-	settings['marvinMod_fileencoding']='iso-8859-15'
+	settings['marvinMod.filename']='marvin.txt'
+	settings['marvinMod.percent']='20'
+	settings['marvinMod.fileencoding']='iso-8859-15'
 	return settings
 		
 class chatMod:
     def __init__(self, bot):
         self.bot=bot
-        self.marvin=functions.loadList(bot.getConfig("marvinMod_filename", "marvin.txt"))
+        self.marvin=functions.loadList(bot.getConfig("filename", "marvin.txt", "marvinMod"))
 
     def msg(self, user, channel, msg):
         #if channel == self.bot.nickname:
         #if msg[0]=="!" or msg[:len(self.bot.nickname)]==self.bot.nickname:
         if (msg[0]=="!" or self.bot.nickname in msg) and len(self.marvin):
             number=random.randint(0,100)
-            chance=int(self.bot.getConfig("marvinMod_percent", "20"))
+            chance=int(self.bot.getConfig("percent", "20", "marvinMod"))
             if number <chance:
-                self.bot.sendmsg(channel, random.choice(self.marvin), self.bot.getConfig("marvinMod_fileencoding", "iso-8859-15"))
+                self.bot.sendmsg(channel, random.choice(self.marvin), self.bot.getConfig("fileencoding", "iso-8859-15", "marvinMod"))
