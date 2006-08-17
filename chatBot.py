@@ -53,16 +53,16 @@ if options.debug:
 corelogger = logging.getLogger('core')
 
 theconfig=None
-def setConfig(option, value, module=None):
-	#config[option]=value
-	theconfig.set(option, value, module)
+def setConfig(option, value, module=None, network=None, channel=None):
+	theconfig.set(option, value, module, network, channel)
 	writeConfig()
 		
-def getConfig(option, defaultvalue="", module=None):
-	#if not config.has_key(option):
-	#	setConfig(option, defaultvalue)
-	#return config[option]
-	return theconfig.get(option, defaultvalue, module).encode("iso-8859-15") #XXX: twisted does not like unicode
+def getConfig(option, defaultvalue="", module=None, network=None, channel=None):
+	return theconfig.get(option, defaultvalue, module, network, channel)
+def getBoolConfig(option, defaultvalue="", module=None, network=None, channel=None):
+	if theconfig.get(option, defaultvalue, module, network, channel) in ["true", "on", "1"]:
+		return True
+	return False
 	
 def loadConfig(myconfigfile):
 	if os.path.exists(myconfigfile):
@@ -84,8 +84,9 @@ def loadConfig(myconfigfile):
 		file=open(myconfigfile, "w")
 		file.write(myconfig.exportxml())
 		file.close()
-		corelogger.critical("Default Settings loaded.")
-		corelogger.critical("Edit config.txt to configure the bot.")
+		#no logger here: the user needs to read this on console, not in logfile
+		print "Default Settings loaded."
+		print "Edit config.txt to configure the bot."
 		sys.exit(0)
 	return myconfig
 		
@@ -111,7 +112,7 @@ class Bot(irc.IRCClient):
 
 		#loadConfig()
 
-		self.nickname=self.getConfig("nickname", "chatBot")
+		self.nickname=unicode(self.getConfig("nickname", "OtfBot")).encode("iso-8859-1")
 		self.logging = logging
 		self.logger = logging.getLogger("core")
 		self.logger.info("Starting chatBot")
@@ -126,10 +127,12 @@ class Bot(irc.IRCClient):
 			except AttributeError:
 				pass
           	
-	def setConfig(self, option, value):
-		return setConfig(option, value)
-	def getConfig(self, option, defaultvalue=""):
-		return getConfig(option, defaultvalue)
+	def setConfig(self, option, value, module=None, network=None, channel=None):
+		return setConfig(option, value, module, network, channel)
+	def getConfig(self, option, defaultvalue="", module=None, network=None, channel=None):
+		return getConfig(option, defaultvalue, module, network, channel)
+	def getBoolConfig(self, option, defaultvalue="", module=None, network=None, channel=None):
+		return getBoolConfig(option, defaultvalue, module, network, channel)
 	def loadConfig(self):
 		return loadConfig(configfile)
 	def writeConfig(self):
@@ -191,8 +194,8 @@ class Bot(irc.IRCClient):
 	def signedOn(self):
 		self.logger.info("signed on")
 		for channel in self.factory.channels:
-			#TODO: check for "enabled"
-			self.join(unicode(channel).encode("iso-8859-1"))
+			if(getBoolConfig("enabled", "false", "main", self.factory.network, channel)):
+				self.join(unicode(channel).encode("iso-8859-1"))
 		for mod in self.mods:
 			try:
 				mod.signedOn()
@@ -313,7 +316,8 @@ class BotFactory(protocol.ClientFactory):
 	"""The Factory for the Bot"""
 	protocol = Bot
 
-	def __init__(self, channels):
+	def __init__(self, networkname, channels):
+		self.network=networkname
 		self.channels = channels
 	def clientConnectionLost(self, connector, reason):
 		connector.connect()
@@ -335,6 +339,6 @@ networks=theconfig.getNetworks()
 if networks:
 	channels=theconfig.getChannels(networks[0])
 	if channels:
-		f = BotFactory(channels)
-		reactor.connectTCP(networks[0], 6667, f);
+		f = BotFactory(networks[0], channels)
+		reactor.connectTCP(unicode(networks[0]).encode("iso-8859-1"), 6667, f);
 		reactor.run()
