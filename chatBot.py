@@ -110,6 +110,8 @@ class Bot(irc.IRCClient):
 		self.mods = []
 		self.numMods = 0
 
+		self.versionName="OtfBot"
+		self.versionNum=" svn 20"
 		self.nickname=unicode(self.getConfig("nickname", "OtfBot", 'main', self.network)).encode("iso-8859-1")
 		self.logging = logging
 		self.logger = logging.getLogger("core")
@@ -291,8 +293,8 @@ class Bot(irc.IRCClient):
 	def ctcpQuery(self, user, channel, messages):
 		(query,t) = messages[0]
 		answer = None
-		if query == "VERSION":
-			answer = "chatBot - a python IRC-Bot"
+		#if query == "VERSION":
+		#	answer = "chatBot - a python IRC-Bot"
 		if answer: 
 			self.ctcpMakeReply(user.split("!")[0], [(query,answer)])
 		self.logger.info("Answered to CTCP "+query+" Request from "+user.split("!")[0])
@@ -326,8 +328,8 @@ class BotFactory(protocol.ClientFactory):
 	def clientConnectionFailed(self, connector, reason):
 		reactor.stop()
 
-if len(sys.argv)==2:
-	configfile=sys.argv[1]
+if parser.configfile:
+	configfile=parser.configfile
 else:
 	configfile="config.xml"
 theconfig=loadConfig(configfile)
