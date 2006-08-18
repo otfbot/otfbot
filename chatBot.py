@@ -79,7 +79,7 @@ def loadConfig(myconfigfile):
 		
 		myconfig.set('enabled', 'false', 'main', 'irc.samplenetwork')
 		myconfig.set('enabled', 'false', 'main', 'irc.samplenetwork', '#example')
-		myconfig.set('nickname', 'OtfBot')
+		myconfig.set('nickname', 'OtfBot', 'main')
 		
 		file=open(myconfigfile, "w")
 		file.write(myconfig.exportxml())
@@ -110,9 +110,7 @@ class Bot(irc.IRCClient):
 		self.mods = []
 		self.numMods = 0
 
-		#loadConfig()
-
-		self.nickname=unicode(self.getConfig("nickname", "OtfBot")).encode("iso-8859-1")
+		self.nickname=unicode(self.getConfig("nickname", "OtfBot", 'main', self.network)).encode("iso-8859-1")
 		self.logging = logging
 		self.logger = logging.getLogger("core")
 		self.logger.info("Starting chatBot")
@@ -192,7 +190,10 @@ class Bot(irc.IRCClient):
 				pass
 	
 	def signedOn(self):
-		self.logger.info("signed on")
+		self.logger.info("signed on "+self.network)
+		self.network=self.factory.network
+		self.channels=self.factory.channels
+
 		for channel in self.factory.channels:
 			if(getBoolConfig("enabled", "false", "main", self.factory.network, channel)):
 				self.join(unicode(channel).encode("iso-8859-1"))
@@ -341,7 +342,8 @@ if networks:
 	if not channels:
 		channels=[]
 		
-	if(getBoolConfig('enabled', 'unset', 'main', networks[0])):
-		f = BotFactory(networks[0], channels)
-		reactor.connectTCP(unicode(networks[0]).encode("iso-8859-1"), 6667, f);
-		reactor.run()
+	for network in networks:
+		if(getBoolConfig('enabled', 'unset', 'main', network)):
+			f = BotFactory(network, channels)
+			reactor.connectTCP(unicode(networks[0]).encode("iso-8859-1"), 6667, f);
+	reactor.run()
