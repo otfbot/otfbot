@@ -140,7 +140,7 @@ class config:
 
 	def exportxml(self):
 		ret="<?xml version=\"1.0\"?>\n"
-		ret+="<!DOCTYPE config2 SYSTEM \"config.dtd\">\n"
+		ret+="<!DOCTYPE config SYSTEM \"config.dtd\">\n"
 		ret+="<chatbot>\n"
 		indent="	";
 		#generic options
@@ -150,7 +150,8 @@ class config:
 		channel_networks=self.channel_options.keys() #list of networks with *channel* settings
 		all_networks=self.network_options.keys() #list of *all* networks
 		for network in channel_networks:
-			all_networks.append(network)
+			if not network in all_networks:
+				all_networks.append(network)
 			
 		for network in all_networks:
 			ret+=indent+"<network name=\""+network+"\">\n"
