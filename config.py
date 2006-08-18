@@ -11,7 +11,7 @@ class config:
 			try:
 				ret[option.name]=option.value
 			except AttributeError:
-				print "Config Error: Option name or value missing"
+				self.logger.error("Config Error: Option name or value missing")
 		return ret
 		
 	def getsuboptions(self, list):
@@ -26,7 +26,7 @@ class config:
 			try:
 				ret[item.name]=tmp
 			except AttributeError:
-				print "Config Error: network/channel has no name"
+				self.logger.error("Config Error: network/channel has no name")
 		return ret
 
 	def sorted(self, list):
@@ -35,8 +35,9 @@ class config:
 		return list
 
 	#public
-	def __init__(self, filename=None):
+	def __init__(self, logging, filename=None):
 		"""Initialize the config class and load a xml config"""
+		self.logger=logging.getLogger("config")
 		self.generic_options={}
 		self.network_options={}
 		self.channel_options={}
@@ -70,7 +71,7 @@ class config:
 			try:
 				self.channel_options[network.name]=self.getsuboptions(channels)
 			except AttributeError:
-				print "Config Error: network has no name"
+				self.logger.error("Config Error: network has no name")
 	
 	def get(self, option, default, module=None, network=None, channel=None):
 			if module:
@@ -139,6 +140,7 @@ class config:
 
 	def exportxml(self):
 		ret="<?xml version=\"1.0\"?>\n"
+		ret+="<!DOCTYPE config2 SYSTEM \"config.dtd\">\n"
 		ret+="<chatbot>\n"
 		indent="	";
 		#generic options

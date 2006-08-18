@@ -66,9 +66,9 @@ def getBoolConfig(option, defaultvalue="", module=None, network=None, channel=No
 	
 def loadConfig(myconfigfile):
 	if os.path.exists(myconfigfile):
-		myconfig=config.config(myconfigfile)
+		myconfig=config.config(logging, myconfigfile)
 	else:
-		myconfig=config.config()
+		myconfig=config.config(logging)
 		for myclass in classes:
 			try:
 				modconfig=myclass.default_settings()
@@ -76,17 +76,17 @@ def loadConfig(myconfigfile):
 					myconfig.set(item, modconfig[item])
 			except AttributeError:
 				pass
+		
+		myconfig.set('enabled', 'false', 'main', 'irc.samplenetwork')
 		myconfig.set('enabled', 'false', 'main', 'irc.samplenetwork', '#example')
-		#myconfig.set('server', '')
-		#myconfig.set('channel', '')
 		myconfig.set('nickname', 'OtfBot')
-		#theconfig is not set, yet. so we cannot use writeConfig()
+		
 		file=open(myconfigfile, "w")
 		file.write(myconfig.exportxml())
 		file.close()
 		#no logger here: the user needs to read this on console, not in logfile
 		print "Default Settings loaded."
-		print "Edit config.txt to configure the bot."
+		print "Edit config.xml to configure the bot."
 		sys.exit(0)
 	return myconfig
 		
@@ -338,7 +338,10 @@ networks=theconfig.getNetworks()
 #TODO: multinetwork support
 if networks:
 	channels=theconfig.getChannels(networks[0])
-	if channels:
+	if not channels:
+		channels=[]
+		
+	if(getBoolConfig('enabled', 'unset', 'main', networks[0])):
 		f = BotFactory(networks[0], channels)
 		reactor.connectTCP(unicode(networks[0]).encode("iso-8859-1"), 6667, f);
 		reactor.run()
