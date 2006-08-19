@@ -26,7 +26,7 @@ import os, random, string, re, threading, time, sys
 import functions, config
 import generalMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, authMod, configMod, modeMod, marvinMod , kiMod
 
-classes = [ identifyMod, generalMod, authMod, configMod, logMod, commandsMod, answerMod, badwordsMod, modeMod, marvinMod , kiMod ]
+classes = [ identifyMod, generalMod, authMod, configMod, logMod, commandsMod, answerMod, badwordsMod, modeMod, marvinMod ]
 
 from optparse import OptionParser
 parser = OptionParser()
@@ -112,7 +112,6 @@ class Bot(irc.IRCClient):
 
 		self.versionName="OtfBot"
 		self.versionNum=" svn 20"
-		self.nickname=unicode(self.getConfig("nickname", "OtfBot", 'main', self.network)).encode("iso-8859-1")
 		self.logging = logging
 		self.logger = logging.getLogger("core")
 		self.logger.info("Starting chatBot")
@@ -174,7 +173,10 @@ class Bot(irc.IRCClient):
 		self.action(self.nickname, channel, action)
 
 	def connectionMade(self):
-		self.logger.info("made connection")
+		self.network=self.factory.network
+		self.channels=self.factory.channels
+		self.nickname=unicode(self.getConfig("nickname", "OtfBot", 'main', self.network)).encode("iso-8859-1")
+		self.logger.info("made connection to "+self.network)
 		irc.IRCClient.connectionMade(self)
 		for mod in self.mods:
 			try:
@@ -193,8 +195,6 @@ class Bot(irc.IRCClient):
 	
 	def signedOn(self):
 		self.logger.info("signed on "+self.network)
-		self.network=self.factory.network
-		self.channels=self.factory.channels
 
 		for channel in self.factory.channels:
 			if(getBoolConfig("enabled", "false", "main", self.factory.network, channel)):
@@ -328,9 +328,9 @@ class BotFactory(protocol.ClientFactory):
 	def clientConnectionFailed(self, connector, reason):
 		reactor.stop()
 
-if parser.configfile:
+try:
 	configfile=parser.configfile
-else:
+except AttributeError:
 	configfile="config.xml"
 theconfig=loadConfig(configfile)
 
@@ -347,5 +347,5 @@ if networks:
 	for network in networks:
 		if(getBoolConfig('enabled', 'unset', 'main', network)):
 			f = BotFactory(network, channels)
-			reactor.connectTCP(unicode(networks[0]).encode("iso-8859-1"), 6667, f);
+			reactor.connectTCP(unicode(network).encode("iso-8859-1"), 6667, f);
 	reactor.run()
