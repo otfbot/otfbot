@@ -338,12 +338,14 @@ theconfig=loadConfig(configfile)
 networks=theconfig.getNetworks()
 #TODO: multinetwork support
 if networks:
-	channels=theconfig.getChannels(networks[0])
-	if not channels:
-		channels=[]
-		
 	for network in networks:
 		if(getBoolConfig('enabled', 'unset', 'main', network)):
+			channels=theconfig.getChannels(network)
+			if not channels:
+				channels=[]
+			for channel in channels:
+				if(not getBoolConfig('enabled','unset','main', network)):
+					channels.remove(channel)
 			f = BotFactory(network, channels)
 			reactor.connectTCP(unicode(network).encode("iso-8859-1"), 6667, f);
 	reactor.run()
