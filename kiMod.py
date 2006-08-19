@@ -13,8 +13,8 @@
 #You should have received a copy of the GNU General Public License
 #along with this program; if not, write to the Free Software
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-import string, re, random, time, functions
+import string, re, random, time
+import chatMod, functions
 
 MEGAHAL=1
 CITE=1
@@ -171,7 +171,7 @@ class citeResponder(responder):
 
 
 
-class chatMod:
+class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
 	

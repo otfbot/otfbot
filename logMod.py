@@ -1,5 +1,3 @@
-import time, string, locale, threading, os
-
 #Copyright (C) 2005 Alexander Schier
 #
 #This program is free software; you can redistribute it and/or modify
@@ -15,13 +13,16 @@ import time, string, locale, threading, os
 #You should have received a copy of the GNU General Public License
 #along with this program; if not, write to the Free Software
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+import time, string, locale, threading, os
+import chatMod
+
 
 def default_settings():
 	settings={};
 	settings['logMod_logdir']='log'
 	return settings
 		
-class chatMod:
+class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
 		self.channels={}

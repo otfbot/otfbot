@@ -181,8 +181,8 @@ class Bot(irc.IRCClient):
 		for mod in self.mods:
 			try:
 				mod.connectionMade()
-			except AttributeError:
-				pass
+			except Exception, e:
+				self.logger.error("Exception in Module "+mod.__name__+": "+e)
 
 	def connectionLost(self, reason):
 		self.logger.info("lost connection: "+str(reason))
@@ -190,8 +190,8 @@ class Bot(irc.IRCClient):
 		for mod in self.mods:
 			try:
 				mod.connectionLost(reason)
-			except AttributeError:
-				pass
+			except Exception, e:
+				self.logger.error("Exception in Module "+mod.__name__+": "+e)
 	
 	def signedOn(self):
 		self.logger.info("signed on "+self.network)
@@ -202,31 +202,31 @@ class Bot(irc.IRCClient):
 		for mod in self.mods:
 			try:
 				mod.signedOn()
-			except AttributeError:
-				pass
+			except Exception, e:
+				self.logger.error("Exception in Module "+mod.__name__+": "+e)
 		
 	def joined(self, channel):
 		self.logger.info("joined "+channel)
 		for mod in self.mods:
 			try:
 				mod.joined(channel)
-			except AttributeError:
-				pass
+			except Exception, e:
+				self.logger.error("Exception in Module "+mod.__name__+": "+e)
 			
 	def left(self, channel):
 		self.logger.info("left "+channel)
 		for mod in self.mods:
 			try:
 				mod.left(channel)
-			except AttributeError:
-				pass
+			except Exception, e:
+				self.logger.error("Exception in Module "+mod.__name__+": "+e)
 
 	def privmsg(self, user, channel, msg):
 		for mod in self.mods:
 			try:
 				mod.msg(user, channel, msg)
-			except AttributeError:
-				pass
+			except Exception, e:
+				self.logger.error("Exception in Module "+mod.__name__+": "+e)
 
 		if channel == self.nickname and msg == "!reload":
 			for chatModule in self.classes:
@@ -235,8 +235,8 @@ class Bot(irc.IRCClient):
 			for chatMod in self.mods:
 				try:
 					chatMod.stop()
-				except AttributeError:
-					pass
+				except Exception, e:
+					self.logger.error("Exception in Module "+mod.__name__+": "+e)
 			self.mods=[]
 			self.startMods()
 
@@ -245,22 +245,22 @@ class Bot(irc.IRCClient):
 		for mod in self.mods:
 			try:
 				mod.noticed(user, channel, msg)
-			except AttributeError:
-				pass
+			except Exception, e:
+				self.logger.error("Exception in Module "+mod.__name__+": "+e)
 				
 	def action(self, user, channel, msg):
 		for mod in self.mods:
 			try:
 				mod.action(user, channel, msg)
-			except AttributeError:
-				pass
+			except Exception, e:
+				self.logger.error("Exception in Module "+mod.__name__+": "+e)
 
 	def modeChanged(self, user, channel, set, modes, args):
 		for mod in self.mods:
 			try:
 				mod.modeChanged(user, channel, set, modes, args)
-			except AttributeError:
-				pass
+			except Exception, e:
+				self.logger.error("Exception in Module "+mod.__name__+": "+e)
 		#if modes == "b" and set == True:
 		#	self.mode(channel,False,"b",None,None,args[0])
 		#	#self.mode(channel,True,"m")
@@ -270,22 +270,22 @@ class Bot(irc.IRCClient):
 		for mod in self.mods:
 			try:
 				mod.userKicked(kickee, channel, kicker, message)
-			except AttributeError:
-				pass
+			except Exception, e:
+				self.logger.error("Exception in Module "+mod.__name__+": "+e)
 
 	def userJoined(self, user, channel):
 		for mod in self.mods:
 			try:
 				mod.userJoined(user, channel)
-			except AttributeError:
-				pass
+			except Exception, e:
+				self.logger.error("Exception in Module "+mod.__name__+": "+e)
 				
 	def userLeft(self, user, channel):
 		for mod in self.mods:
 			try:
 				mod.userLeft(user, channel)
-			except AttributeError:
-				pass
+			except Exception, e:
+				self.logger.error("Exception in Module "+mod.__name__+": "+e)
 		
 	def yourHost(self, info):
 		self.logger.debug(info)
@@ -303,18 +303,16 @@ class Bot(irc.IRCClient):
 		for mod in self.mods:
 			try:
 				mod.userRenamed(oldname, newname)
-			except AttributeError:
-				pass
+			except Exception, e:
+				self.logger.error("Exception in Module "+mod.__name__+": "+e)
 				
 	def topicUpdated(self, user, channel, newTopic):
 		for mod in self.mods:
 			try:
 				mod.topicUpdated(user, channel, newTopic)
-			except AttributeError:
-				pass
+			except Exception, e:
+				self.logger.error("Exception in Module "+mod.__name__+": "+e)
 		
-	
-
 class BotFactory(protocol.ClientFactory):
 	"""The Factory for the Bot"""
 	protocol = Bot
