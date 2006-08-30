@@ -50,6 +50,7 @@ class chatMod(chatMod.chatMod):
 			
 	def reload(self):
 		self.commands={}
+		self.commandChar={}
 		for channel in self.bot.channels:
 			tmp=functions.loadProperties(self.bot.getConfig("file", "commands.txt", "commandsMod", self.bot.network, channel))
 			self.commands[channel]=tmp
@@ -59,7 +60,7 @@ class chatMod(chatMod.chatMod):
 		if not self.commands.has_key(channel):
 			self.commands[channel]={}
 		if self.commands[channel].has_key(cmd):
-			return self.command[channel][cmd]
+			return self.commands[channel][cmd]
 		return None
 
 	def respond(self, channel, user, command):
@@ -69,10 +70,10 @@ class chatMod(chatMod.chatMod):
 			cmd=string.lower(tmp[0])
 			if len(tmp) >1:
 				param=tmp[1]
-				answer=getCommand(channel, cmd+"_")
+				answer=self.getCommand(channel, cmd+"_")
 				answer = re.sub("OTHER", param, answer)
 			else:
-				answer=getCommand(channel, cmd)
+				answer=self.getCommand(channel, cmd)
 			answer = re.sub("USER", user, answer)
 				
 		if len(answer)>0 and answer[-1] == "\n":
