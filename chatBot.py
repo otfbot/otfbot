@@ -103,8 +103,7 @@ def loadConfig(myconfigfile):
 	return myconfig
 		
 def logerror(logger, module, exception):
-	logger.error("Exception in Module "+module+": "+str(exception))
-	trace=""
+	trace="\nException in Module "+module+": "+str(exception)+"\n"
 	tb_list = traceback.format_tb(sys.exc_info()[2])
 	for entry in tb_list:
 		trace += entry
