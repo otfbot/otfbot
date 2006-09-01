@@ -21,7 +21,11 @@
 
 """Chat Bot"""
 
-from twisted.words.protocols import irc
+try:
+	from twisted.words.protocols import irc
+except ImportError:
+	from twisted.protocols import irc
+
 from twisted.internet import reactor, protocol
 
 import os, random, string, re, threading, time, sys, traceback
@@ -40,19 +44,25 @@ parser.add_option("-d","--debug",dest="debug",metavar="LEVEL",help="Show debug m
 
 import logging
 # Basic settings for logging
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s %(name)-18s %(levelname)-8s %(message)s',
-                    filename='otfbot.log',
-                    filemode='a')
+# logging to logfile
+#filelogger = logging.RotatingFileHandler('otfbot.log','a',20480,5)
+filelogger = logging.FileHandler('otfbot.log','a')
+logging.getLogger('').setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s %(name)-18s %(module)-18s %(levelname)-8s %(message)s')
+filelogger.setFormatter(formatter)
+logging.getLogger('').addHandler(filelogger)
+#corelogger.addHandler(filelogger)
+
 if options.debug:
 	#logging to stdout
 	console = logging.StreamHandler()
-	console.setLevel(options.debug)
-	formatter = logging.Formatter('%(asctime)s %(name)-18s %(levelname)-8s %(message)s')
+	logging.getLogger('').setLevel(options.debug)
+	formatter = logging.Formatter('%(asctime)s %(name)-10s %(module)-18s %(levelname)-8s %(message)s')
 	console.setFormatter(formatter)
 	logging.getLogger('').addHandler(console)
-
+	#corelogger.addHandler(console)
 corelogger = logging.getLogger('core')
+
 
 theconfig=None
 def setConfig(option, value, module=None, network=None, channel=None):
@@ -130,7 +140,7 @@ class Bot(irc.IRCClient):
 	def startMods(self):
 		for chatModule in self.classes:
 			self.mods.append( chatModule.chatMod(self) )
-			self.mods[-1].logger = logging.getLogger("core."+chatModule.__name__)
+			self.mods[-1].setLogger(self.logger)
 			self.mods[-1].name = chatModule.__name__
 			try:
 				self.mods[-1].start()
@@ -187,9 +197,15 @@ class Bot(irc.IRCClient):
 		self.network=self.factory.network
 		self.channels=self.factory.channels
 		self.nickname=unicode(self.getConfig("nickname", "OtfBot", 'main', self.network)).encode("iso-8859-1")
+		if len(self.network.split(".")) < 2:
+			nw = self.network
+		else:
+			nw = self.network.split(".")[-2]
+		self.logger = self.logging.getLogger(nw)
 		self.logger.info("made connection to "+self.network)
 		irc.IRCClient.connectionMade(self)
 		for mod in self.mods:
+			mod.setLogger(self.logger)
 			try:
 				mod.connectionMade()
 			except Exception, e:
@@ -299,7 +315,7 @@ class Bot(irc.IRCClient):
 				logerror(self.logger, mod.name, e)
 		
 	def yourHost(self, info):
-		self.logger.debug(info)
+		pass
 	
 	def ctcpQuery(self, user, channel, messages):
 		(query,t) = messages[0]
@@ -308,7 +324,7 @@ class Bot(irc.IRCClient):
 		#	answer = "chatBot - a python IRC-Bot"
 		if answer: 
 			self.ctcpMakeReply(user.split("!")[0], [(query,answer)])
-		self.logger.info("Answered to CTCP "+query+" Request from "+user.split("!")[0])
+			self.logger.info("Answered to CTCP "+query+" Request from "+user.split("!")[0])
 		
 	def userRenamed(self, oldname, newname):
 		for mod in self.mods:
@@ -343,11 +359,7 @@ except AttributeError:
 	configfile="config.xml"
 theconfig=loadConfig(configfile)
 
-#f = BotFactory(getConfig("channel", "#bot-test"))
-#reactor.connectTCP(getConfig("server", "bots.insiderz.de"), 6667, f);
-#reactor.run()
 networks=theconfig.getNetworks()
-#TODO: multinetwork support
 if networks:
 	for network in networks:
 		if(getBoolConfig('enabled', 'unset', 'main', network)):
