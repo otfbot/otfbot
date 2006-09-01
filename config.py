@@ -162,7 +162,7 @@ class config:
 		ret+="<chatbot>\n"
 		indent="	";
 		#generic options
-		for option in sorted(self.generic_options.keys()):
+		for option in self.sorted(self.generic_options.keys()):
 			ret+=indent+"<option name=\""+option+"\" value=\""+self.generic_options[option]+"\" />\n"
 			
 		channel_networks=self.channel_options.keys() #list of networks with *channel* settings
@@ -175,13 +175,13 @@ class config:
 			ret+=indent+"<network name=\""+network+"\">\n"
 			#network specific
 			if network in self.network_options.keys():
-				for option in sorted(self.network_options[network].keys()):
+				for option in self.sorted(self.network_options[network].keys()):
 					ret+=indent*2+"<option name=\""+option+"\" value=\""+self.network_options[network][option]+"\" />\n"
 			#channel specific
 			if network in channel_networks:
 				for channel in self.channel_options[network].keys():
 					ret+=indent*2+"<channel name=\""+channel+"\">\n"
-					for option in sorted(self.channel_options[network][channel].keys()):
+					for option in self.sorted(self.channel_options[network][channel].keys()):
 						ret+=indent*3+"<option name=\""+option+"\" value=\""+self.channel_options[network][channel][option]+"\" />\n"
 					ret+=indent*2+"</channel>\n"
 			ret+=indent+"</network>\n"
