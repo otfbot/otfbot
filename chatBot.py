@@ -106,8 +106,8 @@ def logerror(logger, module, exception):
 	trace="\nException in Module "+module+": "+str(exception)+"\n"
 	tb_list = traceback.format_tb(sys.exc_info()[2])
 	for entry in tb_list:
-		trace += entry
-	logger.error(trace)
+		for line in entry.strip().split("\n"):
+			logger.error(line)
 	
 def writeConfig():
 	file=open(configfile, "w")
