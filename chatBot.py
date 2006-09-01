@@ -24,7 +24,7 @@
 from twisted.words.protocols import irc
 from twisted.internet import reactor, protocol
 
-import os, random, string, re, threading, time, sys
+import os, random, string, re, threading, time, sys, traceback
 import functions, config
 import generalMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, authMod, configMod, modeMod, marvinMod , kiMod
 
@@ -93,11 +93,11 @@ def loadConfig(myconfigfile):
 	return myconfig
 		
 def logerror(logger, module, exception):
-	logger.error("Exception in Module "+module.name+": "+str(exception))
+	logger.error("Exception in Module "+module+": "+str(exception))
 	trace=""
 	tb_list = traceback.format_tb(sys.exc_info()[2])
 	for entry in tb_list:
-		trace += entr
+		trace += entry
 	logger.error(trace)
 	
 def writeConfig():
