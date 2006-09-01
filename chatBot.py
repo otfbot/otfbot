@@ -92,6 +92,14 @@ def loadConfig(myconfigfile):
 		sys.exit(0)
 	return myconfig
 		
+def logerror(logger, module, exception):
+	logger.error("Exception in Module "+module.name+": "+str(exception))
+	trace=""
+	tb_list = traceback.format_tb(sys.exc_info()[2])
+	for entry in tb_list:
+		trace += entr
+	logger.error(trace)
+	
 def writeConfig():
 	file=open(configfile, "w")
 	#options=config.keys()
@@ -185,7 +193,7 @@ class Bot(irc.IRCClient):
 			try:
 				mod.connectionMade()
 			except Exception, e:
-				self.logger.error("Exception in Module "+mod.name+": "+str(e))
+				logerror(self.logger, mod.name, e)
 
 	def connectionLost(self, reason):
 		self.logger.info("lost connection: "+str(reason))
@@ -194,7 +202,7 @@ class Bot(irc.IRCClient):
 			try:
 				mod.connectionLost(reason)
 			except Exception, e:
-				self.logger.error("Exception in Module "+mod.name+": "+str(e))
+				logerror(self.logger, mod.name, e)
 	
 	def signedOn(self):
 		self.logger.info("signed on "+self.network)
@@ -206,7 +214,7 @@ class Bot(irc.IRCClient):
 			try:
 				mod.signedOn()
 			except Exception, e:
-				self.logger.error("Exception in Module "+mod.name+": "+str(e))
+				logerror(self.logger, mod.name, e)
 		
 	def joined(self, channel):
 		self.logger.info("joined "+channel)
@@ -214,7 +222,7 @@ class Bot(irc.IRCClient):
 			try:
 				mod.joined(channel)
 			except Exception, e:
-				self.logger.error("Exception in Module "+mod.name+": "+str(e))
+				logerror(self.logger, mod.name, e)
 			
 	def left(self, channel):
 		self.logger.info("left "+channel)
@@ -222,14 +230,14 @@ class Bot(irc.IRCClient):
 			try:
 				mod.left(channel)
 			except Exception, e:
-				self.logger.error("Exception in Module "+mod.name+": "+str(e))
+				logerror(self.logger, mod.name, e)
 
 	def privmsg(self, user, channel, msg):
 		for mod in self.mods:
 			try:
 				mod.msg(user, channel, msg)
 			except Exception, e:
-				self.logger.error("Exception in Module "+mod.name+": "+str(e))
+				logerror(self.logger, mod.name, e)
 
 		if channel == self.nickname and msg == "!reload":
 			for chatModule in self.classes:
@@ -239,7 +247,7 @@ class Bot(irc.IRCClient):
 				try:
 					chatMod.stop()
 				except Exception, e:
-					self.logger.error("Exception in Module "+mod.name+": "+str(e))
+					logerror(self.logger, mod.name, e)
 			self.mods=[]
 			self.startMods()
 
@@ -249,21 +257,21 @@ class Bot(irc.IRCClient):
 			try:
 				mod.noticed(user, channel, msg)
 			except Exception, e:
-				self.logger.error("Exception in Module "+mod.name+": "+str(e))
+				logerror(self.logger, mod.name, e)
 				
 	def action(self, user, channel, msg):
 		for mod in self.mods:
 			try:
 				mod.action(user, channel, msg)
 			except Exception, e:
-				self.logger.error("Exception in Module "+mod.name+": "+str(e))
+				logerror(self.logger, mod.name, e)
 
 	def modeChanged(self, user, channel, set, modes, args):
 		for mod in self.mods:
 			try:
 				mod.modeChanged(user, channel, set, modes, args)
 			except Exception, e:
-				self.logger.error("Exception in Module "+mod.name+": "+str(e))
+				logerror(self.logger, mod.name, e)
 		#if modes == "b" and set == True:
 		#	self.mode(channel,False,"b",None,None,args[0])
 		#	#self.mode(channel,True,"m")
@@ -274,21 +282,21 @@ class Bot(irc.IRCClient):
 			try:
 				mod.userKicked(kickee, channel, kicker, message)
 			except Exception, e:
-				self.logger.error("Exception in Module "+mod.name+": "+str(e))
+				logerror(self.logger, mod.name, e)
 
 	def userJoined(self, user, channel):
 		for mod in self.mods:
 			try:
 				mod.userJoined(user, channel)
 			except Exception, e:
-				self.logger.error("Exception in Module "+mod.name+": "+str(e))
+				logerror(self.logger, mod.name, e)
 				
 	def userLeft(self, user, channel):
 		for mod in self.mods:
 			try:
 				mod.userLeft(user, channel)
 			except Exception, e:
-				self.logger.error("Exception in Module "+mod.name+": "+str(e))
+				logerror(self.logger, mod.name, e)
 		
 	def yourHost(self, info):
 		self.logger.debug(info)
@@ -307,14 +315,14 @@ class Bot(irc.IRCClient):
 			try:
 				mod.userRenamed(oldname, newname)
 			except Exception, e:
-				self.logger.error("Exception in Module "+mod.name+": "+str(e))
+				logerror(self.logger, mod.name, e)
 				
 	def topicUpdated(self, user, channel, newTopic):
 		for mod in self.mods:
 			try:
 				mod.topicUpdated(user, channel, newTopic)
 			except Exception, e:
-				self.logger.error("Exception in Module "+mod.name+": "+str(e))
+				logerror(self.logger, mod.name, e)
 		
 class BotFactory(protocol.ClientFactory):
 	"""The Factory for the Bot"""
