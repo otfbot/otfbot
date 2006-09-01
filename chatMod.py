@@ -20,7 +20,8 @@
 class chatMod:
 	def __init__(self, bot):
 		self.bot=bot
-
+	def setLogger(self,logger):
+		self.logger = logger
 	def auth(self, user):
 		"""check the authorisation of the user"""
 		pass
