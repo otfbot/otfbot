@@ -61,7 +61,7 @@ class chatMod(chatMod.chatMod):
 			self.commands[channel]={}
 		if self.commands[channel].has_key(cmd):
 			return self.commands[channel][cmd]
-		return None
+		return ""
 
 	def respond(self, channel, user, command):
 		answer = ""
