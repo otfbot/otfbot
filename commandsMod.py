@@ -36,6 +36,7 @@ class chatMod(chatMod.chatMod):
 		
 	def joined(self, channel):
 		self.channel = channel
+		self.commandChar[channel]=self.bot.getConfig("commandChar", "!", "commandsMod", self.bot.network, channel)
 	
 	def msg(self, user, channel, msg):
 		user = user.split("!")[0] #only nick
