@@ -15,15 +15,20 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 # 
 # (c) 2005, 2006 by Alexander Schier
+# (c) 2006 by Robert Weidlich
 #
 
 import time, string, locale, threading, os
+try:
+	from string import Template
+	hardpath=False
+except ImportError:
+	hardpath=True
 import chatMod
 
 
 def default_settings():
-	settings={};
-	settings['logMod_logdir']='log'
+	settings={'logMod.logpath':'log/$n-$c/$y-$m-$d.log'}
 	return settings
 		
 class chatMod(chatMod.chatMod):
@@ -31,14 +36,21 @@ class chatMod(chatMod.chatMod):
 		self.bot=bot
 		self.channels={}
 		self.files={}
-		self.logdir=bot.getConfig("logMod_logdir", "log")
-		if not os.path.isdir(self.logdir):
-			os.mkdir(self.logdir)
+		self.path={}
+		if not hardpath:
+			self.logpath=bot.getConfig("logMod.logpath", "log/$n-$c/$y-$m-$d.log")
+		else:
+			self.logpath=bot.getConfig("logMod.logpath","log/")
+		#if not os.path.isdir(self.logdir):
+		#	os.mkdir(self.logdir)
 		locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
-		#self.hour=self.ts("%H") #saves the hour, to detect daychanges
-		self.timer=threading.Timer(self.secsUntilDayChange(), self.dayChange)
-		self.timer.start()
+		self.day=self.ts("%d") #saves the hour, to detect daychanges
+		#self.timer=threading.Timer(self.secsUntilDayChange(), self.dayChange)
+		#self.timer.start()
 	
+	def timemap(self):
+		return {'y':self.ts("%Y"),'m':self.ts("%m"),'d':self.ts("%d")}
+
 	def ts(self, format="%H:%M"):
 		"""timestamp"""
 		return time.strftime(format, time.localtime(time.time()))
@@ -52,28 +64,45 @@ class chatMod(chatMod.chatMod):
 		return wait
 
 	def dayChange(self):
+		self.day=self.ts("%d")
 		for channel in self.channels:
-			self.log(channel, "--- Day changed "+self.ts("%a %b %d %Y"))
+			self.stop()
+			self.joined(channel)
+			#self.log(channel, "--- Day changed "+self.ts("%a %b %d %Y"))
 		#restart the timer
-		self.timer=threading.Timer(self.secsUntilDayChange(), self.dayChange)
-		self.timer.start()
+		#self.timer=threading.Timer(self.secsUntilDayChange(), self.dayChange)
+		#self.timer.start()
 		
 		
 	def log(self, channel, string):
+		if self.day != self.ts("%d"):
+			self.dayChange()
 		if channel in self.channels:
 			self.files[channel].write(string+"\n")
 			self.files[channel].flush()
 
 	def logPrivate(self, user, mystring):
-		file=open(self.logdir+"/"+string.lower(user)+".log", "a")
+		dic=self.timemap()
+		dic['c']=string.lower(user)
+		filename=Template(self.logpath).safe_substitute(dic)
+		if not os.path.exists(os.path.dirname(filename)):
+			os.mkdir(os.path.dirname(filename))	
+		file=open(filename, "a")
 		file.write(mystring+"\n")
 		file.close()
 
 	def joined(self, channel):
 		self.channels[string.lower(channel)]=1
 		#self.files[string.lower(channel)]=open(string.lower(channel)+".log", "a")
-		self.files[string.lower(channel)]=open(self.logdir+"/"+string.lower(channel[1:])+".log", "a")
-
+		if not hardpath:
+			self.path[channel]=Template(self.logpath).safe_substitute({'c':channel})
+			file=Template(self.path[channel]).safe_substitute(self.timemap())
+		else:
+			self.path[channel]=self.logpath+channel+"/"
+			file=self.path[channel]+self.ts("%Y-%m-%d.log")
+		if not os.path.exists(os.path.dirname(file)):
+			os.mkdir(os.path.dirname(file))
+		self.files[string.lower(channel)]=open(file, "a")
 		self.log(channel, "--- Log opened "+self.ts("%a %b %d %H:%M:%S %Y"))
 		self.log(channel, self.ts()+"-!- "+self.bot.nickname+" ["+self.bot.nickname+"@hostmask] has joined "+channel) #TODO: real Hostmask
 
@@ -106,6 +135,12 @@ class chatMod(chatMod.chatMod):
 
 	def userLeft(self, user, channel):
 		self.log(channel, self.ts()+"-!- "+user+" [user@hostmask] has left "+channel)#TODO: real Hostmask
+	
+	def userQuit(self, user, msg):
+		users = self.bot.getUsers()
+		for channel in self.channels:
+			if users[channel].has_key(user):
+				self.log(channel, self.ts()+"-!- "+user+" [user@hostmask] has quit ["+msg+"]")
 		
 	def topicUpdated(self, user, channel, newTopic):
 		#TODO: first invoced on join. This should not be logged
@@ -113,14 +148,26 @@ class chatMod(chatMod.chatMod):
 
 	def userRenamed(self, oldname, newname):
 		#TODO: This can not handle different channels right
+		user = self.bot.getUsers()
 		for channel in self.channels:
-			self.log(channel, self.ts()+"-!- "+oldname+" is now known as "+newname)
+			if user[channel].has_key(newname):
+				self.log(channel, self.ts()+"-!- "+oldname+" is now known as "+newname)
 		
 	def stop(self):
 		for channel in self.channels:
 			self.log(channel, "--- Log closed "+self.ts("%a %b %d %H:%M:%S %Y"))
 			self.files[channel].close()
-		self.timer.cancel()
-		
+		#self.timer.cancel()
+
+	def connectionMade(self):
+		if len(self.network.split(".")) < 3:
+			net=self.network
+		else:
+			net=self.network.split(".")[-2]
+		if not hardpath:
+			self.logpath=Template(self.logpath).safe_substitute({'n':net})
+		else:
+			self.logpath=self.logpath+net+"-"
+
 	def connectionLost(self, reason):
 		self.stop()
