@@ -33,14 +33,15 @@ import functions, config
 import generalMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, authMod, configMod, modeMod, marvinMod , kiMod
 
 classes = [ identifyMod, generalMod, authMod, configMod, logMod, commandsMod, answerMod, badwordsMod, modeMod, marvinMod ]
+modchars={'a':'!','o':'@','h':'%','v':'+'}
 
 from optparse import OptionParser
 parser = OptionParser()
 parser.add_option("-c","--config",dest="configfile",metavar="FILE",help="Location of configfile",type="string")
 parser.add_option("-d","--debug",dest="debug",metavar="LEVEL",help="Show debug messages of level LEVEL (10, 20, 30, 40 or 50)", type="int")
 (options,args)=parser.parse_args()
-#if options.debug and not (options.debug == "DEBUG" or options.debug == "INFO" or options.debug == "WARNING" or options.debug == "ERROR" or options.debug == "CRITICAL"):
-#	parser.error("Unknown value for --debug")
+if options.debug and options.debug not in (10,20,30,40,50):
+	parser.error("Unknown value for --debug")
 
 import logging
 # Basic settings for logging
@@ -103,7 +104,7 @@ def loadConfig(myconfigfile):
 	return myconfig
 		
 def logerror(logger, module, exception):
-	trace="\nException in Module "+module+": "+str(exception)+"\n"
+	logger.error("Exception in Module "+module+": "+str(exception))
 	tb_list = traceback.format_tb(sys.exc_info()[2])
 	for entry in tb_list:
 		for line in entry.strip().split("\n"):
@@ -125,7 +126,8 @@ class Bot(irc.IRCClient):
 		#list of mods, which the bot should use
 		#you may need to configure them first
 		self.classes = classes
-
+		self.users={}
+	
 		self.mods = []
 		self.numMods = 0
 
@@ -156,6 +158,8 @@ class Bot(irc.IRCClient):
 		return loadConfig(configfile)
 	def writeConfig(self):
 		return writeConfig()
+	def getUsers(self):
+		return self.users
 
 	def auth(self, user):
 		"""test if the user is privileged"""
@@ -205,6 +209,7 @@ class Bot(irc.IRCClient):
 		irc.IRCClient.connectionMade(self)
 		for mod in self.mods:
 			mod.setLogger(self.logger)
+			mod.network=self.network
 			try:
 				mod.connectionMade()
 			except Exception, e:
@@ -233,6 +238,7 @@ class Bot(irc.IRCClient):
 		
 	def joined(self, channel):
 		self.logger.info("joined "+channel)
+		self.users[channel]={}
 		for mod in self.mods:
 			try:
 				mod.joined(channel)
@@ -241,6 +247,7 @@ class Bot(irc.IRCClient):
 			
 	def left(self, channel):
 		self.logger.info("left "+channel)
+		del self.users[channel]
 		for mod in self.mods:
 			try:
 				mod.left(channel)
@@ -251,6 +258,10 @@ class Bot(irc.IRCClient):
 		for mod in self.mods:
 			try:
 				mod.msg(user, channel, msg)
+			except Exception, e:
+				logerror(self.logger, mod.name, e)
+			try:
+				mod.privmsg(user, channel, msg)
 			except Exception, e:
 				logerror(self.logger, mod.name, e)
 
@@ -265,7 +276,21 @@ class Bot(irc.IRCClient):
 					logerror(self.logger, mod.name, e)
 			self.mods=[]
 			self.startMods()
+		if msg == "!who":
+			self.sendLine("WHO "+channel)
+		if msg[:6] == "!whois":
+			self.sendLine("WHOIS "+msg[7:])
 
+	def irc_unknown(self, prefix, command, params):
+		self.logger.debug(str(prefix)+" : "+str(command)+" : "+str(params))
+		if command == "RPL_NAMREPLY":
+			for nick in params[3].strip().split(" "):
+				if nick[0] in "@%+!":
+					s=nick[0]
+					nick=nick[1:]
+				else:
+					s=" "
+				self.users[params[2]][nick]={'modchar':s}
 
 	def noticed(self, user, channel, msg):
 		for mod in self.mods:
@@ -290,7 +315,9 @@ class Bot(irc.IRCClient):
 		#if modes == "b" and set == True:
 		#	self.mode(channel,False,"b",None,None,args[0])
 		#	#self.mode(channel,True,"m")
-		#	self.logger.debug(str(user)+" "+str(channel)+" "+str(set)+" "+str(modes)+" "+str(args[0]))
+		#TODO: this should also handle the removal of modes and double modes (+vho)
+		if modes in "aohv":
+			self.users[channel][args[0]]['modchar'] = modchars[modes]
 
 	def userKicked(self, kickee, channel, kicker, message):
 		for mod in self.mods:
@@ -300,6 +327,7 @@ class Bot(irc.IRCClient):
 				logerror(self.logger, mod.name, e)
 
 	def userJoined(self, user, channel):
+		self.users[channel][user]={'modchar':' '}
 		for mod in self.mods:
 			try:
 				mod.userJoined(user, channel)
@@ -307,12 +335,22 @@ class Bot(irc.IRCClient):
 				logerror(self.logger, mod.name, e)
 				
 	def userLeft(self, user, channel):
+		del self.users[channel][user]
 		for mod in self.mods:
 			try:
 				mod.userLeft(user, channel)
 			except Exception, e:
 				logerror(self.logger, mod.name, e)
-		
+	
+	def userQuit(self, user, quitMessage):
+		for mod in self.mods:
+			try:
+				mod.userQuit(user, quitMessage)
+			except Exception, e:
+				logerror(self.logger, mod.name, e)
+		for chan in self.users:
+			if self.users[chan].has_key(user):
+				del self.users[chan][user]
 	def yourHost(self, info):
 		pass
 	
@@ -324,8 +362,13 @@ class Bot(irc.IRCClient):
 		if answer: 
 			self.ctcpMakeReply(user.split("!")[0], [(query,answer)])
 			self.logger.info("Answered to CTCP "+query+" Request from "+user.split("!")[0])
+
 		
 	def userRenamed(self, oldname, newname):
+		for chan in self.users:
+			if self.users[chan].has_key(oldname):
+				self.users[chan][newname]=self.users[chan][oldname]
+				del self.users[chan][oldname]
 		for mod in self.mods:
 			try:
 				mod.userRenamed(oldname, newname)
@@ -338,7 +381,7 @@ class Bot(irc.IRCClient):
 				mod.topicUpdated(user, channel, newTopic)
 			except Exception, e:
 				logerror(self.logger, mod.name, e)
-		
+	
 class BotFactory(protocol.ClientFactory):
 	"""The Factory for the Bot"""
 	protocol = Bot

@@ -28,6 +28,9 @@ class chatMod:
 	def joined(self, channel):
 		"""we have joined a channel"""
 		pass
+	def privmsg(self, user, channel, msg):
+		"""a private message received"""
+		pass
 	def msg(self, user, channel, msg):
 		"""message received"""
 		pass
@@ -48,6 +51,7 @@ class chatMod:
 		pass
 	def action(self, user, channel, message):
 		"""action (/me) received"""
+		pass
 	def modeChanged(self, user, channel, set, modes, args):
 		"""mode changed"""
 		pass
@@ -59,6 +63,9 @@ class chatMod:
 		pass
 	def userLeft(self, user, channel):
 		"""a user left the channel"""
+		pass
+	def userQuit(self, user, quitMessage):
+		"""a user disconnect from the network"""
 		pass
 	def yourHost(self, info):
 		"""info about your host"""
