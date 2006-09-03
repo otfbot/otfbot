@@ -65,8 +65,8 @@ class chatMod(chatMod.chatMod):
 
 	def dayChange(self):
 		self.day=self.ts("%d")
+		self.stop()
 		for channel in self.channels:
-			self.stop()
 			self.joined(channel)
 			#self.log(channel, "--- Day changed "+self.ts("%a %b %d %Y"))
 		#restart the timer

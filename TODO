@@ -1,13 +1,11 @@
 core:
+* add a way to cleanly stop the bot from IRC and from system
+* add something to let the bot run in background
 * make !stop and reconnect working
-* add network and channel-name to log-messages
-
+* maybe add channel-name to log-messages
 modules:
 * move modules into subdir (eg /module/kiMod.py)
 * move data of modules in a subdir of the modules-dir (eg /module/kiMod/megahal1.brn)
 * extent modules-api
 logMod:
-* allow splitting of logfiles (ie one per day)
-kursMod
-* url: http://de.old.finance.yahoo.com/d/quotes.csv?s=DTE.DE&f=nsl1d1t1c1ohgv&e=.csv
-* description: http://de.finance.yahoo.com/q?s=dte.de&m=a&d=
+* make logfilerotation working
