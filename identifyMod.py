@@ -42,7 +42,7 @@ class chatMod(chatMod.chatMod):
 	def signedOn(self):
 		if self.password != "":
 			self.logger.info("identifying to nickserv")
-			self.bot.sendmsg("nickserv", "identify "+self.password, "iso-8859-1")
+			self.bot.sendmsg("nickserv", "identify "+self.password)
 			Thread(target=self.dowhois).start()
 			self.whois=True
 		if self.bot.getBoolConfig("setBotFlag", "True", "identifyMod", self.bot.network):

@@ -74,11 +74,14 @@ class chatMod(chatMod.chatMod):
 		#self.timer.start()
 		
 		
-	def log(self, channel, string):
+	def log(self, channel, string, timestamp=True):
 		if self.day != self.ts("%d"):
 			self.dayChange()
 		if channel in self.channels:
-			self.files[channel].write(string+"\n")
+			logmsg=string+"\n"
+			if timestamp:
+				logmsg=self.ts()+" "+logmsg
+			self.files[channel].write(logmsg)
 			self.files[channel].flush()
 
 	def logPrivate(self, user, mystring):
@@ -88,7 +91,7 @@ class chatMod(chatMod.chatMod):
 		if not os.path.exists(os.path.dirname(filename)):
 			os.mkdir(os.path.dirname(filename))	
 		file=open(filename, "a")
-		file.write(mystring+"\n")
+		file.write(self.ts()+" "+mystring+"\n")
 		file.close()
 
 	def joined(self, channel):
@@ -103,59 +106,65 @@ class chatMod(chatMod.chatMod):
 		if not os.path.exists(os.path.dirname(file)):
 			os.mkdir(os.path.dirname(file))
 		self.files[string.lower(channel)]=open(file, "a")
-		self.log(channel, "--- Log opened "+self.ts("%a %b %d %H:%M:%S %Y"))
-		self.log(channel, self.ts()+"-!- "+self.bot.nickname+" ["+self.bot.nickname+"@hostmask] has joined "+channel) #TODO: real Hostmask
+		self.log(channel, "--- Log opened "+self.ts("%a %b %d %H:%M:%S %Y"), False)
+		self.log(channel, "-!- "+self.bot.nickname+" ["+self.bot.nickname+"@hostmask] has joined "+channel) #TODO: real Hostmask
 
 	def msg(self, user, channel, msg):
 		modesign=" "
 		user=user.split("!")[0]
 		if string.lower(channel)==string.lower(self.bot.nickname):
-			self.logPrivate(user, self.ts()+"< "+user+"> "+msg)
+			self.logPrivate(user, "< "+user+"> "+msg)
 		elif len(channel)>0 and channel[0]=="#":
-			self.log(channel, self.ts()+"<"+modesign+user+"> "+msg)
+			self.log(channel, "<"+modesign+user+"> "+msg)
 		else:
-			self.logPrivate(channel, self.ts()+"< "+self.bot.nickname+"> "+msg)
+			self.logPrivate(channel, "< "+self.bot.nickname+"> "+msg)
+	
+	def noticed(self, user, channel, msg):
+		if user != "":
+			#self.logger.info(str(user+" : "+channel+" : "+msg))
+			self.logPrivate(user.split("!")[0], "< "+user.split("!")[0]+"> "+msg)
 
 	def action(self, user, channel, msg):
+		self.logger.debug(user+channel+msg)
 		user=user.split("!")[0]
-		self.log(channel, self.ts()+" * "+user+" "+msg)
+		self.log(channel, " * "+user+" "+msg)
 		
 	def modeChanged(self, user, channel, set, modes, args):
 		user=user.split("!")[0]
 		sign="+"
 		if not set:
 			sign="-"
-		self.log(channel, self.ts()+"-!- mode/"+channel+" ["+sign+modes+" "+string.join(args, " ")+"] by "+user)
+		self.log(channel, "-!- mode/"+channel+" ["+sign+modes+" "+string.join(args, " ")+"] by "+user)
 		
 	def userKicked(self, kickee, channel, kicker, message):
-		self.log(channel, self.ts()+"-!- "+kickee+" was kicked from "+channel+" by "+kicker+" ["+message+"]")
+		self.log(channel, "-!- "+kickee+" was kicked from "+channel+" by "+kicker+" ["+message+"]")
 
 	def userJoined(self, user, channel):
-		self.log(channel, self.ts()+"-!- "+user+" [user@hostmask] has joined "+channel)#TODO: real Hostmask
+		self.log(channel, "-!- "+user.split("!")[0]+" ["+user.split("!")[1]+"] has joined "+channel)#TODO: real Hostmask
 
 	def userLeft(self, user, channel):
-		self.log(channel, self.ts()+"-!- "+user+" [user@hostmask] has left "+channel)#TODO: real Hostmask
+		self.log(channel, "-!- "+user.split("!")[0]+" ["+user.split("!")[1]+"] has left "+channel)#TODO: real Hostmask
 	
 	def userQuit(self, user, msg):
 		users = self.bot.getUsers()
 		for channel in self.channels:
-			if users[channel].has_key(user):
-				self.log(channel, self.ts()+"-!- "+user+" [user@hostmask] has quit ["+msg+"]")
+			if users[channel].has_key(user.split("!")[0]):
+				self.log(channel, "-!- "+user.split("!")[0]+" ["+user.split("!")[1]+"] has quit ["+msg+"]")
 		
 	def topicUpdated(self, user, channel, newTopic):
 		#TODO: first invoced on join. This should not be logged
-		self.log(channel, self.ts()+"-!- "+user+" changed the topic of "+channel+" to: "+newTopic)
+		self.log(channel, "-!- "+user+" changed the topic of "+channel+" to: "+newTopic)
 
 	def userRenamed(self, oldname, newname):
 		#TODO: This can not handle different channels right
 		user = self.bot.getUsers()
 		for channel in self.channels:
 			if user[channel].has_key(newname):
-				self.log(channel, self.ts()+"-!- "+oldname+" is now known as "+newname)
+				self.log(channel, "-!- "+oldname+" is now known as "+newname)
 		
 	def stop(self):
 		for channel in self.channels:
-			self.log(channel, "--- Log closed "+self.ts("%a %b %d %H:%M:%S %Y"))
+			self.log(channel, "--- Log closed "+self.ts("%a %b %d %H:%M:%S %Y"),False)
 			self.files[channel].close()
 		#self.timer.cancel()
 

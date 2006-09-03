@@ -135,7 +135,7 @@ class Bot(irc.IRCClient):
 		self.versionNum=" svn 20"
 		self.logging = logging
 		self.logger = logging.getLogger("core")
-		self.logger.info("Starting chatBot")
+		self.logger.info("Starting chatBotööä")
 		self.startMods()
 		
 	def startMods(self):
@@ -280,9 +280,11 @@ class Bot(irc.IRCClient):
 			self.sendLine("WHO "+channel)
 		if msg[:6] == "!whois":
 			self.sendLine("WHOIS "+msg[7:])
+		if msg == "!user":
+			self.sendmsg(channel,str(self.users))
 
 	def irc_unknown(self, prefix, command, params):
-		self.logger.debug(str(prefix)+" : "+str(command)+" : "+str(params))
+		#self.logger.debug(str(prefix)+" : "+str(command)+" : "+str(params))
 		if command == "RPL_NAMREPLY":
 			for nick in params[3].strip().split(" "):
 				if nick[0] in "@%+!":
@@ -333,7 +335,7 @@ class Bot(irc.IRCClient):
 				logerror(self.logger, mod.name, e)
 
 	def userJoined(self, user, channel):
-		self.users[channel][user]={'modchar':' '}
+		self.users[channel][user.split("!")[0]]={'modchar':' '}
 		for mod in self.mods:
 			try:
 				mod.userJoined(user, channel)
@@ -341,7 +343,7 @@ class Bot(irc.IRCClient):
 				logerror(self.logger, mod.name, e)
 				
 	def userLeft(self, user, channel):
-		del self.users[channel][user]
+		del self.users[channel][user.split("!")[0]]
 		for mod in self.mods:
 			try:
 				mod.userLeft(user, channel)
@@ -388,6 +390,18 @@ class Bot(irc.IRCClient):
 			except Exception, e:
 				logerror(self.logger, mod.name, e)
 	
+	def lineReceived(self, line):
+		#self.logger.debug(str(line))
+		if line.split(" ")[1] == "JOIN" and line[1:].split(" ")[0].split("!")[0] != self.nickname:
+			self.userJoined(line[1:].split(" ")[0],line.split(" ")[2][1:])
+			#self.joined(line[1:].split(" ")[0],line.split(" ")[2][1:])
+		elif line.split(" ")[1] == "PART":
+			self.userLeft(line[1:].split(" ")[0],line.split(" ")[2])
+		elif line.split(" ")[1] == "QUIT":
+			self.userQuit(line[1:].split(" ")[0],line.split("QUIT :")[1])
+		else:
+			irc.IRCClient.lineReceived(self,line)
+			
 class BotFactory(protocol.ClientFactory):
 	"""The Factory for the Bot"""
 	protocol = Bot
@@ -396,7 +410,8 @@ class BotFactory(protocol.ClientFactory):
 		self.network=networkname
 		self.channels = channels
 	def clientConnectionLost(self, connector, reason):
-		connector.connect()
+		pass
+		#connector.connect()
 		#reactor.stop() #for !stop
 	def clientConnectionFailed(self, connector, reason):
 		reactor.stop()
