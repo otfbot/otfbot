@@ -76,3 +76,6 @@ class chatMod:
 	def topicUpdated(self, user, channel, newTopic):
 		"""a user changed the topic of a channel"""
 		pass
+	def irc_unknown(self, prefix, command, params):
+		"""an IRC-Message, which is not handle by twisted was received"""
+		pass
