@@ -40,7 +40,7 @@ class chatMod(chatMod.chatMod):
 	
 	def msg(self, user, channel, msg):
 		user = user.split("!")[0] #only nick
-		if msg[0] == self.commandChar[channel]:
+		if self.commandChar.has_key(channel) and msg[0] == self.commandChar[channel]:
 			if msg == "!reload-commands": #TODO: global methodChar
 				self.logger.info("reloading")
 				self.reload()

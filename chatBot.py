@@ -178,12 +178,12 @@ class Bot(irc.IRCClient):
 		try:
 			msg=unicode(msg, encoding).encode(self.getConfig("encoding", "UTF-8"))
 		except UnicodeDecodeError:
-			#print "Unicode Decode Error with String:",msg
+			#self.logger.debug("Unicode Decode Error with String:"+str(msg))
 			#Try with Fallback encoding
 			msg=unicode(msg, fallback).encode(self.getConfig("encoding", "UTF-8"))
 		except UnicodeEncodeError:
 			pass
-			#print "Unicode Encode Error with String:",msg
+			#self.logger.debug("Unicode Encode Error with String:"+str(msg))
 			#use msg as is
 			
 		self.msg(channel, msg)
@@ -257,11 +257,11 @@ class Bot(irc.IRCClient):
 	def privmsg(self, user, channel, msg):
 		for mod in self.mods:
 			try:
-				mod.msg(user, channel, msg)
+				mod.privmsg(user, channel, msg)
 			except Exception, e:
 				logerror(self.logger, mod.name, e)
 			try:
-				mod.privmsg(user, channel, msg)
+				mod.msg(user, channel, msg)
 			except Exception, e:
 				logerror(self.logger, mod.name, e)
 
@@ -291,6 +291,12 @@ class Bot(irc.IRCClient):
 				else:
 					s=" "
 				self.users[params[2]][nick]={'modchar':s}
+		for mod in self.mods:
+			try:
+				mod.irc_unknown(prefix, command, params)
+			except Exception, e:
+				logerror(self.logger, mod.name, e)
+	
 
 	def noticed(self, user, channel, msg):
 		for mod in self.mods:
