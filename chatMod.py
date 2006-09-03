@@ -61,6 +61,8 @@ class chatMod:
 	def userJoined(self, user, channel):
 		"""a user joined the channel"""
 		pass
+	def userJoinedMask(self, user, channel):
+		pass
 	def userLeft(self, user, channel):
 		"""a user left the channel"""
 		pass
