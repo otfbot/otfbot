@@ -20,7 +20,7 @@
 # 
 
 """Chat Bot"""
-svnversion=38
+svnversion="$Revision$"
 try:
 	from twisted.words.protocols import irc
 except ImportError:
