@@ -20,7 +20,7 @@
 # 
 
 """Chat Bot"""
-
+svnversion=38
 try:
 	from twisted.words.protocols import irc
 except ImportError:
@@ -64,6 +64,7 @@ if options.debug:
 	#corelogger.addHandler(console)
 corelogger = logging.getLogger('core')
 
+corelogger.info("Starting OtfBot - Version svn "+str(svnversion))
 
 theconfig=None
 def setConfig(option, value, module=None, network=None, channel=None):
@@ -132,10 +133,11 @@ class Bot(irc.IRCClient):
 		self.numMods = 0
 
 		self.versionName="OtfBot"
-		self.versionNum=" svn 20"
+		self.versionNum="svn "+str(svnversion)
+		self.versionEnv=sys.version
 		self.logging = logging
 		self.logger = logging.getLogger("core")
-		self.logger.info("Starting chatBotööä")
+		self.logger.info("Starting new Botinstance")
 		self.startMods()
 		
 	def startMods(self):
@@ -362,14 +364,14 @@ class Bot(irc.IRCClient):
 	def yourHost(self, info):
 		pass
 	
-	def ctcpQuery(self, user, channel, messages):
-		(query,t) = messages[0]
-		answer = None
-		#if query == "VERSION":
-		#	answer = "chatBot - a python IRC-Bot"
-		if answer: 
-			self.ctcpMakeReply(user.split("!")[0], [(query,answer)])
-			self.logger.info("Answered to CTCP "+query+" Request from "+user.split("!")[0])
+	#def ctcpQuery(self, user, channel, messages):
+	#	(query,t) = messages[0]
+	#	answer = None
+	#	#if query == "VERSION":
+	#	#	answer = "chatBot - a python IRC-Bot"
+	#	if answer: 
+	#		self.ctcpMakeReply(user.split("!")[0], [(query,answer)])
+	#		self.logger.info("Answered to CTCP "+query+" Request from "+user.split("!")[0])
 
 		
 	def userRenamed(self, oldname, newname):
