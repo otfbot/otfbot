@@ -37,10 +37,11 @@ class chatMod(chatMod.chatMod):
 		self.channels={}
 		self.files={}
 		self.path={}
-		if not hardpath:
+		self.hardpath=hardpath
+		if not self.hardpath:
 			self.logpath=bot.getConfig("logMod.logpath", "log/$n-$c/$y-$m-$d.log")
 		else:
-			self.logpath=bot.getConfig("logMod.logpath","log/")
+			self.logpath="log/"
 		#if not os.path.isdir(self.logdir):
 		#	os.mkdir(self.logdir)
 		locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
@@ -85,9 +86,12 @@ class chatMod(chatMod.chatMod):
 			self.files[channel].flush()
 
 	def logPrivate(self, user, mystring):
-		dic=self.timemap()
-		dic['c']=string.lower(user)
-		filename=Template(self.logpath).safe_substitute(dic)
+		if not self.hardpath:
+			dic=self.timemap()
+			dic['c']=string.lower(user)
+			filename=Template(self.logpath).safe_substitute(dic)
+		else:
+			filename=self.logpath+string.lower(user)+"/"+self.ts("%Y-%m-%d.log")
 		if not os.path.exists(os.path.dirname(filename)):
 			os.mkdir(os.path.dirname(filename))	
 		file=open(filename, "a")
@@ -97,7 +101,7 @@ class chatMod(chatMod.chatMod):
 	def joined(self, channel):
 		self.channels[string.lower(channel)]=1
 		#self.files[string.lower(channel)]=open(string.lower(channel)+".log", "a")
-		if not hardpath:
+		if not self.hardpath:
 			self.path[channel]=Template(self.logpath).safe_substitute({'c':channel})
 			file=Template(self.path[channel]).safe_substitute(self.timemap())
 		else:
