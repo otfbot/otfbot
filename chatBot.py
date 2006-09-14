@@ -27,12 +27,11 @@ except ImportError:
 	from twisted.protocols import irc
 
 from twisted.internet import reactor, protocol
-
-import os, random, string, re, threading, time, sys, traceback
+import os, random, string, re, threading, time, sys, traceback, threading
 import functions, config
-import generalMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, authMod, configMod, modeMod, marvinMod , kiMod
+import generalMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, authMod, configMod, modeMod, marvinMod , kiMod, reminderMod
 
-classes = [ identifyMod, generalMod, authMod, configMod, logMod, commandsMod, answerMod, badwordsMod, modeMod, marvinMod ]
+classes = [ identifyMod, generalMod, authMod, configMod, logMod, commandsMod, answerMod, badwordsMod, modeMod, marvinMod, reminderMod ]
 modchars={'a':'!','o':'@','h':'%','v':'+'}
 
 from optparse import OptionParser
@@ -63,8 +62,9 @@ if options.debug:
 	logging.getLogger('').addHandler(console)
 	#corelogger.addHandler(console)
 corelogger = logging.getLogger('core')
-
 corelogger.info("Starting OtfBot - Version svn "+str(svnversion))
+
+
 
 theconfig=None
 def setConfig(option, value, module=None, network=None, channel=None):
@@ -103,7 +103,42 @@ def loadConfig(myconfigfile):
 		print "Edit config.xml to configure the bot."
 		sys.exit(0)
 	return myconfig
-		
+
+class Schedule(threading.Thread):
+	def __init__(self):
+		threading.Thread.__init__(self)
+		self.times=[]
+		self.functions=[]
+		self.stop=False
+
+	def stop(self):
+		self.stop=True
+
+	def run(self):
+		while not self.stop:
+			time.sleep(60)
+			toremove=[]
+			for i in range(len(self.times)):
+				self.times[i]=self.times[i]-1
+				if self.times[i]<=0:
+					self.functions[i]()
+					toremove.append(i)
+			toremove.reverse()
+			for i in toremove:
+				del self.times[i]
+				del self.functions[i]
+
+
+	def addScheduleJob(self, wait, function):
+		self.times.append( int(wait) )
+		self.functions.append(function)
+
+schedulethread=Schedule()
+schedulethread.start()
+
+def addScheduleJob(time, function):
+	schedulethread.addScheduleJob(time, function)
+
 def logerror(logger, module, exception):
 	logger.error("Exception in Module "+module+": "+str(exception))
 	tb_list = traceback.format_tb(sys.exc_info()[2])
@@ -162,6 +197,8 @@ class Bot(irc.IRCClient):
 		return writeConfig()
 	def getUsers(self):
 		return self.users
+	def addScheduleJob(self, time, function):
+		return addScheduleJob(time, function)
 
 	def auth(self, user):
 		"""test if the user is privileged"""
@@ -413,6 +450,7 @@ class BotFactory(protocol.ClientFactory):
 		self.channels = channels
 	def clientConnectionLost(self, connector, reason):
 		pass
+		schedulethread.stop() #for stopping, comment out, if you use autoreconnect
 		#connector.connect()
 		#reactor.stop() #for !stop
 	def clientConnectionFailed(self, connector, reason):
