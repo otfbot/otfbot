@@ -109,13 +109,13 @@ class Schedule(threading.Thread):
 		threading.Thread.__init__(self)
 		self.times=[]
 		self.functions=[]
-		self.stop=False
+		self.stopme=False
 
 	def stop(self):
-		self.stop=True
+		self.stopme=True
 
 	def run(self):
-		while not self.stop:
+		while not self.stopme:
 			time.sleep(60)
 			toremove=[]
 			for i in range(len(self.times)):
