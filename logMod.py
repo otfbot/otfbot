@@ -42,8 +42,8 @@ class chatMod(chatMod.chatMod):
 			self.logpath=bot.getConfig("logMod.logpath", "log/$n-$c/$y-$m-$d.log")
 		else:
 			self.logpath="log/"
-		#if not os.path.isdir(self.logdir):
-		#	os.mkdir(self.logdir)
+		#if not os.path.isdir(self.logpath):
+		#	os.mkdir(self.logpath)
 		locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
 		self.day=self.ts("%d") #saves the hour, to detect daychanges
 		#self.timer=threading.Timer(self.secsUntilDayChange(), self.dayChange)
