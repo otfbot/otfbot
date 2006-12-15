@@ -22,17 +22,17 @@ import chatMod
 
 def default_settings():
 	settings={};
-	settings['authMod_whitelist']=''
-	settings['authMod_password']=''
+	settings['authMod.whitelist']=''
+	settings['authMod.password']=''
 	return settings
 		
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
 		self.whitelist=[]
-		for user in bot.getConfig("authMod_whitelist", "").split(","):
+		for user in bot.getConfig("authMod.whitelist", "").split(","):
 			self.whitelist.append(user)
-		self.password=bot.getConfig("authMod_password", "")
+		self.password=bot.getConfig("authMod.password", "")
 
 	def msg(self, user, channel, msg):
 		user=user.split("!")[0]
