@@ -33,6 +33,7 @@ import generalMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, aut
 
 classes = [ identifyMod, generalMod, authMod, configMod, logMod, commandsMod, answerMod, badwordsMod, modeMod, marvinMod, reminderMod ]
 modchars={'a':'!','o':'@','h':'%','v':'+'}
+modcharvals={'!':4,'@':3,'%':2,'+':1,' ':0}
 
 from optparse import OptionParser
 parser = OptionParser()
@@ -362,9 +363,17 @@ class Bot(irc.IRCClient):
 		#if modes == "b" and set == True:
 		#	self.mode(channel,False,"b",None,None,args[0])
 		#	#self.mode(channel,True,"m")
-		#TODO: this should also handle the removal of modes and double modes (+vho)
-		if modes in "aohv":
-			self.users[channel][args[0]]['modchar'] = modchars[modes]
+		i=0
+		for arg in args:
+			self.logger.debug(str(set))
+			if modes[i] in modchars.keys() and set == True:
+				if modcharvals[modchars[modes[i]]] > modcharvals[self.users[channel][arg]['modchar']]:
+					self.users[channel][arg]['modchar'] = modchars[modes[i]]
+			elif modes[i] in modchars.keys() and set == False:
+				#FIXME: ask for the real mode
+				self.users[channel][arg]['modchar'] = ' '
+			i=i+1
+		self.logger.debug(str(self.users))
 
 	def userKicked(self, kickee, channel, kicker, message):
 		for mod in self.mods:
@@ -452,7 +461,7 @@ class BotFactory(protocol.ClientFactory):
 		pass
 		schedulethread.stop() #for stopping, comment out, if you use autoreconnect
 		#connector.connect()
-		#reactor.stop() #for !stop
+		reactor.stop() #for !stop
 	def clientConnectionFailed(self, connector, reason):
 		reactor.stop()
 
