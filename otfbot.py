@@ -20,18 +20,18 @@
 # 
 
 """Chat Bot"""
-svnversion="$Revision$"
+svnversion="$Revision$".split(" ")[1]
 try:
 	from twisted.words.protocols import irc
 except ImportError:
 	from twisted.protocols import irc
 
-from twisted.internet import reactor, protocol
+from twisted.internet import reactor, protocol, error
 import os, random, string, re, threading, time, sys, traceback, threading
 import functions, config
-import generalMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, authMod, configMod, modeMod, marvinMod , kiMod, reminderMod
+import generalMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, authMod, controlMod, modeMod, marvinMod , kiMod, reminderMod
 
-classes = [ identifyMod, generalMod, authMod, configMod, logMod, commandsMod, answerMod, badwordsMod, modeMod, marvinMod, reminderMod ]
+classes = [ identifyMod, generalMod, authMod, controlMod, logMod, commandsMod, answerMod, badwordsMod, modeMod, marvinMod, reminderMod ]
 modchars={'a':'!','o':'@','h':'%','v':'+'}
 modcharvals={'!':4,'@':3,'%':2,'+':1,' ':0}
 
@@ -58,7 +58,7 @@ if options.debug:
 	#logging to stdout
 	console = logging.StreamHandler()
 	logging.getLogger('').setLevel(options.debug)
-	formatter = logging.Formatter('%(asctime)s %(name)-10s %(module)-18s %(levelname)-8s %(message)s')
+	formatter = logging.Formatter('%(asctime)s %(name)-10s %(filename)-18s %(levelname)-8s %(message)s')
 	console.setFormatter(formatter)
 	logging.getLogger('').addHandler(console)
 	#corelogger.addHandler(console)
@@ -256,7 +256,7 @@ class Bot(irc.IRCClient):
 				logerror(self.logger, mod.name, e)
 
 	def connectionLost(self, reason):
-		self.logger.info("lost connection: "+str(reason))
+		#self.logger.info("lost connection: "+str(reason))
 		irc.IRCClient.connectionLost(self)
 		for mod in self.mods:
 			try:
@@ -265,7 +265,7 @@ class Bot(irc.IRCClient):
 				logerror(self.logger, mod.name, e)
 	
 	def signedOn(self):
-		self.logger.info("signed on "+self.network)
+		self.logger.info("signed on "+self.network+" as "+self.nickname)
 
 		for channel in self.factory.channels:
 			if(getBoolConfig("enabled", "false", "main", self.factory.network, channel)):
@@ -304,18 +304,61 @@ class Bot(irc.IRCClient):
 				mod.msg(user, channel, msg)
 			except Exception, e:
 				logerror(self.logger, mod.name, e)
-
-		if channel == self.nickname and msg == "!reload":
-			for chatModule in self.classes:
-				self.logger.info("reloading "+chatModule.name)
-				reload(chatModule)
-			for chatMod in self.mods:
-				try:
-					chatMod.stop()
-				except Exception, e:
-					logerror(self.logger, mod.name, e)
-			self.mods=[]
-			self.startMods()
+		nick = user.split("!")[0]
+		if channel == self.nickname and self.auth(nick):
+			if msg[0:4] == "help":
+				self.sendmsg(nick,"Available administrationcommands: reload, stop|quit, disconnect [network], connect network [port], listnetworks, changenick newnick")
+			if msg[0:6] == "reload":
+				for chatModule in self.classes:
+					self.logger.info("reloading "+chatModule.name)
+					reload(chatModule)
+				for chatMod in self.mods:
+					try:
+						chatMod.stop()
+					except Exception, e:
+						logerror(self.logger, mod.name, e)
+				self.mods=[]
+				self.startMods()
+			elif msg[0:4] == "stop" or msg[0:4] == "quit":
+				self.sendmsg(nick,"Disconnecting from all networks und exiting ...")
+				for c in connections:
+					connections[c].disconnect()
+			elif msg[0:10] == "disconnect":
+				args = msg[10:].split(" ")
+				if len(args) == 2:
+					if connections.has_key(args[1]):
+						self.sendmsg(nick,"Disconnecting from "+str(connections[args[1]].getDestination()))
+						connections[args[1]].disconnect()
+					else:
+						self.sendmsg(nick,"Not connected to "+str(args[1]))
+				else:
+					self.sendmsg(nick,"Disconnecting from current network. Bye.")
+					self.quit("Bye.")
+			elif msg[0:7] == "connect":
+				args = msg[7:].split(" ")
+				if len(args) < 2 or len(args) > 3:
+					self.sendmsg(nick,"Usage: connect irc.network.tld [port]")
+				else:
+					if len(args) == 3:
+						port=args[2]
+					else:
+						port=6667
+					f = BotFactory(args[1],[])
+		                        connections[args[1]]=reactor.connectTCP(unicode(args[1]).encode("iso-8859-1"), port, f);
+					self.sendmsg(nick,"Connecting to "+str(connections[args[1]].getDestination()))
+			elif msg[0:12] == "listnetworks":
+				ne=""
+				for n in connections:
+					ne=ne+" "+n
+				self.sendmsg(nick,"Currently connected to:"+unicode(ne).encode("iso-8859-1"))
+			elif msg[0:12] == "listchannels":
+				self.sendmsg(nick,"Currently in: "+str(self.channels))
+			elif msg[0:10] == "changenick":
+				args=msg.split(" ")
+				if len(args) < 2:
+					self.sendmsg(nick,"Usage: changenick newnick")
+				else:
+					self.setNick(args[1])
 		if msg == "!who":
 			self.sendLine("WHO "+channel)
 		if msg[:6] == "!whois":
@@ -360,12 +403,8 @@ class Bot(irc.IRCClient):
 				mod.modeChanged(user, channel, set, modes, args)
 			except Exception, e:
 				logerror(self.logger, mod.name, e)
-		#if modes == "b" and set == True:
-		#	self.mode(channel,False,"b",None,None,args[0])
-		#	#self.mode(channel,True,"m")
 		i=0
 		for arg in args:
-			self.logger.debug(str(set))
 			if modes[i] in modchars.keys() and set == True:
 				if modcharvals[modchars[modes[i]]] > modcharvals[self.users[channel][arg]['modchar']]:
 					self.users[channel][arg]['modchar'] = modchars[modes[i]]
@@ -373,7 +412,6 @@ class Bot(irc.IRCClient):
 				#FIXME: ask for the real mode
 				self.users[channel][arg]['modchar'] = ' '
 			i=i+1
-		self.logger.debug(str(self.users))
 
 	def userKicked(self, kickee, channel, kicker, message):
 		for mod in self.mods:
@@ -457,11 +495,22 @@ class BotFactory(protocol.ClientFactory):
 	def __init__(self, networkname, channels):
 		self.network=networkname
 		self.channels = channels
+
 	def clientConnectionLost(self, connector, reason):
-		pass
-		schedulethread.stop() #for stopping, comment out, if you use autoreconnect
-		#connector.connect()
-		reactor.stop() #for !stop
+		#pass
+		#corelogger.debug(connector.getDestination())
+		clean = error.ConnectionDone()
+		if reason.getErrorMessage() == str(clean):
+			del connections[self.network]
+			corelogger.info("Disconnected from "+self.network)
+			if (len(connections) == 0):
+				corelogger.info("Not Connected to any network. Shutting down.")
+				schedulethread.stop() #for stopping, comment out, if you use autoreconnect
+				#TODO: add sth to stop modules
+				reactor.stop()
+		else:
+			self.getLogger(self.network).error("Disconnected: "+reason.getErrorMessage+". Trying to reconnect")
+			connector.connect()
 	def clientConnectionFailed(self, connector, reason):
 		reactor.stop()
 
@@ -472,6 +521,7 @@ except AttributeError:
 theconfig=loadConfig(configfile)
 
 networks=theconfig.getNetworks()
+connections={}
 if networks:
 	for network in networks:
 		if(getBoolConfig('enabled', 'unset', 'main', network)):
@@ -482,5 +532,5 @@ if networks:
 				if(not getBoolConfig('enabled','unset','main', network)):
 					channels.remove(channel)
 			f = BotFactory(network, channels)
-			reactor.connectTCP(unicode(network).encode("iso-8859-1"), 6667, f);
+			connections[network]=reactor.connectTCP(unicode(network).encode("iso-8859-1"), 6667, f);
 	reactor.run()

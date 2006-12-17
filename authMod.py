@@ -30,15 +30,16 @@ class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
 		self.whitelist=[]
-		for user in bot.getConfig("authMod.whitelist", "").split(","):
+		for user in self.bot.getConfig("whitelist", "", "authMod").split(","):
 			self.whitelist.append(user)
-		self.password=bot.getConfig("authMod.password", "")
+		self.password=self.bot.getConfig("password", "", "authMod")
 
 	def msg(self, user, channel, msg):
 		user=user.split("!")[0]
-		if msg[0:9]=="identify ":
+		if channel == self.bot.nickname and msg[0:9]=="identify ":
 			if self.password != "" and msg[9:] == self.password:
-				self.bot.sendmsg(channel, "Password accepted")
+				self.bot.sendmsg(user, "Password accepted")
+				self.logger.info("User "+str(user)+" successfully identified with password")
 				self.whitelist.append(user)
 
 	def auth(self, user):

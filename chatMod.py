@@ -81,3 +81,6 @@ class chatMod:
 	def irc_unknown(self, prefix, command, params):
 		"""an IRC-Message, which is not handle by twisted was received"""
 		pass
+	def stop(self):
+		"""called, when the bot is stopped, or the module is reloaded"""
+		pass
