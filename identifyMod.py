@@ -31,6 +31,8 @@ def default_settings():
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
+		self.mywhois=False
+		self.whois=False
 
 	def connectionMade(self):
 		self.password = str(self.bot.getConfig("password", "", "identifyMod", self.bot.network))
