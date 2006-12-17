@@ -30,6 +30,7 @@ def default_settings():
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot = bot
+		self.commandChar={}
 
 	def connectionMade(self):
 		self.reload()
