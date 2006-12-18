@@ -30,7 +30,8 @@ class chatMod(chatMod.chatMod):
 
 	def msg(self, user, channel, msg):
 		#if channel == self.bot.nickname:
-		if self.bot.auth(user):
+		#FIXME: move into mainpart
+		if self.bot.auth(user) > 9:
 			if msg == "!stop":
 				self.bot.quit("War schoen euch kennengelernt zu haben.")
 			if msg[0:5] == "!join":

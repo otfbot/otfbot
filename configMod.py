@@ -26,7 +26,7 @@ class chatMod(chatMod.chatMod):
 
 	def msg(self, user, channel, msg):
 		user=user.split("!")[0]		
-		if self.bot.auth(user) and channel==self.bot.nickname:
+		if self.bot.auth(user) > 7 and channel==self.bot.nickname:
 			if msg[0:6] == "config":
 				msg=msg[7:]
 				if msg[0:3] == "get":

@@ -35,13 +35,21 @@ classes = [ identifyMod, generalMod, authMod, configMod, logMod, commandsMod, an
 modchars={'a':'!','o':'@','h':'%','v':'+'}
 modcharvals={'!':4,'@':3,'%':2,'+':1,' ':0}
 
+# Parse commandline options
 from optparse import OptionParser
 parser = OptionParser()
 parser.add_option("-c","--config",dest="configfile",metavar="FILE",help="Location of configfile",type="string")
-parser.add_option("-d","--debug",dest="debug",metavar="LEVEL",help="Show debug messages of level LEVEL (10, 20, 30, 40 or 50)", type="int")
+parser.add_option("-d","--debug",dest="debug",metavar="LEVEL",help="Show debug messages of level LEVEL (10, 20, 30, 40 or 50). Implies -f.", type="int", default=0)
+parser.add_option("-f","--nodetach",dest="foreground",help="Do not fork into background.",action="store_true", default=False)
 (options,args)=parser.parse_args()
 if options.debug and options.debug not in (10,20,30,40,50):
 	parser.error("Unknown value for --debug")
+
+# Detaching from console
+if options.foreground == False and not options.debug > 0:
+	import subprocess
+	subprocess.Popen([sys.argv[0],"-f"])
+	sys.exit(0)
 
 import logging
 # Basic settings for logging
@@ -49,13 +57,13 @@ import logging
 #filelogger = logging.RotatingFileHandler('otfbot.log','a',20480,5)
 filelogger = logging.FileHandler('otfbot.log','a')
 logging.getLogger('').setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s %(name)-18s %(module)-18s %(levelname)-8s %(message)s')
+formatter = logging.Formatter('%(asctime)s %(name)-18s %(filename)-18s %(levelname)-8s %(message)s')
 filelogger.setFormatter(formatter)
 logging.getLogger('').addHandler(filelogger)
 #corelogger.addHandler(filelogger)
 
-if options.debug:
-	#logging to stdout
+if options.debug > 0:
+	# logging to stdout
 	console = logging.StreamHandler()
 	logging.getLogger('').setLevel(options.debug)
 	formatter = logging.Formatter('%(asctime)s %(name)-10s %(filename)-18s %(levelname)-8s %(message)s')
@@ -65,7 +73,22 @@ if options.debug:
 corelogger = logging.getLogger('core')
 corelogger.info("Starting OtfBot - Version svn "+str(svnversion))
 
+# Function which is called, when the program terminates.
+def exithook():
+	# remove Pidfile
+	os.remove(pidfile)
+	corelogger.info("Bot shutted down")
+	corelogger.info("-------------------------")
+# registering this function
+import atexit
+atexit.register(exithook)
 
+# react on signals
+#import signal
+#def signalhandler(signal, frame):
+#	corelogger.info("Got Signal "+str(signal))
+#signal.signal(signal.SIGHUP,signalhandler)
+#signal.signal(signal.SIGTERM,signalhandler)
 
 theconfig=None
 def setConfig(option, value, module=None, network=None, channel=None):
@@ -164,6 +187,7 @@ class Bot(irc.IRCClient):
 		#you may need to configure them first
 		self.classes = classes
 		self.users={}
+		self.channel=[]
 	
 		self.mods = []
 		self.numMods = 0
@@ -203,14 +227,15 @@ class Bot(irc.IRCClient):
 
 	def auth(self, user):
 		"""test if the user is privileged"""
+		level=0
 		for mod in self.mods:
 			try:
 				retval=mod.auth(user)
-				if retval == 1:
-					return 1
+				if retval > level:
+					level=retval
 			except AttributeError:
 				pass
-		return 0
+		return level
 	
 	
 	def sendmsg(self, channel, msg, encoding="iso-8859-15", fallback="iso-8859-15"):
@@ -278,6 +303,7 @@ class Bot(irc.IRCClient):
 		
 	def joined(self, channel):
 		self.logger.info("joined "+channel)
+		self.channel.append(channel)
 		self.users[channel]={}
 		for mod in self.mods:
 			try:
@@ -288,6 +314,7 @@ class Bot(irc.IRCClient):
 	def left(self, channel):
 		self.logger.info("left "+channel)
 		del self.users[channel]
+		self.channel.remove(channel)
 		for mod in self.mods:
 			try:
 				mod.left(channel)
@@ -305,7 +332,7 @@ class Bot(irc.IRCClient):
 			except Exception, e:
 				logerror(self.logger, mod.name, e)
 		nick = user.split("!")[0]
-		if channel == self.nickname and self.auth(nick):
+		if channel == self.nickname and self.auth(nick) > 9:
 			if msg[0:4] == "help":
 				self.sendmsg(nick,"Available administrationcommands: reload, stop|quit, disconnect [network], connect network [port], listnetworks, changenick newnick")
 			if msg[0:6] == "reload":
@@ -352,13 +379,34 @@ class Bot(irc.IRCClient):
 					ne=ne+" "+n
 				self.sendmsg(nick,"Currently connected to:"+unicode(ne).encode("iso-8859-1"))
 			elif msg[0:12] == "listchannels":
-				self.sendmsg(nick,"Currently in: "+str(self.channels))
+				ch=""
+				for c in self.channel:
+					ch=ch+" "+c
+				self.sendmsg(nick,"Currently in:"+unicode(ch).encode("iso-8859-1"))
 			elif msg[0:10] == "changenick":
 				args=msg.split(" ")
 				if len(args) < 2:
 					self.sendmsg(nick,"Usage: changenick newnick")
 				else:
 					self.setNick(args[1])
+			elif msg[0:4] == "join":
+				args=msg.split(" ")
+				if len(args) < 2:
+					self.sendmsg(nick,"Usage: join channel")
+				else:
+					self.join(args[1])
+					self.sendmsg(nick,"Joined "+str(args[1]))
+			elif msg[0:4] == "part":
+				args=msg.split(" ")
+				if len(args) == 1:
+					self.sendmsg(nick,"Usage: part channel [message]")
+				else:
+					if len(args) > 2:
+						partmsg=" ".join(args[2:])
+					else:
+						partmsg=""
+					self.leave(args[1],partmsg)
+					self.sendmsg(nick,"Left "+args[1])
 		if msg == "!who":
 			self.sendLine("WHO "+channel)
 		if msg[:6] == "!whois":
@@ -481,7 +529,7 @@ class Bot(irc.IRCClient):
 		if line.split(" ")[1] == "JOIN" and line[1:].split(" ")[0].split("!")[0] != self.nickname:
 			self.userJoined(line[1:].split(" ")[0],line.split(" ")[2][1:])
 			#self.joined(line[1:].split(" ")[0],line.split(" ")[2][1:])
-		elif line.split(" ")[1] == "PART":
+		elif line.split(" ")[1] == "PART" and line[1:].split(" ")[0].split("!")[0] != self.nickname:
 			self.userLeft(line[1:].split(" ")[0],line.split(" ")[2])
 		elif line.split(" ")[1] == "QUIT":
 			self.userQuit(line[1:].split(" ")[0],line.split("QUIT :")[1])
@@ -519,6 +567,12 @@ try:
 except AttributeError:
 	configfile="config.xml"
 theconfig=loadConfig(configfile)
+
+# writing PID-File
+pidfile=theconfig.get('pidfile','otfbot.pid','main')
+f=open(pidfile,'w')
+f.write(str(os.getpid())+"\n")
+f.close()
 
 networks=theconfig.getNetworks()
 connections={}
