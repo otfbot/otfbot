@@ -48,6 +48,9 @@ class chatMod(chatMod.chatMod):
 		self.day=self.ts("%d") #saves the hour, to detect daychanges
 		#self.timer=threading.Timer(self.secsUntilDayChange(), self.dayChange)
 		#self.timer.start()
+		for c in self.bot.channel:
+			self.setNetwork()
+			self.joined(c)
 	
 	def timemap(self):
 		return {'y':self.ts("%Y"),'m':self.ts("%m"),'d':self.ts("%d")}
@@ -117,14 +120,15 @@ class chatMod(chatMod.chatMod):
 		del self.channels[string.lower(channel)]
 		self.files[string.lower(channel)].close()
 	def msg(self, user, channel, msg):
-		modesign=" "
 		user=user.split("!")[0]
+		modesign=" " #self.bot.users[channel][user]['modchar']
 		if string.lower(channel)==string.lower(self.bot.nickname):
-			self.logPrivate(user, "< "+user+"> "+msg)
+			self.logPrivate(user, "<"+modesign+user+"> "+msg)
 		elif len(channel)>0 and channel[0]=="#":
+			modesign=self.bot.users[channel][user]['modchar']
 			self.log(channel, "<"+modesign+user+"> "+msg)
 		else:
-			self.logPrivate(channel, "< "+self.bot.nickname+"> "+msg)
+			self.logPrivate(channel, "<"+modesign+self.bot.nickname+"> "+msg)
 	
 	def noticed(self, user, channel, msg):
 		if user != "":
@@ -176,10 +180,13 @@ class chatMod(chatMod.chatMod):
 		#self.timer.cancel()
 
 	def connectionMade(self):
-		if len(self.network.split(".")) < 3:
-			net=self.network
+		self.setNetwork()
+		
+	def setNetwork(self):
+		if len(self.bot.network.split(".")) < 3:
+			net=self.bot.network
 		else:
-			net=self.network.split(".")[-2]
+			net=self.bot.network.split(".")[-2]
 		if not hardpath:
 			self.logpath=Template(self.logpath).safe_substitute({'n':net})
 		else:

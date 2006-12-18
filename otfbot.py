@@ -195,7 +195,7 @@ class Bot(irc.IRCClient):
 
 		self.versionName="OtfBot"
 		self.versionNum="svn "+str(svnversion)
-		self.versionEnv=sys.version
+		self.versionEnv="" #sys.version
 		self.logging = logging
 		self.logger = logging.getLogger("core")
 		self.logger.info("Starting new Botinstance")
@@ -285,7 +285,6 @@ class Bot(irc.IRCClient):
 		self.network=self.factory.network
 		self.channels=self.factory.channels
 		self.nickname=unicode(self.getConfig("nickname", "OtfBot", 'main', self.network)).encode("iso-8859-1")
-		self.logger.debug(unicode(self.getConfig("nickname", "OtfBot", 'main', self.network)).encode("iso-8859-1"))
 		if len(self.network.split(".")) < 2:
 			nw = self.network
 		else:
