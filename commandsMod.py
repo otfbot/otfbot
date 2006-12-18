@@ -51,11 +51,13 @@ class chatMod(chatMod.chatMod):
 				self.bot.sendme(channel, answer, self.bot.getConfig("commandsMod.fileencoding", "iso-8859-15"))
 			
 	def reload(self):
+		self.logger.info("Reloading commands")
 		self.commands={}
 		self.commandChar={}
+		self.commands["general"]=functions.loadProperties(self.bot.getConfig("file","commands.txt","commandsMod"))
+		self.commands["network"]=functions.loadProperties(self.bot.getConfig("file","commands.txt","commandsMod", self.bot.network))
 		for channel in self.bot.channels:
-			tmp=functions.loadProperties(self.bot.getConfig("file", "commands.txt", "commandsMod", self.bot.network, channel))
-			self.commands[channel]=tmp
+			self.commands[channel]=functions.loadProperties(self.bot.getConfig("file", "commands.txt", "commandsMod", self.bot.network, channel))
 			self.commandChar[channel]=self.bot.getConfig("commandChar", "!", "commandsMod", self.bot.network, channel)
 
 	def getCommand(self, channel, cmd):
@@ -63,7 +65,12 @@ class chatMod(chatMod.chatMod):
 			self.commands[channel]={}
 		if self.commands[channel].has_key(cmd):
 			return self.commands[channel][cmd]
-		return ""
+		elif self.commands["network"].has_key(cmd):
+			return self.commands["network"][cmd]
+		elif self.commands["general"].has_key(cmd):
+			return self.commands["general"][cmd]
+		else:
+			return ""
 
 	def respond(self, channel, user, command):
 		answer = ""
