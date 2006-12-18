@@ -51,7 +51,6 @@ class chatMod(chatMod.chatMod):
 				self.bot.sendme(channel, answer, self.bot.getConfig("commandsMod.fileencoding", "iso-8859-15"))
 			
 	def reload(self):
-		self.logger.info("Reloading commands")
 		self.commands={}
 		self.commandChar={}
 		self.commands["general"]=functions.loadProperties(self.bot.getConfig("file","commands.txt","commandsMod"))
