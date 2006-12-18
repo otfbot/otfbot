@@ -32,7 +32,7 @@ class chatMod(chatMod.chatMod):
 
     def msg(self, user, channel, msg):
         user=user.split("!")[0]
-        if self.bot.auth(user):
+        if self.bot.auth(user) > 2:
             for mode in self.modes.keys():
                 if msg[0:len(mode)+1]=="!"+mode:
                     msg=msg[len(mode)+1:]

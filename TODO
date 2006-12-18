@@ -1,7 +1,5 @@
 core:
-* add a way to cleanly stop the bot from IRC and from system
-* add something to let the bot run in background
-* make !stop and reconnect working
+* add a way to cleanly stop the bot from system (SIGTERM-handling, module "signal)
 * maybe add channel-name to log-messages
 modules:
 * move modules into subdir (eg /module/kiMod.py)
