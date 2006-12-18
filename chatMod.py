@@ -84,3 +84,6 @@ class chatMod:
 	def stop(self):
 		"""called, when the bot is stopped, or the module is reloaded"""
 		pass
+	def reload(self):
+		"""called to reload the settings of the module"""
+		pass

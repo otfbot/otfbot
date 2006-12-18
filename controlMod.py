@@ -44,8 +44,8 @@ class chatMod(chatMod.chatMod):
 					if len(msg) == 0 or len(msg) > 4:
 						self.bot.sendmsg(nick, "Syntax: config get key [modul] [network] [channel]")
 					else:
-						self.logger.debug(".".join(msg))
-						self.logger.debug(res)
+						#self.logger.debug(".".join(msg))
+						#self.logger.debug(res)
 						self.bot.sendmsg(nick, ".".join(msg).encode("utf-8")+"="+res.encode("utf-8"))
 				elif msg[0:3] == "set":
 					#FIXME: 
@@ -124,5 +124,14 @@ class chatMod(chatMod.chatMod):
 						partmsg=""
 					self.bot.leave(args[1],partmsg)
 					self.bot.sendmsg(nick,"Left "+args[1])
-		elif channel==self.bot.nickname:
-			self.bot.sendmsg(nick,"Not authorized")
+		#elif channel==self.bot.nickname:
+		#	self.bot.sendmsg(nick,"Not authorized")
+		elif self.bot.auth(user) > -1 and msg[0] == "!": #TODO: make "!" configurable
+			if msg[1:7] == "reload":
+				if len(msg.split(" ")) == 2:
+					for chatMod in self.bot.mods:
+						if chatMod.name == msg.split(" ")[1]:
+							try:
+								chatMod.reload()
+							except Exception, e:
+								self.logger.error("Error while reloading "+chatMod.name)
