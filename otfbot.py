@@ -47,9 +47,12 @@ if options.debug and options.debug not in (10,20,30,40,50):
 
 # Detaching from console
 if options.foreground == False and not options.debug > 0:
-	import subprocess
-	subprocess.Popen([sys.argv[0],"-f"])
-	sys.exit(0)
+	try:
+		import subprocess
+		subprocess.Popen([sys.argv[0],"-f"])
+		sys.exit(0)
+	except ImportError:
+		pass
 
 import logging
 # Basic settings for logging
