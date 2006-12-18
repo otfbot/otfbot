@@ -98,7 +98,7 @@ class chatMod(chatMod, threading.Thread):
 			self.channel = channel
 	def msg(self, user, channel, msg):
 		#if channel == self.bot.nickname: 
-		if self.bot.auth(user):
+		if self.bot.auth(user) > 9:
 			if msg == "!stop" or msg == "!rdfstop": #in query
 				self.stop()
 	def connectionLost(self, reason):

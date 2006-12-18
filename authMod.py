@@ -45,4 +45,4 @@ class chatMod(chatMod.chatMod):
 	def auth(self, user):
 		user=user.split("!")[0]
 		if user in self.whitelist:
-			return 1
+			return 10
