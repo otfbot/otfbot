@@ -133,5 +133,6 @@ class chatMod(chatMod.chatMod):
 						if chatMod.name == msg.split(" ")[1]:
 							try:
 								chatMod.reload()
+								self.logger.info("Reloading Settings of "+chatMod.name)
 							except Exception, e:
 								self.logger.error("Error while reloading "+chatMod.name)
