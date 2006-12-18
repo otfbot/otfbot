@@ -112,7 +112,10 @@ class chatMod(chatMod.chatMod):
 		self.files[string.lower(channel)]=open(file, "a")
 		self.log(channel, "--- Log opened "+self.ts("%a %b %d %H:%M:%S %Y"), False)
 		self.log(channel, "-!- "+self.bot.nickname+" ["+self.bot.nickname+"@hostmask] has joined "+channel) #TODO: real Hostmask
-
+	def left(self,channel):
+		self.log(channel, "-!- "+self.bot.nickname+"["+self.bot.nickname+"@hostmask] has left "+channel)
+		del self.channels[string.lower(channel)]
+		self.files[string.lower(channel)].close()
 	def msg(self, user, channel, msg):
 		modesign=" "
 		user=user.split("!")[0]

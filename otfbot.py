@@ -29,9 +29,9 @@ except ImportError:
 from twisted.internet import reactor, protocol, error
 import os, random, string, re, threading, time, sys, traceback, threading
 import functions, config
-import generalMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, authMod, configMod, modeMod, marvinMod , kiMod, reminderMod
+import generalMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, authMod, controlMod, modeMod, marvinMod , kiMod, reminderMod
 
-classes = [ identifyMod, generalMod, authMod, configMod, logMod, commandsMod, answerMod, badwordsMod, modeMod, marvinMod, reminderMod ]
+classes = [ identifyMod, generalMod, authMod, controlMod, logMod, commandsMod, answerMod, badwordsMod, modeMod, marvinMod, reminderMod ]
 modchars={'a':'!','o':'@','h':'%','v':'+'}
 modcharvals={'!':4,'@':3,'%':2,'+':1,' ':0}
 
@@ -57,7 +57,7 @@ import logging
 #filelogger = logging.RotatingFileHandler('otfbot.log','a',20480,5)
 filelogger = logging.FileHandler('otfbot.log','a')
 logging.getLogger('').setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s %(name)-18s %(filename)-18s %(levelname)-8s %(message)s')
+formatter = logging.Formatter('%(asctime)s %(name)-18s %(module)-18s %(levelname)-8s %(message)s')
 filelogger.setFormatter(formatter)
 logging.getLogger('').addHandler(filelogger)
 #corelogger.addHandler(filelogger)
@@ -66,7 +66,7 @@ if options.debug > 0:
 	# logging to stdout
 	console = logging.StreamHandler()
 	logging.getLogger('').setLevel(options.debug)
-	formatter = logging.Formatter('%(asctime)s %(name)-10s %(filename)-18s %(levelname)-8s %(message)s')
+	formatter = logging.Formatter('%(asctime)s %(name)-10s %(module)-18s %(levelname)-8s %(message)s')
 	console.setFormatter(formatter)
 	logging.getLogger('').addHandler(console)
 	#corelogger.addHandler(console)
@@ -77,6 +77,7 @@ corelogger.info("Starting OtfBot - Version svn "+str(svnversion))
 def exithook():
 	# remove Pidfile
 	os.remove(pidfile)
+	writeConfig()
 	corelogger.info("Bot shutted down")
 	corelogger.info("-------------------------")
 # registering this function
@@ -199,7 +200,8 @@ class Bot(irc.IRCClient):
 		self.logger = logging.getLogger("core")
 		self.logger.info("Starting new Botinstance")
 		self.startMods()
-		
+	
+	# public API
 	def startMods(self):
 		for chatModule in self.classes:
 			self.mods.append( chatModule.chatMod(self) )
@@ -209,7 +211,6 @@ class Bot(irc.IRCClient):
 				self.mods[-1].start()
 			except AttributeError:
 				pass
-          	
 	def setConfig(self, option, value, module=None, network=None, channel=None):
 		return setConfig(option, value, module, network, channel)
 	def getConfig(self, option, defaultvalue="", module=None, network=None, channel=None):
@@ -224,6 +225,13 @@ class Bot(irc.IRCClient):
 		return self.users
 	def addScheduleJob(self, time, function):
 		return addScheduleJob(time, function)
+	def getConnections(self):
+		return connections
+	def addConnection(self,address,port):
+		f = BotFactory(address,[])
+		connections[address]=reactor.connectTCP(unicode(address).encode("iso-8859-1"),port,f)
+	def getReactor(self):
+		return reactor
 
 	def auth(self, user):
 		"""test if the user is privileged"""
@@ -236,7 +244,6 @@ class Bot(irc.IRCClient):
 			except AttributeError:
 				pass
 		return level
-	
 	
 	def sendmsg(self, channel, msg, encoding="iso-8859-15", fallback="iso-8859-15"):
 		"""msg function, that converts from iso-8859-15 to a encoding given in the config"""
@@ -260,11 +267,25 @@ class Bot(irc.IRCClient):
 			
 		self.me(channel, action)
 		self.action(self.nickname, channel, action)
-
+	
+	def reloadModules(self):
+		for chatModule in self.classes:
+			self.logger.info("reloading "+chatModule.__name__)
+			reload(chatModule)
+		for chatMod in self.mods:
+			try:
+				chatMod.stop()
+			except Exception, e:
+				logerror(self.logger, mod.name, e)
+		self.mods=[]
+		self.startMods()	
+	
+	# Callbacks
 	def connectionMade(self):
 		self.network=self.factory.network
 		self.channels=self.factory.channels
 		self.nickname=unicode(self.getConfig("nickname", "OtfBot", 'main', self.network)).encode("iso-8859-1")
+		self.logger.debug(unicode(self.getConfig("nickname", "OtfBot", 'main', self.network)).encode("iso-8859-1"))
 		if len(self.network.split(".")) < 2:
 			nw = self.network
 		else:
@@ -332,81 +353,7 @@ class Bot(irc.IRCClient):
 			except Exception, e:
 				logerror(self.logger, mod.name, e)
 		nick = user.split("!")[0]
-		if channel == self.nickname and self.auth(nick) > 9:
-			if msg[0:4] == "help":
-				self.sendmsg(nick,"Available administrationcommands: reload, stop|quit, disconnect [network], connect network [port], listnetworks, changenick newnick")
-			if msg[0:6] == "reload":
-				for chatModule in self.classes:
-					self.logger.info("reloading "+chatModule.name)
-					reload(chatModule)
-				for chatMod in self.mods:
-					try:
-						chatMod.stop()
-					except Exception, e:
-						logerror(self.logger, mod.name, e)
-				self.mods=[]
-				self.startMods()
-			elif msg[0:4] == "stop" or msg[0:4] == "quit":
-				self.sendmsg(nick,"Disconnecting from all networks und exiting ...")
-				for c in connections:
-					connections[c].disconnect()
-			elif msg[0:10] == "disconnect":
-				args = msg[10:].split(" ")
-				if len(args) == 2:
-					if connections.has_key(args[1]):
-						self.sendmsg(nick,"Disconnecting from "+str(connections[args[1]].getDestination()))
-						connections[args[1]].disconnect()
-					else:
-						self.sendmsg(nick,"Not connected to "+str(args[1]))
-				else:
-					self.sendmsg(nick,"Disconnecting from current network. Bye.")
-					self.quit("Bye.")
-			elif msg[0:7] == "connect":
-				args = msg[7:].split(" ")
-				if len(args) < 2 or len(args) > 3:
-					self.sendmsg(nick,"Usage: connect irc.network.tld [port]")
-				else:
-					if len(args) == 3:
-						port=args[2]
-					else:
-						port=6667
-					f = BotFactory(args[1],[])
-		                        connections[args[1]]=reactor.connectTCP(unicode(args[1]).encode("iso-8859-1"), port, f);
-					self.sendmsg(nick,"Connecting to "+str(connections[args[1]].getDestination()))
-			elif msg[0:12] == "listnetworks":
-				ne=""
-				for n in connections:
-					ne=ne+" "+n
-				self.sendmsg(nick,"Currently connected to:"+unicode(ne).encode("iso-8859-1"))
-			elif msg[0:12] == "listchannels":
-				ch=""
-				for c in self.channel:
-					ch=ch+" "+c
-				self.sendmsg(nick,"Currently in:"+unicode(ch).encode("iso-8859-1"))
-			elif msg[0:10] == "changenick":
-				args=msg.split(" ")
-				if len(args) < 2:
-					self.sendmsg(nick,"Usage: changenick newnick")
-				else:
-					self.setNick(args[1])
-			elif msg[0:4] == "join":
-				args=msg.split(" ")
-				if len(args) < 2:
-					self.sendmsg(nick,"Usage: join channel")
-				else:
-					self.join(args[1])
-					self.sendmsg(nick,"Joined "+str(args[1]))
-			elif msg[0:4] == "part":
-				args=msg.split(" ")
-				if len(args) == 1:
-					self.sendmsg(nick,"Usage: part channel [message]")
-				else:
-					if len(args) > 2:
-						partmsg=" ".join(args[2:])
-					else:
-						partmsg=""
-					self.leave(args[1],partmsg)
-					self.sendmsg(nick,"Left "+args[1])
+		#if channel == self.nickname and self.auth(nick) > 9:
 		if msg == "!who":
 			self.sendLine("WHO "+channel)
 		if msg[:6] == "!whois":
@@ -545,8 +492,6 @@ class BotFactory(protocol.ClientFactory):
 		self.channels = channels
 
 	def clientConnectionLost(self, connector, reason):
-		#pass
-		#corelogger.debug(connector.getDestination())
 		clean = error.ConnectionDone()
 		if reason.getErrorMessage() == str(clean):
 			del connections[self.network]
@@ -557,7 +502,7 @@ class BotFactory(protocol.ClientFactory):
 				#TODO: add sth to stop modules
 				reactor.stop()
 		else:
-			self.getLogger(self.network).error("Disconnected: "+reason.getErrorMessage+". Trying to reconnect")
+			corelogger.error("Disconnected: "+str(reason.getErrorMessage())+". Trying to reconnect")
 			connector.connect()
 	def clientConnectionFailed(self, connector, reason):
 		reactor.stop()
