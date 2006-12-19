@@ -23,12 +23,13 @@ import chatMod
 class chatMod(chatMod.chatMod):
     def __init__(self, bot):
         self.bot=bot
-        
         self.modes={}
         self.modes["op"]={"char": "o", "set": 1}
         self.modes["deop"]={"char": "o", "set": 0}
         self.modes["voice"]={"char": "v", "set": 1}
         self.modes["devoice"]={"char": "v", "set": 0}
+	self.modes["protect"]={"char": "a", "set": 1}
+	self.modes["unprotect"]={"char": "a", "set": 0}
 
     def msg(self, user, channel, msg):
         user=user.split("!")[0]

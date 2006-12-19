@@ -22,13 +22,13 @@ import chatMod, functions
 
 def default_settings():
 	settings={};
-	settings['badwordsMod_file']='badwords.txt'
+	settings['badwordsMod.file']='badwords.txt'
 	return settings
 		
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
-		self.badwordsFile=bot.getConfig("badwordsMod_file", "badwords.txt")
+		self.badwordsFile=bot.getConfig("file", "badwords.txt","badwordsMod")
 		self.badwords=functions.loadList(self.badwordsFile)
 		self.channels = {}
 		
@@ -38,10 +38,13 @@ class chatMod(chatMod.chatMod):
 	def part(self, channel):
 		self.channels[channel]=1
 
+	def reload(self):
+		self.badwords=functions.loadList(self.badwordsFile)
+
 	def msg(self, user, channel, msg):
 		if channel == self.bot.nickname:
 			if msg == "!reload-badwords":
-				self.badwords=functions.loadList(self.badwordsFile)
+				self.reload()
 		else:
 			for word in self.badwords:
 				if self.channels.has_key(channel) and word != "" and re.search(word, msg, re.I) and user.split("!")[0]!=self.bot.nick:

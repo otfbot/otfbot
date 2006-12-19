@@ -29,9 +29,9 @@ except ImportError:
 from twisted.internet import reactor, protocol, error
 import os, random, string, re, threading, time, sys, traceback, threading
 import functions, config
-import generalMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, authMod, controlMod, modeMod, marvinMod , kiMod, reminderMod
+import mathMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, authMod, controlMod, modeMod, marvinMod , kiMod, reminderMod
 
-classes = [ identifyMod, generalMod, authMod, controlMod, logMod, commandsMod, answerMod, badwordsMod, modeMod, marvinMod, reminderMod ]
+classes = [ identifyMod, mathMod, authMod, controlMod, logMod, commandsMod, answerMod, badwordsMod, modeMod, marvinMod, reminderMod ]
 modchars={'a':'!','o':'@','h':'%','v':'+'}
 modcharvals={'!':4,'@':3,'%':2,'+':1,' ':0}
 
