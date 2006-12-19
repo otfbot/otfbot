@@ -24,21 +24,8 @@ class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
 
-	def joined(self, channel):
-		#self.channel = channel
-		pass
-
 	def msg(self, user, channel, msg):
 		#if channel == self.bot.nickname:
-		#FIXME: move into mainpart
-		if self.bot.auth(user) > 9:
-			if msg == "!stop":
-				self.bot.quit("War schoen euch kennengelernt zu haben.")
-			if msg[0:5] == "!join":
-				self.bot.join(msg[6:]) #does not include the space
-			if msg[0:5] == "!part":
-				self.bot.part(msg[6:])
-			
 		if msg == "!wuerfel":
 			self.bot.sendme(channel, "wuerfelt. Das Ergebnis ist: "+str(random.randint(1,6)))
 		elif msg[0:8] == "!wuerfel":
