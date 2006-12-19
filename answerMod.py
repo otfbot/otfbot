@@ -22,15 +22,15 @@ import chatMod
 
 def default_settings():
 	settings={};
-	settings['answerMod_fileencoding']='iso-8859-15'
-	settings['answerMod_file']='answers.txt'
+	settings['answerMod.fileencoding']='iso-8859-15'
+	settings['answerMod.file']='answers.txt'
 	return settings
 		
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot = bot
 
-		self.answersFile=bot.getConfig("answerMod_file", "answers.txt")
+		self.answersFile=bot.getConfig("file", "answers.txt", "answerMod")
 		self.answers = functions.loadProperties(self.answersFile)
 		self.channels={}
 		
@@ -46,7 +46,7 @@ class chatMod(chatMod.chatMod):
 				return
 			answer = self.respond(user, msg)
 			if answer != "":
-				self.bot.sendmsg(channel, answer, self.bot.getConfig("answerMod_fileencoding", "iso-8859-15"))
+				self.bot.sendmsg(channel, answer, self.bot.getConfig("fileencoding", "iso-8859-15","answerMod"))
 
 	def reload(self):
 		self.answers = functions.loadProperties(self.answersFile)

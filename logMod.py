@@ -136,7 +136,7 @@ class chatMod(chatMod.chatMod):
 			self.logPrivate(user.split("!")[0], "< "+user.split("!")[0]+"> "+msg)
 
 	def action(self, user, channel, msg):
-		self.logger.debug(user+channel+msg)
+		#self.logger.debug(user+channel+msg)
 		user=user.split("!")[0]
 		self.log(channel, " * "+user+" "+msg)
 		
