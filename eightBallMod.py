@@ -43,7 +43,7 @@ class chatMod(chatMod.chatMod):
 		"Concentrate and ask again (Konzentriere dich und frag nochmal)",
 		"Better not tell you now (Ich sags dir jetzt lieber nicht)",
 		"Cannot predict now (Kann es jetzt nicht vorhersagen)",
-		"Ask again later (Frag später nochmal)"
+		"Ask again later (Frag spaeter nochmal)"
 		]
 
 	def msg(self, user, channel, msg):
