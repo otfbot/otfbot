@@ -122,6 +122,7 @@ def loadConfig(myconfigfile):
 		myconfig.set('enabled', 'false', 'main', 'irc.samplenetwork')
 		myconfig.set('enabled', 'false', 'main', 'irc.samplenetwork', '#example')
 		myconfig.set('nickname', 'OtfBot', 'main')
+		myconfig.set('pidfile','otfbot.pid','main')
 		
 		file=open(myconfigfile, "w")
 		file.write(myconfig.exportxml())
