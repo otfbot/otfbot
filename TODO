@@ -4,6 +4,7 @@ core:
 modules:
 * move modules into subdir (eg /module/kiMod.py)
 * move data of modules in a subdir of the modules-dir (eg /module/kiMod/megahal1.brn)
+* load all modules from the dir, automatically
 * extent modules-api
 logMod:
 * make logfilerotation working
