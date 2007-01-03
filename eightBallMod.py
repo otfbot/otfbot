@@ -49,4 +49,4 @@ class chatMod(chatMod.chatMod):
 	def msg(self, user, channel, msg):
 		#if channel == self.bot.nickname:
 		if len(msg) > 7 and msg[:7] == "!8ball ": #>7 = only if the user asked something.
-			self.bot.sendme(channel, random.choice(self.answers))
+			self.bot.sendmsg(channel, random.choice(self.answers))
