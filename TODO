@@ -12,3 +12,11 @@ rdfMod:
 * use real parser(?)
 * decrease the interval between two hits, if a change was found, increase it, if nothing was changed.
 * load the Feeds in a central place, so the Feed only needs to be loaded once für two(or more) channels
+
+commandsMod:
+2007-01-05 23:30:50,482 insiderz   __init__           ERROR    File "./otfbot.py", line 355, in privmsg
+2007-01-05 23:30:50,483 insiderz   __init__           ERROR        mod.msg(user, channel, msg)
+2007-01-05 23:30:50,483 insiderz   __init__           ERROR    File "/media/crypt/allo/otfbot/commandsMod.py", line 44, in msg
+2007-01-05 23:30:50,484 insiderz   __init__           ERROR        if self.commandChar.has_key(channel) and msg[0] == self.commandChar[channel]:
+
+(when another module uses sendmsg with wrong encoding)
