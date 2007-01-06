@@ -139,7 +139,7 @@ class chatMod(chatMod.chatMod):
 						self.phase=WAITING_FOR_QUESTION
 						self.gamemaster=random.choice(self.players)
 						self.bot.sendmsg(channel, self.gamemaster+": /msg mir die Frage.", self.bot.getConfig("encoding", "UTF-8"))
-						self.timer=waitfor(TIMEOUT, self.end_of_game)
+						self.timer=waitfor(TIMEOUT, self.end_of_quiz)
 						self.timer.start()
 					else:
 						self.bot.sendmsg(channel, self.gamemaster+" zu wenig Spieler!", self.bot.getConfig("encoding", "UTF-8"))
