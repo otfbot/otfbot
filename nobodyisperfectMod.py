@@ -22,7 +22,7 @@ import chatMod
 
 ANSWER_TIME=90
 QUIZ_TIME=15
-TIMEOUT=300 #idle time until game stops (to be implemented)
+TIMEOUT=300 #idle time until game stops
 
 #game phases
 NO_GAME=0
@@ -47,11 +47,14 @@ class waitfor(threading.Thread):
 	def stop(self):
 		self.end=True
 
+def mypass():
+	pass
+
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
 		self.init_vars()
-		self.timer=None
+		self.timer=waitfor(1, mypass)
 
 	def init_vars(self):
 		self.phase=NO_GAME
@@ -83,9 +86,11 @@ class chatMod(chatMod.chatMod):
 		self.phase=NO_GAME
 		if self.timer:
 			self.timer.stop()
-		self.bot.sendmsg(self.gamechannel, "=== Punkte ===", self.bot.getConfig("encoding", "UTF-8"))
-		for player in self.score:
-			self.bot.sendmsg(self.gamechannel, player+": "+str(self.score[player])+ " Punkte", self.bot.getConfig("encoding", "UTF-8"))
+		self.bot.sendmsg(self.gamechannel, "Ende der Runde")
+		if len(self.score):
+			self.bot.sendmsg(self.gamechannel, "=== Punkte ===")
+			for player in self.score:
+				self.bot.sendmsg(self.gamechannel, player+": "+str(self.score[player])+ " Punkte", self.bot.getConfig("encoding", "UTF-8"))
 		self.init_vars()
 		
 		
@@ -93,6 +98,7 @@ class chatMod(chatMod.chatMod):
 		user=user.split("!")[0]
 		if channel == self.bot.nickname:
 			if self.phase==WAITING_FOR_QUIZMASTER_ANSWER and user==self.gamemaster:
+				self.timer.stop()
 				self.answers[user]=msg
 				self.bot.sendmsg(self.gamechannel, "Die Frage ist: "+self.question, self.bot.getConfig("encoding", "UTF-8"))
 				self.bot.sendmsg(self.gamechannel, "Sagt mir eure Antworten im Query.", self.bot.getConfig("encoding", "UTF-8"))
@@ -104,9 +110,12 @@ class chatMod(chatMod.chatMod):
 				self.players.remove(self.gamemaster)
 
 			elif self.phase==WAITING_FOR_QUESTION and user==self.gamemaster:
+				self.timer.stop()
 				self.question=msg
 				self.bot.sendmsg(user, "Und jetzt die richtige Antwort")
 				self.phase=WAITING_FOR_QUIZMASTER_ANSWER
+				self.timer=waitfor(TIMEOUT, end_of_quiz)
+				self.timer.start()
 
 			elif self.phase==WAITING_FOR_ANSWERS and not user in self.answers and user in self.players:
 				self.answers[user]=msg
@@ -122,12 +131,16 @@ class chatMod(chatMod.chatMod):
 					self.bot.sendmsg(channel, self.gameadmin+": Zum starten nocheinmal !startgame sagen.", self.bot.getConfig("encoding", "UTF-8"))
 					self.phase=WAITING_FOR_PLAYERS
 					self.gamechannel=channel #needed for queries which result in a public answer
-					#self.players.append(user) #no need to say "ich" for the gameadmin
+					self.timer=waitfor(TIMEOUT, self.end_of_quiz)
+					self.timer.start()
 				elif self.phase==WAITING_FOR_PLAYERS and user==self.gameadmin:
+					self.timer.stop()
 					if len(self.players) >2:
 						self.phase=WAITING_FOR_QUESTION
 						self.gamemaster=random.choice(self.players)
 						self.bot.sendmsg(channel, self.gamemaster+": /msg mir die Frage.", self.bot.getConfig("encoding", "UTF-8"))
+						self.timer=waitfor(TIMEOUT, self.end_of_game)
+						self.timer.start()
 					else:
 						self.bot.sendmsg(channel, self.gamemaster+" zu wenig Spieler!", self.bot.getConfig("encoding", "UTF-8"))
 			elif msg[:10]=="!abortgame":
