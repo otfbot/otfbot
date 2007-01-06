@@ -67,9 +67,12 @@ class chatMod(chatMod.chatMod):
 		self.answers={}
 		self.answeruser={} #usernames(!) for the numbers
 		self.score={}
+		self.allscore={}
 		self.guessed=[] #users, which already have guessed
 
 	def end_of_answertime(self):
+		if self.timer:
+			self.timer.stop()
 		self.phase=QUIZ
 		count=1
 		self.bot.sendmsg(self.gamechannel, "Moegliche Antworten", self.bot.getConfig("encoding", "UTF-8"))
@@ -86,11 +89,23 @@ class chatMod(chatMod.chatMod):
 		self.phase=NO_GAME
 		if self.timer:
 			self.timer.stop()
-		self.bot.sendmsg(self.gamechannel, "Ende der Runde")
+		self.bot.sendmsg(self.gamechannel, "===Ende der Runde===")
 		if len(self.score):
-			self.bot.sendmsg(self.gamechannel, "=== Punkte ===")
+			self.bot.sendmsg(self.gamechannel, "=== Punkte ===", self.bot.getConfig("encoding", "UTF-8"))
 			for player in self.score:
 				self.bot.sendmsg(self.gamechannel, player+": "+str(self.score[player])+ " Punkte", self.bot.getConfig("encoding", "UTF-8"))
+			self.bot.sendmsg(self.gamechannel, "=== Antworten/User ===", self.bot.getConfig("encoding", "UTF-8"))
+			text=""
+			for num in self.answeruser:
+				text+=str(num)+" war von "+self.answeruser[num]+", "
+			text=text[:-2]+"."
+			self.bot.sendmsg(self.gamechannel, text, self.bot.getConfig("encoding", "UTF-8"))
+			for user in self.score:
+				if user in self.allscore.keys():
+					self.allscore[user]+=self.score[user]
+				else:
+					self.allscore[user]=self.score[user]
+
 		self.init_vars()
 		
 		
@@ -101,7 +116,7 @@ class chatMod(chatMod.chatMod):
 				self.timer.stop()
 				self.answers[user]=msg
 				self.bot.sendmsg(self.gamechannel, "Die Frage ist: "+self.question, self.bot.getConfig("encoding", "UTF-8"))
-				self.bot.sendmsg(self.gamechannel, "Sagt mir eure Antworten im Query.", self.bot.getConfig("encoding", "UTF-8"))
+				self.bot.sendmsg(self.gamechannel, "/msg mir eure Antworten.", self.bot.getConfig("encoding", "UTF-8"))
 				self.phase=WAITING_FOR_ANSWERS
 				self.timer=waitfor(ANSWER_TIME, self.end_of_answertime)
 				self.timer.start()
@@ -114,7 +129,7 @@ class chatMod(chatMod.chatMod):
 				self.question=msg
 				self.bot.sendmsg(user, "Und jetzt die richtige Antwort")
 				self.phase=WAITING_FOR_QUIZMASTER_ANSWER
-				self.timer=waitfor(TIMEOUT, end_of_quiz)
+				self.timer=waitfor(TIMEOUT, self.end_of_quiz)
 				self.timer.start()
 
 			elif self.phase==WAITING_FOR_ANSWERS and not user in self.answers and user in self.players:
@@ -149,7 +164,11 @@ class chatMod(chatMod.chatMod):
 			elif "ich" in string.lower(msg) and self.phase==WAITING_FOR_PLAYERS:
 				if not (user in self.players or user==self.gamemaster):
 					self.players.append(user)
-					self.bot.sendmsg(channel, user+" nimmt am Spiel teil!", self.bot.getConfig("encoding", "UTF-8"), self.bot.getConfig("encoding", "UTF-8"))
+					text=""
+					for item in self.players:
+						text=text+item+", "
+					text=text[:-2]+"."
+					self.bot.sendmsg(channel, "Teilnehmer: "+text, self.bot.getConfig("encoding", "UTF-8"))
 			elif self.phase==QUIZ and not user in self.guessed and user!=self.gamemaster:
 				try:
 					if(self.answeruser[int(msg)]==self.gamemaster):
@@ -174,4 +193,9 @@ class chatMod(chatMod.chatMod):
 					pass
 				if len(self.guessed) == len(self.players):
 					self.end_of_quiz()
+			elif msg[:6]=="!score":
+				if len(self.allscore):
+					self.bot.sendmsg(self.gamechannel, "=== Punkte ===", self.bot.getConfig("encoding", "UTF-8"))
+					for player in self.allscore:
+						self.bot.sendmsg(self.gamechannel, player+": "+str(self.score[player])+ " Punkte", self.bot.getConfig("encoding", "UTF-8"))
 
