@@ -55,6 +55,7 @@ class chatMod(chatMod.chatMod):
 		self.bot=bot
 		self.init_vars()
 		self.timer=waitfor(1, mypass)
+		self.allscore={}
 
 	def init_vars(self):
 		self.phase=NO_GAME
@@ -67,7 +68,6 @@ class chatMod(chatMod.chatMod):
 		self.answers={}
 		self.answeruser={} #usernames(!) for the numbers
 		self.score={}
-		self.allscore={}
 		self.guessed=[] #users, which already have guessed
 
 	def end_of_answertime(self):
