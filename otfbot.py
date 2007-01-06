@@ -27,7 +27,7 @@ except ImportError:
 	from twisted.protocols import irc
 
 from twisted.internet import reactor, protocol, error
-import os, random, string, re, threading, time, sys, traceback, threading
+import os, random, string, re, threading, time, sys, traceback, threading, atexit
 import functions, config
 import mathMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, authMod, controlMod, modeMod, marvinMod , kiMod, reminderMod, eightBallMod, nobodyisperfectMod
 
@@ -84,8 +84,7 @@ def exithook():
 	corelogger.info("Bot shutted down")
 	corelogger.info("-------------------------")
 # registering this function
-import atexit
-atexit.register(exithook)
+
 
 # react on signals
 #import signal
@@ -521,6 +520,7 @@ pidfile=theconfig.get('pidfile','otfbot.pid','main')
 f=open(pidfile,'w')
 f.write(str(os.getpid())+"\n")
 f.close()
+atexit.register(exithook)
 
 networks=theconfig.getNetworks()
 connections={}

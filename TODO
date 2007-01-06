@@ -18,5 +18,5 @@ commandsMod:
 2007-01-05 23:30:50,483 insiderz   __init__           ERROR        mod.msg(user, channel, msg)
 2007-01-05 23:30:50,483 insiderz   __init__           ERROR    File "/media/crypt/allo/otfbot/commandsMod.py", line 44, in msg
 2007-01-05 23:30:50,484 insiderz   __init__           ERROR        if self.commandChar.has_key(channel) and msg[0] == self.commandChar[channel]:
-
 (when another module uses sendmsg with wrong encoding)
+Fix in SVN 64
