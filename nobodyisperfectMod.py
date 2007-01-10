@@ -62,7 +62,7 @@ class chatMod(chatMod.chatMod):
 		self.players=[]
 		self.gameadmin="" #needed for deciding when to start the game
 		self.gamemaster="" #different for each round.
-		self.gamechannel="" #this is not multichannel compatible!
+		#self.gamechannel="" #this is not multichannel compatible!
 
 		self.question=""
 		self.answers={}
@@ -168,11 +168,11 @@ class chatMod(chatMod.chatMod):
 
 			elif msg[:6]=="!score":
 				if len(self.allscore):
-					self.bot.sendmsg(self.gamechannel, "=== Punkte ===", self.bot.getConfig("encoding", "UTF-8"))
+					self.bot.sendmsg(channel, "=== Punkte ===", self.bot.getConfig("encoding", "UTF-8"))
 					for player in self.allscore:
-						self.bot.sendmsg(self.gamechannel, player+": "+str(self.allscore[player])+ " Punkte", self.bot.getConfig("encoding", "UTF-8"))
+						self.bot.sendmsg(channel, player+": "+str(self.allscore[player])+ " Punkte", self.bot.getConfig("encoding", "UTF-8"))
 
-			elif "ich" in string.lower(msg) and self.phase==WAITING_FOR_PLAYERS:
+			elif string.lower(msg)[:3]=="ich" and self.phase==WAITING_FOR_PLAYERS:
 				if not (user in self.players or user==self.gamemaster):
 					self.players.append(user)
 					text=""
