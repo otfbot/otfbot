@@ -169,8 +169,16 @@ class chatMod(chatMod.chatMod):
 			elif msg[:6]=="!score":
 				if len(self.allscore):
 					self.bot.sendmsg(channel, "=== Punkte ===", self.bot.getConfig("encoding", "UTF-8"))
-					for player in self.allscore:
-						self.bot.sendmsg(channel, player+": "+str(self.allscore[player])+ " Punkte", self.bot.getConfig("encoding", "UTF-8"))
+					points=self.allscore.values()
+					points.sort()
+					points.reverse()
+					players=self.allscore.keys()
+					for point in points:
+						for player in players:
+							if self.allscore[player]==point:
+								self.bot.sendmsg(channel, player+": "+str(point)+ " Punkte", self.bot.getConfig("encoding", "UTF-8"))
+								players.remove(player)
+								break;
 
 			elif string.lower(msg)[:3]=="ich" and self.phase==WAITING_FOR_PLAYERS:
 				if not (user in self.players or user==self.gamemaster):
