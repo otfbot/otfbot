@@ -41,9 +41,24 @@ parser = OptionParser()
 parser.add_option("-c","--config",dest="configfile",metavar="FILE",help="Location of configfile",type="string")
 parser.add_option("-d","--debug",dest="debug",metavar="LEVEL",help="Show debug messages of level LEVEL (10, 20, 30, 40 or 50). Implies -f.", type="int", default=0)
 parser.add_option("-f","--nodetach",dest="foreground",help="Do not fork into background.",action="store_true", default=False)
+
+parser.add_option("-u","--user",dest="userid",help="if run as root, the bot needs a userid to chuid to.",type="int", default=0)
+parser.add_option("-g","--group",dest="groupid",help="if run as root, the bot needs a groupid to chgid to.",type="int", default=0)
+
 (options,args)=parser.parse_args()
 if options.debug and options.debug not in (10,20,30,40,50):
 	parser.error("Unknown value for --debug")
+
+#check for root rights
+if os.getuid()==0:
+	if options.userid and options.userid!=0 and options.groupid and options.groupid!=0:
+		from twisted.python.util import switchUID
+		#os.chroot(".") #DOES NOT WORK. pwd.getpwuid fails in switchUID, when chrooted.
+		switchUID(options.userid, options.groupid)
+	else:
+		print "Otfbot should not be run as root."
+		print "please use -u and -g to specify a userid/groupid"
+		sys.exit(1)
 
 # Detaching from console
 if options.foreground == False and not options.debug > 0:
