@@ -218,10 +218,17 @@ class Bot(irc.IRCClient):
 		self.logger = logging.getLogger("core")
 		self.logger.info("Starting new Botinstance")
 		self.startMods()
+	def _apirunner(self,apifunction,args=[]):
+		for mod in self.mods:
+			try:
+				getattr(mod,apifunction)(*args)
+			except Exception, e:
+				logerror(self.logger, mod.name, e)	
 	
 	# public API
 	def startMods(self):
 		for chatModule in self.classes:
+			#if self.getConfig("enabled","true",chatModule.__name__,self.network)
 			self.mods.append( chatModule.chatMod(self) )
 			self.mods[-1].setLogger(self.logger)
 			self.mods[-1].name = chatModule.__name__
@@ -313,19 +320,12 @@ class Bot(irc.IRCClient):
 		for mod in self.mods:
 			mod.setLogger(self.logger)
 			mod.network=self.network
-			try:
-				mod.connectionMade()
-			except Exception, e:
-				logerror(self.logger, mod.name, e)
+		self._apirunner("connectionMade")
 
 	def connectionLost(self, reason):
 		#self.logger.info("lost connection: "+str(reason))
 		irc.IRCClient.connectionLost(self)
-		for mod in self.mods:
-			try:
-				mod.connectionLost(reason)
-			except Exception, e:
-				logerror(self.logger, mod.name, e)
+		self._apirunner("connectionLost",[reason])
 	
 	def signedOn(self):
 		self.logger.info("signed on "+self.network+" as "+self.nickname)
@@ -333,42 +333,23 @@ class Bot(irc.IRCClient):
 		for channel in self.factory.channels:
 			if(getBoolConfig("enabled", "false", "main", self.factory.network, channel)):
 				self.join(unicode(channel).encode("iso-8859-1"))
-		for mod in self.mods:
-			try:
-				mod.signedOn()
-			except Exception, e:
-				logerror(self.logger, mod.name, e)
-		
+		self._apirunner("signedOn")
+
 	def joined(self, channel):
 		self.logger.info("joined "+channel)
 		self.channel.append(channel)
 		self.users[channel]={}
-		for mod in self.mods:
-			try:
-				mod.joined(channel)
-			except Exception, e:
-				logerror(self.logger, mod.name, e)
-			
+		self._apirunner("joined",[channel])
+
 	def left(self, channel):
 		self.logger.info("left "+channel)
 		del self.users[channel]
 		self.channel.remove(channel)
-		for mod in self.mods:
-			try:
-				mod.left(channel)
-			except Exception, e:
-				logerror(self.logger, mod.name, e)
+		self._apirunner("left",[channel])
 
 	def privmsg(self, user, channel, msg):
-		for mod in self.mods:
-			try:
-				mod.privmsg(user, channel, msg)
-			except Exception, e:
-				logerror(self.logger, mod.name, e)
-			try:
-				mod.msg(user, channel, msg)
-			except Exception, e:
-				logerror(self.logger, mod.name, e)
+		self._apirunner("privmsg",[user,channel,msg])
+		self._apirunner("msg",[user,channel,msg])
 		nick = user.split("!")[0]
 		#if channel == self.nickname and self.auth(nick) > 9:
 		if msg == "!who":
@@ -380,6 +361,7 @@ class Bot(irc.IRCClient):
 
 	def irc_unknown(self, prefix, command, params):
 		#self.logger.debug(str(prefix)+" : "+str(command)+" : "+str(params))
+		#parse /names-list which is sent when joining a channel
 		if command == "RPL_NAMREPLY":
 			for nick in params[3].strip().split(" "):
 				if nick[0] in "@%+!":
@@ -388,33 +370,16 @@ class Bot(irc.IRCClient):
 				else:
 					s=" "
 				self.users[params[2]][nick]={'modchar':s}
-		for mod in self.mods:
-			try:
-				mod.irc_unknown(prefix, command, params)
-			except Exception, e:
-				logerror(self.logger, mod.name, e)
-	
+		self._apirunner("irc_unknown",[prefix,command,params])
 
 	def noticed(self, user, channel, msg):
-		for mod in self.mods:
-			try:
-				mod.noticed(user, channel, msg)
-			except Exception, e:
-				logerror(self.logger, mod.name, e)
+		self._apirunner("noticed",[user,channel,msg])
 				
 	def action(self, user, channel, msg):
-		for mod in self.mods:
-			try:
-				mod.action(user, channel, msg)
-			except Exception, e:
-				logerror(self.logger, mod.name, e)
+		self._apirunner("action",[user,channel,msg])
 
 	def modeChanged(self, user, channel, set, modes, args):
-		for mod in self.mods:
-			try:
-				mod.modeChanged(user, channel, set, modes, args)
-			except Exception, e:
-				logerror(self.logger, mod.name, e)
+		self._apirunner("modeChanged",[user,channel,set,modes,args])
 		i=0
 		for arg in args:
 			if modes[i] in modchars.keys() and set == True:
@@ -426,37 +391,22 @@ class Bot(irc.IRCClient):
 			i=i+1
 
 	def userKicked(self, kickee, channel, kicker, message):
-		for mod in self.mods:
-			try:
-				mod.userKicked(kickee, channel, kicker, message)
-			except Exception, e:
-				logerror(self.logger, mod.name, e)
+		self._apirunner("userKicked",[kickee,channel,kicker,message])
 
 	def userJoined(self, user, channel):
+		self._apirunner("userJoined",[user,channel])
 		self.users[channel][user.split("!")[0]]={'modchar':' '}
-		for mod in self.mods:
-			try:
-				mod.userJoined(user, channel)
-			except Exception, e:
-				logerror(self.logger, mod.name, e)
-				
+
 	def userLeft(self, user, channel):
+		self._apirunner("userLeft",[user,channel])
 		del self.users[channel][user.split("!")[0]]
-		for mod in self.mods:
-			try:
-				mod.userLeft(user, channel)
-			except Exception, e:
-				logerror(self.logger, mod.name, e)
-	
+
 	def userQuit(self, user, quitMessage):
-		for mod in self.mods:
-			try:
-				mod.userQuit(user, quitMessage)
-			except Exception, e:
-				logerror(self.logger, mod.name, e)
+		self._apirunner("userQuit",[user,quitMessage])
 		for chan in self.users:
 			if self.users[chan].has_key(user):
 				del self.users[chan][user]
+
 	def yourHost(self, info):
 		pass
 	
@@ -475,21 +425,14 @@ class Bot(irc.IRCClient):
 			if self.users[chan].has_key(oldname):
 				self.users[chan][newname]=self.users[chan][oldname]
 				del self.users[chan][oldname]
-		for mod in self.mods:
-			try:
-				mod.userRenamed(oldname, newname)
-			except Exception, e:
-				logerror(self.logger, mod.name, e)
-				
+		self._apirunner("userRenamed",[oldname,newname])
+
 	def topicUpdated(self, user, channel, newTopic):
-		for mod in self.mods:
-			try:
-				mod.topicUpdated(user, channel, newTopic)
-			except Exception, e:
-				logerror(self.logger, mod.name, e)
-	
+		self._apirunner("topicUpdated",[user,channel,newTopic])
+
 	def lineReceived(self, line):
 		#self.logger.debug(str(line))
+		# adding a correct hostmask for join, part and quit
 		if line.split(" ")[1] == "JOIN" and line[1:].split(" ")[0].split("!")[0] != self.nickname:
 			self.userJoined(line[1:].split(" ")[0],line.split(" ")[2][1:])
 			#self.joined(line[1:].split(" ")[0],line.split(" ")[2][1:])
