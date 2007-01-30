@@ -62,6 +62,11 @@ class chatMod(chatMod.chatMod):
 				self.bot.sendmsg(nick,"Available administrationcommands: reload, stop|quit, disconnect [network], connect network [port], listnetworks, changenick newnick, join channel, part channel [message], listchannels")
 			elif msg[0:6] == "reload":
 				self.bot.reloadModules()
+			elif msg[0:11] == "listmodules":
+				module=[]
+				for mod in self.bot.mods:
+					module.append(mod.name)
+				self.bot.sendmsg(nick,str(module))
 			elif msg[0:4] == "stop" or msg[0:4] == "quit":
 				self.bot.sendmsg(nick,"Disconnecting from all networks und exiting ...")
 				conns=self.bot.getConnections()
