@@ -15,6 +15,9 @@ rdfMod:
 * priorities of callbacks for modules (module with the highest priority will get the callback first)
 * return value for chatmod callbacks, which can be NO_FURTHER_PROCESSING or maybe MSG_CHANGED(newmsg) or something like this.
 ** In this case, logMod should get the highest priorty for right logging, and some mod could alter the message, and pass it to the kiMod
+kiMod:
+* make megahal use a brain per channel, limit brainsize (maybe requires hacking the megahalpython-binding)
+
 
 commandsMod:
 2007-01-05 23:30:50,482 insiderz   __init__           ERROR    File "./otfbot.py", line 355, in privmsg

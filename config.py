@@ -19,7 +19,7 @@
 # (c) 2005, 2006 by Alexander Schier
 #
 
-import handyxml
+import handyxml, xml.parsers.expat, sys
 
 class config:
 	#private
@@ -62,7 +62,11 @@ class config:
 		if not filename:
 			return
 		
-		self.doc=handyxml.xml(filename)
+		try:
+			self.doc=handyxml.xml(filename)
+		except xml.parsers.expat.ExpatError, e:
+			self.logger.error("Error when loading configfile: "+str(e))
+			sys.exit(1)
 		#generic options
 		options={}
 		try:
