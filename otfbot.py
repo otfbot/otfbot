@@ -31,7 +31,8 @@ import os, random, string, re, threading, time, sys, traceback, threading, atexi
 import functions, config
 import mathMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, authMod, controlMod, modeMod, marvinMod , kiMod, reminderMod, eightBallMod, nobodyisperfectMod
 
-classes = [ identifyMod, mathMod, authMod, controlMod, logMod, commandsMod, answerMod, badwordsMod, modeMod, marvinMod, reminderMod, eightBallMod, nobodyisperfectMod ]
+classes = [ mathMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, authMod, controlMod, modeMod, marvinMod , kiMod, reminderMod, eightBallMod, nobodyisperfectMod ]
+
 modchars={'a':'!','o':'@','h':'%','v':'+'}
 modcharvals={'!':4,'@':3,'%':2,'+':1,' ':0}
 
@@ -116,7 +117,7 @@ def setConfig(option, value, module=None, network=None, channel=None):
 def getConfig(option, defaultvalue="", module=None, network=None, channel=None):
 	return theconfig.get(option, defaultvalue, module, network, channel)
 def getBoolConfig(option, defaultvalue="", module=None, network=None, channel=None):
-	if theconfig.get(option, defaultvalue, module, network, channel) in ["true", "on", "1"]:
+	if theconfig.get(option, defaultvalue, module, network, channel) in ["True","true","On","on","1"]:
 		return True
 	return False
 	
@@ -207,6 +208,7 @@ class Bot(irc.IRCClient):
 		self.classes = classes
 		self.users={}
 		self.channel=[]
+		self.network=None
 	
 		self.mods = []
 		self.numMods = 0
@@ -218,12 +220,14 @@ class Bot(irc.IRCClient):
 		self.logger = logging.getLogger("core")
 		self.logger.info("Starting new Botinstance")
 		self.startMods()
-	def _apirunner(self,apifunction,args=[]):
+
+	def _apirunner(self,apifunction,args={}):
 		for mod in self.mods:
-			try:
-				getattr(mod,apifunction)(*args)
-			except Exception, e:
-				logerror(self.logger, mod.name, e)	
+			if (args.has_key("channel") and args["channel"] in self.channels and self.getBoolConfig("enabled","True",mod.name,self.network,args["channel"])) or not args.has_key("channel") or args["channel"] not in self.channels:
+				try:
+					getattr(mod,apifunction)(**args)
+				except Exception, e:
+					logerror(self.logger, mod.name, e)
 	
 	# public API
 	def startMods(self):
@@ -325,7 +329,7 @@ class Bot(irc.IRCClient):
 	def connectionLost(self, reason):
 		#self.logger.info("lost connection: "+str(reason))
 		irc.IRCClient.connectionLost(self)
-		self._apirunner("connectionLost",[reason])
+		self._apirunner("connectionLost",{"reason": reason})
 	
 	def signedOn(self):
 		self.logger.info("signed on "+self.network+" as "+self.nickname)
@@ -339,25 +343,25 @@ class Bot(irc.IRCClient):
 		self.logger.info("joined "+channel)
 		self.channel.append(channel)
 		self.users[channel]={}
-		self._apirunner("joined",[channel])
+		self._apirunner("joined",{"channel":channel})
 
 	def left(self, channel):
 		self.logger.info("left "+channel)
 		del self.users[channel]
 		self.channel.remove(channel)
-		self._apirunner("left",[channel])
+		self._apirunner("left",{"channel":channel})
 
 	def privmsg(self, user, channel, msg):
-		self._apirunner("privmsg",[user,channel,msg])
-		self._apirunner("msg",[user,channel,msg])
-		nick = user.split("!")[0]
+		self._apirunner("privmsg",{"user":user,"channel":channel,"msg":msg})
+		self._apirunner("msg",{"user":user,"channel":channel,"msg":msg})
+		#nick = user.split("!")[0]
 		#if channel == self.nickname and self.auth(nick) > 9:
-		if msg == "!who":
-			self.sendLine("WHO "+channel)
-		if msg[:6] == "!whois":
-			self.sendLine("WHOIS "+msg[7:])
-		if msg == "!user":
-			self.sendmsg(channel,str(self.users))
+		#if msg == "!who":
+		#	self.sendLine("WHO "+channel)
+		#if msg[:6] == "!whois":
+		#	self.sendLine("WHOIS "+msg[7:])
+		#if msg == "!user":
+		#	self.sendmsg(channel,str(self.users))
 
 	def irc_unknown(self, prefix, command, params):
 		#self.logger.debug(str(prefix)+" : "+str(command)+" : "+str(params))
@@ -370,16 +374,16 @@ class Bot(irc.IRCClient):
 				else:
 					s=" "
 				self.users[params[2]][nick]={'modchar':s}
-		self._apirunner("irc_unknown",[prefix,command,params])
+		self._apirunner("irc_unknown",{"prefix":prefix,"command":command,"params":params})
 
 	def noticed(self, user, channel, msg):
-		self._apirunner("noticed",[user,channel,msg])
+		self._apirunner("noticed",{"user":user,"channel":channel,"msg":msg})
 				
-	def action(self, user, channel, msg):
-		self._apirunner("action",[user,channel,msg])
+	def action(self, user, channel, message):
+		self._apirunner("action",{"user":user,"channel":channel,"msg":msg})
 
 	def modeChanged(self, user, channel, set, modes, args):
-		self._apirunner("modeChanged",[user,channel,set,modes,args])
+		self._apirunner("modeChanged",{"user":user,"channel":channel,"set":set,"modes":modes,"args":args})
 		i=0
 		for arg in args:
 			if modes[i] in modchars.keys() and set == True:
@@ -391,18 +395,18 @@ class Bot(irc.IRCClient):
 			i=i+1
 
 	def userKicked(self, kickee, channel, kicker, message):
-		self._apirunner("userKicked",[kickee,channel,kicker,message])
+		self._apirunner("userKicked",{"kickee":kickee,"channel":channel,"kicker":kicker,"message":message})
 
 	def userJoined(self, user, channel):
-		self._apirunner("userJoined",[user,channel])
+		self._apirunner("userJoined",{"user":user,"channel":channel})
 		self.users[channel][user.split("!")[0]]={'modchar':' '}
 
 	def userLeft(self, user, channel):
-		self._apirunner("userLeft",[user,channel])
+		self._apirunner("userLeft",{"user":user,"channel":channel})
 		del self.users[channel][user.split("!")[0]]
 
 	def userQuit(self, user, quitMessage):
-		self._apirunner("userQuit",[user,quitMessage])
+		self._apirunner("userQuit",{"user":user,"quitMessage":quitMessage})
 		for chan in self.users:
 			if self.users[chan].has_key(user):
 				del self.users[chan][user]
@@ -425,10 +429,10 @@ class Bot(irc.IRCClient):
 			if self.users[chan].has_key(oldname):
 				self.users[chan][newname]=self.users[chan][oldname]
 				del self.users[chan][oldname]
-		self._apirunner("userRenamed",[oldname,newname])
+		self._apirunner("userRenamed",{"oldname":oldname,"newname":newname})
 
 	def topicUpdated(self, user, channel, newTopic):
-		self._apirunner("topicUpdated",[user,channel,newTopic])
+		self._apirunner("topicUpdated",{"user":user,"channel":channel,"newTopic":newTopic})
 
 	def lineReceived(self, line):
 		#self.logger.debug(str(line))
