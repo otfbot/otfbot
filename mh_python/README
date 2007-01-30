@@ -1,0 +1,14 @@
+This is an extended version of the pythonbindings for megahal. To compile yourself it should be sufficient to get the megahal sourcecode and replace the python-interface.c with the one provided here and then do a "make pythonmodule". You'll find the module in build/lib.*/.
+
+Available methods:
+
+initbrain():		Initialize megahal brain
+doreply(str):		Generate a reply
+cleanup():		Clean megahal
+learn(str):		Learn from a sentence, don't generate a reply
+setnobanner():		Turns off Banner
+seterrorfile(str):	Set Errorfile (*)
+setstatusfile(str):	Set Statusfile (*)
+setdir(str):		Set Directory for saving brains etc
+
+(*) when using this method, python crashes here. All functions seem to assume ISO-encoded data.
