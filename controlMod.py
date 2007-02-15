@@ -17,7 +17,7 @@
 # (c) 2005, 2006 by Alexander Schier
 #
 
-import random, re
+import random, re, string
 import chatMod
 
 class chatMod(chatMod.chatMod):
@@ -26,7 +26,7 @@ class chatMod(chatMod.chatMod):
 
 	def msg(self, user, channel, msg):
 		nick=user.split("!")[0]
-		if self.bot.auth(user) > 7 and channel==self.bot.nickname:
+		if self.bot.auth(user) > 7 and string.lower(channel)==string.lower(self.bot.nickname):
 			if msg[0:6] == "config":
 				msg=msg[7:]
 				if msg[0:3] == "get":

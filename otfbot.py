@@ -380,7 +380,7 @@ class Bot(irc.IRCClient):
 		self._apirunner("noticed",{"user":user,"channel":channel,"msg":msg})
 				
 	def action(self, user, channel, message):
-		self._apirunner("action",{"user":user,"channel":channel,"msg":message})
+		self._apirunner("action",{"user":user,"channel":channel,"message":message})
 
 	def modeChanged(self, user, channel, set, modes, args):
 		self._apirunner("modeChanged",{"user":user,"channel":channel,"set":set,"modes":modes,"args":args})
