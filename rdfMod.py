@@ -23,9 +23,9 @@ import chatMod, rdfParser
 
 def default_settings():
 	settings={};
-	settings['rdfMod_wait']='5'
-	settings['rdfMod_numRdfs']='0'
-	settings['rdfMod_rdf1']='http://localhost/example.rss'
+	settings['rdfMod.wait']='5'
+	settings['rdfMod.numRdfs']='0'
+	settings['rdfMod.rdf1']='http://localhost/example.rss'
 	return settings
 		
 class chatMod(chatMod, threading.Thread):
@@ -37,15 +37,15 @@ class chatMod(chatMod, threading.Thread):
 		self.bot = bot
 		self.channel = ""
 
-		self.wait=60 * float(bot.getConfig("rdfMod_wait", "5"))
+		self.wait=60 * float(bot.getConfig("wait", "5", "rdfMod"))
 		self.rdfUrls=[]
-		numRdfs=int(bot.getConfig("rdfMod_numRdfs", "0"))
+		numRdfs=int(bot.getConfig("numRdfs", "0", "rdfMod"))
 		if numRdfs < 1: #no rdfs or invalid Numer(negative)
 			self.end=1 #do not run this Mod
 			print "rdfMod: no Rdfs"
 		#import the rdfUrls
 		for num in range(0, numRdfs):
-			self.rdfUrls.append(bot.getConfig("rdfMod_rdf"+str(num+1)))
+			self.rdfUrls.append(bot.getConfig("rdf"+str(num+1),"","rdfMod"))
 
 		for rdfUrl in self.rdfUrls: #create emtpy lists
 			self.read[rdfUrl] = {}
@@ -73,7 +73,7 @@ class chatMod(chatMod, threading.Thread):
 			if not self.end:
 				for rdfUrl in self.rdfUrls:
 					self.postNews(rdfUrl)
-		print "rdfMod: successfully stopped."
+		self.logger.info("rdfMod: successfully stopped.")
 
 	def postNews(self, rdfUrl):
 		unread =[]
@@ -96,15 +96,11 @@ class chatMod(chatMod, threading.Thread):
 	def joined(self, channel):
 		if self.channel == "": #only the first channel
 			self.channel = channel
-	def msg(self, user, channel, msg):
-		#if channel == self.bot.nickname: 
-		if self.bot.auth(user) > 9:
-			if msg == "!stop" or msg == "!rdfstop": #in query
-				self.stop()
+
 	def connectionLost(self, reason):
 		self.stop()
 
 	def stop(self):
-		print "rdfMod: Got Stop Signal."
+		self.logger.info("Got Stop Signal.")
 		self.end=1
 
