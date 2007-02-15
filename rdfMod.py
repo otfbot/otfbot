@@ -28,7 +28,7 @@ def default_settings():
 	settings['rdfMod.rdf1']='http://localhost/example.rss'
 	return settings
 		
-class chatMod(chatMod, threading.Thread):
+class chatMod(threading.Thread):
 	def __init__(self, bot):
 		threading.Thread.__init__(self)
 
@@ -36,13 +36,14 @@ class chatMod(chatMod, threading.Thread):
 		self.read = {}
 		self.bot = bot
 		self.channel = ""
-
+		self.logger = self.bot.logging.getLogger("rdfMod")
+		
 		self.wait=60 * float(bot.getConfig("wait", "5", "rdfMod"))
 		self.rdfUrls=[]
 		numRdfs=int(bot.getConfig("numRdfs", "0", "rdfMod"))
 		if numRdfs < 1: #no rdfs or invalid Numer(negative)
 			self.end=1 #do not run this Mod
-			print "rdfMod: no Rdfs"
+			self.logger.error("no Rdfs")
 		#import the rdfUrls
 		for num in range(0, numRdfs):
 			self.rdfUrls.append(bot.getConfig("rdf"+str(num+1),"","rdfMod"))
@@ -94,7 +95,7 @@ class chatMod(chatMod, threading.Thread):
 		i = 0
 
 	def joined(self, channel):
-		if self.channel == "": #only the first channel
+		if self.channel == "" and self.bot.getConfig("enabled","False","rdfMod",self.bot.network,channel): #only the first channel
 			self.channel = channel
 
 	def connectionLost(self, reason):
@@ -104,3 +105,61 @@ class chatMod(chatMod, threading.Thread):
 		self.logger.info("Got Stop Signal.")
 		self.end=1
 
+	def setLogger(self,logger):
+		self.logger = logger
+	def auth(self, user):
+		"""check the authorisation of the user"""
+		pass
+	def privmsg(self, user, channel, msg):
+		"""a private message received"""
+		pass
+	def msg(self, user, channel, msg):
+		"""message received"""
+		pass
+	def connectionMade(self):
+		"""made connection to server"""
+		pass
+	def signedOn(self):
+		"""successfully signed on"""
+		pass
+	def left(self, channel):
+		"""we have left a channel"""
+		pass
+	def noticed(self, user, channel, msg):
+		"""we got a notice"""
+		pass
+	def action(self, user, channel, message):
+		"""action (/me) received"""
+		pass
+	def modeChanged(self, user, channel, set, modes, args):
+		"""mode changed"""
+		pass
+	def userKicked(self, kickee, channel, kicker, message):
+		"""someone kicked someone else"""
+		pass
+	def userJoined(self, user, channel):
+		"""a user joined the channel"""
+		pass
+	def userJoinedMask(self, user, channel):
+		pass
+	def userLeft(self, user, channel):
+		"""a user left the channel"""
+		pass
+	def userQuit(self, user, quitMessage):
+		"""a user disconnect from the network"""
+		pass
+	def yourHost(self, info):
+		"""info about your host"""
+		pass
+	def userRenamed(self, oldname, newname):
+		"""a user changed the nick"""
+		pass
+	def topicUpdated(self, user, channel, newTopic):
+		"""a user changed the topic of a channel"""
+		pass
+	def irc_unknown(self, prefix, command, params):
+		"""an IRC-Message, which is not handle by twisted was received"""
+		pass
+	def reload(self):
+		"""called to reload the settings of the module"""
+		pass

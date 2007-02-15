@@ -135,10 +135,10 @@ class chatMod(chatMod.chatMod):
 			#self.logger.info(str(user+" : "+channel+" : "+msg))
 			self.logPrivate(user.split("!")[0], "< "+user.split("!")[0]+"> "+msg)
 
-	def action(self, user, channel, msg):
-		#self.logger.debug(user+channel+msg)
+	def action(self, user, channel, message):
+		#self.logger.debug(user+channel+message)
 		user=user.split("!")[0]
-		self.log(channel, " * "+user+" "+msg)
+		self.log(channel, " * "+user+" "+message)
 		
 	def modeChanged(self, user, channel, set, modes, args):
 		user=user.split("!")[0]
@@ -156,11 +156,11 @@ class chatMod(chatMod.chatMod):
 	def userLeft(self, user, channel):
 		self.log(channel, "-!- "+user.split("!")[0]+" ["+user.split("!")[1]+"] has left "+channel)#TODO: real Hostmask
 	
-	def userQuit(self, user, msg):
+	def userQuit(self, user, quitMessage):
 		users = self.bot.getUsers()
 		for channel in self.channels:
 			if users[channel].has_key(user.split("!")[0]):
-				self.log(channel, "-!- "+user.split("!")[0]+" ["+user.split("!")[1]+"] has quit ["+msg+"]")
+				self.log(channel, "-!- "+user.split("!")[0]+" ["+user.split("!")[1]+"] has quit ["+quitMessage+"]")
 		
 	def topicUpdated(self, user, channel, newTopic):
 		#TODO: first invoced on join. This should not be logged
