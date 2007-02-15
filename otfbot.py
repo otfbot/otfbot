@@ -29,9 +29,9 @@ except ImportError:
 from twisted.internet import reactor, protocol, error
 import os, random, string, re, threading, time, sys, traceback, threading, atexit
 import functions, config
-import mathMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, authMod, controlMod, modeMod, marvinMod , kiMod, reminderMod, eightBallMod, nobodyisperfectMod
+import mathMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, authMod, controlMod, modeMod, marvinMod , reminderMod, eightBallMod, nobodyisperfectMod, rdfMod
 
-classes = [ mathMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, authMod, controlMod, modeMod, marvinMod , kiMod, reminderMod, eightBallMod, nobodyisperfectMod ]
+classes = [ mathMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, authMod, controlMod, modeMod, marvinMod , reminderMod, eightBallMod, nobodyisperfectMod, rdfMod ]
 
 modchars={'a':'!','o':'@','h':'%','v':'+'}
 modcharvals={'!':4,'@':3,'%':2,'+':1,' ':0}
@@ -380,7 +380,7 @@ class Bot(irc.IRCClient):
 		self._apirunner("noticed",{"user":user,"channel":channel,"msg":msg})
 				
 	def action(self, user, channel, message):
-		self._apirunner("action",{"user":user,"channel":channel,"msg":msg})
+		self._apirunner("action",{"user":user,"channel":channel,"msg":message})
 
 	def modeChanged(self, user, channel, set, modes, args):
 		self._apirunner("modeChanged",{"user":user,"channel":channel,"set":set,"modes":modes,"args":args})
