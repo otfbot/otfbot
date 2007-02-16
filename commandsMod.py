@@ -41,16 +41,24 @@ class chatMod(chatMod.chatMod):
 	
 	def msg(self, user, channel, msg):
 		user = user.split("!")[0] #only nick
-		if self.commandChar.has_key(channel) and msg[0].decode('UTF-8').encode('UTF-8') == self.commandChar[channel]:
-			if msg == "!reload-commands": #TODO: global methodChar
-				self.logger.info("reloading")
-				self.reload()
-				return
-			answer = self.respond(channel, user, msg)
-			if answer != "":
-				self.bot.sendme(channel, answer, self.bot.getConfig("commandsMod.fileencoding", "iso-8859-15"))
+		if self.commandChar.has_key(channel):
+			try:
+				char=msg[0].decode('UTF-8').encode('UTF-8')
+			except UnicodeDecodeError:
+				char=msg[0].decode('iso-8859-15').encode('UTF-8')
+			if char == self.commandChar[channel]:
+				#if msg == "!reload-commands": #TODO: global methodChar
+				#	self.logger.info("reloading")
+				#	self.reload()
+				#	return
+				answer = self.respond(channel, user, msg)
+				if answer != "":
+					if answer[0] == ":":
+						self.bot.sendmsg(channel, answer[1:], self.bot.getConfig("commandsMod.fileencoding", "iso-8859-15"))
+					else:
+						self.bot.sendme(channel, answer, self.bot.getConfig("commandsMod.fileencoding", "iso-8859-15"))
 			
-	def reload(self):
+	def start(self):
 		self.commands={}
 		self.commandChar={}
 		self.commands["general"]=functions.loadProperties(self.bot.getConfig("file","commands.txt","commandsMod"))
@@ -59,6 +67,9 @@ class chatMod(chatMod.chatMod):
 			self.commands[channel]=functions.loadProperties(self.bot.getConfig("file", "commands.txt", "commandsMod", self.bot.network, channel))
 			self.commandChar[channel]=self.bot.getConfig("commandChar", "!", "commandsMod", self.bot.network, channel)
 
+	def reload(self):
+		self.start()
+	
 	def getCommand(self, channel, cmd):
 		if not self.commands.has_key(channel):
 			self.commands[channel]={}

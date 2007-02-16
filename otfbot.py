@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2.3
 # -*- coding: iso-8859-1 -*-
 # 
 # This program is free software; you can redistribute it and/or modify
@@ -438,7 +438,7 @@ class Bot(irc.IRCClient):
 		#self.logger.debug(str(line))
 		# adding a correct hostmask for join, part and quit
 		if line.split(" ")[1] == "JOIN" and line[1:].split(" ")[0].split("!")[0] != self.nickname:
-			self.userJoined(line[1:].split(" ")[0],line.split(" ")[2][1:])
+			self.userJoined(line[1:].split(" ")[0],string.lower(line.split(" ")[2][1:]))
 			#self.joined(line[1:].split(" ")[0],line.split(" ")[2][1:])
 		elif line.split(" ")[1] == "PART" and line[1:].split(" ")[0].split("!")[0] != self.nickname:
 			self.userLeft(line[1:].split(" ")[0],line.split(" ")[2])

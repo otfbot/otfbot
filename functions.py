@@ -46,7 +46,7 @@ def loadList(listFile):
 		content = file.read()
 		file.close()
 		for word in content.split("\n"):
-			if word != "":
+			if word != "" and word[0] != '#':
 				list.append(word)
 	except IOError:
 		print "loadList: Creating", listFile
