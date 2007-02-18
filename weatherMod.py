@@ -1,4 +1,5 @@
 # This file is part of OtfBot.
+# -*- coding: utf-8 -*-
 #
 # OtfBot is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -67,7 +68,7 @@ def getLocationCode(location):
 		return handler.content
 	except xml.sax._exceptions.SAXParseException:
 		print "weatherParserOne: Parse Exception"
-		return []
+		return [{}]
 
 class weatherParserTwo(xml.sax.handler.ContentHandler):
 	"""Parses the actual weatherdata into a dict"""
@@ -95,7 +96,6 @@ class weatherParserTwo(xml.sax.handler.ContentHandler):
 			for attr in attributes.getNames():
 				vals[attr]=attributes.getValue(attr)
 			self.content[name.split(":")[1]] = vals
-		print name
 
 	def characters(self, data):
 		if self.inChannel:
@@ -123,8 +123,8 @@ def getWeather(location):
 		parser.setContentHandler(handler)
 		codes = getLocationCode(location)
 		if len(codes) < 1:
-			return [{'error':'No Location found'}]
-		parser.parse("http://xml.weather.yahoo.com/forecastrss/"+str(code)+"_c.xml")
+			return []
+		parser.parse("http://xml.weather.yahoo.com/forecastrss/"+str(codes[0]['code'])+"_c.xml")
 		return handler.content
 	except xml.sax._exceptions.SAXParseException:
 		print "weatherParserTwo: Parse Exception"
@@ -135,6 +135,30 @@ def getWeather(location):
 import string, re, functions, time
 import chatMod
 
+weathercodes = { 0: "Tornado", 1: "Tropensturm", 2: "Hurrikan", 3: "ernsthafte Gewitter", 
+	4: "Gewitter", 5: "Regen und Schnee", 6: "Regen und Graupelschauer", 
+	7: "Schnee und Graupelschauer", 8: "gefriender Nieselregen", 9: "Nieselregen",
+	10: "gefrierender Regen", 11: "Schauer", 12: "Schauer", 13: "Schneegest\xf6ber",
+	14: "leichte Schneeschauer", 15: "Schneesturm", 16: "Schnee", 17: "Hagel",
+	18: "Graupelschauer", 19: "starker Nebel", 20: "Nebel", 21: "schwacher Nebel",
+	22: "Qualmig", 23: "St\xfcrmisch", 24: "Windig", 25: "Kalt", 26: "Bew\xf6lkt",
+	27: "\xfcberwiegend bew\xf6lkt", 28: "\xfcberwiegend bew\xf6lkt", 29: "Teils bew\xf6lkt",
+	30: "Teils bew\xf6lkt", 31: "Klar", 32: "Sonnig", 33: "Heiter", 34: "Heiter",
+	35: "Regen und Hagel", 36: "Heiss", 37: "vereinzelte Gewitter",
+	38: "verstreute Gewitter", 39: "verstreute Gewitter", 40: "vereinzelte Schauer",
+	41: "starker Schneefall", 42: "vereinzelt Schnee und Regen", 43: "starker Schneefall",
+	44: "teils Bew\xf6lkt", 45: "Gewitter", 46: "Schneeschauer", 47: "vereinzelte Gewitte",
+	3200: "Unbekannt" }
+
+def getDirection(deg):
+	dirs = ["N","NNO","NO","NOO","O","SOO","SO","SSO","S","SSW","SW","SWW","W","NWW","NW","NNW","N"]
+	d=11.25
+	i=0
+	while d < 372:
+		if deg < d:
+			return dirs[i]
+		i += 1
+		d += 22.5
 
 def default_settings():
 	settings={};
@@ -149,12 +173,22 @@ class chatMod(chatMod.chatMod):
 	def msg(self, user, channel, msg):
 		nick=user.split("!")[0]
 		cmd=msg.split(" ")[0][1:]
-		if cmd in self.commands and (time.time() - self.time) < 5:
+		if cmd in self.commands and ((time.time() - self.time) < 5 and (time.time() - self.time) > 0):
 			self.bot.sendmsg(channel,"Wait a minute ...")
 		elif cmd in self.commands:
 			self.time = time.time()
 			if cmd == "wetter":
 				c = getWeather(" ".join(msg.split(" ")[1:]))
-				if c.has_key('error'):
-					self.bot.sendmsg(channel,"No such Location found")
-				self.bot.sendmsg(channel,"Weather for "+str(c['location']['city'])+" ("+str(c['location']['country'])+"): "+str(c['condition']['text'])+", "+str(c['condition']['temp'])+str(c['units']['temperature']))
+				if len(c) < 1:
+					self.bot.sendmsg(channel,"Keinen passenden Ort gefunden")
+				else:
+					#self.logger.debug(str(c))
+					answ = "Wetter f\xfcr "+str(c['location']['city'])
+					if len(c['location']['country'])>0: 
+						answ += " ("+str(c['location']['country'])+")"
+					answ += ": "+str(weathercodes[int(c['condition']['code'])])
+					answ += ", "+str(c['condition']['temp'])+"\xb0"+str(c['units']['temperature'])
+					answ += " gef\xfchlt "+str(c['wind']['chill'])+"\xb0"+str(c['units']['temperature'])
+					answ += ", Wind: "+str(c['wind']['speed'])+str(c['units']['speed'])+" aus "+str(getDirection(int(c['wind']['direction'])))
+					answ += ", Luftfeuchte: "+str(c['atmosphere']['humidity'])+"%"
+					self.bot.sendmsg(channel,answ,"UTF-8")
