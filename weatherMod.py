@@ -133,12 +133,14 @@ def getWeather(location):
 ### otfBot-Modulecode ####
 
 import string, re, functions, time
+import chatMod
+
 
 def default_settings():
 	settings={};
 	return settings
 		
-class chatMod:
+class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot = bot
 		self.time=time.time()
