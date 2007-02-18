@@ -63,18 +63,30 @@ class chatMod(chatMod.chatMod):
 		self.gameadmin="" #needed for deciding when to start the game
 		self.gamemaster="" #different for each round.
 		#self.gamechannel="" #this is not multichannel compatible!
-
 		self.question=""
 		self.answers={}
 		self.answeruser={} #usernames(!) for the numbers
 		self.score={}
 		self.guessed=[] #users, which already have guessed
 
+	def init_vars_for_restart(self):
+		self.question=""
+		self.answers={}
+		self.answeruser={} #usernames(!) for the numbers
+		self.score={}
+		self.guessed=[] #users, which already have guessed
+
+		#each player will be gamemaster, in order
+		self.players.append(self.gamemaster)
+		self.gamemaster=self.players[0]
+		self.players=self.players[1:]
+
 	def end_of_answertime(self):
 		if self.timer:
 			self.timer.stop()
 		self.phase=QUIZ
 		count=1
+		self.bot.sendmsg(self.gamechannel, "Die Frage ist: "+self.question, self.bot.getConfig("encoding", "UTF-8"))
 		self.bot.sendmsg(self.gamechannel, "Moegliche Antworten (eine waehlen)", self.bot.getConfig("encoding", "UTF-8"))
 		users=self.answers.keys()
 		random.shuffle(users)
@@ -111,9 +123,7 @@ class chatMod(chatMod.chatMod):
 				else:
 					self.allscore[user]=self.score[user]
 
-		self.init_vars()
-		
-		
+
 	def msg(self, user, channel, msg):
 		user=user.split("!")[0]
 		if channel == self.bot.nickname:
@@ -144,8 +154,18 @@ class chatMod(chatMod.chatMod):
 						self.timer.stop()
 					self.end_of_answertime()
 		else:
+			if msg[:12]=="!restartgame":
+				if self.phase==NO_GAME and user==self.gameadmin:
+					self.bot.sendmsg(channel, "Eine neue Runde startet, Spieler bleiben gleich!")
+					self.init_vars_for_restart()
+					self.phase=WAITING_FOR_QUESTION
+					self.bot.sendmsg(channel, self.gamemaster+": /msg mir die Frage.", self.bot.getConfig("encoding", "UTF-8"))
+					self.timer=waitfor(TIMEOUT, self.end_of_quiz)
+					self.timer.start()
+					
 			if msg[:10]=="!startgame":
 				if self.phase==NO_GAME:
+					self.init_vars()
 					self.gameadmin=user
 					self.bot.sendmsg(channel, "Wer moechte an einer Runde \"Nobody is Perfect\" teilnehmen?(laut \"ich\" rufen!)")
 					self.bot.sendmsg(channel, self.gameadmin+": Zum starten nocheinmal !startgame sagen.", self.bot.getConfig("encoding", "UTF-8"))
@@ -165,6 +185,7 @@ class chatMod(chatMod.chatMod):
 						self.bot.sendmsg(channel, self.gamemaster+" zu wenig Spieler!", self.bot.getConfig("encoding", "UTF-8"))
 			elif msg[:10]=="!abortgame":
 				self.end_of_quiz()
+				self.init_vars()
 
 			elif msg[:6]=="!score":
 				if len(self.allscore):
@@ -187,7 +208,7 @@ class chatMod(chatMod.chatMod):
 					for item in self.players:
 						text=text+item+", "
 					text=text[:-2]+"."
-					self.bot.sendmsg(channel, "Teilnehmer: "+text, self.bot.getConfig("encoding", "UTF-8"))
+					self.bot.sendmsg(channel, str(len(self.players))+" Teilnehmer: "+text, self.bot.getConfig("encoding", "UTF-8"))
 			elif self.phase==QUIZ and not user in self.guessed and user!=self.gamemaster:
 				try:
 					if(self.answeruser[int(msg)]==self.gamemaster):
