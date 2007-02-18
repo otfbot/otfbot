@@ -177,6 +177,7 @@ class chatMod(chatMod.chatMod):
 					self.timer.stop()
 					if len(self.players) >2:
 						self.phase=WAITING_FOR_QUESTION
+						random.shuffle(self.player)
 						self.gamemaster=random.choice(self.players)
 						self.bot.sendmsg(channel, self.gamemaster+": /msg mir die Frage.", self.bot.getConfig("encoding", "UTF-8"))
 						self.timer=waitfor(TIMEOUT, self.end_of_quiz)
