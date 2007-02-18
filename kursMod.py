@@ -1,38 +1,43 @@
-#Copyright (C) 2005 Alexander Schier
+# This file is part of OtfBot.
 #
-#This program is free software; you can redistribute it and/or modify
-#it under the terms of the GNU General Public License as published by
-#the Free Software Foundation; either version 2 of the License, or
-#(at your option) any later version.
+# OtfBot is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
 #
-#This program is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#GNU General Public License for more details.
+# OtfBot is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-#You should have received a copy of the GNU General Public License
-#along with this program; if not, write to the Free Software
-#Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-import string, re, functions
+# You should have received a copy of the GNU General Public License
+# along with OtfBot; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+# 
+# (c) 2006, 2007 by Robert Weidlich
+#
 
+import string, re, functions
 import urllib, time
+import chatMod
+
 def default_settings():
 	settings={};
 	return settings
 		
-class chatMod:
+class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot = bot
 		self.channels={}
 		self.time=time.time()
-		self.commands = ["kurs","wkn","wetter"]
+		self.commands = ["kurs","wkn"]
 		
 	def joined(self, channel):
 		self.channels[channel]=1
 	
 	def msg(self, user, channel, msg):
 		nick=user.split("!")[0]
-		if msg.split(" ")[0][1:] in self.commands and (time.time() - self.time) < 5:
+		if msg.split(" ")[0][1:] in self.commands and 0 < (time.time() - self.time) < 5:
 			self.bot.sendmsg(channel,"Wait a minute ...")
 		else:
 			self.time = time.time()
@@ -81,4 +86,3 @@ class chatMod:
 					to = 4
 				for i in range(to):
 					self.bot.sendmsg(channel,res[i][0]+"\t"+res[i][1])
-				self.time=time.time()
