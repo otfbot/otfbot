@@ -125,7 +125,7 @@ class chatMod(chatMod.chatMod):
 
 
 	def msg(self, user, channel, msg):
-		user=user.split("!")[0]
+		user=string.lower(user.split("!")[0])
 		if channel == self.bot.nickname:
 			if self.phase==WAITING_FOR_QUIZMASTER_ANSWER and user==self.gamemaster:
 				self.timer.stop()
@@ -154,6 +154,28 @@ class chatMod(chatMod.chatMod):
 						self.timer.stop()
 					self.end_of_answertime()
 		else:
+			if msg[:7]=="!remove":
+				if self.phase==NO_GAME:
+					if len(msg)>8 and user==self.gameadmin: #8 because of the whitespace after !remove
+						player=string.lower(msg[8:])
+					else:
+						player=user
+					if player in self.players:
+						self.players.remove(player)
+						self.bot.sendmsg(channel, "Spieler "+player+" aus der Runde entfernt.")
+					else:
+						self.bot.sendmsg(channel, "Spieler "+player+" spielt nicht mit.")
+				else:
+					self.bot.sendmsg(channel, "Spieler koennen nur zwischen 2 Runden entfernt werden")
+
+			if msg[:4]=="!add":
+				if self.phase==NO_GAME:
+					self.players.append(user)
+					self.bot.sendmsg(channel, user+" spielt jetzt mit.")
+					#random.shuffle(self.players)
+				else:
+					self.bot.sendmsg(channel, "Spieler koennen nur zwischen 2 Runden hinzugefuegt werden")
+
 			if msg[:12]=="!restartgame":
 				if self.phase==NO_GAME and user==self.gameadmin:
 					self.bot.sendmsg(channel, "Eine neue Runde startet, Spieler bleiben gleich!")
@@ -177,7 +199,7 @@ class chatMod(chatMod.chatMod):
 					self.timer.stop()
 					if len(self.players) >2:
 						self.phase=WAITING_FOR_QUESTION
-						random.shuffle(self.player)
+						random.shuffle(self.players)
 						self.gamemaster=random.choice(self.players)
 						self.bot.sendmsg(channel, self.gamemaster+": /msg mir die Frage.", self.bot.getConfig("encoding", "UTF-8"))
 						self.timer=waitfor(TIMEOUT, self.end_of_quiz)
@@ -210,7 +232,7 @@ class chatMod(chatMod.chatMod):
 						text=text+item+", "
 					text=text[:-2]+"."
 					self.bot.sendmsg(channel, str(len(self.players))+" Teilnehmer: "+text, self.bot.getConfig("encoding", "UTF-8"))
-			elif self.phase==QUIZ and not user in self.guessed and user!=self.gamemaster:
+			elif self.phase==QUIZ and user in self.players and not user in self.guessed and user!=self.gamemaster:
 				try:
 					if(self.answeruser[int(msg)]==self.gamemaster):
 						if user in self.score:
