@@ -218,7 +218,6 @@ class chatMod(chatMod.chatMod):
 						self.bot.sendmsg(channel, self.gamemaster+" zu wenig Spieler!", self.bot.getConfig("encoding", "UTF-8"))
 			elif msg[:10]=="!abortgame":
 				self.end_of_quiz()
-				self.init_vars()
 
 			elif msg[:6]=="!score":
 				if len(self.allscore):
