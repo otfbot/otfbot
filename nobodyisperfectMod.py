@@ -68,6 +68,7 @@ class chatMod(chatMod.chatMod):
 		self.answeruser={} #usernames(!) for the numbers
 		self.score={}
 		self.guessed=[] #users, which already have guessed
+		self.additional_info=None
 
 	def init_vars_for_restart(self):
 		self.question=""
@@ -75,6 +76,7 @@ class chatMod(chatMod.chatMod):
 		self.answeruser={} #usernames(!) for the numbers
 		self.score={}
 		self.guessed=[] #users, which already have guessed
+		self.additional_info=None
 
 		#each player will be gamemaster, in order
 		self.players.append(self.gamemaster)
@@ -102,6 +104,10 @@ class chatMod(chatMod.chatMod):
 		if self.timer:
 			self.timer.stop()
 		self.bot.sendmsg(self.gamechannel, "===Ende der Runde===")
+		correct="Die richtige Antwort war: "+self.answers[self.gamemaster]
+		if self.additional_info:
+			correct=correct+" ("+self.additional_info+")"
+		self.bot.sendmsg(self.gamechannel, correct, self.bot.getConfig("encoding", "UTF-8"))
 		if len(self.score):
 			#show who gave which answer.
 			text=""
@@ -127,25 +133,29 @@ class chatMod(chatMod.chatMod):
 	def msg(self, user, channel, msg):
 		user=string.lower(user.split("!")[0])
 		if channel == self.bot.nickname:
-			if self.phase==WAITING_FOR_QUIZMASTER_ANSWER and user==self.gamemaster:
-				self.timer.stop()
-				self.answers[user]=msg
-				self.bot.sendmsg(self.gamechannel, "Die Frage ist: "+self.question, self.bot.getConfig("encoding", "UTF-8"))
-				self.bot.sendmsg(self.gamechannel, "/msg mir eure Antworten.", self.bot.getConfig("encoding", "UTF-8"))
-				self.phase=WAITING_FOR_ANSWERS
-				self.timer=waitfor(ANSWER_TIME, self.end_of_answertime)
-				self.timer.start()
-
-				#remove gamemaster from game, because he knows the answer
-				self.players.remove(self.gamemaster)
-
-			elif self.phase==WAITING_FOR_QUESTION and user==self.gamemaster:
+			if self.phase==WAITING_FOR_QUESTION and user==self.gamemaster:
 				self.timer.stop()
 				self.question=msg
 				self.bot.sendmsg(user, "Und jetzt die richtige Antwort")
 				self.phase=WAITING_FOR_QUIZMASTER_ANSWER
 				self.timer=waitfor(TIMEOUT, self.end_of_quiz)
 				self.timer.start()
+
+			elif self.phase==WAITING_FOR_QUIZMASTER_ANSWER and user==self.gamemaster:
+				self.timer.stop()
+				self.answers[user]=msg
+				self.bot.sendmsg(self.gamechannel, "Die Frage ist: "+self.question, self.bot.getConfig("encoding", "UTF-8"))
+				self.bot.sendmsg(self.gamechannel, "/msg mir eure Antworten.", self.bot.getConfig("encoding", "UTF-8"))
+				self.phase=WAITING_FOR_ANSWERS
+				self.timer=waitfor(ANSWER_TIME, self.end_of_answertime)
+				self.timer.start() #TIMEOUT
+
+				#remove gamemaster from game, because he knows the answer
+				self.players.remove(self.gamemaster)
+				self.bot.sendmsg(self.gamemaster, "Zusatzinformation fuer nach dem Quiz(wenn nicht gewuenscht, einfach freilassen):")
+
+			elif (self.phase==WAITING_FOR_ANSWERS or self.phase==QUIZ) and user==self.gamemaster and not self.additional_info:
+				self.additional_info=msg
 
 			elif self.phase==WAITING_FOR_ANSWERS and not user in self.answers and user in self.players:
 				self.answers[user]=msg
