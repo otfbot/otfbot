@@ -104,9 +104,10 @@ class game:
 		if self.timer:
 			self.timer.stop()
 		self.bot.sendmsg(self.gamechannel, "===Ende der Runde===")
-		correct="Die richtige Antwort war: "+self.answers[self.gamemaster]
-		if self.additional_info:
-			correct=correct+" ("+self.additional_info+")"
+		if self.gamemaster in self.answers.keys():
+			correct="Die richtige Antwort war: "+self.answers[self.gamemaster]
+			if self.additional_info:
+				correct=correct+" ("+self.additional_info+")"
 		self.bot.sendmsg(self.gamechannel, correct, self.bot.getConfig("encoding", "UTF-8"))
 		if len(self.score):
 			#show who gave which answer.
