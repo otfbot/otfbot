@@ -37,6 +37,7 @@ class waitfor(threading.Thread):
 		threading.Thread.__init__(self)
 		self.function=function
 		self.delay=delay
+		self.markUsers=False
 	def run(self):
 		self.end=False
 		while not self.end and self.delay >0:
@@ -50,26 +51,29 @@ class waitfor(threading.Thread):
 def mypass():
 	pass
 
-class game:
-	def __init__(self, bot, channel):
+def default_settings():
+	settings={'nobodyisperfectMod.markUsers':'off'}
+	return settings
+
+class chatMod(chatMod.chatMod):
+	def __init__(self, bot):
 		self.bot=bot
 		self.init_vars()
-		self.timer=waitfor(1, mypass) #is this needed? why?
+		self.timer=waitfor(1, mypass)
 		self.allscore={}
-		self.gamechannel=channel #we have a fixed channel ... because there is one instance per channel.
+
 	def init_vars(self):
 		self.phase=NO_GAME
 		self.players=[]
 		self.gameadmin="" #needed for deciding when to start the game
 		self.gamemaster="" #different for each round.
+		#self.gamechannel="" #this is not multichannel compatible!
 		self.question=""
 		self.answers={}
 		self.answeruser={} #usernames(!) for the numbers
 		self.score={}
 		self.guessed=[] #users, which already have guessed
 		self.additional_info=None
-	def getPlayers(self):
-		self.players
 
 	def init_vars_for_restart(self):
 		self.question=""
@@ -83,6 +87,7 @@ class game:
 		self.players.append(self.gamemaster)
 		self.gamemaster=self.players[0]
 		self.players=self.players[1:]
+
 	def end_of_answertime(self):
 		if self.timer:
 			self.timer.stop()
@@ -104,10 +109,11 @@ class game:
 		if self.timer:
 			self.timer.stop()
 		self.bot.sendmsg(self.gamechannel, "===Ende der Runde===")
-		correct="Die richtige Antwort war: "+self.answers[self.gamemaster]
-		if self.additional_info:
-			correct=correct+" ("+self.additional_info+")"
-		self.bot.sendmsg(self.gamechannel, correct, self.bot.getConfig("encoding", "UTF-8"))
+		if(self.gamemaster in self.answers.keys()):
+			correct="Die richtige Antwort war: "+self.answers[self.gamemaster]
+			if self.additional_info:
+				correct=correct+" ("+self.additional_info+")"
+			self.bot.sendmsg(self.gamechannel, correct, self.bot.getConfig("encoding", "UTF-8"))
 		if len(self.score):
 			#show who gave which answer.
 			text=""
@@ -130,6 +136,8 @@ class game:
 					self.allscore[user]=self.score[user]
 
 
+	def joined(self, channel):
+		self.markUsers=self.bot.getBoolConfig("markUsers", "off", "nobodyisperfectMod", self.bot.network, channel)
 	def msg(self, user, channel, msg):
 		user=string.lower(user.split("!")[0])
 		if channel == self.bot.nickname:
@@ -172,6 +180,8 @@ class game:
 						player=user
 					if player in self.players:
 						self.players.remove(player)
+						if self.markUsers:
+							self.bot.mode(self.gamechannel, 0, "h", None, player)
 						self.bot.sendmsg(channel, "Spieler "+player+" aus der Runde entfernt.")
 					else:
 						self.bot.sendmsg(channel, "Spieler "+player+" spielt nicht mit.")
@@ -181,6 +191,8 @@ class game:
 			if msg[:4]=="!add":
 				if self.phase==NO_GAME:
 					self.players.append(user)
+					if self.markUsers:
+						self.bot.mode(self.gamechannel, 1, "h", None, player)
 					self.bot.sendmsg(channel, user+" spielt jetzt mit.")
 					#random.shuffle(self.players)
 				else:
@@ -202,6 +214,7 @@ class game:
 					self.bot.sendmsg(channel, "Wer moechte an einer Runde \"Nobody is Perfect\" teilnehmen?(laut \"ich\" rufen!)")
 					self.bot.sendmsg(channel, self.gameadmin+": Zum starten nocheinmal !startgame sagen.", self.bot.getConfig("encoding", "UTF-8"))
 					self.phase=WAITING_FOR_PLAYERS
+					self.gamechannel=channel #needed for queries which result in a public answer
 					self.timer=waitfor(TIMEOUT, self.end_of_quiz)
 					self.timer.start()
 				elif self.phase==WAITING_FOR_PLAYERS and user==self.gameadmin:
@@ -235,6 +248,8 @@ class game:
 			elif string.lower(msg)[:3]=="ich" and self.phase==WAITING_FOR_PLAYERS:
 				if not (user in self.players or user==self.gamemaster):
 					self.players.append(user)
+					if self.markUsers:
+						self.bot.mode(self.gamechannel, 1, "h", None, user)
 					text=""
 					for item in self.players:
 						text=text+item+", "
@@ -264,31 +279,3 @@ class game:
 					pass
 				if len(self.guessed) == len(self.players):
 					self.end_of_quiz()
-
-
-
-
-class chatMod(chatMod.chatMod):
-	def __init__(self, bot):
-		self.bot=bot
-		self.games={}
-	def msg(self, user, channel, msg):
-		#channel can be a $BOTNAME, too.
-		if channel[0] in ["#","+","%"]:
-			if not channel in self.games and msg[:10]=="!startgame":
-				self.games[channel]=game(self.bot, channel)
-			self.games[channel].msg(user, channel, msg)
-		else:
-			#we need to locate, in which game the user wants to play.
-			channels=[]
-			for gamechannel in self.games.keys():
-				if user in game.getPlayers():
-					channels.append(gamechannel)
-				if len(channels)==1:
-					self.games[channel].msg(user, channel, msg)
-				elif len(channels)>1:
-					pair=msg.split(",")
-					if pair[0] in self.games.keys():
-						self.games[pair[0]].msg(user, channel, pair[1])
-					else:
-						self.bot.sendmsg(user, "Du spielst in mehreren Channels. Bitte schreib \"#channelname,deine Message\".", self.bot.getConfig("encoding", "UTF-8"))
