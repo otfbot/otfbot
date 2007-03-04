@@ -278,12 +278,13 @@ class chatMod(chatMod.chatMod):
 		if channel[0] in ["#","+","%"]:
 			if not channel in self.games and msg[:10]=="!startgame":
 				self.games[channel]=game(self.bot, channel)
-			self.games[channel].msg(user, channel, msg)
+			if channel in self.games:
+				self.games[channel].msg(user, channel, msg)
 		else:
 			#we need to locate, in which game the user wants to play.
 			channels=[]
 			for gamechannel in self.games.keys():
-				if user in game.getPlayers():
+				if user in gamechannel.getPlayers():
 					channels.append(gamechannel)
 				if len(channels)==1:
 					self.games[channel].msg(user, channel, msg)
