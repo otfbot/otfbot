@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2.3
 # -*- coding: iso-8859-1 -*-
 # 
 # This program is free software; you can redistribute it and/or modify
@@ -252,12 +252,6 @@ class Bot(irc.IRCClient):
 		return writeConfig()
 	def getUsers(self):
 		return self.users
-	def setUser(self, channel, user, key, value):
-		if not channel in self.users.keys():
-			self.users[channel]={}
-		if not user in self.users[channel]:
-			self.users[channel][user]={}
-		self.users[channel][user][key]=value
 	def addScheduleJob(self, time, function):
 		return addScheduleJob(time, function)
 	def getConnections(self):
@@ -397,7 +391,7 @@ class Bot(irc.IRCClient):
 					self.users[channel][arg]['modchar'] = modchars[modes[i]]
 			elif modes[i] in modchars.keys() and set == False:
 				#FIXME: ask for the real mode
-				self.setUser(channel, arg, 'modchar', ' ')
+				self.users[channel][arg]['modchar'] = ' '
 			i=i+1
 
 	def userKicked(self, kickee, channel, kicker, message):
