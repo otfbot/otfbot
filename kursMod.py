@@ -63,7 +63,7 @@ class chatMod(chatMod.chatMod):
 					      'boerse' : data[11]
 					}
 					# \x03C C=Colorcode
-					answer = d['day']+", "+d['time']+" " d['name']+" ("+d['boerse']+":"+d['symbol']+") "+d['kurs']+" "+d['currency']
+					answer = d['day']+", "+d['time']+" "+ d['name']+" ("+d['boerse']+":"+d['symbol']+") "+d['kurs']+" "+d['currency']
 					if d['change_kurs'] != "N/A":
 						if d['change_kurs'][:1] == "+":
 							color="\x033"
@@ -73,7 +73,7 @@ class chatMod(chatMod.chatMod):
 							color=""
 						answer = answer +", "+color+d['change_kurs']+" "+d['currency']+"\x03, "+color+d['change_percent']+"\x03, Vol.:"+d['volumen']+" St."
 					if d['low_range'] != "N/A":
-						answer = answer + " Intraday "+d['low_range']+ " bis "+d['top_range']+" "+d['currency']+"."
+						answer = answer + ", Intraday "+d['low_range']+ " bis "+d['top_range']+" "+d['currency']+"."
 					if d['kurs'] == "N/A":
 						answer = "Der geforderte Kurs wurde nicht gefunden."
 					self.bot.sendmsg(channel,answer)
