@@ -42,7 +42,7 @@ class chatMod(chatMod.chatMod):
 		else:
 			self.time = time.time()
 			if msg[:5] == "!kurs":
-				datas = urllib.urlopen("http://de.old.finance.yahoo.com/d/quotes.csv?s="+urllib.quote_plus(" ".join(msg.split(" ")[1:]))+"&f=nsl1d1t1cohgvc4&e=.csv").read().strip().split('\r\n')
+				datas = urllib.urlopen("http://de.old.finance.yahoo.com/d/quotes.csv?s="+urllib.quote_plus(" ".join(msg.split(" ")[1:]))+"&f=nsl1d1t1cohgvc4x&e=.csv").read().strip().split('\r\n')
 				if len(datas) > 4:
 					datas = datas[:3]
 				for data in datas:
@@ -58,10 +58,12 @@ class chatMod(chatMod.chatMod):
 					      'last_day' : data[6],
 					      'top_range' : data[7],
 					      'low_range' : data[8],
-					      'avr_vol' : data[9],
-					      'currency' : data[10] }
+					      'volumen' : data[9],
+					      'currency' : data[10],
+					      'boerse' : data[11]
+					}
 					# \x03C C=Colorcode
-					answer = nick+": am "+d['day']+" um "+d['time']+" lag der Kurs von "+d['name']+" ("+d['symbol']+") bei "+d['kurs']+" "+d['currency']
+					answer = d['day']+", "+d['time']+" " d['name']+" ("+d['boerse']+":"+d['symbol']+") "+d['kurs']+" "+d['currency']
 					if d['change_kurs'] != "N/A":
 						if d['change_kurs'][:1] == "+":
 							color="\x033"
@@ -69,9 +71,9 @@ class chatMod(chatMod.chatMod):
 							color="\x034"
 						else:
 							color=""
-						answer = answer +", das sind "+color+d['change_kurs']+" "+d['currency']+"\x03 oder "+color+d['change_percent']+"\x03 Unterschied zum Vortag."
+						answer = answer +", "+color+d['change_kurs']+" "+d['currency']+"\x03, "+color+d['change_percent']+"\x03, Vol.:"+d['volumen']+" St."
 					if d['low_range'] != "N/A":
-						answer = answer + " Im Tagesverlauf schwankte der Kurs von "+d['low_range']+" "+d['currency']+" bis "+d['top_range']+" "+d['currency']+"."
+						answer = answer + " Intraday "+d['low_range']+ " bis "+d['top_range']+" "+d['currency']+"."
 					if d['kurs'] == "N/A":
 						answer = "Der geforderte Kurs wurde nicht gefunden."
 					self.bot.sendmsg(channel,answer)
