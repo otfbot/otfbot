@@ -23,7 +23,7 @@ import chatMod, rdfParser
 
 def default_settings():
 	settings={};
-	settings['rdfMod.wait']='5'
+	settings['rdfMod.wait']='5' #XXX: works only global at the moment
 	settings['rdfMod.numRdfs']='0'
 	settings['rdfMod.rdf1']='http://localhost/example.rss'
 	return settings
@@ -40,27 +40,8 @@ class chatMod(threading.Thread):
 		
 		self.wait=60 * float(bot.getConfig("wait", "5", "rdfMod"))
 		self.rdfUrls=[]
-		numRdfs=int(bot.getConfig("numRdfs", "0", "rdfMod"))
-		if numRdfs < 1: #no rdfs or invalid Numer(negative)
-			self.end=1 #do not run this Mod
-			self.logger.error("no Rdfs")
-		#import the rdfUrls
-		for num in range(0, numRdfs):
-			self.rdfUrls.append(bot.getConfig("rdf"+str(num+1),"","rdfMod"))
+		self.rdfChannels={}
 
-		for rdfUrl in self.rdfUrls: #create emtpy lists
-			self.read[rdfUrl] = {}
-
-		for rdfUrl in self.rdfUrls:
-			#print "rdfMod: initial load of", rdfUrl #DEBUG
-			rdf = rdfParser.parse(rdfUrl)
-			#mark all urls as read on startup
-			#this prevents the bot from printing the newest 3 headlines on join.
-			#if you want to get the 3 headlines, disable this, 
-			#and put the sleep function ind run() at end of the loop.
-			for key in rdf['links']:
-				if not self.read[rdfUrl].has_key(key):#sort unread
-					self.read[rdfUrl][key] = 1 #but read for all later jobs
 				
 	def run(self):
 		while(not self.end):
@@ -89,8 +70,9 @@ class chatMod(threading.Thread):
 		if len(unread) > 3: #if there are more than three new ones, we only want the newest
 			unread = unread[:3] 
 		#print "rdfMod:", str(len(unread)), "new items" #DEBUG
-		for url in unread:
-			self.bot.sendmsg(self.channel, (url+" - "+rdf['elements'][url]).encode("UTF-8"), "UTF-8");
+		for channel in self.rdfChannels[rdfUrl]:
+			for url in unread:
+				self.bot.sendmsg(channel.encode("UTF-8"), (url+" - "+rdf['elements'][url]).encode("UTF-8"), "UTF-8");
 		unread = []#mark all as read
 		i = 0
 
@@ -118,7 +100,37 @@ class chatMod(threading.Thread):
 		pass
 	def connectionMade(self):
 		"""made connection to server"""
-		pass
+		bot=self.bot
+		(general, networks, channels)=self.bot.hasConfig("numRdfs", "rdfMod")
+		for (network, channel) in channels:
+			numRdfs=int(bot.getConfig("numRdfs", 0, "rdfMod", network, channel))
+			for num in range(0, numRdfs):
+				rdfUrl=bot.getConfig("rdf"+str(num+1), "", "rdfMod", network, channel)
+				if rdfUrl != "":
+					#self.rdfChannels[rdfUrl]=(network, channel)
+					if(network==self.bot.network):
+						if not rdfUrl in self.rdfChannels.keys():
+							self.rdfChannels[rdfUrl]=[channel]
+						else:
+							self.rdfChannels[rdfUrl].append(channel)
+						if not rdfUrl in self.rdfUrls:
+							self.rdfUrls.append(rdfUrl)
+					
+
+		for rdfUrl in self.rdfUrls: #create emtpy lists
+			self.read[rdfUrl] = {}
+
+		for rdfUrl in self.rdfUrls:
+			#print "rdfMod: initial load of", rdfUrl #DEBUG
+			rdf = rdfParser.parse(rdfUrl)
+			#mark all urls as read on startup
+			#this prevents the bot from printing the newest 3 headlines on join.
+			#if you want to get the 3 headlines, disable this, 
+			#and put the sleep function in run() at end of the loop.
+			for key in rdf['links']:
+				if not self.read[rdfUrl].has_key(key):#sort unread
+					self.read[rdfUrl][key] = 1 #but read for all later jobs
+
 	def signedOn(self):
 		"""successfully signed on"""
 		pass
