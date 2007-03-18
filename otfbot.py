@@ -1,4 +1,4 @@
-#!/usr/bin/python2.3
+#!/usr/bin/python
 # -*- coding: iso-8859-1 -*-
 # 
 # This program is free software; you can redistribute it and/or modify
@@ -54,7 +54,7 @@ if options.debug and options.debug not in (10,20,30,40,50):
 if os.getuid()==0:
 	if options.userid and options.userid!=0 and options.groupid and options.groupid!=0:
 		from twisted.python.util import switchUID
-		#os.chroot(".") #DOES NOT WORK. pwd.getpwuid fails in switchUID, when chrooted.
+		os.chroot(".") #DOES NOT WORK. pwd.getpwuid fails in switchUID, when chrooted.
 		switchUID(options.userid, options.groupid)
 	else:
 		print "Otfbot should not be run as root."
@@ -114,6 +114,8 @@ def setConfig(option, value, module=None, network=None, channel=None):
 	theconfig.set(option, value, module, network, channel)
 	writeConfig()
 		
+def hasConfig(option, module=None):
+	return theconfig.has(option, module)
 def getConfig(option, defaultvalue="", module=None, network=None, channel=None):
 	return theconfig.get(option, defaultvalue, module, network, channel)
 def getBoolConfig(option, defaultvalue="", module=None, network=None, channel=None):
@@ -242,6 +244,8 @@ class Bot(irc.IRCClient):
 				pass
 	def setConfig(self, option, value, module=None, network=None, channel=None):
 		return setConfig(option, value, module, network, channel)
+	def hasConfig(self, option, module=None):
+		return hasConfig(option, module)
 	def getConfig(self, option, defaultvalue="", module=None, network=None, channel=None):
 		return getConfig(option, defaultvalue, module, network, channel)
 	def getBoolConfig(self, option, defaultvalue="", module=None, network=None, channel=None):

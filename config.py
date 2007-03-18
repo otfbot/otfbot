@@ -125,6 +125,28 @@ class config:
 			else:
 				self.generic_options[option]=default
 			return default
+
+	def has(self, option, module=None):
+		"""test, in which networks/channels a option is set. Returns a tuple: (general_bool, network_list, (network, channel) list)"""
+		general=False
+		networks=[]
+		channels=[]
+		if module:
+			option=module+"."+option
+
+		for item in self.generic_options.keys():
+			if item==option:
+				general=True
+		for network in self.network_options.keys():
+			if option in self.network_options[network].keys():
+				networks.append(network)
+
+		for network in self.channel_options.keys():
+			for channel in self.channel_options[network].keys():
+				if option in self.channel_options[network][channel].keys():
+					channels.append((network, channel))
+		return (general, networks, channels)
+
 	
 	def set(self, option, value, module=None, network=None, channel=None):
 		if module:
