@@ -54,7 +54,7 @@ if options.debug and options.debug not in (10,20,30,40,50):
 if os.getuid()==0:
 	if options.userid and options.userid!=0 and options.groupid and options.groupid!=0:
 		from twisted.python.util import switchUID
-		os.chroot(".") #DOES NOT WORK. pwd.getpwuid fails in switchUID, when chrooted.
+		#os.chroot(".") #DOES NOT WORK. pwd.getpwuid fails in switchUID, when chrooted.
 		switchUID(options.userid, options.groupid)
 	else:
 		print "Otfbot should not be run as root."
