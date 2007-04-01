@@ -29,9 +29,9 @@ except ImportError:
 from twisted.internet import reactor, protocol, error
 import os, random, string, re, threading, time, sys, traceback, threading, atexit
 import functions, config
-import mathMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, authMod, controlMod, modeMod, marvinMod , reminderMod, eightBallMod, nobodyisperfectMod, rdfMod
+import mathMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, authMod, controlMod, modeMod, marvinMod , reminderMod, eightBallMod, nobodyisperfectMod, rdfMod, weatherMod, kursMod
 
-classes = [ mathMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, authMod, controlMod, modeMod, marvinMod , reminderMod, eightBallMod, nobodyisperfectMod, rdfMod ]
+classes = [ mathMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, authMod, controlMod, modeMod, marvinMod , reminderMod, eightBallMod, nobodyisperfectMod, rdfMod, weatherMod, kursMod ]
 
 modchars={'a':'!','o':'@','h':'%','v':'+'}
 modcharvals={'!':4,'@':3,'%':2,'+':1,' ':0}
@@ -122,7 +122,7 @@ def getBoolConfig(option, defaultvalue="", module=None, network=None, channel=No
 	if theconfig.get(option, defaultvalue, module, network, channel) in ["True","true","On","on","1"]:
 		return True
 	return False
-	
+
 def loadConfig(myconfigfile):
 	if os.path.exists(myconfigfile):
 		myconfig=config.config(logging, myconfigfile)
@@ -250,6 +250,12 @@ class Bot(irc.IRCClient):
 		return getConfig(option, defaultvalue, module, network, channel)
 	def getBoolConfig(self, option, defaultvalue="", module=None, network=None, channel=None):
 		return getBoolConfig(option, defaultvalue, module, network, channel)
+	def getSubOptions(self, list):
+		return theconfig.getsubopts(list)
+	def getNetworks(self):
+		return theconfig.getNetworks()
+	def getChannels(self,net):
+		return theconfig.getChannels(net)
 	def loadConfig(self):
 		return loadConfig(configfile)
 	def writeConfig(self):
@@ -439,7 +445,7 @@ class Bot(irc.IRCClient):
 		self._apirunner("topicUpdated",{"user":user,"channel":channel,"newTopic":newTopic})
 
 	def lineReceived(self, line):
-		#self.logger.debug(str(line))
+		self.logger.debug(str(line))
 		# adding a correct hostmask for join, part and quit
 		if line.split(" ")[1] == "JOIN" and line[1:].split(" ")[0].split("!")[0] != self.nickname:
 			self.userJoined(line[1:].split(" ")[0],string.lower(line.split(" ")[2][1:]))
