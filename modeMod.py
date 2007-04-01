@@ -43,3 +43,8 @@ class chatMod(chatMod.chatMod):
                         self.bot.mode(channel, self.modes[mode]["set"], self.modes[mode]["char"], None, msg)
                     else:
                         self.bot.mode(channel, self.modes[mode]["set"], self.modes[mode]["char"], None, user)
+	if self.bot.auth(user) > 5 and msg[0:5] == "!kick":
+		if len(msg.split(" ")) == 2:
+			self.bot.kick(channel,msg.split(" ")[1])
+		elif len(msg.split(" ")) > 2:
+			self.bot.kick(channel,msg.split(" ")[1]," ".join(msg.split(" ")[2:]))
