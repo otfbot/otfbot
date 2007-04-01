@@ -95,6 +95,14 @@ class config:
 			except AttributeError:
 				self.logger.error("Config Error: network has no name")
 	
+	def getsubopts(self, list):
+		if len(list) == 1:
+			return self.channel_options[list[0]]
+		elif len(list) == 2:
+			return self.channel_options[list[0]][list[1]]
+		elif len(list) == 3:
+			return self.channel_options[list[0]][list[1]][list[2]]
+	
 	def get(self, option, default, module=None, network=None, channel=None):
 			if module:
 				option=module+"."+option
@@ -166,7 +174,7 @@ class config:
 			self.generic_options[option]=value
 
 
-	def	getNetworks(self):
+	def getNetworks(self):
 		ret=[]
 		for network in self.network_options.keys():
 			ret.append(network)

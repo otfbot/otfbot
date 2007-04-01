@@ -225,8 +225,8 @@ class chatMod(chatMod.chatMod):
 		user=user.split("!")[0]
 		if user == self.bot.nickname:
 			return
-		#if not channel in self.channels: 
-		#	return
+		if not channel in self.channels: 
+			return
 		if msg[0]=="!":
 			return
 			

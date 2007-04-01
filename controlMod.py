@@ -23,13 +23,44 @@ import chatMod
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
-
+		self.configshell=False
+		self.configlevel=[]
+	
+	def configgetlevellist(self):
+		if len(self.configlevel) == 0:
+			return self.bot.getNetworks()
+		elif len(self.configlevel) == 1:
+			return self.bot.getChannels(self.configlevel[0])
+		else:
+			return self.bot.getSubOptions(self.configlevel)
+	
 	def msg(self, user, channel, msg):
 		nick=user.split("!")[0]
 		if self.bot.auth(user) > 7 and string.lower(channel)==string.lower(self.bot.nickname):
 			if msg[0:6] == "config":
-				msg=msg[7:]
-				if msg[0:3] == "get":
+				self.configshell=True
+				self.configlevel=[]
+				self.bot.sendmsg(nick,"Entering configshell ...")
+			elif self.configshell:
+				if msg[0:2] == "ls":
+					out=""
+					lst=self.configgetlevellist()
+					for i in range(1,len(lst)):
+						out=out+str(i)+" "+lst[i-1]+" | "
+					self.bot.sendmsg(nick,out.encode("utf-8"))
+				elif msg[0:2] == "cd":
+					if msg[3:5] == ".." and len(self.configlevel)>=0:
+						self.configlevel.pop()
+					else:
+						num=int(msg[3:])
+						if 0 < num and num < len(self.configgetlevellist())+1:
+							self.configlevel.append(self.configgetlevellist()[num-1])
+						else:
+							self.bot.sendmsg(nick,"No such setting: "+str(num))
+				elif msg[0:4] == "quit":
+					self.configshell=False
+					self.bot.sendmsg(nick,"Leaving configshell ...")
+				elif msg[0:3] == "get":
 					msg=msg[4:]
 					msg=msg.split(" ")
 					#self.logger.debug(msg)
@@ -61,6 +92,7 @@ class chatMod(chatMod.chatMod):
 			elif msg[0:4] == "help":
 				self.bot.sendmsg(nick,"Available administrationcommands: reload, stop|quit, disconnect [network], connect network [port], listnetworks, changenick newnick, join channel, part channel [message], listchannels")
 			elif msg[0:6] == "reload":
+				self.bot.sendmsg(nick,"Reloading all modules ...")
 				self.bot.reloadModules()
 			elif msg[0:11] == "listmodules":
 				module=[]
@@ -129,6 +161,16 @@ class chatMod(chatMod.chatMod):
 						partmsg=""
 					self.bot.leave(args[1],partmsg)
 					self.bot.sendmsg(nick,"Left "+args[1])
+			elif msg[0:4] == "kick":
+				args=msg.split(" ")
+				if len(args) < 3:
+					self.bot.sendmsg(nick,"Usage: kick channel user [message]")
+				else:
+					if len(args) == 3:
+						self.bot.kick(args[1],args[2])
+					else:
+						self.bot.kick(args[1],args[2]," ".join(args[3:]))
+					self.bot.sendmsg(nick,"Kicked "+args[2]+" from "+args[1]+".")
 		#elif channel==self.bot.nickname:
 		#	self.bot.sendmsg(nick,"Not authorized")
 		elif self.bot.auth(user) > -1 and msg[0] == "!": #TODO: make "!" configurable
