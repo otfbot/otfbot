@@ -88,3 +88,4 @@ class chatMod(chatMod.chatMod):
 					to = 4
 				for i in range(to):
 					self.bot.sendmsg(channel,res[i][0]+"\t"+res[i][1])
+
