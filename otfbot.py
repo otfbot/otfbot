@@ -139,6 +139,7 @@ def loadConfig(myconfigfile):
 		myconfig.set('enabled', 'false', 'main', 'irc.samplenetwork')
 		myconfig.set('enabled', 'false', 'main', 'irc.samplenetwork', '#example')
 		myconfig.set('nickname', 'OtfBot', 'main')
+		myconfig.set('encoding', 'UTF-8', 'main')
 		myconfig.set('pidfile','otfbot.pid','main')
 		
 		file=open(myconfigfile, "w")
@@ -288,11 +289,11 @@ class Bot(irc.IRCClient):
 	def sendmsg(self, channel, msg, encoding="iso-8859-15", fallback="iso-8859-15"):
 		"""msg function, that converts from iso-8859-15 to a encoding given in the config"""
 		try:
-			msg=unicode(msg, encoding).encode(self.getConfig("encoding", "UTF-8"))
+			msg=unicode(msg, encoding).encode(self.getConfig("encoding", "UTF-8", "main"))
 		except UnicodeDecodeError:
 			#self.logger.debug("Unicode Decode Error with String:"+str(msg))
 			#Try with Fallback encoding
-			msg=unicode(msg, fallback).encode(self.getConfig("encoding", "UTF-8"))
+			msg=unicode(msg, fallback).encode(self.getConfig("encoding", "UTF-8", "main"))
 		except UnicodeEncodeError:
 			pass
 			#self.logger.debug("Unicode Encode Error with String:"+str(msg))
@@ -303,7 +304,7 @@ class Bot(irc.IRCClient):
 		
 	def sendme(self, channel, action, encoding="iso-8859-15"):
 		"""msg function, that converts from iso-8859-15 to a encoding given in the config"""
-		action=unicode(action, encoding).encode(self.getConfig("encoding", "UTF-8"))
+		action=unicode(action, encoding).encode(self.getConfig("encoding", "UTF-8", "main"))
 			
 		self.me(channel, action)
 		self.action(self.nickname, channel, action)
