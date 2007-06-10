@@ -447,7 +447,7 @@ class Bot(irc.IRCClient):
 		self._apirunner("topicUpdated",{"user":user,"channel":channel,"newTopic":newTopic})
 
 	def lineReceived(self, line):
-		self.logger.debug(str(line))
+		# self.logger.debug(str(line))
 		# adding a correct hostmask for join, part and quit
 		if line.split(" ")[1] == "JOIN" and line[1:].split(" ")[0].split("!")[0] != self.nickname:
 			self.userJoined(line[1:].split(" ")[0],string.lower(line.split(" ")[2][1:]))
