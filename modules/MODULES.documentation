@@ -1,0 +1,11 @@
+How to write a module
+
+* inherit from chatMod.py
+* write a method named "default_settings" which returnes a hash of the default
+  settings
+
+Ceveats:
+* self.network and self.nickname are available from connectionMade
+* the global variable "datadir" says where to store the data. If not 
+  using loadList or loadProperties you have to care yourself about 
+  creating it.
