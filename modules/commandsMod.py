@@ -31,12 +31,13 @@ class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot = bot
 		self.commandChar={}
+		self.channels=[]
 
 	def connectionMade(self):
 		self.reload()
 		
 	def joined(self, channel):
-		self.channel = channel
+		self.commands[channel]=functions.loadProperties(self.bot.getConfig("file", "commands.txt", "commandsMod", self.bot.network, channel))
 		self.commandChar[channel]=self.bot.getConfig("commandChar", "!", "commandsMod", self.bot.network, channel)
 	
 	def msg(self, user, channel, msg):
@@ -63,9 +64,6 @@ class chatMod(chatMod.chatMod):
 		self.commandChar={}
 		self.commands["general"]=functions.loadProperties(self.bot.getConfig("file","commands.txt","commandsMod"))
 		self.commands["network"]=functions.loadProperties(self.bot.getConfig("file","commands.txt","commandsMod", self.bot.network))
-		for channel in self.bot.channels:
-			self.commands[channel]=functions.loadProperties(self.bot.getConfig("file", "commands.txt", "commandsMod", self.bot.network, channel))
-			self.commandChar[channel]=self.bot.getConfig("commandChar", "!", "commandsMod", self.bot.network, channel)
 
 	def reload(self):
 		self.start()
