@@ -55,7 +55,8 @@ class chatMod(threading.Thread):
 			if not self.end:
 				for rdfUrl in self.rdfUrls:
 					self.postNews(rdfUrl)
-		self.logger.info("rdfMod: successfully stopped.")
+		# logging would be done after logging-subsys is closed
+		#self.logger.info("rdfMod: successfully stopped.")
 
 	def postNews(self, rdfUrl):
 		unread =[]
