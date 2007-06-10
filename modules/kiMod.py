@@ -61,6 +61,8 @@ class responder:
 
 class megahalResponder(responder):
 	def __init__(self, bot):
+		mh_python.setnobanner()
+		mh_python.setdir(datadir)
 		mh_python.initbrain()
 		self.bot=bot
 	def learn(self, msg):
