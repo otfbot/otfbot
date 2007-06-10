@@ -25,7 +25,7 @@ import chatMod
 
 def default_settings():
 	settings={'logMod.path':'$n-$c/$y-$m-$d.log',
-			  'logMod.storedir':'log'}
+			  'logMod.dir':datadir}
 	return settings
 		
 class chatMod(chatMod.chatMod):
@@ -34,9 +34,10 @@ class chatMod(chatMod.chatMod):
 		self.channels={}
 		self.files={}
 		self.path={}
-		self.logpath=bot.getConfig("logMod.storedir", "log")+"/"+bot.getConfig("logMod.path", "$n-$c/$y-$m-$d.log")
-		if not os.path.isdir(bot.getConfig("logMod.storedir", "log")):
-			os.mkdir(bot.getConfig("logMod.storedir", "log"))
+		self.datadir=bot.getConfig("logMod.dir",datadir)
+		self.logpath=self.datadir+"/"+bot.getConfig("logMod.path", "$n-$c/$y-$m-$d.log")
+		if not os.path.isdir(self.datadir):
+			os.mkdir(self.datadir)
 		locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
 		self.day=self.ts("%d") #saves the hour, to detect daychanges
 		#self.timer=threading.Timer(self.secsUntilDayChange(), self.dayChange)

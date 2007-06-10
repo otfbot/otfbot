@@ -42,7 +42,7 @@ def default_settings():
 	settings['kiMod_keywordsTable']='keywords'
 	settings['kiMod_stringsTable']='strings'
 	
-	settings['kiMod_wordpairsFile']='wordpairs.txt'
+	settings['kiMod_wordpairsFile']=datadir+'/wordpairs.txt'
 	settings['kiMod_randomPercent']='0'
 	settings['kiMod_answerPercent']='50'
 	settings['kiMod_answerQueryPercent']='70'
@@ -183,7 +183,7 @@ class chatMod(chatMod.chatMod):
 	def start(self):
 		self.logger = self.bot.logging.getLogger("core.kiMod")
 		self.channels=[]
-		self.wordpairsFile=self.bot.getConfig("kiMod_wordpairsFile", "wordpairs.txt")#XXX: this needs to be utf-8 encoded
+		self.wordpairsFile=self.bot.getConfig("kiMod_wordpairsFile", datadir+"/wordpairs.txt")#XXX: this needs to be utf-8 encoded
 		self.wordpairs=functions.loadProperties(self.wordpairsFile)
 
 		module=self.bot.getConfig("kiMod_module", "megahal")
