@@ -87,3 +87,5 @@ class chatMod:
 	def reload(self):
 		"""called to reload the settings of the module"""
 		pass
+	def start(self):
+		pass
