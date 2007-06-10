@@ -30,7 +30,8 @@ from twisted.internet import reactor, protocol, error
 import os, random, string, re, threading, time, sys, traceback, threading, atexit
 import functions, config
 
-sys.path.append("modules")
+sys.path.insert(1,"modules")
+
 classes=[]
 for file in os.listdir("modules"):
 	if len(file)>=3 and file[-3:]==".py":
