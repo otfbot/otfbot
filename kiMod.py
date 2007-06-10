@@ -96,6 +96,7 @@ class citeResponder(responder):
 		self.keywordsTable=bot.getConfig("kiMod_keywordsTable", "keywords")
 		self.stringsTable=bot.getConfig("kiMod_stringsTable", "strings")
 		self.maxStrings=int(bot.getConfig("kiMod_maxStrings", "1000"))
+		self.logger=bot.logger
 		
 		try:
 			self.db=MySQLdb.connect(host=self.host, user=self.user, passwd=self.passwd, db=self.database)
@@ -111,27 +112,27 @@ class citeResponder(responder):
 		
 		#create tables, if needed
 		if not self.keywordsTable in tables:
-			self.cursor.execute("CREATE TABLE "+self.keywordsTable+"(keyword TEXT, stringid INT);");
+			self.cursor.execute("CREATE TABLE "+MySQLdb.escape_string(self.keywordsTable)+"(keyword TEXT, stringid INT);");
 			self.logger.info("created keywords table:"+self.keywordsTable)
 		if not self.stringsTable in tables:
-			self.cursor.execute("CREATE TABLE "+self.stringsTable+"(id INT AUTO_INCREMENT, string TEXT, PRIMARY KEY(id));");
+			self.cursor.execute("CREATE TABLE "+MySQLdb.escape_string(self.stringsTable)+"(id INT AUTO_INCREMENT, string TEXT, PRIMARY KEY(id));");
 			self.logger.info("created strings table:"+self.stringsTable)
 
 	def learn(self, string):
 		cursor=self.cursor;
 		words=self.getwords(string)
-		self.cursor.execute("SELECT id FROM "+self.stringsTable+" WHERE string = '"+string+"';")
+		self.cursor.execute("SELECT id FROM "+MySQLdb.escape_string(self.stringsTable)+" WHERE string = '"+MySQLdb.escape_string(string)+"';")
 		if len(words) >1 and not len(self.cursor.fetchall()): #Do not learn single word / do not leran something twice
-			self.cursor.execute("INSERT INTO "+self.stringsTable+" (string) VALUES (\""+re.sub("\"", "\\\"", string)+"\");")
+			self.cursor.execute("INSERT INTO "+MySQLdb.escape_string(self.stringsTable)+" (string) VALUES (\""+MySQLdb.escape_string(string)+"\");")
 			self.cursor.execute("SELECT LAST_INSERT_ID();")
 			id=(self.cursor.fetchall())[0][0];
 			if id>self.maxStrings:
-				self.cursor.execute("DELETE FROM "+self.stringsTable+" WHERE id < "+str(id-self.maxStrings));
+				self.cursor.execute("DELETE FROM "+MySQLdb.escape_string(self.stringsTable)+" WHERE id < "+MySQLdb.escape_string(str(id-self.maxStrings)));
 			for word in words:
 				if word!="":
-					self.cursor.execute("INSERT INTO "+self.keywordsTable+" VALUES (\""+word+"\","+str(id)+");")
+					self.cursor.execute("INSERT INTO "+MySQLdb.escape_string(self.keywordsTable)+" VALUES (\""+MySQLdb.escape_string(word)+"\","+MySQLdb.escape_string(str(id))+");")
 				if id>self.maxStrings:
-					self.cursor.execute("DELETE FROM "+self.keywordsTable+" WHERE stringid < "+str(id-self.maxStrings));
+					self.cursor.execute("DELETE FROM "+MySQLdb.escape_string(self.keywordsTable)+" WHERE stringid < "+MySQLdb.escape_string(str(id-self.maxStrings)));
 
 	def reply(self, msg):
 		#self.learn(msg)
@@ -146,7 +147,7 @@ class citeResponder(responder):
 				if len(word) > len(topword):
 					topword=word
 			#print "Topword: "+topword
-			self.cursor.execute("SELECT stringid FROM "+self.keywordsTable+" WHERE keyword LIKE '%"+topword+"%';")
+			self.cursor.execute("SELECT stringid FROM "+MySQLdb.escape_string(self.keywordsTable)+" WHERE keyword LIKE '%"+MySQLdb.escape_string(topword)+"%';")
 			ids=(self.cursor.fetchall());
 			if len(ids)==0:
 				notwords.append(topword)
@@ -158,7 +159,7 @@ class citeResponder(responder):
 
 		if len(ids):
 			id=random.choice(ids)[0] #choose one (if multiple matches)
-			self.cursor.execute("SELECT string FROM "+self.stringsTable+" WHERE id='"+str(id)+"';")
+			self.cursor.execute("SELECT string FROM "+MySQLdb.escape_string(self.stringsTable)+" WHERE id='"+MySQLdb.escape_string(str(id))+"';")
 			ret=self.cursor.fetchall()
 			if len(ret):
 				reply=(ret)[0][0]
@@ -180,17 +181,18 @@ class chatMod(chatMod.chatMod):
 		self.bot=bot
 	
 	def start(self):
-		#self.logger = bot.logging.getLogger("core.kiMod")
+		self.logger = self.bot.logging.getLogger("core.kiMod")
 		self.channels=[]
 		self.wordpairsFile=self.bot.getConfig("kiMod_wordpairsFile", "wordpairs.txt")#XXX: this needs to be utf-8 encoded
 		self.wordpairs=functions.loadProperties(self.wordpairsFile)
 
 		module=self.bot.getConfig("kiMod_module", "megahal")
-		self.lnickname=string.lower(self.bot.nickname)
+		self.logger.debug("kiMod: using module "+module+",cite="+str(CITE)+",megahal="+str(MEGAHAL))
 		if module=="cite":
 			if CITE:
 				try:
-					self.responder=citeResponder(bot)
+					self.responder=citeResponder(self.bot)
+					self.logger.debug("kiMod: using cite module")
 				except "boterror":
 					self.logger.error("Error connecting the cite-DB.")
 					self.responder=responder() #null responder
@@ -244,8 +246,8 @@ class chatMod(chatMod.chatMod):
 		if self.lnickname==string.lower(channel):
 			private=1
 			reply=self.responder.reply(msg)
-		#elif straing.lower(msg[0:len(self.bot.nickname)])==string.lower(self.bot.nickname) or number<chance:
-		elif self.lnickname in string.lower(msg) or israndom:
+		#elif string.lower(msg[0:len(self.bot.nickname)])==string.lower(self.bot.nickname) or number<chance:
+		elif (self.lnickname in string.lower(msg)) or israndom:
 			if string.lower(msg[:len(self.bot.nickname)])==self.lnickname:
 				msg=msg[len(self.bot.nickname)+1:] #+1 for the following ":", " " or ","
 			if len(msg) and msg[0]==" ": 
@@ -279,6 +281,8 @@ class chatMod(chatMod.chatMod):
 				if israndom or number < chance: #apply answerPercent only on answers(check for israndom)
 					self.bot.sendmsg(channel, user+": "+reply, "UTF-8")
 
+	def connectionMade(self):
+		self.lnickname=string.lower(self.bot.nickname)
 	def connectionLost(self, reason):
 		self.responder.cleanup()
 
