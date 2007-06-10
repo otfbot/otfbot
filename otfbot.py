@@ -76,10 +76,11 @@ if options.foreground == False and not options.debug > 0:
 		pass
 
 import logging
+import logging.handlers
 # Basic settings for logging
 # logging to logfile
-#filelogger = logging.RotatingFileHandler('otfbot.log','a',20480,5)
-filelogger = logging.FileHandler('otfbot.log','a')
+filelogger = logging.handlers.RotatingFileHandler('otfbot.log','a',20480,5)
+#filelogger = logging.FileHandler('otfbot.log','a')
 logging.getLogger('').setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s %(name)-18s %(module)-18s %(levelname)-8s %(message)s')
 filelogger.setFormatter(formatter)
@@ -453,7 +454,7 @@ class Bot(irc.IRCClient):
 		self._apirunner("topicUpdated",{"user":user,"channel":channel,"newTopic":newTopic})
 
 	def lineReceived(self, line):
-		# self.logger.debug(str(line))
+		self.logger.debug(str(line))
 		# adding a correct hostmask for join, part and quit
 		if line.split(" ")[1] == "JOIN" and line[1:].split(" ")[0].split("!")[0] != self.nickname:
 			self.userJoined(line[1:].split(" ")[0],string.lower(line.split(" ")[2][1:]))
