@@ -18,39 +18,44 @@
 # (c) 2006 by Robert Weidlich
 #
 
-def loadProperties(propertiesFile):
-	properties={}
-	if propertiesFile=="":
-		return {}
-	try:
-		propFile = open(propertiesFile, "r")
-		content = propFile.read()
-		propFile.close()
-		for line in content.split("\n"):
-			if len(line) >1 and line[0] != "#":
-				pair = line.split("=", 1)
-				if len(pair)==2:
-					properties[pair[0]] = pair[1]
-	except IOError:
-		print "loadProperties: Creating", propertiesFile
-		propFile = open(propertiesFile, "w")
-		propFile.close()
-	return properties
-	
-def loadList(listFile):
-	if listFile=="":
-		return []
-	list=[]
-	try:
-		file = open(listFile, "r")
-		content = file.read()
-		file.close()
-		for word in content.split("\n"):
-			if word != "" and word[0] != '#':
-				list.append(word)
-	except IOError:
-		print "loadList: Creating", listFile
-		file = open(listFile, "w")
-		file.close()
-	return list
+import os
 
+def loadProperties(propertiesFile):
+    properties={}
+    if propertiesFile=="":
+        return {}
+    try:
+        propFile = open(propertiesFile, "r")
+        content = propFile.read()
+        propFile.close()
+        for line in content.split("\n"):
+            if len(line) >1 and line[0] != "#":
+                pair = line.split("=", 1)
+                if len(pair)==2:
+                    properties[pair[0]] = pair[1]
+    except IOError:
+        print "loadProperties: Creating", propertiesFile
+        if (not os.path.isdir(os.path.dirname(propertiesFile))):
+            os.makedirs(os.path.dirname(propertiesFile))
+        propFile = open(propertiesFile, "w")
+        propFile.close()
+    return properties
+    
+def loadList(listFile):
+    if listFile=="":
+        return []
+    list=[]
+    try:
+        file = open(listFile, "r")
+        content = file.read()
+        file.close()
+        for word in content.split("\n"):
+            if word != "" and word[0] != '#':
+                list.append(word)
+    except IOError:
+        print "loadList: Creating", listFile
+        if (not os.path.isdir(os.path.dirname(listFile))):
+            os.makedirs(os.path.dirname(listFile))
+        file = open(listFile, "w")
+        file.close()
+    return list
