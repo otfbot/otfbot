@@ -19,16 +19,13 @@
 #
 
 import time, string, locale, threading, os
-try:
-	from string import Template
-	hardpath=False
-except ImportError:
-	hardpath=True
+from string import Template
 import chatMod
 
 
 def default_settings():
-	settings={'logMod.logpath':'log/$n-$c/$y-$m-$d.log'}
+	settings={'logMod.path':'$n-$c/$y-$m-$d.log',
+			  'logMod.storedir':'log'}
 	return settings
 		
 class chatMod(chatMod.chatMod):
@@ -37,13 +34,9 @@ class chatMod(chatMod.chatMod):
 		self.channels={}
 		self.files={}
 		self.path={}
-		self.hardpath=hardpath
-		if not self.hardpath:
-			self.logpath=bot.getConfig("logMod.logpath", "log/$n-$c/$y-$m-$d.log")
-		else:
-			self.logpath="log/"
-		#if not os.path.isdir(self.logpath):
-		#	os.mkdir(self.logpath)
+		self.logpath=bot.getConfig("logMod.storedir", "log")+"/"+bot.getConfig("logMod.path", "$n-$c/$y-$m-$d.log")
+		if not os.path.isdir(bot.getConfig("logMod.storedir", "log")):
+			os.mkdir(bot.getConfig("logMod.storedir", "log"))
 		locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
 		self.day=self.ts("%d") #saves the hour, to detect daychanges
 		#self.timer=threading.Timer(self.secsUntilDayChange(), self.dayChange)
@@ -53,7 +46,7 @@ class chatMod(chatMod.chatMod):
 			self.joined(c)
 	
 	def timemap(self):
-		return {'y':self.ts("%Y"),'m':self.ts("%m"),'d':self.ts("%d")}
+		return {'y':self.ts("%Y"), 'm':self.ts("%m"), 'd':self.ts("%d")}
 
 	def ts(self, format="%H:%M"):
 		"""timestamp"""
@@ -89,12 +82,9 @@ class chatMod(chatMod.chatMod):
 			self.files[channel].flush()
 
 	def logPrivate(self, user, mystring):
-		if not self.hardpath:
-			dic=self.timemap()
-			dic['c']=string.lower(user)
-			filename=Template(self.logpath).safe_substitute(dic)
-		else:
-			filename=self.logpath+string.lower(user)+"/"+self.ts("%Y-%m-%d.log")
+		dic=self.timemap()
+		dic['c']=string.lower(user)
+		filename=Template(self.logpath).safe_substitute(dic)
 		if not os.path.exists(os.path.dirname(filename)):
 			os.mkdir(os.path.dirname(filename))	
 		file=open(filename, "a")
@@ -104,18 +94,15 @@ class chatMod(chatMod.chatMod):
 	def joined(self, channel):
 		self.channels[string.lower(channel)]=1
 		#self.files[string.lower(channel)]=open(string.lower(channel)+".log", "a")
-		if not self.hardpath:
-			self.path[channel]=Template(self.logpath).safe_substitute({'c':channel})
-			file=Template(self.path[channel]).safe_substitute(self.timemap())
-		else:
-			self.path[channel]=self.logpath+channel+"/"
-			file=self.path[channel]+self.ts("%Y-%m-%d.log")
+		self.path[channel]=Template(self.logpath).safe_substitute({'c':channel})
+		file=Template(self.path[channel]).safe_substitute(self.timemap())
 		if not os.path.exists(os.path.dirname(file)):
 			os.mkdir(os.path.dirname(file))
 		self.files[string.lower(channel)]=open(file, "a")
 		self.log(channel, "--- Log opened "+self.ts("%a %b %d %H:%M:%S %Y"), False)
 		self.log(channel, "-!- "+self.bot.nickname+" ["+self.bot.nickname+"@hostmask] has joined "+channel) #TODO: real Hostmask
-	def left(self,channel):
+		
+	def left(self, channel):
 		self.log(channel, "-!- "+self.bot.nickname+"["+self.bot.nickname+"@hostmask] has left "+channel)
 		del self.channels[string.lower(channel)]
 		self.files[string.lower(channel)].close()
@@ -175,7 +162,7 @@ class chatMod(chatMod.chatMod):
 		
 	def stop(self):
 		for channel in self.channels:
-			self.log(channel, "--- Log closed "+self.ts("%a %b %d %H:%M:%S %Y"),False)
+			self.log(channel, "--- Log closed "+self.ts("%a %b %d %H:%M:%S %Y"), False)
 			self.files[channel].close()
 		#self.timer.cancel()
 
@@ -187,10 +174,7 @@ class chatMod(chatMod.chatMod):
 			net=self.bot.network
 		else:
 			net=self.bot.network.split(".")[-2]
-		if not hardpath:
-			self.logpath=Template(self.logpath).safe_substitute({'n':net})
-		else:
-			self.logpath=self.logpath+net+"-"
+		self.logpath=Template(self.logpath).safe_substitute({'n':net})
 
 	def connectionLost(self, reason):
 		self.stop()
