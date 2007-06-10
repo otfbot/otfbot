@@ -30,11 +30,12 @@ from twisted.internet import reactor, protocol, error
 import os, random, string, re, threading, time, sys, traceback, threading, atexit
 import functions, config
 
-sys.path.append("module")
+sys.path.append("modules")
 classes=[]
 for file in os.listdir("modules"):
 	if len(file)>=3 and file[-3:]==".py":
 		classes.append(__import__("modules/"+file[:-3]))
+		classes[-1].datadir = classes[-1].__name__+"-data"
 
 modchars={'a':'!','o':'@','h':'%','v':'+'}
 modcharvals={'!':4,'@':3,'%':2,'+':1,' ':0}
@@ -237,6 +238,7 @@ class Bot(irc.IRCClient):
 	
 	# public API
 	def startMods(self):
+		workingdir=os.getcwd()
 		for chatModule in self.classes:
 			#if self.getConfig("enabled","true",chatModule.__name__,self.network)
 			self.mods.append( chatModule.chatMod(self) )

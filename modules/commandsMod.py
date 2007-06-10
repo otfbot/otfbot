@@ -23,7 +23,7 @@ import chatMod, functions
 def default_settings():
 	settings={};
 	settings['commandsMod.fileencoding']='iso-8859-15'
-	settings['commandsMod.file']='commands.txt'
+	settings['commandsMod.file']=datadir+'/commands.txt'
 	settings['commandsmod.commandChar']='!'
 	return settings
 		
@@ -37,7 +37,7 @@ class chatMod(chatMod.chatMod):
 		self.reload()
 		
 	def joined(self, channel):
-		self.commands[channel]=functions.loadProperties(self.bot.getConfig("file", "commands.txt", "commandsMod", self.bot.network, channel))
+		self.commands[channel]=functions.loadProperties(self.bot.getConfig("file", datadir+"/commands.txt", "commandsMod", self.bot.network, channel))
 		self.commandChar[channel]=self.bot.getConfig("commandChar", "!", "commandsMod", self.bot.network, channel)
 	
 	def msg(self, user, channel, msg):
@@ -62,8 +62,8 @@ class chatMod(chatMod.chatMod):
 	def start(self):
 		self.commands={}
 		self.commandChar={}
-		self.commands["general"]=functions.loadProperties(self.bot.getConfig("file","commands.txt","commandsMod"))
-		self.commands["network"]=functions.loadProperties(self.bot.getConfig("file","commands.txt","commandsMod", self.bot.network))
+		self.commands["general"]=functions.loadProperties(self.bot.getConfig("file",datadir+"/commands.txt","commandsMod"))
+		self.commands["network"]=functions.loadProperties(self.bot.getConfig("file",datadir+"/commands.txt","commandsMod", self.bot.network))
 
 	def reload(self):
 		self.start()

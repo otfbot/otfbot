@@ -23,7 +23,7 @@ import chatMod, functions
 
 def default_settings():
 	settings={};
-	settings['marvinMod.filename']='marvin.txt'
+	settings['marvinMod.filename']=datadir+'/marvin.txt'
 	settings['marvinMod.percent']='5'
 	settings['marvinMod.fileencoding']='iso-8859-15'
 	return settings
@@ -43,7 +43,7 @@ class chatMod(chatMod.chatMod):
 				self.bot.sendmsg(channel, random.choice(self.marvin), self.bot.getConfig("fileencoding", "iso-8859-15", "marvinMod"))
 
 	def start(self):
-		self.marvin=functions.loadList(self.bot.getConfig("filename", "marvin.txt", "marvinMod"))
+		self.marvin=functions.loadList(self.bot.getConfig("filename", datadir+"/marvin.txt", "marvinMod"))
 
 	def reload(self):
 		self.start()

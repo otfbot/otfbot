@@ -22,13 +22,13 @@ import chatMod, functions
 
 def default_settings():
 	settings={};
-	settings['badwordsMod.file']='badwords.txt'
+	settings['badwordsMod.file']=datadir+'/badwords.txt'
 	return settings
 		
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
-		self.badwordsFile=bot.getConfig("file", "badwords.txt","badwordsMod")
+		self.badwordsFile=bot.getConfig("file", datadir+"/badwords.txt","badwordsMod")
 		self.badwords=functions.loadList(self.badwordsFile)
 		self.channels = {}
 		
