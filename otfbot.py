@@ -29,9 +29,9 @@ except ImportError:
 from twisted.internet import reactor, protocol, error
 import os, random, string, re, threading, time, sys, traceback, threading, atexit
 import functions, config
-import mathMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, authMod, controlMod, modeMod, marvinMod , reminderMod, eightBallMod, nobodyisperfectMod, rdfMod, weatherMod, kursMod
+import mathMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, authMod, controlMod, modeMod, marvinMod , reminderMod, eightBallMod, nobodyisperfectMod, rdfMod, weatherMod, kursMod, kiMod
 
-classes = [ mathMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, authMod, controlMod, modeMod, marvinMod , reminderMod, eightBallMod, nobodyisperfectMod, rdfMod, weatherMod, kursMod ]
+classes = [ mathMod, commandsMod, identifyMod, badwordsMod, answerMod, logMod, authMod, controlMod, modeMod, marvinMod , reminderMod, eightBallMod, nobodyisperfectMod, rdfMod, weatherMod, kursMod, kiMod ]
 
 modchars={'a':'!','o':'@','h':'%','v':'+'}
 modcharvals={'!':4,'@':3,'%':2,'+':1,' ':0}
@@ -238,10 +238,11 @@ class Bot(irc.IRCClient):
 			self.mods.append( chatModule.chatMod(self) )
 			self.mods[-1].setLogger(self.logger)
 			self.mods[-1].name = chatModule.__name__
-			try:
-				self.mods[-1].start()
-			except AttributeError:
-				pass
+			#try:
+			#	self.mods[-1].start()
+			#except AttributeError:
+			#	pass
+		self._apirunner("start")
 	def setConfig(self, option, value, module=None, network=None, channel=None):
 		return setConfig(option, value, module, network, channel)
 	def hasConfig(self, option, module=None):
