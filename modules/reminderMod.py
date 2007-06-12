@@ -50,7 +50,7 @@ class chatMod(chatMod.chatMod):
 			try:
 				wait=int(tmp[1])
 			except ValueError:
-				self.bot.sendmsg(channel, user.split("!")[0]+": invalid number format \""+msg[1]+"\".")
+				self.bot.sendmsg(channel, user.split("!")[0]+": invalid number format \""+tmp[1]+"\".")
 				return
 			text=str(tmp[2])
 			
