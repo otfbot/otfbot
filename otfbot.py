@@ -21,26 +21,16 @@
 
 """Chat Bot"""
 svnversion="$Revision$".split(" ")[1]
-try:
-	from twisted.words.protocols import irc
-except ImportError:
-	from twisted.protocols import irc
+from twisted.words.protocols import irc
 
-from twisted.internet import reactor, protocol, error
+from twisted.internet import reactor, protocol, error, ssl
 import os, random, string, re, threading, time, sys, traceback, threading, atexit
 import functions, config
-
-sys.path.insert(1,"modules")
-
-classes=[]
-for file in os.listdir("modules"):
-	if len(file)>=3 and file[-3:]==".py":
-		classes.append(__import__("modules/"+file[:-3]))
-		classes[-1].datadir = classes[-1].__name__+"-data"
 
 modchars={'a':'!','o':'@','h':'%','v':'+'}
 modcharvals={'!':4,'@':3,'%':2,'+':1,' ':0}
 
+###############################################################################
 # Parse commandline options
 from optparse import OptionParser
 parser = OptionParser()
@@ -54,7 +44,7 @@ parser.add_option("-g","--group",dest="groupid",help="if run as root, the bot ne
 (options,args)=parser.parse_args()
 if options.debug and options.debug not in (10,20,30,40,50):
 	parser.error("Unknown value for --debug")
-
+###############################################################################
 #check for root rights
 if os.getuid()==0:
 	if options.userid and options.userid!=0 and options.groupid and options.groupid!=0:
@@ -65,7 +55,7 @@ if os.getuid()==0:
 		print "Otfbot should not be run as root."
 		print "please use -u and -g to specify a userid/groupid"
 		sys.exit(1)
-
+###############################################################################
 # Detaching from console
 if options.foreground == False and not options.debug > 0:
 	try:
@@ -74,7 +64,8 @@ if options.foreground == False and not options.debug > 0:
 		sys.exit(0)
 	except ImportError:
 		pass
-
+###############################################################################
+# Setup Logging
 import logging
 import logging.handlers
 # Basic settings for logging
@@ -98,6 +89,14 @@ if options.debug > 0:
 corelogger = logging.getLogger('core')
 corelogger.info("Starting OtfBot - Version svn "+str(svnversion))
 
+def logerror(logger, module, exception):
+	logger.error("Exception in Module "+module+": "+str(exception))
+	tb_list = traceback.format_tb(sys.exc_info()[2])
+	for entry in tb_list:
+		for line in entry.strip().split("\n"):
+			logger.error(line)
+
+###############################################################################
 # Function which is called, when the program terminates.
 def exithook():
 	# remove Pidfile
@@ -105,7 +104,15 @@ def exithook():
 	writeConfig()
 	corelogger.info("Bot shutted down")
 	corelogger.info("-------------------------")
-# registering this function
+
+# Load modules
+sys.path.insert(1,"modules")
+classes=[]
+for file in os.listdir("modules"):
+	if len(file)>=3 and file[-3:]==".py":
+		classes.append(__import__("modules/"+file[:-3]))
+		classes[-1].datadir = classes[-1].__name__+"-data"
+		corelogger.debug("Loading module "+classes[-1].__name__)
 
 
 # react on signals
@@ -115,6 +122,8 @@ def exithook():
 #signal.signal(signal.SIGHUP,signalhandler)
 #signal.signal(signal.SIGTERM,signalhandler)
 
+###############################################################################
+# some config functions
 theconfig=None
 def setConfig(option, value, module=None, network=None, channel=None):
 	theconfig.set(option, value, module, network, channel)
@@ -157,6 +166,15 @@ def loadConfig(myconfigfile):
 		sys.exit(0)
 	return myconfig
 
+def writeConfig():
+	file=open(configfile, "w")
+	#options=config.keys()
+	#options.sort()
+	#for option in options:
+	#	file.write(option+"="+config[option]+"\n")
+	file.write(theconfig.exportxml())
+	file.close()
+
 class Schedule(threading.Thread):
 	def __init__(self):
 		threading.Thread.__init__(self)
@@ -191,24 +209,7 @@ schedulethread.start()
 
 def addScheduleJob(time, function):
 	schedulethread.addScheduleJob(time, function)
-
-def logerror(logger, module, exception):
-	logger.error("Exception in Module "+module+": "+str(exception))
-	tb_list = traceback.format_tb(sys.exc_info()[2])
-	for entry in tb_list:
-		for line in entry.strip().split("\n"):
-			logger.error(line)
 	
-def writeConfig():
-	file=open(configfile, "w")
-	#options=config.keys()
-	#options.sort()
-	#for option in options:
-	#	file.write(option+"="+config[option]+"\n")
-	file.write(theconfig.exportxml())
-	file.close()
-
-
 class Bot(irc.IRCClient):
 	"""A Chat Bot"""
 	def __init__(self):
@@ -454,7 +455,7 @@ class Bot(irc.IRCClient):
 		self._apirunner("topicUpdated",{"user":user,"channel":channel,"newTopic":newTopic})
 
 	def lineReceived(self, line):
-		self.logger.debug(str(line))
+		#self.logger.debug(str(line))
 		# adding a correct hostmask for join, part and quit
 		if line.split(" ")[1] == "JOIN" and line[1:].split(" ")[0].split("!")[0] != self.nickname:
 			self.userJoined(line[1:].split(" ")[0],string.lower(line.split(" ")[2][1:]))
@@ -466,7 +467,7 @@ class Bot(irc.IRCClient):
 		else:
 			irc.IRCClient.lineReceived(self,line)
 			
-class BotFactory(protocol.ClientFactory):
+class BotFactory(protocol.ReconnectingClientFactory):
 	"""The Factory for the Bot"""
 	protocol = Bot
 
@@ -484,11 +485,11 @@ class BotFactory(protocol.ClientFactory):
 				schedulethread.stop() #for stopping, comment out, if you use autoreconnect
 				#TODO: add sth to stop modules
 				reactor.stop()
-		else:
-			corelogger.error("Disconnected: "+str(reason.getErrorMessage())+". Trying to reconnect")
-			connector.connect()
-	def clientConnectionFailed(self, connector, reason):
-		reactor.stop()
+		#else:
+		#	corelogger.error("Disconnected: "+str(reason.getErrorMessage())+". Trying to reconnect")
+		#	connector.connect()
+	#def clientConnectionFailed(self, connector, reason):
+	#	reactor.stop()
 
 try:
 	configfile=parser.configfile
@@ -501,6 +502,8 @@ pidfile=theconfig.get('pidfile','otfbot.pid','main')
 f=open(pidfile,'w')
 f.write(str(os.getpid())+"\n")
 f.close()
+
+# registering the exithook function
 atexit.register(exithook)
 
 networks=theconfig.getNetworks()
@@ -515,5 +518,9 @@ if networks:
 				if(not getBoolConfig('enabled','unset','main', network)):
 					channels.remove(channel)
 			f = BotFactory(network, channels)
-			connections[network]=reactor.connectTCP(unicode(network).encode("iso-8859-1"), 6667, f);
+			if (getBoolConfig('ssl','False','main',network)):
+				s = ssl.ClientContextFactory()
+				connections[network]=reactor.connectSSL(unicode(network).encode("iso-8859-1"), int(getConfig('port','6697','main',network)), f,s);
+			else:
+				connections[network]=reactor.connectTCP(unicode(network).encode("iso-8859-1"), int(getConfig('port','6667','main',network)), f)
 	reactor.run()
