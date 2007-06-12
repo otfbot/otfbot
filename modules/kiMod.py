@@ -263,7 +263,7 @@ class chatMod(chatMod.chatMod):
 			self.responder.learn(msg)
 		if reply!="":
 			#reply=re.sub(" "+self.bot.nickname, " "+user, reply) #more secure to match only the name
-			reply=re.sub(self.bot.nickname, user, reply, re.I) 
+			reply=re.sub(self.lnickname, user, reply, re.I) 
 			for key in self.wordpairs.keys():
 				reply=re.sub(key, self.wordpairs[key], reply, re.I)
 			
