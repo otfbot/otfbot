@@ -24,8 +24,8 @@ svnversion="$Revision$".split(" ")[1]
 from twisted.words.protocols import irc
 
 from twisted.internet import reactor, protocol, error, ssl
-import os, random, string, re, threading, time, sys, traceback, threading, atexit
-import functions, config
+import os, random, string, re, sys, traceback, atexit
+import functions, config, scheduler
 
 modchars={'a':'!','o':'@','h':'%','v':'+'}
 modcharvals={'!':4,'@':3,'%':2,'+':1,' ':0}
@@ -175,36 +175,7 @@ def writeConfig():
 	file.write(theconfig.exportxml())
 	file.close()
 
-class Schedule(threading.Thread):
-	def __init__(self):
-		threading.Thread.__init__(self)
-		self.times=[]
-		self.functions=[]
-		self.stopme=False
-
-	def stop(self):
-		self.stopme=True
-
-	def run(self):
-		while not self.stopme:
-			time.sleep(60)
-			toremove=[]
-			for i in range(len(self.times)):
-				self.times[i]=self.times[i]-1
-				if self.times[i]<=0:
-					self.functions[i]()
-					toremove.append(i)
-			toremove.reverse()
-			for i in toremove:
-				del self.times[i]
-				del self.functions[i]
-
-
-	def addScheduleJob(self, wait, function):
-		self.times.append( int(wait) )
-		self.functions.append(function)
-
-schedulethread=Schedule()
+schedulethread=scheduler.Schedule()
 schedulethread.start()
 
 def addScheduleJob(time, function):
