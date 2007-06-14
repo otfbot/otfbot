@@ -176,7 +176,6 @@ def writeConfig():
     #    file.write(option+"="+config[option]+"\n")
     file.write(theconfig.exportxml())
     file.close()
-
 schedulethread=scheduler.Schedule()
 schedulethread.start()
 
@@ -190,7 +189,7 @@ class Bot(irc.IRCClient):
         #you may need to configure them first
         self.classes = classes
         self.users={}
-        self.channel=[]
+        self.channels=[]
         self.network=None
     
         self.mods = []
@@ -247,14 +246,8 @@ class Bot(irc.IRCClient):
         return self.users
     def addScheduleJob(self, time, function):
         return addScheduleJob(time, function)
-    def getConnections(self):
-        return connections
-    def addConnection(self,address,port):
-        f = BotFactory(address,[])
-        connections[address]=reactor.connectTCP(unicode(address).encode("iso-8859-1"),port,f)
     def getReactor(self):
         return reactor
-
     def auth(self, user):
         """test if the user is privileged"""
         level=0
@@ -304,8 +297,10 @@ class Bot(irc.IRCClient):
     
     # Callbacks
     def connectionMade(self):
-        self.network=self.factory.network
-        self.channels=self.factory.channels
+        self.network=self.transport.addr[0]
+        tmp=self.getChannels(self.network)
+        if tmp:
+            self.channels=tmp
         self.nickname=unicode(self.getConfig("nickname", "OtfBot", 'main', self.network)).encode("iso-8859-1")
         if len(self.network.split(".")) < 2:
             nw = self.network
@@ -327,21 +322,21 @@ class Bot(irc.IRCClient):
     def signedOn(self):
         self.logger.info("signed on "+self.network+" as "+self.nickname)
 
-        for channel in self.factory.channels:
-            if(getBoolConfig("enabled", "false", "main", self.factory.network, channel)):
+        for channel in self.channels:
+            if(getBoolConfig("enabled", "false", "main", self.network, channel)):
                 self.join(unicode(channel).encode("iso-8859-1"))
         self._apirunner("signedOn")
 
     def joined(self, channel):
         self.logger.info("joined "+channel)
-        self.channel.append(channel)
+        self.channels.append(channel)
         self.users[channel]={}
         self._apirunner("joined",{"channel":channel})
 
     def left(self, channel):
         self.logger.info("left "+channel)
         del self.users[channel]
-        self.channel.remove(channel)
+        self.channels.remove(channel)
         self._apirunner("left",{"channel":channel})
 
     def privmsg(self, user, channel, msg):
@@ -415,7 +410,6 @@ class Bot(irc.IRCClient):
     #    if answer: 
     #        self.ctcpMakeReply(user.split("!")[0], [(query,answer)])
     #        self.logger.info("Answered to CTCP "+query+" Request from "+user.split("!")[0])
-
         
     def userRenamed(self, oldname, newname):
         for chan in self.users:
@@ -439,30 +433,51 @@ class Bot(irc.IRCClient):
             self.userQuit(line[1:].split(" ")[0],line.split("QUIT :")[1])
         else:
             irc.IRCClient.lineReceived(self,line)
-            
+
 class BotFactory(protocol.ReconnectingClientFactory):
     """The Factory for the Bot"""
     protocol = Bot
+    instances = {}
 
-    def __init__(self, networkname, channels):
-        self.network=networkname
-        self.channels = channels
+    def _addnetwork(self,addr,nw):
+        self.instances[addr] = nw
 
+    def _removenetwork(self,addr):
+        if self.instances.has_key(addr):
+            del self.instances[addr]
+    
+    def _getnetwork(self,addr):
+        return self.instances[addr]
+
+    def _getnetworkslist(self):
+        return self.instances.keys()
+
+    def _checkforshutdown(self):
+        if len(self.instances)==0:
+            corelogger.info("Not Connected to any network. Shutting down.")
+            schedulethread.stop()
+            #TODO: add sth to stop modules
+            reactor.stop()
+    
     def clientConnectionLost(self, connector, reason):
         clean = error.ConnectionDone()
         if reason.getErrorMessage() == str(clean):
-            del connections[self.network]
-            corelogger.info("Disconnected from "+self.network)
-            if (len(connections) == 0):
-                corelogger.info("Not Connected to any network. Shutting down.")
-                schedulethread.stop() #for stopping, comment out, if you use autoreconnect
-                #TODO: add sth to stop modules
-                reactor.stop()
-        #else:
-        #    corelogger.error("Disconnected: "+str(reason.getErrorMessage())+". Trying to reconnect")
+            self._removenetwork(connector.host)
+            self._checkforshutdown()
+            corelogger.info("Cleanly disconnected from "+connector.host)
+        else:
+            corelogger.error("Disconnected from "+connector.host+": "+str(reason.getErrorMessage())+".")
         #    connector.connect()
-    #def clientConnectionFailed(self, connector, reason):
-    #    reactor.stop()
+        
+    def clientConnectionFailed(self, connector, reason):
+        corelogger.error("Connection to "+connector.host+" failed: "+str(reason.getErrorMessage()))
+        self._removenetwork(connector.host)
+        self._checkforshutdown()
+    
+    def buildProtocol(self,addr):
+        proto=protocol.ReconnectingClientFactory.buildProtocol(self,addr)
+        self._addnetwork(addr.host, proto)
+        return proto
 
 try:
     configfile=parser.configfile
@@ -482,15 +497,15 @@ atexit.register(exithook)
 networks=theconfig.getNetworks()
 connections={}
 if networks:
+    f = BotFactory()
     for network in networks:
         if(getBoolConfig('enabled', 'unset', 'main', network)):
-            channels=theconfig.getChannels(network)
-            if not channels:
-                channels=[]
-            for channel in channels:
-                if(not getBoolConfig('enabled','unset','main', network)):
-                    channels.remove(channel)
-            f = BotFactory(network, channels)
+            #channels=theconfig.getChannels(network)
+            #if not channels:
+            #    channels=[]
+            #for channel in channels:
+            #    if(not getBoolConfig('enabled','unset','main', network)):
+            #        channels.remove(channel)
             if (getBoolConfig('ssl','False','main',network)):
                 s = ssl.ClientContextFactory()
                 connections[network]=reactor.connectSSL(unicode(network).encode("iso-8859-1"), int(getConfig('port','6697','main',network)), f,s);

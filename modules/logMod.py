@@ -42,7 +42,7 @@ class chatMod(chatMod.chatMod):
 		self.day=self.ts("%d") #saves the hour, to detect daychanges
 		#self.timer=threading.Timer(self.secsUntilDayChange(), self.dayChange)
 		#self.timer.start()
-		for c in self.bot.channel:
+		for c in self.bot.channels:
 			self.setNetwork()
 			self.joined(c)
 	
