@@ -44,6 +44,7 @@ class chatMod(threading.Thread):
 
 				
 	def run(self):
+		self.setName("identify")
 		while(not self.end):
 			#splits the waittime, to support stop()
 			#can be at end, too

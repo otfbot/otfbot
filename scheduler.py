@@ -30,6 +30,7 @@ class Schedule(threading.Thread):
 		self.stopme=True
 
 	def run(self):
+		self.setName("schedular")
 		while not self.stopme:
 			time.sleep(60)
 			toremove=[]

@@ -38,6 +38,7 @@ class waitfor(threading.Thread):
 		self.function=function
 		self.delay=delay
 	def run(self):
+		self.setName("nobodyisperfect")
 		self.end=False
 		while not self.end and self.delay >0:
 			time.sleep(1)

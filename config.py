@@ -184,6 +184,11 @@ class config:
 				ret.append(network)
 		return ret
 	def getChannels(self, network):
+		#TODO: Return only channels, which are active
+		# code from otfbot.py
+		#	for channel in channels:
+        #        if(not getBoolConfig('enabled','unset','main', network)):
+        #            channels.remove(channel)
 		if network in self.channel_options.keys():
 			try:
 				return self.channel_options[network].keys()

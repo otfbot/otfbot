@@ -45,7 +45,7 @@ class chatMod(chatMod.chatMod):
 		if self.password != "":
 			self.logger.info("identifying to nickserv")
 			self.bot.sendmsg("nickserv", "identify "+self.password)
-			Thread(target=self.dowhois).start()
+			Thread(target=self.dowhois,name="identify").start()
 			self.whois=True
 		if self.bot.getBoolConfig("setBotFlag", "True", "identifyMod", self.bot.network):
 			self.logger.info("setting usermode +b")

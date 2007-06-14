@@ -133,19 +133,19 @@ class controlInterface:
                 module.append(mod.name)
             return str(module)
         elif command == "stop" or command == "quit":
-            conns=self.bot.getConnections()
+            conns=self.bot.factory._getnetworkslist()
             for c in conns:
-                conns[c].disconnect()
+                self.bot.factory._getnetwork(c).quit()
+            #self.bot.getReactor().stop()
             return "Disconnecting from all networks und exiting ..."                
         elif command == "disconnect":
-            args = argument.split(" ")
-            conns=self.bot.getConnections()
-            if len(args) == 2:
-                if conns.has_key(args[1]):
-                    conns[args[1]].disconnect()
-                    return "Disconnecting from "+str(conns[args[1]].getDestination())
+            conns=self.bot.factory._getnetworkslist()
+            if argument != "":
+                if argument in conns:
+                    self.bot.factory._getnetwork(argument).quit()
+                    return "Disconnecting from "+str(argument)
                 else:
-                    return "Not connected to "+str(args[1])
+                    return "Not connected to "+str(argument)
             else:
                 self.bot.quit("Bye.")
                 return "Disconnecting from current network. Bye."                
@@ -155,19 +155,20 @@ class controlInterface:
                 return "Usage: connect irc.network.tld [port]"
             else:
                 if len(args) == 2:
-                    port=args[2]
+                    port=args[1]
                 else:
                     port=6667
-                self.bot.addConnection(args[1],port)
-                return "Connecting to "+str(self.bot.getConnections()[args[1]].getDestination())
+                c = self.bot.getReactor().connectTCP(args[0],port,self.bot.factory)
+                #self.bot.addConnection(args[1],port)
+                return "Connecting to "+str(c)
         elif command == "listnetworks":
-            ne=""
-            for n in self.bot.getConnections():
-                ne=ne+" "+n
-            return "Currently connected to:"+unicode(ne).encode("utf-8")
+            #ne=""
+            #for n in self.bot.getConnections():
+            #    ne=ne+" "+n
+            return "Currently connected to:"+unicode(self.bot.factory._getnetworkslist()).encode("utf-8")
         elif command == "listchannels":
             ch=""
-            for c in self.bot.channel:
+            for c in self.bot.channels:
                 ch=ch+" "+c
             return "Currently in:"+unicode(ch).encode("utf-8")
         elif command == "changenick":
