@@ -27,8 +27,12 @@ import chatMod
 from control import configShell, controlInterface
 
 class BotProtocol(basic.LineOnlyReceiver):
-    def dataReceived(self, data):
-        self.sendLine(self.control.input(data))
+    def lineReceived(self, data):
+        result = self.control.input(data)
+        if result:
+            self.sendLine(result)
+        else:
+            self.sendLine("00")
     def connectionMade(self):
         if self.transport.client[0] == "127.0.0.1":
             self.control=controlInterface(self.factory.bot)
@@ -38,7 +42,7 @@ class BotProtocol(basic.LineOnlyReceiver):
 
 class BotProtocolFactory(protocol.ServerFactory):
     def __init__(self, bot):
-        self.bot=bot
+        self.bot=bot #.getFactory()._getnetwork(factory._getnetworkslist()[0])
         self.protocol=BotProtocol
 
 class chatMod(chatMod.chatMod):
