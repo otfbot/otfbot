@@ -248,6 +248,8 @@ class Bot(irc.IRCClient):
         return addScheduleJob(time, function)
     def getReactor(self):
         return reactor
+    def getFactory(self):
+        return self.factory
     def auth(self, user):
         """test if the user is privileged"""
         level=0
@@ -321,8 +323,9 @@ class Bot(irc.IRCClient):
     
     def signedOn(self):
         self.logger.info("signed on "+self.network+" as "+self.nickname)
-
-        for channel in self.channels:
+        channelstojoin=self.channels
+        self.channels=[]
+        for channel in channelstojoin:
             if(getBoolConfig("enabled", "false", "main", self.network, channel)):
                 self.join(unicode(channel).encode("iso-8859-1"))
         self._apirunner("signedOn")
