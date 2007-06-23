@@ -25,7 +25,7 @@ from twisted.words.protocols import irc
 
 from twisted.internet import reactor, protocol, error, ssl
 import os, random, string, re, sys, traceback, atexit
-import functions, config, scheduler
+import functions, config, scheduler, scheduler_ng
 
 
 # some constants, can be retrieved from serveranswer while connecting.
@@ -183,7 +183,7 @@ def addScheduleJob(time, function):
     schedulethread.addScheduleJob(time, function)
     
 class Bot(irc.IRCClient):
-    """A Chat Bot"""
+    """The Protocol of our IRC-Bot"""
     def __init__(self):
         #list of mods, which the bot should use
         #you may need to configure them first
@@ -202,8 +202,14 @@ class Bot(irc.IRCClient):
         self.logger = logging.getLogger("core")
         self.logger.info("Starting new Botinstance")
         self.startMods()
+        self.scheduler = scheduler_ng.Scheduler(self.getReactor())
+        self.scheduler.addJob(10,self.test)
+    
+    def test(self):
+        self.logger.debug("hallo")
 
     def _apirunner(self,apifunction,args={}):
+        """Pass all calls to modules callbacks through this method, they are checked whether they should be execeted or not"""
         for mod in self.mods:
             if (args.has_key("channel") and args["channel"] in self.channels and self.getBoolConfig("enabled","True",mod.name,self.network,args["channel"])) or not args.has_key("channel") or args["channel"] not in self.channels:
                 try:
@@ -224,6 +230,7 @@ class Bot(irc.IRCClient):
             #except AttributeError:
             #    pass
         self._apirunner("start")
+    # configstuff, should maybe be moved to a config-instance at self.config
     def setConfig(self, option, value, module=None, network=None, channel=None):
         return setConfig(option, value, module, network, channel)
     def hasConfig(self, option, module=None):
@@ -242,10 +249,13 @@ class Bot(irc.IRCClient):
         return loadConfig(configfile)
     def writeConfig(self):
         return writeConfig()
+    # Schedular
+    def addScheduleJob(self, time, function):
+        self.log.warn("Call to deprecated method addScheduleJob")
+        return addScheduleJob(time, function)
+    
     def getUsers(self):
         return self.users
-    def addScheduleJob(self, time, function):
-        return addScheduleJob(time, function)
     def getReactor(self):
         return reactor
     def getFactory(self):
