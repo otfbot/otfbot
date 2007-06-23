@@ -39,7 +39,7 @@ class chatMod(chatMod.chatMod):
 		self.wait=60 * float(bot.getConfig("wait", "5", "rdfMod"))
 		self.rdfUrls=[]
 		self.rdfChannels={}
-		self.bot.getReactor().callLater(10, self.run)
+		self.bot.scheduler.callLater(10, self.run)
 		self.sleeped=0
 
 				
@@ -51,7 +51,7 @@ class chatMod(chatMod.chatMod):
 		if not self.end:
 			#splits the waittime, to support stop()
 			self.sleeped+=10
-			self.bot.getReactor().callLater(10, self.run)
+			self.bot.scheduler.callLater(10, self.run)
 
 	def postNews(self, rdfUrl):
 		unread =[]
