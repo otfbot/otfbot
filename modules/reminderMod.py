@@ -48,7 +48,7 @@ class chatMod(chatMod.chatMod):
 
 			tmp=msg.split(" ", 2)
 			try:
-				wait=int(tmp[1])
+				wait=float(tmp[1])
 			except ValueError:
 				self.bot.sendmsg(channel, user.split("!")[0]+": invalid number format \""+tmp[1]+"\".")
 				return
@@ -59,4 +59,4 @@ class chatMod(chatMod.chatMod):
 				self.messages[when].append([channel, user, text])
 			else:
 				self.messages[when]=[[channel, user, text]]
-			self.bot.addScheduleJob(wait, self.remind)
+			self.bot.getReactor().callLater(wait*60, self.remind)
