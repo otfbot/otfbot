@@ -14,13 +14,12 @@
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 # 
-# (c) 2005, 2006 by Alexander Schier
-# (c) 2006 by Robert Weidlich
+# (c) 2005-2007 by Alexander Schier
+# (c) 2006, 2006 by Robert Weidlich
 #
 
 import random, re, time
 import chatMod
-from threading import Thread
 
 def default_settings():
 	settings={};
@@ -31,35 +30,24 @@ def default_settings():
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
-		self.mywhois=False
-		self.whois=False
+		self.send_identification=False
 
 	def connectionMade(self):
 		self.password = str(self.bot.getConfig("password", "", "identifyMod", self.bot.network))
 	
-	def dowhois(self):
-		time.sleep(1)
-		self.bot.sendLine("WHOIS "+str(self.bot.nickname))
-
 	def signedOn(self):
+		self.identify()
+		
+	def identify(self):
 		if self.password != "":
 			self.logger.info("identifying to nickserv")
 			self.bot.sendmsg("nickserv", "identify "+self.password)
-			Thread(target=self.dowhois,name="identify").start()
-			self.whois=True
+			self.send_identification=True
 		if self.bot.getBoolConfig("setBotFlag", "True", "identifyMod", self.bot.network):
 			self.logger.info("setting usermode +b")
-			self.bot.mode(self.bot.nickname, 1, "B")
-	
-	def irc_unknown(self, prefix, command, params):
-		if command == "RPL_WHOISUSER" and params[0] == self.bot.nickname and self.whois:
-			self.mywhois=True
-			self.ident=False
-		if command in ['307','320'] and self.mywhois and params[0] == self.bot.nickname:
-			self.logger.info("Identification was successful")
-			self.ident=True
-		if command == "RPL_ENDOFWHOIS" and params[0] == self.bot.nickname and self.mywhois:
-			if self.ident==False:
-				self.logger.warn("Identification failed")
-			self.mywhois=False
-			self.whois=False
+			self.bot.mode(self.bot.nickname, 1, "B")	
+			
+	def noticed(self, user, channel, msg):
+		user=user.split("!")[0]
+		if (user.lower() == "nickserv" and self.send_identification):
+			self.logger.debug(user+": "+msg)
