@@ -1,22 +1,26 @@
 core:
-* add a way to cleanly stop the bot from system (SIGTERM-handling, module "signal)
+* add a way to cleanly stop the bot from system (twisted has something in a reactor)
 * maybe add channel-name to log-messages
+* new callback "command"
+* seperate callbacks for query and channel messages
+* priorities of callbacks for modules (module with the highest priority will get the callback first)
+* return value for chatmod callbacks, which can be NO_FURTHER_PROCESSING or maybe MSG_CHANGED(newmsg) or something like this.
+** In this case, logMod should get the highest priorty for right logging, and some mod could alter the message, and pass it to the kiMod
+* get modechars and channeltypes from servergreeting
+* ability not to *load* modules for certain networks
+* don't use global variables in Bot (classes, logging, modechars, ..)
+* put the stuff, which is now plain in otfbot.py in a class
+* limit the commands processed (maybe put some users temporarily on ignore) and limit the lines sent per minute
 modules:
-* move modules into subdir (eg /module/kiMod.py)
-* move data of modules in a subdir of the modules-dir (eg /module/kiMod/megahal1.brn)
-* load all modules from the dir, automatically
 * extent modules-api
 logMod:
-* make logfilerotation working
+* make logfilerotation working (should work, if needed more exactly use scheduler)
 rdfMod:
 * use real parser(?)
 * decrease the interval between two hits, if a change was found, increase it, if nothing was changed.
 * load the Feeds in a central place, so the Feed only needs to be loaded once für two(or more) channels
-* priorities of callbacks for modules (module with the highest priority will get the callback first)
-* return value for chatmod callbacks, which can be NO_FURTHER_PROCESSING or maybe MSG_CHANGED(newmsg) or something like this.
-** In this case, logMod should get the highest priorty for right logging, and some mod could alter the message, and pass it to the kiMod
 kiMod:
-* make megahal use a brain per channel, limit brainsize (maybe requires hacking the megahalpython-binding)
+* limit brainsize (maybe requires hacking the megahalpython-binding)
 
 
 commandsMod:

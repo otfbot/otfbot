@@ -20,17 +20,11 @@
 # 
 
 """Chat Bot"""
-svnversion="$Revision$".split(" ")[1]
 from twisted.words.protocols import irc
 
 from twisted.internet import reactor, protocol, error, ssl
 import os, random, string, re, sys, traceback, atexit
 import functions, config, scheduler
-
-
-# some constants, can be retrieved from serveranswer while connecting.
-modchars={'a':'!','o':'@','h':'%','v':'+'}
-modcharvals={'!':4,'@':3,'%':2,'+':1,' ':0}
 
 ###############################################################################
 # Parse commandline options
@@ -116,14 +110,6 @@ for file in os.listdir("modules"):
         classes[-1].datadir = "modules/"+classes[-1].__name__+"-data"
         corelogger.debug("Loading module "+classes[-1].__name__)
 
-
-# react on signals
-#import signal
-#def signalhandler(signal, frame):
-#    corelogger.info("Got Signal "+str(signal))
-#signal.signal(signal.SIGHUP,signalhandler)
-#signal.signal(signal.SIGTERM,signalhandler)
-
 ###############################################################################
 # some config functions
 theconfig=None
@@ -177,6 +163,11 @@ def writeConfig():
     file.write(theconfig.exportxml())
     file.close()
 
+
+# some constants, can be retrieved from serveranswer while connecting.
+modchars={'a':'!','o':'@','h':'%','v':'+'}
+modcharvals={'!':4,'@':3,'%':2,'+':1,' ':0}
+
 class Bot(irc.IRCClient):
     """The Protocol of our IRC-Bot"""
     def __init__(self):
@@ -191,8 +182,7 @@ class Bot(irc.IRCClient):
         self.numMods = 0
 
         self.versionName="OtfBot"
-        self.versionNum="svn "+str(svnversion)
-        self.versionEnv="" #sys.version
+        self.versionNum="svn "+"$Revision$".split(" ")[1]
         self.logging = logging
         self.logger = logging.getLogger("core")
         self.logger.info("Starting new Botinstance")
