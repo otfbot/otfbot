@@ -16,35 +16,21 @@
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 # 
-# (c) 2005, 2006, 2007 by Alexander Schier
+# (c) 2007 by Robert Weidlich
 
-import threading, time
-class Schedule(threading.Thread):
-	def __init__(self):
-		threading.Thread.__init__(self)
-		self.times=[]
-		self.functions=[]
-		self.stopme=False
+class Scheduler:
+    """Wrapper class for the scheduling functions of twisted.internet.reactor.ReactorTime"""
+    def __init__(self,reactor):
+        self.reactor=reactor
+    def callLater(self,time,function,*args,**kwargs):
+        """executes the given function after time seconds with arguments (*args) and keyword arguments (**kwargs)"""
+        self.reactor.callLater(time,function,*args,**kwargs)
 
-	def stop(self):
-		self.stopme=True
-
-	def run(self):
-		self.setName("schedular")
-		while not self.stopme:
-			time.sleep(60)
-			toremove=[]
-			for i in range(len(self.times)):
-				self.times[i]=self.times[i]-1
-				if self.times[i]<=0:
-					self.functions[i]()
-					toremove.append(i)
-			toremove.reverse()
-			for i in toremove:
-				del self.times[i]
-				del self.functions[i]
-
-
-	def addScheduleJob(self, wait, function):
-		self.times.append( int(wait) )
-		self.functions.append(function)
+    def callPeriodic(self,delay,function,kwargs={}):
+        """executes the given function every delay seconds with keyword arguments (**kwargs)"""
+        def func(delay,function,**kwargs):
+            args=(delay,function)
+            if function(**kwargs):
+                self.reactor.callLater(delay,func,*args,**kwargs)
+        args=(delay,function)
+        self.reactor.callLater(delay,func,*args,**kwargs)
