@@ -250,8 +250,8 @@ class chatMod(chatMod.chatMod):
 			reply=self.responder.reply(msg)
 		#elif string.lower(msg[0:len(self.bot.nickname)])==string.lower(self.bot.nickname) or number<chance:
 		elif (self.lnickname in string.lower(msg)) or israndom:
-			if string.lower(msg[:len(self.bot.nickname)])==self.lnickname:
-				msg=msg[len(self.bot.nickname)+1:] #+1 for the following ":", " " or ","
+			if string.lower(msg[:len(self.lnickname)])==self.lnickname:
+				msg=msg[len(self.lnickname)+1:] #+1 for the following ":", " " or ","
 			if len(msg) and msg[0]==" ": 
 				msg=msg[1:]
 			reply=self.responder.reply(msg)
@@ -272,18 +272,22 @@ class chatMod(chatMod.chatMod):
 
 			if reply==string.upper(reply): #no UPPERCASE only Posts
 				reply=string.lower(reply)
+			delay=len(reply)*0.3*float(self.bot.getConfig("kiMod_wait", "2")) #a normal user does not type that fast
 			if private:
 				number=random.randint(1,1000)
 				chance=int(self.bot.getConfig("kiMod_answerQueryPercent", "70"))*10
 				if number < chance:
-					self.bot.sendmsg(user, reply, "UTF-8")
+					#self.bot.sendmsg(user, reply, "UTF-8")
+					self.bot.getReactor().callLater(delay, self.bot.sendmsg, user, reply, "UTF-8")
 			else:
 				number=random.randint(1,1000)
 				chance=int(self.bot.getConfig("kiMod_answerPercent", "50"))*10
 				if israndom:
-					self.bot.sendmsg(channel, reply, "UTF-8")
+					#self.bot.sendmsg(channel, reply, "UTF-8")
+					self.bot.getReactor().callLater(delay, self.bot.sendmsg, channel, reply, "UTF-8")
 				elif number < chance: #apply answerPercent only on answers
-					self.bot.sendmsg(channel, user+": "+reply, "UTF-8")
+					#self.bot.sendmsg(channel, user+": "+reply, "UTF-8")
+					self.bot.getReactor().callLater(delay, self.bot.sendmsg, channel, user+": "+reply, "UTF-8")
 
 	def connectionMade(self):
 		self.lnickname=string.lower(self.bot.nickname)
