@@ -18,7 +18,7 @@
 # (c) 2006 by Robert Weidlich
 #
 
-import time, string, locale, threading, os
+import time, string, locale, os
 from string import Template
 import chatMod
 
@@ -40,8 +40,6 @@ class chatMod(chatMod.chatMod):
 			os.mkdir(self.datadir)
 		locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
 		self.day=self.ts("%d") #saves the hour, to detect daychanges
-		#self.timer=threading.Timer(self.secsUntilDayChange(), self.dayChange)
-		#self.timer.start()
 		for c in self.bot.channels:
 			self.setNetwork()
 			self.joined(c)
@@ -67,9 +65,6 @@ class chatMod(chatMod.chatMod):
 		for channel in self.channels:
 			self.joined(channel)
 			#self.log(channel, "--- Day changed "+self.ts("%a %b %d %Y"))
-		#restart the timer
-		#self.timer=threading.Timer(self.secsUntilDayChange(), self.dayChange)
-		#self.timer.start()
 		
 		
 	def log(self, channel, string, timestamp=True):

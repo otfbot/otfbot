@@ -17,7 +17,7 @@
 # (c) 2006 by Alexander Schier
 #
 
-import random, string, threading, time
+import random, string
 import chatMod
 
 ANSWER_TIME=90
@@ -32,22 +32,6 @@ WAITING_FOR_QUIZMASTER_ANSWER=3
 WAITING_FOR_ANSWERS=4
 QUIZ=5
 
-class waitfor(threading.Thread):
-	def __init__(self, delay, function):
-		threading.Thread.__init__(self)
-		self.function=function
-		self.delay=delay
-	def run(self):
-		self.setName("nobodyisperfect")
-		self.end=False
-		while not self.end and self.delay >0:
-			time.sleep(1)
-			self.delay-=1
-		if not self.end:
-			self.function()
-	def stop(self):
-		self.end=True
-
 def mypass():
 	pass
 
@@ -55,7 +39,7 @@ class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
 		self.init_vars()
-		self.timer=waitfor(1, mypass)
+		self.timer=self.bot.scheduler.callLater(1, mypass) #XXX: why is this needed?
 		self.allscore={}
 
 	def init_vars(self):
@@ -85,8 +69,8 @@ class chatMod(chatMod.chatMod):
 		self.players=self.players[1:]
 
 	def end_of_answertime(self):
-		if self.timer:
-			self.timer.stop()
+		if self.timer and self.timer.active():
+			self.timer.cancel()
 		self.phase=QUIZ
 		count=1
 		self.bot.sendmsg(self.gamechannel, "Die Frage ist: "+self.question, self.bot.getConfig("encoding", "UTF-8"))
@@ -97,13 +81,12 @@ class chatMod(chatMod.chatMod):
 			self.bot.sendmsg(self.gamechannel, str(count)+". "+self.answers[user], self.bot.getConfig("encoding", "UTF-8"))
 			self.answeruser[count]=user
 			count=count+1
-		self.timer=waitfor(QUIZ_TIME, self.end_of_quiz)
-		self.timer.start()
+		self.timer=self.bot.scheduler.callLater(QUIZ_TIME, self.end_of_quiz)
 
 	def end_of_quiz(self):
 		self.phase=NO_GAME
-		if self.timer:
-			self.timer.stop()
+		if self.timer and self.timer.active():
+			self.timer.cancel()
 		self.bot.sendmsg(self.gamechannel, "===Ende der Runde===")
 		correct="Die richtige Antwort war: "+self.answers[self.gamemaster]
 		if self.additional_info:
@@ -135,21 +118,19 @@ class chatMod(chatMod.chatMod):
 		user=string.lower(user.split("!")[0])
 		if channel == self.bot.nickname:
 			if self.phase==WAITING_FOR_QUESTION and user==self.gamemaster:
-				self.timer.stop()
+				self.timer.cancel()
 				self.question=msg
 				self.bot.sendmsg(user, "Und jetzt die richtige Antwort")
 				self.phase=WAITING_FOR_QUIZMASTER_ANSWER
-				self.timer=waitfor(TIMEOUT, self.end_of_quiz)
-				self.timer.start()
+				self.timer=self.bot.scheduler.callLater(TIMEOUT, self.end_of_quiz)
 
 			elif self.phase==WAITING_FOR_QUIZMASTER_ANSWER and user==self.gamemaster:
-				self.timer.stop()
+				self.timer.cancel()
 				self.answers[user]=msg
 				self.bot.sendmsg(self.gamechannel, "Die Frage ist: "+self.question, self.bot.getConfig("encoding", "UTF-8"))
 				self.bot.sendmsg(self.gamechannel, "/msg mir eure Antworten.", self.bot.getConfig("encoding", "UTF-8"))
 				self.phase=WAITING_FOR_ANSWERS
-				self.timer=waitfor(ANSWER_TIME, self.end_of_answertime)
-				self.timer.start() #TIMEOUT
+				self.timer=self.bot.scheduler.callLater(ANSWER_TIME, self.end_of_answertime) #TIMEOUT
 
 				#remove gamemaster from game, because he knows the answer
 				self.players.remove(self.gamemaster)
@@ -161,8 +142,8 @@ class chatMod(chatMod.chatMod):
 			elif self.phase==WAITING_FOR_ANSWERS and not user in self.answers and user in self.players:
 				self.answers[user]=msg
 				if len(self.answers) == len(self.players)+1: #+gamemaster
-					if self.timer:
-						self.timer.stop()
+					if self.timer and self.timer.active():
+						self.timer.cancel()
 					self.end_of_answertime()
 		else:
 			if msg[:7]=="!remove":
@@ -193,8 +174,7 @@ class chatMod(chatMod.chatMod):
 					self.init_vars_for_restart()
 					self.phase=WAITING_FOR_QUESTION
 					self.bot.sendmsg(channel, self.gamemaster+": /msg mir die Frage.", self.bot.getConfig("encoding", "UTF-8"))
-					self.timer=waitfor(TIMEOUT, self.end_of_quiz)
-					self.timer.start()
+					self.timer=self.bot.scheduler.callLater(TIMEOUT, self.end_of_quiz)
 					
 			if msg[:10]=="!startgame":
 				if self.phase==NO_GAME:
@@ -204,17 +184,15 @@ class chatMod(chatMod.chatMod):
 					self.bot.sendmsg(channel, self.gameadmin+": Zum starten nocheinmal !startgame sagen.", self.bot.getConfig("encoding", "UTF-8"))
 					self.phase=WAITING_FOR_PLAYERS
 					self.gamechannel=channel #needed for queries which result in a public answer
-					self.timer=waitfor(TIMEOUT, self.end_of_quiz)
-					self.timer.start()
+					self.timer=self.bot.scheduler.callLater(TIMEOUT, self.end_of_quiz)
 				elif self.phase==WAITING_FOR_PLAYERS and user==self.gameadmin:
-					self.timer.stop()
+					self.timer.cancel()
 					if len(self.players) >2:
 						self.phase=WAITING_FOR_QUESTION
 						random.shuffle(self.players)
 						self.gamemaster=random.choice(self.players)
 						self.bot.sendmsg(channel, self.gamemaster+": /msg mir die Frage.", self.bot.getConfig("encoding", "UTF-8"))
-						self.timer=waitfor(TIMEOUT, self.end_of_quiz)
-						self.timer.start()
+						self.timer=self.bot.scheduler.callLater(TIMEOUT, self.end_of_quiz)
 					else:
 						self.bot.sendmsg(channel, self.gamemaster+" zu wenig Spieler!", self.bot.getConfig("encoding", "UTF-8"))
 			elif msg[:10]=="!abortgame":

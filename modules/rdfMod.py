@@ -17,7 +17,6 @@
 # (c) 2005, 2006 by Alexander Schier
 #
 
-import threading, time
 import chatMod, rdfParser
 
 
