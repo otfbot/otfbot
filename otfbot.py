@@ -176,12 +176,7 @@ def writeConfig():
     #    file.write(option+"="+config[option]+"\n")
     file.write(theconfig.exportxml())
     file.close()
-schedulethread=scheduler.Schedule()
-schedulethread.start()
 
-def addScheduleJob(time, function):
-    schedulethread.addScheduleJob(time, function)
-    
 class Bot(irc.IRCClient):
     """The Protocol of our IRC-Bot"""
     def __init__(self):
@@ -201,8 +196,8 @@ class Bot(irc.IRCClient):
         self.logging = logging
         self.logger = logging.getLogger("core")
         self.logger.info("Starting new Botinstance")
-        self.startMods()
         self.scheduler = scheduler.Scheduler(self.getReactor())
+        self.startMods()
     
     def _apirunner(self,apifunction,args={}):
         """Pass all calls to modules callbacks through this method, they are checked whether they should be execeted or not"""
@@ -459,7 +454,6 @@ class BotFactory(protocol.ReconnectingClientFactory):
     def _checkforshutdown(self):
         if len(self.instances)==0:
             corelogger.info("Not Connected to any network. Shutting down.")
-            schedulethread.stop()
             #TODO: add sth to stop modules
             reactor.stop()
     
