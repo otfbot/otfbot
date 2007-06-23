@@ -25,7 +25,7 @@ from twisted.words.protocols import irc
 
 from twisted.internet import reactor, protocol, error, ssl
 import os, random, string, re, sys, traceback, atexit
-import functions, config, scheduler, scheduler_ng
+import functions, config, scheduler
 
 
 # some constants, can be retrieved from serveranswer while connecting.
@@ -202,12 +202,8 @@ class Bot(irc.IRCClient):
         self.logger = logging.getLogger("core")
         self.logger.info("Starting new Botinstance")
         self.startMods()
-        self.scheduler = scheduler_ng.Scheduler(self.getReactor())
-        self.scheduler.addJob(10,self.test)
+        self.scheduler = scheduler.Scheduler(self.getReactor())
     
-    def test(self):
-        self.logger.debug("hallo")
-
     def _apirunner(self,apifunction,args={}):
         """Pass all calls to modules callbacks through this method, they are checked whether they should be execeted or not"""
         for mod in self.mods:
@@ -249,11 +245,6 @@ class Bot(irc.IRCClient):
         return loadConfig(configfile)
     def writeConfig(self):
         return writeConfig()
-    # Schedular
-    def addScheduleJob(self, time, function):
-        self.log.warn("Call to deprecated method addScheduleJob")
-        return addScheduleJob(time, function)
-    
     def getUsers(self):
         return self.users
     def getReactor(self):

@@ -59,4 +59,4 @@ class chatMod(chatMod.chatMod):
 				self.messages[when].append([channel, user, text])
 			else:
 				self.messages[when]=[[channel, user, text]]
-			self.bot.getReactor().callLater(wait*60, self.remind)
+			self.bot.scheduler.callLater(wait*60, self.remind)

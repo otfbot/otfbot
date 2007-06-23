@@ -278,16 +278,16 @@ class chatMod(chatMod.chatMod):
 				chance=int(self.bot.getConfig("kiMod_answerQueryPercent", "70"))*10
 				if number < chance:
 					#self.bot.sendmsg(user, reply, "UTF-8")
-					self.bot.getReactor().callLater(delay, self.bot.sendmsg, user, reply, "UTF-8")
+					self.bot.scheduler.callLater(delay, self.bot.sendmsg, user, reply, "UTF-8")
 			else:
 				number=random.randint(1,1000)
 				chance=int(self.bot.getConfig("kiMod_answerPercent", "50"))*10
 				if israndom:
 					#self.bot.sendmsg(channel, reply, "UTF-8")
-					self.bot.getReactor().callLater(delay, self.bot.sendmsg, channel, reply, "UTF-8")
+					self.bot.scheduler.callLater(delay, self.bot.sendmsg, channel, reply, "UTF-8")
 				elif number < chance: #apply answerPercent only on answers
 					#self.bot.sendmsg(channel, user+": "+reply, "UTF-8")
-					self.bot.getReactor().callLater(delay, self.bot.sendmsg, channel, user+": "+reply, "UTF-8")
+					self.bot.scheduler.callLater(delay, self.bot.sendmsg, channel, user+": "+reply, "UTF-8")
 
 	def connectionMade(self):
 		self.lnickname=string.lower(self.bot.nickname)
