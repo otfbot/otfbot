@@ -18,19 +18,41 @@
 # 
 # (c) 2007 by Robert Weidlich
 
-class Scheduler:
-    """Wrapper class for the scheduling functions of twisted.internet.reactor.ReactorTime"""
-    def __init__(self,reactor):
-        self.reactor=reactor
-    def callLater(self,time,function,*args,**kwargs):
-        """executes the given function after time seconds with arguments (*args) and keyword arguments (**kwargs)"""
-        self.reactor.callLater(time,function,*args,**kwargs)
+""" Contains a Wrapperclass for the twisted Scheduler """
 
-    def callPeriodic(self,delay,function,kwargs={}):
-        """executes the given function every delay seconds with keyword arguments (**kwargs)"""
-        def func(delay,function,**kwargs):
-            args=(delay,function)
-            if function(**kwargs):
-                self.reactor.callLater(delay,func,*args,**kwargs)
-        args=(delay,function)
-        self.reactor.callLater(delay,func,*args,**kwargs)
+class Scheduler:
+	"""Wrapper class for the scheduling functions of twisted.internet.reactor.ReactorTime"""
+	def __init__(self,reactor):
+		"""
+			@type reactor: twisted.internet.reactor
+		"""
+		self.reactor=reactor
+	def callLater(self,time,function,*args,**kwargs):
+		""" executes C{function} after C{time} seconds with arguments C{*args} and keyword arguments C{**kwargs}
+			@param time: seconds to wait before executing C{function}
+			@type time: int
+			@param function: the function to call
+			@type function: callable
+			@param *args: arguments for the function
+			@type *args: tuple
+			@param **kwargs: keyworded arguments for the function
+			@type **kwargs: dict
+		"""
+		self.reactor.callLater(time,function,*args,**kwargs)
+
+	def callPeriodic(self,delay,function,kwargs={}):
+		""" executes C{function} every C{delay} seconds with keyword arguments C{**kwargs}
+			@param delay: the delay between two runs of the C{function}
+			@type delay: int
+			@param function: the function to be called
+			@type function: callable
+			@param kwargs: the keyworded arguments for the function
+			@type kwargs: dict
+			@note: add the possibility to give a *args-tuple (need to know how to merge two tuples)
+		"""
+		def func(delay,function,**kwargs):
+			args=(delay,function)
+			if function(**kwargs):
+				self.reactor.callLater(delay,func,*args,**kwargs)
+		args=(delay,function)
+		self.reactor.callLater(delay,func,*args,**kwargs)

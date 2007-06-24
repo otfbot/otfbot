@@ -16,11 +16,13 @@
 # 
 # (c) 2005, 2006 by Alexander Schier
 #
-
+""" contains a abstract class for a Bot-module """
 class chatMod:
+	""" abstract class for a botmodule	"""
 	def __init__(self, bot):
 		self.bot=bot
 	def setLogger(self,logger):
+		""" set the logger """
 		self.logger = logger
 	def auth(self, user):
 		"""check the authorisation of the user"""
@@ -88,4 +90,7 @@ class chatMod:
 		"""called to reload the settings of the module"""
 		pass
 	def start(self):
+		"""called to start the work of the module
+			put your initialization stuff in here insteadof __init__
+		"""
 		pass
