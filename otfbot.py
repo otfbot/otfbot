@@ -647,6 +647,10 @@ if networks:
 			#for channel in channels:
 			#	if(not getBoolConfig('enabled','unset','main', network)):
 			#		channels.remove(channel)
+			password=getConfig('password', '', 'main', network)
+			if(password!=""):
+				f.protocol.password=unicode(password).encode("iso-8859-1")
+
 			if (getBoolConfig('ssl','False','main',network)):
 				s = ssl.ClientContextFactory()
 				connections[network]=reactor.connectSSL(unicode(network).encode("iso-8859-1"), int(getConfig('port','6697','main',network)), f,s);
