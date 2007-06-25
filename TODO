@@ -13,6 +13,7 @@ core:
 * limit the commands processed (maybe put some users temporarily on ignore) and limit the lines sent per minute
 modules:
 * extent modules-api
+* http://peak.telecommunity.com/DevCenter/PythonEggs
 logMod:
 * make logfilerotation working (should work, if needed more exactly use scheduler)
 rdfMod:

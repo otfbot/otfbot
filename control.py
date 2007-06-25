@@ -128,7 +128,7 @@ class configShell:
 		elif command == "set":
 			return self._set(argument)
 		else:
-			return "Some helpful text"
+			return "config shell: '"+command+"' is not a valid command"
 			#self.bot.sendmsg(nick, "Syntax: config [get <key> [modul] [network] [channel]|set <key=value>]")
 
 
@@ -137,21 +137,17 @@ class controlInterface:
 	
 		this class only does the work, you need another class, most suitable is a bot-module, to have a userinterface
 	"""
-	MODUS_DEFAULT=0
-	MODUS_CONFIGSHELL=1
 	def __init__(self, bot):
 		"""
 			@type bot: a L{Bot} Instance
 		"""
 		self.bot=bot
-		self.modus=self.MODUS_DEFAULT
 		self.configshell=None
-		self.prompt=""
 	
 	def _output(self, string):
 		""" helper function which set the encoding to utf8
 		"""
-		return unicode(self.prompt+string).encode("utf-8")
+		return unicode(string).encode("utf-8")
 	
 	def input(self, request):
 		""" Pass your command to this function and get the output
@@ -166,98 +162,101 @@ class controlInterface:
 			argument=""
 		else:
 			(command, argument) = tmp
-		if command == "config":
-			self.configshell=configShell(self.bot)
-			return self._output("Entering configshell ...")
-		elif self.configshell:
+		if self.configshell:
 			output = self.configshell.input(request)
 			if (output == self.configshell.DESTROY_ME):
 				self.configshell=None
 				return self._output("Leaving configshell ...")
 			else:
 				return self._output(output)
-		elif command == "help":
-			return self._output("Available commands: reload, stop|quit, disconnect [network], connect network [port], listnetworks, currentnetwork, changenetwork network, changenick newnick, join channel, part channel [message], listchannels")
-		elif command == "shell":
-			if argument == "telnet":
-				self.prompt=self.bot.network+"> "
-			elif argument == "readline":
-				return self._output("01 +channels,"+",".join(self.bot.channels)+":+networks,"+",".join(self.bot.factory._getnetworkslist())+":config:help:reload:listmodules:stop:quit:disconnect,+networks:connect:listnetworks:currentnetwork:changenetwork,+networks:listchannels:changenick:join:part,+channels:kick")
-			elif argument == "prompt":
-				return self._output("02 "+self.bot.network)
-		elif command == "reload":
-			self.bot.reloadModules()
-			return self._output("Reloading all modules ...")
-		elif command == "listmodules":
-			module=[]
-			for mod in self.bot.mods:
-				module.append(mod.name)
-			return self._output(" ".join(module))
-		elif command == "stop" or command == "quit":
-			conns=self.bot.factory._getnetworkslist()
-			for c in conns:
-				self.bot.factory._getnetwork(c).quit()
-			return self._output("Disconnecting from all networks und exiting ...")
-		elif command == "disconnect":
-			conns=self.bot.factory._getnetworkslist()
-			if argument != "":
-				if argument in conns:
-					self.bot.factory._getnetwork(argument).quit()
-					return self._output("Disconnecting from "+str(argument))
-				else:
-					return self._output("Not connected to "+str(argument))
+		else:
+			try:
+				return self._output(getattr(self,"_cmd_"+command)(argument))
+			except AttributeError, e:
+				return self._output("no such command: "+str(command))
+			
+	def _cmd_config(self,argument):
+		self.configshell=configShell(self.bot)
+		return "Entering configshell ..."
+	def _cmd_help(self,argument):
+		commands = []
+		for c in dir(self):
+			if c[:5] == "_cmd_":
+				commands.append(c[5:])
+		return "Available commands: "+" ".join(commands)
+	def _cmd_reload(self,argument):
+		self.bot.reloadModules()
+		return "Reloading all modules ..."
+	def _cmd_listmodules(self,argument):
+		module=[]
+		for mod in self.bot.mods:
+			module.append(mod.name)
+		return " ".join(module)
+	def _cmd_stop(self,argument):
+		conns=self.bot.factory._getnetworkslist()
+		for c in conns:
+			self.bot.factory._getnetwork(c).quit()
+		return "Disconnecting from all networks und exiting ..."
+	def _cmd_disconnect(self,argument):
+		conns=self.bot.factory._getnetworkslist()
+		if argument != "":
+			if argument in conns:
+				self.bot.factory._getnetwork(argument).quit()
+				return "Disconnecting from "+str(argument)
 			else:
-				self.bot.quit("Bye.")
-				return self._output("Disconnecting from current network. Bye.")
-		elif command == "connect":
-			args = argument.split(" ")
-			if len(args) < 1 or len(args) > 2:
-				return self._output("Usage: connect irc.network.tld [port]")
+				return "Not connected to "+str(argument)
+		else:
+			self.bot.quit("Bye.")
+			return "Disconnecting from current network. Bye."
+	def _cmd_connect(self,argument):
+		args = argument.split(" ")
+		if len(args) < 1 or len(args) > 2:
+			return "Usage: connect irc.network.tld [port]"
+		else:
+			if len(args) == 2:
+				port=args[1]
 			else:
-				if len(args) == 2:
-					port=args[1]
-				else:
-					port=6667
-				c = self.bot.getReactor().connectTCP(args[0],port,self.bot.factory)
-				return self._output("Connecting to "+str(c))
-		elif command == "listnetworks":
-			return self._output("Currently connected to: "+" ".join(self.bot.factory._getnetworkslist()))
-		elif command == "currentnetwork":
-			return self._output("Current network: "+self.bot.network)
-		elif command == "changenetwork":
-			self.bot=self.bot.factory._getnetwork(argument)
-			return self._output("changed network to "+self.bot.network)
-		elif command == "listchannels":
-			return self._output("Currently in: "+" ".join(self.bot.channels))
-		elif command == "changenick":
-			if argument == "":
-				return self._output("Usage: changenick newnick")
+				port=6667
+			c = self.bot.getReactor().connectTCP(args[0],port,self.bot.factory)
+			return "Connecting to "+str(c)
+	def _cmd_listnetworks(self,argument):
+		return "Currently connected to: "+" ".join(self.bot.factory._getnetworkslist())
+	def _cmd_currentnetwork(self,argument):
+		return "Current network: "+self.bot.network
+	def _cmd_changenetwork(self,argument):
+		self.bot=self.bot.getFactory()._getnetwork(argument)
+		return "changed network to "+self.bot.network
+	def _cmd_listchannels(self,argument):
+		return "Currently in: "+" ".join(self.bot.channels)
+	def _cmd_changenick(self,argument):
+		if argument == "":
+			return "Usage: changenick newnick"
+		else:
+			self.bot.setNick(argument)
+	def _cmd_join(self,argument):
+		if argument == "":
+			return "Usage: join channel"
+		else:
+			self.bot.join(argument)
+			return "Joined "+str(argument)
+	def _cmd_part(self,argument):
+		args=argument.split(" ",1)
+		if len(args) == 0:
+			return "Usage: part channel [message]"
+		else:
+			if len(args) > 1:
+				partmsg=args[1]
 			else:
-				self.bot.setNick(argument)
-		elif command == "join":
-			if argument == "":
-				return self._output("Usage: join channel")
+				partmsg=""
+			self.bot.leave(args[0],partmsg)
+			return "Left "+args[0]
+	def _cmd_kick(self,argument):
+		args=argument.split(" ",2)
+		if len(args) < 2:
+			return "Usage: kick channel user [message]"
+		else:
+			if len(args) == 2:
+				self.bot.kick(args[0],args[1])
 			else:
-				self.bot.join(argument)
-				return self._output("Joined "+str(argument))
-		elif command == "part":
-			args=argument.split(" ",1)
-			if len(args) == 0:
-				return self._output("Usage: part channel [message]")
-			else:
-				if len(args) > 1:
-					partmsg=args[1]
-				else:
-					partmsg=""
-				self.bot.leave(args[0],partmsg)
-				return self._output("Left "+args[0])
-		elif command == "kick":
-			args=msg.split(" ",2)
-			if len(args) < 2:
-				return self._output("Usage: kick channel user [message]")
-			else:
-				if len(args) == 2:
-					self.bot.kick(args[0],args[1])
-				else:
-					self.bot.kick(args[0],args[1],args[3])
-				return self._output("Kicked "+args[1]+" from "+args[0]+".")
+				self.bot.kick(args[0],args[1],args[3])
+			return "Kicked "+args[1]+" from "+args[0]+"."

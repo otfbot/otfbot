@@ -18,8 +18,8 @@
 #
 
 # TODO: * some authorization
-#       * configuring point of listening (TCP, SSL, Socket)
-#       * clientapp
+#	   * configuring point of listening (TCP, SSL, Socket)
+#	   * clientapp
 
 from twisted.internet import protocol, error
 from twisted.protocols import basic
@@ -27,31 +27,54 @@ import chatMod
 from control import configShell, controlInterface
 
 class BotProtocol(basic.LineOnlyReceiver):
-    def lineReceived(self, data):
-        result = self.control.input(data)
-        if result:
-            self.sendLine(result)
-        else:
-            self.sendLine("00")
-    def connectionMade(self):
-        if self.transport.client[0] == "127.0.0.1":
-            self.control=controlInterface(self.factory.bot)
-        else:
-            self.sendLine("Connection not allowed")
-            self.transport.loseConnection()
+	PLAIN=0
+	TELNET=1
+	READLINE=2
+	terminal=PLAIN
+	def _output(self, data):
+		if self.terminal == self.READLINE:
+			self.sendLine("02 "+self.factory.bot.network)
+			self.sendLine("01 +channels,"+",".join(self.factory.bot.channels)+":+networks,"+",".join(self.factory.bot.factory._getnetworkslist())+":config:help:reload:listmodules:stop:quit:disconnect,+networks:connect:listnetworks:currentnetwork:changenetwork,+networks:listchannels:changenick:join:part,+channels:kick")
+		if not data or data == "" and self.terminal == self.READLINE:
+			self.sendLine("00")
+		else:
+			self.sendLine(data)
+		
+	def lineReceived(self, data):
+		tmp = data.strip().split(" ",1)
+		if len(tmp) == 1:
+			command=tmp[0]
+			argument=""
+		else:
+			(command, argument) = tmp
+		if command == "shell":
+			if argument == "telnet":
+				self.terminal=self.TELNET
+			elif argument == "readline":
+				self.terminal=self.READLINE
+		elif data != "":
+			self._output(self.control.input(data))
+		else:
+			self._output("")
+
+	def connectionMade(self):
+		if self.transport.client[0] == "127.0.0.1":
+			self.control=controlInterface(self.factory.bot)
+		else:
+			self.sendLine("Connection not allowed")
+			self.transport.loseConnection()
 
 class BotProtocolFactory(protocol.ServerFactory):
-    def __init__(self, bot):
-        self.bot=bot #.getFactory()._getnetwork(factory._getnetworkslist()[0])
-        self.protocol=BotProtocol
+	def __init__(self, bot):
+		self.bot=bot #.getFactory()._getnetwork(factory._getnetworkslist()[0])
+		self.protocol=BotProtocol
 
 class chatMod(chatMod.chatMod):
-    def __init__(self, bot):
-        self.bot=bot
-    def start(self):
-        f=BotProtocolFactory(self.bot)
-        try:
-            self.bot.getReactor().listenTCP(5022, f)
-        except (error.CannotListenError):
-            pass
-
+	def __init__(self, bot):
+		self.bot=bot
+	def start(self):
+		f=BotProtocolFactory(self.bot)
+		try:
+			self.bot.getReactor().listenTCP(5022, f)
+		except (error.CannotListenError):
+			pass
