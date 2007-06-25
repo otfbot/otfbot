@@ -83,7 +83,7 @@ if options.debug > 0:
 	logging.getLogger('').addHandler(console)
 	#corelogger.addHandler(console)
 corelogger = logging.getLogger('core')
-corelogger.info("Starting OtfBot - Version svn "+str(svnversion))
+corelogger.info("Starting OtfBot - Version svn "+"$Revision$".split(" ")[1])
 
 def logerror(logger, module, exception):
 	""" format a exception nicely and pass it to the logger
