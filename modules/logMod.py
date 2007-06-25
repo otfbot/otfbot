@@ -90,7 +90,7 @@ class chatMod(chatMod.chatMod):
 	def joined(self, channel):
 		self.channels[string.lower(channel)]=1
 		#self.files[string.lower(channel)]=open(string.lower(channel)+".log", "a")
-		self.path[channel]=Template(self.logpath).safe_substitute({'c':channel})
+		self.path[channel]=Template(self.logpath).safe_substitute({'c':channel.replace("/", "_").replace(":", "")}) #replace to handle psyc:// channels
 		file=Template(self.path[channel]).safe_substitute(self.timemap())
 		if not os.path.exists(os.path.dirname(file)):
 			os.mkdir(os.path.dirname(file))
