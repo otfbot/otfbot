@@ -423,6 +423,7 @@ class Bot(irc.IRCClient):
 		del self.users[channel]
 		self.channels.remove(channel)
 		self._apirunner("left",{"channel":channel})
+		self.setConfig("enabled", "false", "main", self.network, channel) #disable the channel for the next start of the bot
 
 	def privmsg(self, user, channel, msg):
 		""" called by twisted,
