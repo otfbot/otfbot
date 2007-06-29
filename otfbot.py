@@ -447,7 +447,11 @@ class Bot(irc.IRCClient):
 			@param msg: the message
 			@type msg: string
 		"""
-		if msg[0]==self.getConfig("commandChar", "!", "main"):
+		try:
+			char=msg[0].decode('UTF-8').encode('UTF-8')
+		except UnicodeDecodeError:
+			char=msg[0].decode('iso-8859-15').encode('UTF-8')
+		if char==self.getConfig("commandChar", "!", "main").encode("UTF-8"):
 			tmp=msg[1:].split(" ", 1)
 			command=tmp[0]
 			if len(tmp)==2:
