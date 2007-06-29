@@ -114,6 +114,77 @@ class chatMod(chatMod.chatMod):
 					self.allscore[user]=self.score[user]
 
 
+	def command(self, user, channel, command, options):
+		user=string.lower(user.split("!")[0])
+		if channel!=self.bot.nickname:
+			if command=="remove":
+				if self.phase==NO_GAME:
+					if len(msg)>7 and user==self.gameadmin: #XXX: 7 because command has no trailing whitespace? - 8 because of the whitespace after !remove
+						player=string.lower(msg[8:])
+					else:
+						player=user
+					if player in self.players:
+						self.players.remove(player)
+						self.bot.sendmsg(channel, "Spieler "+player+" aus der Runde entfernt.")
+					else:
+						self.bot.sendmsg(channel, "Spieler "+player+" spielt nicht mit.")
+				else:
+					self.bot.sendmsg(channel, "Spieler koennen nur zwischen 2 Runden entfernt werden")
+
+			elif command=="add":
+				if self.phase==NO_GAME:
+					self.players.append(user)
+					self.bot.sendmsg(channel, user+" spielt jetzt mit.")
+					#random.shuffle(self.players)
+				else:
+					self.bot.sendmsg(channel, "Spieler koennen nur zwischen 2 Runden hinzugefuegt werden")
+
+			elif command=="restartgame":
+				if self.phase==NO_GAME and user==self.gameadmin:
+					self.bot.sendmsg(channel, "Eine neue Runde startet, Spieler bleiben gleich!")
+					self.init_vars_for_restart()
+					self.phase=WAITING_FOR_QUESTION
+					self.bot.sendmsg(channel, user+": /msg mir die Frage.", self.bot.getConfig("encoding", "UTF-8"))
+					self.timer=self.bot.scheduler.callLater(TIMEOUT, self.end_of_quiz)
+					
+			elif command=="startgame":
+				if self.phase==NO_GAME:
+					self.init_vars()
+					self.gameadmin=user
+					self.bot.sendmsg(channel, "Wer moechte an einer Runde \"Nobody is Perfect\" teilnehmen?(laut \"ich\" rufen!)")
+					self.bot.sendmsg(channel, self.gameadmin+": Zum starten nocheinmal !startgame sagen.", self.bot.getConfig("encoding", "UTF-8"))
+					self.phase=WAITING_FOR_PLAYERS
+					self.gamechannel=channel #needed for queries which result in a public answer
+					self.timer=self.bot.scheduler.callLater(TIMEOUT, self.end_of_quiz)
+				elif self.phase==WAITING_FOR_PLAYERS and user==self.gameadmin:
+					if self.timer:
+						self.timer.cancel()
+					if len(self.players) >2:
+						self.phase=WAITING_FOR_QUESTION
+						random.shuffle(self.players)
+						self.gamemaster=random.choice(self.players)
+						self.bot.sendmsg(channel, self.gamemaster+": /msg mir die Frage.", self.bot.getConfig("encoding", "UTF-8"))
+						self.timer=self.bot.scheduler.callLater(TIMEOUT, self.end_of_quiz)
+					else:
+						self.bot.sendmsg(channel, self.gameadmin+": zu wenig Spieler!", self.bot.getConfig("encoding", "UTF-8"))
+			elif command=="abortgame":
+				self.end_of_quiz()
+
+			elif command=="score":
+				if len(self.allscore):
+					self.bot.sendmsg(channel, "=== Punkte ===", self.bot.getConfig("encoding", "UTF-8"))
+					points=self.allscore.values()
+					points.sort()
+					points.reverse()
+					players=self.allscore.keys()
+					for point in points:
+						for player in players:
+							if self.allscore[player]==point:
+								self.bot.sendmsg(channel, player+": "+str(point)+ " Punkte", self.bot.getConfig("encoding", "UTF-8"))
+								players.remove(player)
+								break;
+
+
 	def msg(self, user, channel, msg):
 		user=string.lower(user.split("!")[0])
 		if channel == self.bot.nickname:
@@ -146,73 +217,7 @@ class chatMod(chatMod.chatMod):
 						self.timer.cancel()
 					self.end_of_answertime()
 		else:
-			if msg[:7]=="!remove":
-				if self.phase==NO_GAME:
-					if len(msg)>8 and user==self.gameadmin: #8 because of the whitespace after !remove
-						player=string.lower(msg[8:])
-					else:
-						player=user
-					if player in self.players:
-						self.players.remove(player)
-						self.bot.sendmsg(channel, "Spieler "+player+" aus der Runde entfernt.")
-					else:
-						self.bot.sendmsg(channel, "Spieler "+player+" spielt nicht mit.")
-				else:
-					self.bot.sendmsg(channel, "Spieler koennen nur zwischen 2 Runden entfernt werden")
-
-			if msg[:4]=="!add":
-				if self.phase==NO_GAME:
-					self.players.append(user)
-					self.bot.sendmsg(channel, user+" spielt jetzt mit.")
-					#random.shuffle(self.players)
-				else:
-					self.bot.sendmsg(channel, "Spieler koennen nur zwischen 2 Runden hinzugefuegt werden")
-
-			if msg[:12]=="!restartgame":
-				if self.phase==NO_GAME and user==self.gameadmin:
-					self.bot.sendmsg(channel, "Eine neue Runde startet, Spieler bleiben gleich!")
-					self.init_vars_for_restart()
-					self.phase=WAITING_FOR_QUESTION
-					self.bot.sendmsg(channel, self.gamemaster+": /msg mir die Frage.", self.bot.getConfig("encoding", "UTF-8"))
-					self.timer=self.bot.scheduler.callLater(TIMEOUT, self.end_of_quiz)
-					
-			if msg[:10]=="!startgame":
-				if self.phase==NO_GAME:
-					self.init_vars()
-					self.gameadmin=user
-					self.bot.sendmsg(channel, "Wer moechte an einer Runde \"Nobody is Perfect\" teilnehmen?(laut \"ich\" rufen!)")
-					self.bot.sendmsg(channel, self.gameadmin+": Zum starten nocheinmal !startgame sagen.", self.bot.getConfig("encoding", "UTF-8"))
-					self.phase=WAITING_FOR_PLAYERS
-					self.gamechannel=channel #needed for queries which result in a public answer
-					self.timer=self.bot.scheduler.callLater(TIMEOUT, self.end_of_quiz)
-				elif self.phase==WAITING_FOR_PLAYERS and user==self.gameadmin:
-					self.timer.cancel()
-					if len(self.players) >2:
-						self.phase=WAITING_FOR_QUESTION
-						random.shuffle(self.players)
-						self.gamemaster=random.choice(self.players)
-						self.bot.sendmsg(channel, self.gamemaster+": /msg mir die Frage.", self.bot.getConfig("encoding", "UTF-8"))
-						self.timer=self.bot.scheduler.callLater(TIMEOUT, self.end_of_quiz)
-					else:
-						self.bot.sendmsg(channel, self.gamemaster+" zu wenig Spieler!", self.bot.getConfig("encoding", "UTF-8"))
-			elif msg[:10]=="!abortgame":
-				self.end_of_quiz()
-
-			elif msg[:6]=="!score":
-				if len(self.allscore):
-					self.bot.sendmsg(channel, "=== Punkte ===", self.bot.getConfig("encoding", "UTF-8"))
-					points=self.allscore.values()
-					points.sort()
-					points.reverse()
-					players=self.allscore.keys()
-					for point in points:
-						for player in players:
-							if self.allscore[player]==point:
-								self.bot.sendmsg(channel, player+": "+str(point)+ " Punkte", self.bot.getConfig("encoding", "UTF-8"))
-								players.remove(player)
-								break;
-
-			elif string.lower(msg)[:3]=="ich" and self.phase==WAITING_FOR_PLAYERS:
+			if string.lower(msg)[:3]=="ich" and self.phase==WAITING_FOR_PLAYERS:
 				if not (user in self.players or user==self.gamemaster):
 					self.players.append(user)
 					text=""
