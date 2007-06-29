@@ -430,7 +430,7 @@ class Bot(irc.IRCClient):
 		@param user: the user, which issues the command
 		@type user: string
 		@param channel: the channel to which the message was sent or my nickname if it was a private message
-		@tpye channel: string
+		@type channel: string
 		@param command: the !command without the !
 		@type command: string
 		@param options: eventual options specified after !command (e.g. "!command foo")
