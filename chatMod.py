@@ -30,6 +30,9 @@ class chatMod:
 	def joined(self, channel):
 		"""we have joined a channel"""
 		pass
+	def command(self, user, channel, command, options):
+		"""a command message received"""
+		pass
 	def privmsg(self, user, channel, msg):
 		"""a private message received"""
 		pass

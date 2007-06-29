@@ -425,6 +425,18 @@ class Bot(irc.IRCClient):
 		self._apirunner("left",{"channel":channel})
 		self.setConfig("enabled", "false", "main", self.network, channel) #disable the channel for the next start of the bot
 
+	def command(self, user, channel, command, options):
+		"""callback for !commands
+		@param user: the user, which issues the command
+		@type user: string
+		@param channel: the channel to which the message was sent or my nickname if it was a private message
+		@tpye channel: string
+		@param command: the !command without the !
+		@type command: string
+		@param options: eventual options specified after !command (e.g. "!command foo")
+		@type options: string"""
+		self._apirunner("command",{"user":user,"channel":channel,"command":command, "options":options})
+
 	def privmsg(self, user, channel, msg):
 		""" called by twisted,
 			if we received a message
@@ -435,6 +447,16 @@ class Bot(irc.IRCClient):
 			@param msg: the message
 			@type msg: string
 		"""
+		if msg[0]==self.getConfig("commandChar", "!", "main"):
+			tmp=msg[1:].split(" ", 1)
+			command=tmp[0]
+			if len(tmp)==2:
+				options=tmp[1]
+			else:
+				options=""
+			self._apirunner("command",{"user":user,"channel":channel,"command":command,"options":options})
+			#return
+
 		self._apirunner("privmsg",{"user":user,"channel":channel,"msg":msg})
 		self._apirunner("msg",{"user":user,"channel":channel,"msg":msg})
 		#nick = user.split("!")[0]
