@@ -14,7 +14,7 @@
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 # 
-# (c) 2005, 2006 by Alexander Schier
+# (c) 2005, 2006, 2007 by Alexander Schier
 #
 
 import string, re
@@ -24,7 +24,6 @@ def default_settings():
 	settings={};
 	settings['commandsMod.fileencoding']='iso-8859-15'
 	settings['commandsMod.file']=datadir+'/commands.txt'
-	settings['commandsmod.commandChar']='!'
 	return settings
 		
 class chatMod(chatMod.chatMod):
@@ -40,28 +39,17 @@ class chatMod(chatMod.chatMod):
 		self.commands[channel]=functions.loadProperties(self.bot.getConfig("file", datadir+"/commands.txt", "commandsMod", self.bot.network, channel))
 		self.commandChar[channel]=self.bot.getConfig("commandChar", "!", "commandsMod", self.bot.network, channel)
 	
-	def msg(self, user, channel, msg):
+	def command(self, user, channel, command, options):
 		user = user.split("!")[0] #only nick
-		if self.commandChar.has_key(channel):
-			try:
-				char=msg[0].decode('UTF-8').encode('UTF-8')
-			except UnicodeDecodeError:
-				char=msg[0].decode('iso-8859-15').encode('UTF-8')
-			if char == self.commandChar[channel]:
-				#if msg == "!reload-commands": #TODO: global methodChar
-				#	self.logger.info("reloading")
-				#	self.reload()
-				#	return
-				answer = self.respond(channel, user, msg)
-				if answer != "":
-					if answer[0] == ":":
-						self.bot.sendmsg(channel, answer[1:], self.bot.getConfig("commandsMod.fileencoding", "iso-8859-15"))
-					else:
-						self.bot.sendme(channel, answer, self.bot.getConfig("commandsMod.fileencoding", "iso-8859-15"))
-			
+		answer=self.respond(channel, user, command, options)
+		if answer != "":
+			if answer[0] == ":":
+				self.bot.sendmsg(channel, answer[1:], self.bot.getConfig("commandsMod.fileencoding", "iso-8859-15"))
+			else:
+				self.bot.sendme(channel, answer, self.bot.getConfig("commandsMod.fileencoding", "iso-8859-15"))
+
 	def start(self):
 		self.commands={}
-		self.commandChar={}
 		self.commands["general"]=functions.loadProperties(self.bot.getConfig("file",datadir+"/commands.txt","commandsMod"))
 		self.commands["network"]=functions.loadProperties(self.bot.getConfig("file",datadir+"/commands.txt","commandsMod", self.bot.network))
 
@@ -80,18 +68,14 @@ class chatMod(chatMod.chatMod):
 		else:
 			return ""
 
-	def respond(self, channel, user, command):
+	def respond(self, channel, user, command, options):
 		answer = ""
-		if command[0] == self.commandChar[channel]:
-			tmp=command[1:].split(" ", 1)
-			cmd=string.lower(tmp[0])
-			if len(tmp) >1:
-				param=tmp[1]
-				answer=self.getCommand(channel, cmd+"_")
-				answer = re.sub("OTHER", param, answer)
-			else:
-				answer=self.getCommand(channel, cmd)
-			answer = re.sub("USER", user, answer)
+		if len(options) >1:
+			answer=self.getCommand(channel, command+"_")
+			answer = re.sub("OTHER", options, answer)
+		else:
+			answer=self.getCommand(channel, command)
+		answer = re.sub("USER", user, answer)
 				
 		if len(answer)>0 and answer[-1] == "\n":
 			return answer[0:-1]
