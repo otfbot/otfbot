@@ -28,13 +28,9 @@ def default_settings():
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot = bot
-		self.channels={}
 		self.time=time.time()
 		self.commands = ["kurs","wkn"]
-		
-	def joined(self, channel):
-		self.channels[channel]=1
-	
+
 	def command(self, user, channel, command, options):
 		nick=user.split("!")[0]
 		if command in self.commands and 0 < (time.time() - self.time) < 5:

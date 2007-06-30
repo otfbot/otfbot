@@ -461,7 +461,12 @@ class Bot(irc.IRCClient):
 			self._apirunner("command",{"user":user,"channel":channel,"command":command,"options":options})
 			#return
 
+		if channel.lower() == self.nickname.lower():
+			self._apirunner("query",{"user":user,"channel":channel,"msg":msg})
+		
+		# to be removed
 		self._apirunner("privmsg",{"user":user,"channel":channel,"msg":msg})
+		# to be called for messages in channels
 		self._apirunner("msg",{"user":user,"channel":channel,"msg":msg})
 		#nick = user.split("!")[0]
 		#if channel == self.nickname and self.auth(nick) > 9:
@@ -593,6 +598,7 @@ class Bot(irc.IRCClient):
 		"""
 		#self.logger.debug(str(line))
 		# adding a correct hostmask for join, part and quit
+		self._apirunner("lineReceived", {"line":line})
 		if line.split(" ")[1] == "JOIN" and line[1:].split(" ")[0].split("!")[0] != self.nickname:
 			self.userJoined(line[1:].split(" ")[0],string.lower(line.split(" ")[2][1:]))
 			#self.joined(line[1:].split(" ")[0],line.split(" ")[2][1:])
@@ -602,6 +608,10 @@ class Bot(irc.IRCClient):
 			self.userQuit(line[1:].split(" ")[0],line.split("QUIT :")[1])
 		else:
 			irc.IRCClient.lineReceived(self,line)
+	
+	def sendLine(self, line):
+		self._apirunner("sendLine",{"line":line})
+		irc.IRCClient.sendLine(self, line)
 
 class BotFactory(protocol.ReconnectingClientFactory):
 	"""The Factory for the Bot"""
