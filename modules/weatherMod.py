@@ -170,25 +170,23 @@ class chatMod(chatMod.chatMod):
 		self.time=time.time()
 		self.commands = ["wetter"]
 		
-	def msg(self, user, channel, msg):
+	def command(self, user, channel, command, options):
 		nick=user.split("!")[0]
-		cmd=msg.split(" ")[0][1:]
-		if cmd in self.commands and ((time.time() - self.time) < 5 and (time.time() - self.time) > 0):
+		if channel in self.commands and 0 < (time.time() - self.time) < 5:
 			self.bot.sendmsg(channel,"Wait a minute ...")
-		elif cmd in self.commands:
-			self.time = time.time()
-			if cmd == "wetter":
-				c = getWeather(" ".join(msg.split(" ")[1:]))
-				if len(c) < 1:
-					self.bot.sendmsg(channel,"Keinen passenden Ort gefunden")
-				else:
-					#self.logger.debug(str(c))
-					answ = "Wetter f\xfcr "+str(c['location']['city'])
-					if len(c['location']['country'])>0: 
-						answ += " ("+str(c['location']['country'])+")"
-					answ += ": "+str(weathercodes[int(c['condition']['code'])])
-					answ += ", "+str(c['condition']['temp'])+"\xb0"+str(c['units']['temperature'])
-					answ += " gef\xfchlt "+str(c['wind']['chill'])+"\xb0"+str(c['units']['temperature'])
-					answ += ", Wind: "+str(c['wind']['speed'])+str(c['units']['speed'])+" aus "+str(getDirection(int(c['wind']['direction'])))
-					answ += ", Luftfeuchte: "+str(c['atmosphere']['humidity'])+"%"
-					self.bot.sendmsg(channel,answ,"UTF-8")
+			return
+		self.time = time.time()
+		if command == "wetter":
+			c = getWeather(options)
+			if len(c) < 1:
+				self.bot.sendmsg(channel,"Keinen passenden Ort gefunden")
+			else:
+				answ = "Wetter f\xfcr "+str(c['location']['city'])
+				if len(c['location']['country'])>0: 
+					answ += " ("+str(c['location']['country'])+")"
+				answ += ": "+str(weathercodes[int(c['condition']['code'])])
+				answ += ", "+str(c['condition']['temp'])+"\xb0"+str(c['units']['temperature'])
+				answ += " gef\xfchlt "+str(c['wind']['chill'])+"\xb0"+str(c['units']['temperature'])
+				answ += ", Wind: "+str(c['wind']['speed'])+str(c['units']['speed'])+" aus "+str(getDirection(int(c['wind']['direction'])))
+				answ += ", Luftfeuchte: "+str(c['atmosphere']['humidity'])+"%"
+				self.bot.sendmsg(channel,answ,"UTF-8")

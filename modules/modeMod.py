@@ -21,30 +21,30 @@ import random, re
 import chatMod
 
 class chatMod(chatMod.chatMod):
-    def __init__(self, bot):
-        self.bot=bot
-        self.modes={}
-        self.modes["op"]={"char": "o", "set": 1}
-        self.modes["deop"]={"char": "o", "set": 0}
-        self.modes["voice"]={"char": "v", "set": 1}
-        self.modes["devoice"]={"char": "v", "set": 0}
-	self.modes["protect"]={"char": "a", "set": 1}
-	self.modes["unprotect"]={"char": "a", "set": 0}
+	def __init__(self, bot):
+		self.bot=bot
+		self.modes={}
+		self.modes["op"]={"char": "o", "set": 1}
+		self.modes["deop"]={"char": "o", "set": 0}
+		self.modes["voice"]={"char": "v", "set": 1}
+		self.modes["devoice"]={"char": "v", "set": 0}
+		self.modes["halfop"]={"char": "h", "set": 1}
+		self.modes["dehalfop"]={"char": "h", "set": 0}
 
-    def msg(self, user, channel, msg):
-        user=user.split("!")[0]
-        if self.bot.auth(user) > 2:
-            for mode in self.modes.keys():
-                if msg[0:len(mode)+1]=="!"+mode:
-                    msg=msg[len(mode)+1:]
-                    if msg != "":
-                        if msg[0]==" ":
-                            msg=msg[1:]
-                        self.bot.mode(channel, self.modes[mode]["set"], self.modes[mode]["char"], None, msg)
-                    else:
-                        self.bot.mode(channel, self.modes[mode]["set"], self.modes[mode]["char"], None, user)
-	if self.bot.auth(user) > 5 and msg[0:5] == "!kick":
-		if len(msg.split(" ")) == 2:
-			self.bot.kick(channel,msg.split(" ")[1])
-		elif len(msg.split(" ")) > 2:
-			self.bot.kick(channel,msg.split(" ")[1]," ".join(msg.split(" ")[2:]))
+	#def msg(self, user, channel, msg):
+	def command(self, user, channel, command, options):
+		user=user.split("!")[0]
+		if self.bot.auth(user) > 2 and command in self.modes.keys():
+			if options != "":
+				self.bot.mode(channel, self.modes[command]["set"], self.modes[command]["char"], None, options)
+			else:
+				self.bot.mode(channel, self.modes[command]["set"], self.modes[command]["char"], None, user)
+		if self.bot.auth(user) > 5 and command == "kick":
+			if options != "":
+				options=options.split(" ",1)
+				if len(options) == 1:
+					self.bot.kick(channel,options[0])
+				elif len(options) == 2:
+					self.bot.kick(channel,options[0],options[1])
+			else:
+				self.bot.kick(channel,user, "Requested.")

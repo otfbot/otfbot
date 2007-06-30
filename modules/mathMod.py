@@ -24,23 +24,23 @@ class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
 
-	def msg(self, user, channel, msg):
-		#if channel == self.bot.nickname:
-		if msg == "!wuerfel":
-			self.bot.sendme(channel, "wuerfelt. Das Ergebnis ist: "+str(random.randint(1,6)))
-		elif msg[0:8] == "!wuerfel":
-			num = 2
-			string = "wuerfelt. Die Ergebnisse sind: "
-			try:
-				num = int(msg[8:])
-			except ValueError:
+	def command(self, user, channel, command, options):
+		if command == "wuerfel":
+			if options == "":
+				self.bot.sendme(channel, "wuerfelt. Das Ergebnis ist: "+str(random.randint(1,6)))
+			else:
 				num = 2
-			if num > 10:
-				num = 10
-			for i in range(1,num+1):
-				zahl = random.randint(1,6)/s
-				if i < num:
-					string += str(zahl)+", "
-				else:
-					string += str(zahl)
-			self.bot.sendme(channel, string) 
+				string = "wuerfelt. Die Ergebnisse sind: "
+				try:
+					num = int(options)
+				except ValueError:
+					num = 2
+				if num > 10:
+					num = 10
+				for i in range(1,num+1):
+					zahl = random.randint(1,6)
+					if i < num:
+						string += str(zahl)+", "
+					else:
+						string += str(zahl)
+				self.bot.sendme(channel, string) 

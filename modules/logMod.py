@@ -110,8 +110,10 @@ class chatMod(chatMod.chatMod):
 		elif len(channel)>0 and channel[0]=="#":
 			modesign=self.bot.users[channel][user]['modchar']
 			self.log(channel, "<"+modesign+user+"> "+msg)
-		else:
-			self.logPrivate(channel, "<"+modesign+self.bot.nickname+"> "+msg)
+
+	def query(self, user, channel, msg):
+		user=user.split("!")[0]
+		self.logPrivate(channel, "<"+self.bot.nickname+"> "+msg)
 	
 	def noticed(self, user, channel, msg):
 		if user != "":
