@@ -30,20 +30,13 @@ class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot = bot
 
-		self.answersFile=bot.getConfig("file", datadir+"/answers.txt", "answerMod")
+	def start(self):
+		self.answersFile=self.bot.getConfig("file", datadir+"/answers.txt", "answerMod")
 		self.answers = functions.loadProperties(self.answersFile)
-		self.channels={}
-		
-	def joined(self, channel):
-		self.channels[channel]=1
-	
+
 	def msg(self, user, channel, msg):
 		user = user.split("!")[0] #only nick
-		if(self.channels.has_key(channel)): #Do not respond to server messages
-			if msg == "!reload-answers":
-				self.logger.info("reloading")
-				self.reload()
-				return
+		if channel in self.bot.channels: #Do not respond to server messages
 			answer = self.respond(user, msg)
 			if answer != "":
 				self.bot.sendmsg(channel, answer, self.bot.getConfig("fileencoding", "iso-8859-15","answerMod"))

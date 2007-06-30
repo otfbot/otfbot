@@ -46,7 +46,6 @@ class chatMod(chatMod.chatMod):
 		"Ask again later (Frag spaeter nochmal)"
 		]
 
-	def msg(self, user, channel, msg):
-		#if channel == self.bot.nickname:
-		if len(msg) > 7 and msg[:7] == "!8ball ": #>7 = only if the user asked something.
+	def command(self, user, channel, command, options):
+		if command == "8ball" and options != "": #>7 = only if the user asked something.
 			self.bot.sendmsg(channel, random.choice(self.answers))

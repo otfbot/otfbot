@@ -30,23 +30,12 @@ class chatMod(chatMod.chatMod):
 		self.bot=bot
 		self.badwordsFile=bot.getConfig("file", datadir+"/badwords.txt","badwordsMod")
 		self.badwords=functions.loadList(self.badwordsFile)
-		self.channels = {}
-		
-	def joined(self, channel):
-		self.channels[channel]=1
-		
-	def part(self, channel):
-		self.channels[channel]=1
 
 	def reload(self):
 		self.badwords=functions.loadList(self.badwordsFile)
 
 	def msg(self, user, channel, msg):
-		if channel == self.bot.nickname:
-			if msg == "!reload-badwords":
-				self.reload()
-		else:
-			for word in self.badwords:
-				if self.channels.has_key(channel) and word != "" and re.search(word, msg, re.I) and user.split("!")[0]!=self.bot.nick:
-					self.logger.info("kicking "+user.split("!")[0]+" for badword: "+word)
-					self.bot.kick(channel, user.split("!")[0], "Badword: "+word)
+		for word in self.badwords:
+			if channel in self.bot.channels and word != "" and re.search(word, msg, re.I):
+				self.logger.info("kicking "+user.split("!")[0]+" for badword: "+word)
+				self.bot.kick(channel, user.split("!")[0], "Badword: "+word)

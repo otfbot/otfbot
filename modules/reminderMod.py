@@ -40,19 +40,16 @@ class chatMod(chatMod.chatMod):
 		for message in messages:
 			self.bot.sendmsg(message[0], message[1]+": Reminder: "+message[2])
 
-	def msg(self, user, channel, msg):
-		#if channel == self.bot.nickname:
-		#if msg[0]=="!" or msg[:len(self.bot.nickname)]==self.bot.nickname:
-		if msg[0:10]=="!remindme ":
+	def command(self, user, channel, command, options):
+		if command == "remindme":
 			user=user.split("!")[0]
-
-			tmp=msg.split(" ", 2)
+			options=options.split(" ", 1)
 			try:
-				wait=float(tmp[1])
+				wait=float(options)
 			except ValueError:
-				self.bot.sendmsg(channel, user.split("!")[0]+": invalid number format \""+tmp[1]+"\".")
+				self.bot.sendmsg(channel, user.split("!")[0]+": invalid number format \""+options[0]+"\".")
 				return
-			text=str(tmp[2])
+			text=str(options[1])
 			
 			when=int( (time.time()+wait*60)/60 ) #when will this be executed? (minutes since 1.1.1970 ;-))
 			if self.messages.has_key(when):

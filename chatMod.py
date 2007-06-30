@@ -33,9 +33,12 @@ class chatMod:
 	def command(self, user, channel, command, options):
 		"""a command message received"""
 		pass
+	def query(self, user, channel, msg):
+		"""a private message received (Obsolete method)"""
+		pass
 	def privmsg(self, user, channel, msg):
 		"""a private message received"""
-		pass
+		pass	
 	def msg(self, user, channel, msg):
 		"""message received"""
 		pass
@@ -96,4 +99,8 @@ class chatMod:
 		"""called to start the work of the module
 			put your initialization stuff in here insteadof __init__
 		"""
+		pass
+	def sendLine(self,line):
+		pass
+	def lineReceived(self,line):
 		pass

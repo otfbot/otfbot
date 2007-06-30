@@ -33,15 +33,9 @@ class chatMod(chatMod.chatMod):
 				self.control[user]=controlInterface(self.bot)
 			self.bot.sendmsg(nick,self.control[user].input(msg))
 
-		#elif channel==self.bot.nickname:
-		#	self.bot.sendmsg(nick,"Not authorized")
-		elif self.bot.auth(user) > -1 and msg[0] == "!": #TODO: make "!" configurable
-			if msg[1:7] == "reload":
-				if len(msg.split(" ")) == 2:
-					for chatMod in self.bot.mods:
-						if chatMod.name == msg.split(" ")[1]:
-							try:
-								chatMod.reload()
-								self.logger.info("Reloading Settings of "+chatMod.name)
-							except Exception, e:
-								self.logger.error("Error while reloading "+chatMod.name)
+	def command(self, user, channel, command, options):
+		if self.bot.auth(user) > -1 and command == "reload": #TODO: make "!" configurable
+			for chatMod in self.bot.mods:
+				if chatMod.name == options:
+					chatMod.reload()
+					self.logger.info("Reloading Settings of "+chatMod.name)

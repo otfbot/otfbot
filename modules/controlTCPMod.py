@@ -30,7 +30,10 @@ class BotProtocol(basic.LineOnlyReceiver):
 	PLAIN=0
 	TELNET=1
 	READLINE=2
+	NORMAL=3
+	DEBUG=4
 	terminal=PLAIN
+	state=NORMAL
 	def _output(self, data):
 		if self.terminal == self.READLINE:
 			self.sendLine("02 "+self.factory.bot.network)
@@ -52,6 +55,8 @@ class BotProtocol(basic.LineOnlyReceiver):
 				self.terminal=self.TELNET
 			elif argument == "readline":
 				self.terminal=self.READLINE
+		elif command == "debug":
+			self.state=self.DEBUG
 		elif data != "":
 			self._output(self.control.input(data))
 		else:
@@ -68,13 +73,28 @@ class BotProtocolFactory(protocol.ServerFactory):
 	def __init__(self, bot):
 		self.bot=bot #.getFactory()._getnetwork(factory._getnetworkslist()[0])
 		self.protocol=BotProtocol
+		self.proto=[]
+		
+	def buildProtocol(self,addr):
+		proto=protocol.ServerFactory.buildProtocol(self,addr)
+		self.proto.append(proto)
+		return proto
 
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
 	def start(self):
-		f=BotProtocolFactory(self.bot)
+		self.f=BotProtocolFactory(self.bot)
 		try:
-			self.bot.getReactor().listenTCP(5022, f)
+			self.bot.getReactor().listenTCP(5022, self.f)
 		except (error.CannotListenError):
 			pass
+		
+	def debug(self,line):
+		for p in self.f.proto:
+			if p.state == p.DEBUG:
+				p._output(line)
+	def lineReceived(self, line):
+		self.debug("< "+line)
+	def sendLine(self,line):
+		self.debug("> "+line)
