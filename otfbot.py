@@ -412,6 +412,7 @@ class Bot(irc.IRCClient):
 		self.channels.append(channel)
 		self.users[channel]={}
 		self._apirunner("joined",{"channel":channel})
+		self.setConfig("enabled", "True", "main", self.network, channel)
 
 	def left(self, channel):
 		""" called by twisted,
@@ -423,8 +424,10 @@ class Bot(irc.IRCClient):
 		del self.users[channel]
 		self.channels.remove(channel)
 		self._apirunner("left",{"channel":channel})
-		self.setConfig("enabled", "false", "main", self.network, channel) #disable the channel for the next start of the bot
+		self.setConfig("enabled", "False", "main", self.network, channel) #disable the channel for the next start of the bot
 
+	def isupport(self, options):
+		self.logger.debug(options)
 	def command(self, user, channel, command, options):
 		"""callback for !commands
 		@param user: the user, which issues the command

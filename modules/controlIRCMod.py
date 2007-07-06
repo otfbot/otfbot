@@ -14,7 +14,7 @@
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 # 
-# (c) 2005, 2006 by Alexander Schier
+# (c) 2007 by Robert Weidlich
 #
 
 import random, re, string
@@ -26,14 +26,14 @@ class chatMod(chatMod.chatMod):
 		self.bot=bot
 		self.control={}
 	
-	def msg(self, user, channel, msg):
+	def query(self, user, channel, msg):
 		nick=user.split("!")[0]
-		if self.bot.auth(user) > 7 and string.lower(channel)==string.lower(self.bot.nickname):
-			if not self.control.has_key(user):
-				self.control[user]=controlInterface(self.bot)
+		if self.control.has_key(user):
 			self.bot.sendmsg(nick,self.control[user].input(msg))
 
 	def command(self, user, channel, command, options):
+		if command == "control" and self.bot.auth(user) > 7:
+			self.control[user]=controlInterface(self.bot)
 		if self.bot.auth(user) > -1 and command == "reload": #TODO: make "!" configurable
 			for chatMod in self.bot.mods:
 				if chatMod.name == options:
