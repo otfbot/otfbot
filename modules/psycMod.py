@@ -30,8 +30,7 @@ class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot = bot
 
-	def msg(self, user, channel, msg):
+	def command(self, user, channel, command, options):
 		user = user.split("!")[0] #only nick
-		if self.bot.auth(user) > 5 and msg[:len(self.bot.getConfig('psycmod.psyccommand', '!psyc'))]:
-			msg=msg[len(self.bot.getConfig('psycmod.psyccommand', '!psyc')):]
-			self.bot.sendmsg(channel, self.bot.getConfig('psycmod.psyccmdchar', '+')+msg[1:])
+		if self.bot.auth(user) > 5 and command="psyc":
+			self.bot.sendmsg(channel, self.bot.getConfig('psycmod.psyccmdchar', '+')+options)
