@@ -66,7 +66,7 @@ import logging
 import logging.handlers
 # Basic settings for logging
 # logging to logfile
-filelogger = logging.handlers.RotatingFileHandler('otfbot.log','a',20480,5)
+filelogger = logging.handlers.RotatingFileHandler('otfbot.log','a',1048576,5)
 #filelogger = logging.FileHandler('otfbot.log','a')
 logging.getLogger('').setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s %(name)-18s %(module)-18s %(levelname)-8s %(message)s')
@@ -648,12 +648,14 @@ class BotFactory(protocol.ReconnectingClientFactory):
 			corelogger.info("Cleanly disconnected from "+connector.host)
 		else:
 			corelogger.error("Disconnected from "+connector.host+": "+str(reason.getErrorMessage())+".")
+			protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
 		#	connector.connect()
 		
 	def clientConnectionFailed(self, connector, reason):
 		corelogger.error("Connection to "+connector.host+" failed: "+str(reason.getErrorMessage()))
 		self._removenetwork(connector.host)
-		self._checkforshutdown()
+		protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
+		#self._checkforshutdown()
 	
 	def buildProtocol(self,addr):
 		proto=protocol.ReconnectingClientFactory.buildProtocol(self,addr)

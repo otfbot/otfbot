@@ -28,12 +28,14 @@ class chatMod(chatMod.chatMod):
 	
 	def query(self, user, channel, msg):
 		nick=user.split("!")[0]
+		if self.control.has_key(user) and command == "endcontrol":
+			del self.control[user]
+		if command == "control" and self.bot.auth(user) > 7:
+			self.control[user]=controlInterface(self.bot)
 		if self.control.has_key(user):
 			self.bot.sendmsg(nick,self.control[user].input(msg))
 
 	def command(self, user, channel, command, options):
-		if command == "control" and self.bot.auth(user) > 7:
-			self.control[user]=controlInterface(self.bot)
 		if self.bot.auth(user) > -1 and command == "reload": #TODO: make "!" configurable
 			for chatMod in self.bot.mods:
 				if chatMod.name == options:

@@ -108,7 +108,7 @@ class chatMod(chatMod.chatMod):
 		if string.lower(channel)==string.lower(self.bot.nickname):
 			self.logPrivate(user, "<"+modesign+user+"> "+msg)
 		elif len(channel)>0 and channel[0]=="#":
-			modesign=self.bot.users[channel][user]['modchar']
+			#modesign=self.bot.users[channel][user]['modchar']
 			self.log(channel, "<"+modesign+user+"> "+msg)
 
 	def query(self, user, channel, msg):
