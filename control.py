@@ -234,10 +234,14 @@ class controlInterface:
 		else:
 			self.bot.setNick(argument)
 	def _cmd_join(self,argument):
-		if argument == "":
-			return "Usage: join channel"
+		args=argument.split(" ",1)
+		if len(args) == 0:
+			return "Usage: join channel [key]"
 		else:
-			self.bot.join(argument)
+			if len(args) == 1:
+				self.bot.join(args[0])
+			else:
+				self.bot.join(args[0],args[1])
 			return "Joined "+str(argument)
 	def _cmd_part(self,argument):
 		args=argument.split(" ",1)
@@ -260,3 +264,9 @@ class controlInterface:
 			else:
 				self.bot.kick(args[0],args[1],args[3])
 			return "Kicked "+args[1]+" from "+args[0]+"."
+	def _cmd_say(self,argument):
+		args=argument.split(" ",1)
+		if len(args) < 2:
+			return "Usage: say channel|user message"
+		else:
+			self.bot.sendmsg(args[0],args[1])

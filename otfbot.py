@@ -398,8 +398,12 @@ class Bot(irc.IRCClient):
 		channelstojoin=self.channels
 		self.channels=[]
 		for channel in channelstojoin:
-			if(getBoolConfig("enabled", "false", "main", self.network, channel)):
-				self.join(unicode(channel).encode("iso-8859-1"))
+			if(self.getBoolConfig("enabled", "false", "main", self.network, channel)):
+				pw = self.getConfig("password","", "main", self.network, channel)
+				if (pw != ""):
+					self.join(unicode(channel).encode("iso-8859-1"),unicode(pw).encode("iso-8859-1"))
+				else:
+					self.join(unicode(channel).encode("iso-8859-1"))
 		self._apirunner("signedOn")
 
 	def joined(self, channel):
