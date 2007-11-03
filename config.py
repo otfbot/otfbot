@@ -221,7 +221,7 @@ class config:
 				for channel in self.channel_options[network].keys():
 					ret+=indent*2+"<channel name=\""+channel+"\">\n"
 					for option in self.sorted(self.channel_options[network][channel].keys()):
-						ret+=indent*3+"<option name=\""+option+"\" value=\""+self.channel_options[network][channel][option]+"\" />\n"
+						ret+=indent*3+"<option name=\""+str(option)+"\" value=\""+str(self.channel_options[network][channel][option])+"\" />\n"
 					ret+=indent*2+"</channel>\n"
 			ret+=indent+"</network>\n"
 		
