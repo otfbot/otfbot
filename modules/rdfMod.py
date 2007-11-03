@@ -14,62 +14,71 @@
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 # 
-# (c) 2005, 2006 by Alexander Schier
+# (c) 2005-2007 by Alexander Schier
 #
 
 import chatMod, rdfParser
+import time
 
 
 def default_settings():
 	settings={};
-	settings['rdfMod.wait']='5' #XXX: works only global at the moment
-	settings['rdfMod.numRdfs']='0'
-	settings['rdfMod.rdf1']='http://you/need/to/set/this/in/a/channel/not/global/example.rss'
 	return settings
 		
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 
-		self.end = 0
-		self.read = {}
 		self.bot = bot
+		self.end = False
 		self.logger = self.bot.logging.getLogger("rdfMod")
 		
-		self.wait=60 * float(bot.getConfig("wait", "5", "rdfMod"))
-		self.rdfUrls=[]
-		self.rdfChannels={}
-		self.bot.scheduler.callLater(self.wait, self.run)
-		self.sleeped=1
+		self.rdfHeadlines={} #map url -> [(url, headline), ...]
+		self.readUrls={} #map channel->[url, url, ...]
+		self.rdfLastLoaded={} #map url->timestamp
 
+	def joined(self, channel):
+		numRdfs=int(self.bot.getConfig("numRdfs", 0, "rdfMod", self.bot.network, channel))
+		if numRdfs > 0:
+			self.logger.debug("Found "+str(numRdfs)+" RDF-Urls:")
+			for i in xrange(1,numRdfs+1):
+				rdfUrl=self.bot.getConfig("rdf"+str(i)+".url", "", "rdfMod", self.bot.network, channel)
+				rdfWait=float(self.bot.getConfig("rdf"+str(i)+".wait", "5.0", "rdfMod", self.bot.network, channel))
+				rdfPostMax=int(self.bot.getConfig("rdf"+str(i)+".postmax", "3", "rdfMod", self.bot.network, channel))
+				self.bot.scheduler.callLater(rdfWait, self.postNews, channel, rdfUrl, rdfWait, rdfPostMax)
+
+				self.readUrls[channel]=[]
+				self.rdfLastLoaded[rdfUrl]=0
+				self.rdfHeadlines[rdfUrl]=[]
+
+				self.logger.debug(str(i)+": "+rdfUrl+" (update every "+str(rdfWait)+" minutes).")
 				
-	def run(self):
-		if self.sleeped>=self.wait:
-			for rdfUrl in self.rdfUrls:
-				self.postNews(rdfUrl)
-				self.sleeped=0
-		if not self.end:
-			#splits the waittime, to support stop()
-			self.sleeped+=10
-			self.bot.scheduler.callLater(self.wait, self.run)
+	def postNews(self, channel, rdfUrl, rdfWait, rdfPostMax=3):
+		"""load News if needed and Post them to a channel"""
+		if self.end:
+			return
+		self.logger.debug("RDF-Check for "+channel+" and url "+rdfUrl)
+		if self.rdfLastLoaded[rdfUrl] < int(time.time()-(rdfWait*60)): #last load older than the wait of this rdf for this channel
+			self.logger.debug("loading new Headlines")
+			rdf=rdfParser.parse(rdfUrl)
+			self.rdfHeadlines[rdfUrl]=[]
+			for key in rdf['links']:
+				self.rdfHeadlines[rdfUrl].append((key, rdf['elements'][key]))
+			self.rdfLastLoaded[rdfUrl]=int(time.time())
 
-	def postNews(self, rdfUrl):
-		unread =[]
-		#print "rdfMod: checking of", rdfUrl #DEBUG
-		rdf = rdfParser.parse(rdfUrl)
-		#print rdf
-		for key in rdf['links']:
-			if not self.read[rdfUrl].has_key(key):#sort unread
-				unread.append(key) #unread for us
-				self.read[rdfUrl][key] = 1 #but read for all later jobs
 		
-		if len(unread) > 3: #if there are more than three new ones, we only want the newest
-			unread = unread[:3] 
-		#print "rdfMod:", str(len(unread)), "new items" #DEBUG
-		for channel in self.rdfChannels[rdfUrl]:
-			for url in unread:
-				self.bot.sendmsg(channel.encode("UTF-8"), (url+" - "+rdf['elements'][url]).encode("UTF-8"), "UTF-8");
-		unread = []#mark all as read
-		i = 0
+		#post urls
+		numPostUrls=rdfPostMax
+		for (url, headline) in self.rdfHeadlines[rdfUrl]:
+			if not url in self.readUrls[channel]:
+				if numPostUrls > 0:
+					numPostUrls-=1
+					self.bot.sendmsg(channel.encode("UTF-8"), (url+" - "+headline).encode("UTF-8"), "UTF-8");
+					#self.readUrls[channel].append(url) #with this line, all urls will be posted, but the queue may get longer and longer
+				self.readUrls[channel].append(url) #with this line, we will throw away all new urls, which are more than rdfPostMax
+		self.logger.debug("posted "+str(rdfPostMax-numPostUrls)+" new URLs")
+
+		self.bot.scheduler.callLater(rdfWait, self.postNews, channel, rdfUrl, rdfWait*60, rdfPostMax) #recurse
+
 
 	def connectionLost(self, reason):
 		self.stop()
@@ -81,32 +90,3 @@ class chatMod(chatMod.chatMod):
 	def connectionMade(self):
 		"""made connection to server"""
 		bot=self.bot
-		(general, networks, channels)=self.bot.hasConfig("numRdfs", "rdfMod")
-		for (network, channel) in channels:
-			numRdfs=int(bot.getConfig("numRdfs", 0, "rdfMod", network, channel))
-			for num in range(0, numRdfs):
-				rdfUrl=bot.getConfig("rdf"+str(num+1), "", "rdfMod", network, channel)
-				if rdfUrl != "":
-					#self.rdfChannels[rdfUrl]=(network, channel)
-					if(network==self.bot.network):
-						if not rdfUrl in self.rdfChannels.keys():
-							self.rdfChannels[rdfUrl]=[channel]
-						else:
-							self.rdfChannels[rdfUrl].append(channel)
-						if not rdfUrl in self.rdfUrls:
-							self.rdfUrls.append(rdfUrl)
-					
-
-		for rdfUrl in self.rdfUrls: #create emtpy lists
-			self.read[rdfUrl] = {}
-
-		for rdfUrl in self.rdfUrls:
-			#print "rdfMod: initial load of", rdfUrl #DEBUG
-			rdf = rdfParser.parse(rdfUrl)
-			#mark all urls as read on startup
-			#this prevents the bot from printing the newest 3 headlines on join.
-			#if you want to get the 3 headlines, disable this, 
-			#and put the sleep function in run() at end of the loop.
-			for key in rdf['links']:
-				if not self.read[rdfUrl].has_key(key):#sort unread
-					self.read[rdfUrl][key] = 1 #but read for all later jobs
