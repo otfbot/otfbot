@@ -42,21 +42,33 @@ class chatMod(chatMod.chatMod):
 			self.logger.debug("Found "+str(numRdfs)+" RDF-Urls:")
 			for i in xrange(1,numRdfs+1):
 				rdfUrl=self.bot.getConfig("rdf"+str(i)+".url", "", "rdfMod", self.bot.network, channel)
-				rdfWait=float(self.bot.getConfig("rdf"+str(i)+".wait", "5.0", "rdfMod", self.bot.network, channel))
+				self.rdfMinWait=float(self.bot.getConfig("rdf"+str(i)+".minWait", "5.0", "rdfMod", self.bot.network, channel))
+				self.rdfMaxWait=float(self.bot.getConfig("rdf"+str(i)+".maxWait", "60.0", "rdfMod", self.bot.network, channel))
+				if self.rdfMinWait > self.rdfMaxWait:
+					self.logger.error(rdfUrl+" maxWait is bigger than minWait. Skipping feed.")
+					continue
+				self.rdfWaitFactor=float(self.bot.getConfig("rdf"+str(i)+".waitFactor", "1.5", "rdfMod", self.bot.network, channel))
+				if self.rdfWaitFactor==0:
+					self.logger.error(rdfUrl+" has a waitFactor of 0. Skipping feed.")
+					continue
+					
 				rdfPostMax=int(self.bot.getConfig("rdf"+str(i)+".postmax", "3", "rdfMod", self.bot.network, channel))
 
-				self.bot.scheduler.callLater(rdfWait*60, self.postNews, channel, rdfUrl, rdfWait, rdfPostMax)
+				self.bot.scheduler.callLater(self.rdfMinWait*60, self.postNews, channel, rdfUrl, self.rdfMinWait, rdfPostMax)
 
 				self.readUrls[channel]=[]
 				self.rdfLastLoaded[rdfUrl]=0
 				self.rdfHeadlines[rdfUrl]=[]
 
-				self.logger.debug(str(i)+": "+rdfUrl+" (update every "+str(rdfWait)+" minutes).")
+				self.logger.debug(str(i)+": "+rdfUrl+" (update every "+str(self.rdfMinWait)+" - "+str(self.rdfMaxWait)+" minutes), waitFactor "+str(self.rdfWaitFactor)+".")
 				
 	def postNews(self, channel, rdfUrl, rdfWait=5, rdfPostMax=3):
 		"""load News if needed and Post them to a channel"""
 		if self.end:
 			return
+
+		had_new=False #new urls? needed for wait-time modification
+
 		self.logger.debug("RDF-Check for "+channel+" and url "+rdfUrl)
 		if self.rdfLastLoaded[rdfUrl] <= int(time.time()-(rdfWait*60)): #last load older than the wait of this rdf for this channel
 			self.rdfLastLoaded[rdfUrl]=int(time.time())
@@ -76,8 +88,20 @@ class chatMod(chatMod.chatMod):
 					self.bot.sendmsg(channel.encode("UTF-8"), (url+" - "+headline).encode("UTF-8"), "UTF-8");
 					#self.readUrls[channel].append(url) #with this line, all urls will be posted, but the queue may get longer and longer
 				self.readUrls[channel].append(url) #with this line, we will throw away all new urls, which are more than rdfPostMax
-		self.logger.debug("posted "+str(rdfPostMax-numPostUrls)+" new URLs")
+				had_new=True
 
+		if had_new:
+			self.logger.debug("posted "+str(rdfPostMax-numPostUrls)+" new URLs")
+			if rdfWait != self.rdfMinWait:
+				self.logger.debug("new wait-time: "+str(self.rdfMinWait)+ " (minimum)")
+			rdfWait=self.rdfMinWait
+		else:
+			rdfWait=rdfWait*self.rdfWaitFactor
+			if rdfWait > self.rdfMaxWait:
+				rdfWait=self.rdfMinWait
+				self.logger.debug("new wait-time: "+str(rdfWait)+" (maximum)")
+			else:
+				self.logger.debug("new wait-time: "+str(rdfWait))
 		self.bot.scheduler.callLater(rdfWait*60, self.postNews, channel, rdfUrl, rdfWait, rdfPostMax) #recurse
 
 
