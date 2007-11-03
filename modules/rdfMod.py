@@ -44,7 +44,8 @@ class chatMod(chatMod.chatMod):
 				rdfUrl=self.bot.getConfig("rdf"+str(i)+".url", "", "rdfMod", self.bot.network, channel)
 				rdfWait=float(self.bot.getConfig("rdf"+str(i)+".wait", "5.0", "rdfMod", self.bot.network, channel))
 				rdfPostMax=int(self.bot.getConfig("rdf"+str(i)+".postmax", "3", "rdfMod", self.bot.network, channel))
-				self.bot.scheduler.callLater(rdfWait, self.postNews, channel, rdfUrl, rdfWait, rdfPostMax)
+
+				self.bot.scheduler.callLater(rdfWait*60, self.postNews, channel, rdfUrl, rdfWait, rdfPostMax)
 
 				self.readUrls[channel]=[]
 				self.rdfLastLoaded[rdfUrl]=0
@@ -52,18 +53,18 @@ class chatMod(chatMod.chatMod):
 
 				self.logger.debug(str(i)+": "+rdfUrl+" (update every "+str(rdfWait)+" minutes).")
 				
-	def postNews(self, channel, rdfUrl, rdfWait, rdfPostMax=3):
+	def postNews(self, channel, rdfUrl, rdfWait=5, rdfPostMax=3):
 		"""load News if needed and Post them to a channel"""
 		if self.end:
 			return
 		self.logger.debug("RDF-Check for "+channel+" and url "+rdfUrl)
-		if self.rdfLastLoaded[rdfUrl] < int(time.time()-(rdfWait*60)): #last load older than the wait of this rdf for this channel
+		if self.rdfLastLoaded[rdfUrl] <= int(time.time()-(rdfWait*60)): #last load older than the wait of this rdf for this channel
+			self.rdfLastLoaded[rdfUrl]=int(time.time())
 			self.logger.debug("loading new Headlines")
 			rdf=rdfParser.parse(rdfUrl)
 			self.rdfHeadlines[rdfUrl]=[]
 			for key in rdf['links']:
 				self.rdfHeadlines[rdfUrl].append((key, rdf['elements'][key]))
-			self.rdfLastLoaded[rdfUrl]=int(time.time())
 
 		
 		#post urls
@@ -77,7 +78,7 @@ class chatMod(chatMod.chatMod):
 				self.readUrls[channel].append(url) #with this line, we will throw away all new urls, which are more than rdfPostMax
 		self.logger.debug("posted "+str(rdfPostMax-numPostUrls)+" new URLs")
 
-		self.bot.scheduler.callLater(rdfWait, self.postNews, channel, rdfUrl, rdfWait*60, rdfPostMax) #recurse
+		self.bot.scheduler.callLater(rdfWait*60, self.postNews, channel, rdfUrl, rdfWait, rdfPostMax) #recurse
 
 
 	def connectionLost(self, reason):
