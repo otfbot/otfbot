@@ -32,7 +32,8 @@ class chatMod(chatMod.chatMod):
 			del self.control[user]
 		if msg == "control" and self.bot.auth(user) > 7:
 			self.control[user]=controlInterface(self.bot)
-		if self.control.has_key(user):
+			self.bot.sendmsg(nick,"Entered configuration modus. type 'endcontrol' to exit")
+		elif self.control.has_key(user):
 			self.bot.sendmsg(nick,self.control[user].input(msg))
 
 	def command(self, user, channel, command, options):

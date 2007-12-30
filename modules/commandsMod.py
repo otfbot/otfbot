@@ -52,6 +52,8 @@ class chatMod(chatMod.chatMod):
 		self.commands={}
 		self.commands["general"]=functions.loadProperties(self.bot.getConfig("file",datadir+"/commands.txt","commandsMod"))
 		self.commands["network"]=functions.loadProperties(self.bot.getConfig("file",datadir+"/commands.txt","commandsMod", self.bot.network))
+		for chan in self.bot.channels:
+			self.joined(chan)
 
 	def reload(self):
 		self.start()
