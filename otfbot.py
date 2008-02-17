@@ -134,16 +134,23 @@ def getBoolConfig(option, defaultvalue="", module=None, network=None, channel=No
 		return True
 	return False
 
-def loadConfig(myconfigfile):
+def loadConfig(myconfigfile, modulesconfigdir):
 	if os.path.exists(myconfigfile):
 		myconfig=config.config(logging, myconfigfile)
+		for file in os.listdir("modules"):
+			if len(file)>=4 and file[-4:]==".xml":
+				tmp=config.config(logging, "modules/"+file)
+				for option in tmp.generic_options.keys():
+					if not myconfig.has(option):
+						myconfig.set(tmp.get(option, ""), still_default=True)
+
 	else:
 		myconfig=config.config(logging)
 		for myclass in classes:
 			try:
 				modconfig=myclass.default_settings()
 				for item in modconfig.keys():
-					myconfig.set(item, modconfig[item])
+					myconfig.set(item, modconfig[item], still_default=True)
 			except AttributeError:
 				pass
 		
@@ -260,7 +267,7 @@ class Bot(irc.IRCClient):
 	def getChannels(self,net):
 		return theconfig.getChannels(net)
 	def loadConfig(self):
-		return loadConfig(configfile)
+		return loadConfig(configfile, modulesconfigdir)
 	def writeConfig(self):
 		return writeConfig()
 
@@ -674,7 +681,8 @@ try:
 	configfile=parser.configfile
 except AttributeError:
 	configfile="config.xml"
-theconfig=loadConfig(configfile)
+modulesconfigdir="modules" #TODO: configuration-option(?)
+theconfig=loadConfig(configfile, modulesconfigdir)
 
 # writing PID-File
 pidfile=theconfig.get('pidfile','otfbot.pid','main')
