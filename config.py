@@ -59,6 +59,9 @@ class config:
 		self.generic_options={}
 		self.network_options={}
 		self.channel_options={}
+
+		#still the default value?
+		self.generic_options_default={}
 		if not filename:
 			return
 		
@@ -74,6 +77,8 @@ class config:
 		except AttributeError:
 			pass
 		self.generic_options=self.getoptions(options)
+		for option in self.generic_options.keys():
+			self.generic_options_default[option]=True
 	
 		#network specific
 		networks=[]
@@ -131,7 +136,8 @@ class config:
 					self.network_options[network]={}
 				self.network_options[network][option]=default
 			else:
-				self.generic_options[option]=default
+				self.set(option, default, still_default=False) #this will write the default value to config
+				#XXX: you may want to set still_default=True to avoid a big config full of default_values
 			return default
 
 	def has(self, option, module=None):
@@ -156,7 +162,7 @@ class config:
 		return (general, networks, channels)
 
 	
-	def set(self, option, value, module=None, network=None, channel=None):
+	def set(self, option, value, module=None, network=None, channel=None, still_default=False):
 		if module:
 				option=module+"."+option
 
@@ -172,6 +178,7 @@ class config:
 			self.network_options[network][option]=value
 		else:
 			self.generic_options[option]=value
+			self.generic_options_default[option]=still_default
 
 
 	def getNetworks(self):
@@ -202,7 +209,8 @@ class config:
 		indent="	";
 		#generic options
 		for option in self.sorted(self.generic_options.keys()):
-			ret+=indent+"<option name=\""+option+"\" value=\""+self.generic_options[option]+"\" />\n"
+			if not self.generic_options_default[option]:
+				ret+=indent+"<option name=\""+option+"\" value=\""+self.generic_options[option]+"\" />\n"
 			
 		channel_networks=self.channel_options.keys() #list of networks with *channel* settings
 		all_networks=self.network_options.keys() #list of *all* networks
