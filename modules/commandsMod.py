@@ -22,8 +22,6 @@ import chatMod, functions
 
 def default_settings():
 	settings={};
-	settings['commandsMod.fileencoding']='iso-8859-15'
-	settings['commandsMod.file']=datadir+'/commands.txt'
 	return settings
 		
 class chatMod(chatMod.chatMod):
