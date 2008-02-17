@@ -468,13 +468,17 @@ class Bot(irc.IRCClient):
 			self._apirunner("command",{"user":user,"channel":channel,"command":command,"options":options})
 			#return
 
-		if channel.lower() == self.nickname.lower():
-			self._apirunner("query",{"user":user,"channel":channel,"msg":msg})
-		
 		# to be removed
 		self._apirunner("privmsg",{"user":user,"channel":channel,"msg":msg})
+
+		if channel.lower() == self.nickname.lower():
+			self._apirunner("query",{"user":user,"channel":channel,"msg":msg})
+			return
+		
 		# to be called for messages in channels
 		self._apirunner("msg",{"user":user,"channel":channel,"msg":msg})
+
+		#DEBUG stuff
 		#nick = user.split("!")[0]
 		#if channel == self.nickname and self.auth(nick) > 9:
 		#if msg == "!who":
