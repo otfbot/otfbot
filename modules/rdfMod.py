@@ -21,10 +21,6 @@ import chatMod, rdfParser
 import time
 
 
-def default_settings():
-	settings={};
-	return settings
-		
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 

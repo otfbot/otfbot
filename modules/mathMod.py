@@ -25,7 +25,7 @@ class chatMod(chatMod.chatMod):
 		self.bot=bot
 
 	def command(self, user, channel, command, options):
-		if command == "wuerfel":
+		if command == "wuerfel" or command=="dice":
 			if options == "":
 				self.bot.sendme(channel, "wuerfelt. Das Ergebnis ist: "+str(random.randint(1,6)))
 			else:

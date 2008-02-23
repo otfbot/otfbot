@@ -23,18 +23,13 @@ from string import Template
 import chatMod
 
 
-def default_settings():
-	settings={'logMod.path':'$n-$c/$y-$m-$d.log',
-			  'logMod.dir':datadir}
-	return settings
-		
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
 		self.channels={}
 		self.files={}
 		self.path={}
-		self.datadir=bot.getConfig("logMod.dir",datadir)
+		self.datadir=bot.getConfig("logMod.dir", datadir) #XXX: this has no usable defaultconfig, because datadir is only known at runtime
 		self.logpath=self.datadir+"/"+bot.getConfig("logMod.path", "$n-$c/$y-$m-$d.log")
 		if not os.path.isdir(self.datadir):
 			os.mkdir(self.datadir)
