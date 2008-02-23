@@ -21,10 +21,6 @@ import time
 import chatMod
 
 
-def default_settings():
-	settings={};
-	return settings
-		
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot

@@ -1,8 +1,7 @@
 How to write a module
 
 * inherit from chatMod.py
-* write a method named "default_settings" which returnes a hash of the default
-  settings
+* write your default options in chatMod.xml. Only generic options are supported, there is currently no way to add default options for known networks. Currently this is intended behaviour.
 
 Ceveats:
 * self.network and self.nickname are available from connectionMade
