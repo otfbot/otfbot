@@ -21,16 +21,10 @@
 import random, re, time
 import chatMod
 
-def default_settings():
-	settings={};
-	settings['identifyMod.password']=''
-	settings['identifyMod.setBotFlag']='true'
-	return settings
-		
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
-		self.send_identification=False
+		self.sent_identification=False
 
 	def connectionMade(self):
 		self.password = str(self.bot.getConfig("password", "", "identifyMod", self.bot.network))
@@ -42,12 +36,12 @@ class chatMod(chatMod.chatMod):
 		if self.password != "":
 			self.logger.info("identifying to nickserv")
 			self.bot.sendmsg("nickserv", "identify "+self.password)
-			self.send_identification=True
+			self.sent_identification=True
 		if self.bot.getBoolConfig("setBotFlag", "True", "identifyMod", self.bot.network):
 			self.logger.info("setting usermode +b")
 			self.bot.mode(self.bot.nickname, 1, "B")	
 			
 	def noticed(self, user, channel, msg):
 		user=user.split("!")[0]
-		if (user.lower() == "nickserv" and self.send_identification):
+		if (user.lower() == "nickserv" and self.sent_identification):
 			self.logger.debug(user+": "+msg)

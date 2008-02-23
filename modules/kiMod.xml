@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!DOCTYPE config SYSTEM "config.dtd">
+<chatbot>
+	<option name="kiMod.module" value="megahal" />
+	<option name="kiMod.mysqlHost" value="" />
+	<option name="kiMod.mysqlUSer" value="" />
+	<option name="kiMod.mysqlPassword" value="" />
+	<option name="kiMod.mysqlDB" value="chatbot" />
+	<option name="kiMod.mysqlKeywordsTable" value="keywords" />
+	<option name="kiMod.mysqlStringsTable" value="strings" />
+	<option name="kiMod.wordpairsFile" value="/wordpairs.txt" />
+	<option name="kiMod.randomPercent" value="0" />
+	<option name="kiMod.answerPercent" value="50" />
+	<option name="kiMod.answerQueryPercent" value="70" />
+	<option name="kiMod.maxStrings" value="1000" />
+</chatbot>
