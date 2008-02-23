@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!DOCTYPE config SYSTEM "config.dtd">
+<chatbot>
+	<option name="karmaMod.file" value="/karma.txt" />
+	<option name="karmaMod.verbose" value="true" />
+	<option name="karmaMod.freestyle" value="true" />
+</chatbot>

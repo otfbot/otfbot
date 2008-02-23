@@ -19,19 +19,13 @@
 
 import string, re, functions
 import chatMod
-
-def default_settings():
-	settings={};
-	settings['answerMod.fileencoding']='iso-8859-15'
-	settings['answerMod.file']=datadir+'/answers.txt'
-	return settings
 		
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot = bot
 
 	def start(self):
-		self.answersFile=self.bot.getConfig("file", datadir+"/answers.txt", "answerMod")
+		self.answersFile=datadir+self.bot.getConfig("file", "/answers.txt", "answerMod")
 		self.answers = functions.loadProperties(self.answersFile)
 
 	def msg(self, user, channel, msg):

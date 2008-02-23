@@ -31,24 +31,6 @@ try:
 except ImportError:
 	CITE=0
 
-def default_settings():
-	settings={};
-	settings['kiMod_module']='megahal'
-	
-	settings['kiMod_mysqlHost']=''
-	settings['kiMod_mysqlUser']=''
-	settings['kiMod_mysqlPasswd']=''
-	settings['kiMod_mysqlDB']='chatbot'
-	settings['kiMod_keywordsTable']='keywords'
-	settings['kiMod_stringsTable']='strings'
-	
-	settings['kiMod_wordpairsFile']=datadir+'/wordpairs.txt'
-	settings['kiMod_randomPercent']='0'
-	settings['kiMod_answerPercent']='50'
-	settings['kiMod_answerQueryPercent']='70'
-	settings['kiMode_maxStrings']='1000'
-	return settings
-		
 class responder:
 	def __init__(self):
 		pass
@@ -91,13 +73,13 @@ class megahalResponder(responder):
 
 class citeResponder(responder):
 	def __init__(self, bot):
-		self.host=bot.getConfig("kiMod_mysqlHost", "")
-		self.user=bot.getConfig("kiMod_mysqlUser", "")
-		self.passwd=bot.getConfig("kiMod_mysqlPasswd", "")
-		self.database=bot.getConfig("kiMod_mysqlDB", "chatbot")
-		self.keywordsTable=bot.getConfig("kiMod_keywordsTable", "keywords")
-		self.stringsTable=bot.getConfig("kiMod_stringsTable", "strings")
-		self.maxStrings=int(bot.getConfig("kiMod_maxStrings", "1000"))
+		self.host=bot.getConfig("mysqlHost", "", "kiMod", bot.network)
+		self.user=bot.getConfig("mysqlUser", "", "kiMod", bot.network)
+		self.passwd=bot.getConfig("mysqlPasswd", "", "kiMod", bot.network)
+		self.database=bot.getConfig("mysqlDB", "chatbot", "kiMod", bot.network)
+		self.keywordsTable=bot.getConfig("keywordsTable", "keywords", "kiMod", bot.network)
+		self.stringsTable=bot.getConfig("stringsTable", "strings", "kiMod", bot.network)
+		self.maxStrings=int(bot.getConfig("maxStrings", "1000", "kiMod", bot.network))
 		self.logger=bot.logger
 		
 		try:
@@ -185,10 +167,10 @@ class chatMod(chatMod.chatMod):
 	def start(self):
 		self.logger = self.bot.logging.getLogger("core.kiMod")
 		self.channels=[]
-		self.wordpairsFile=self.bot.getConfig("kiMod_wordpairsFile", datadir+"/wordpairs.txt")#XXX: this needs to be utf-8 encoded
+		self.wordpairsFile=datadir+self.bot.getConfig("wordpairsFile", "/wordpairs.txt")#XXX: this needs to be utf-8 encoded
 		self.wordpairs=functions.loadProperties(self.wordpairsFile)
 
-		module=self.bot.getConfig("kiMod_module", "megahal")
+		module=self.bot.getConfig("module", "megahal", "kiMod", self.bot.network)
 		self.logger.debug("kiMod: using module "+module+",cite="+str(CITE)+",megahal="+str(MEGAHAL))
 		if module=="cite":
 			if CITE:
@@ -240,7 +222,7 @@ class chatMod(chatMod.chatMod):
 
 		#bot answers random messages
 		number=random.randint(1,1000)
-		chance=int(float(self.bot.getConfig("kiMod_randomPercent", "0"))*10)
+		chance=int(float(self.bot.getConfig("randomPercent", "0"))*10, "kiMod", self.bot.network, channel)
 		israndom=0
 		if number < chance:
 			israndom=1
@@ -268,20 +250,19 @@ class chatMod(chatMod.chatMod):
 				reply=re.sub(key, self.wordpairs[key], reply, re.I)
 			
 			reply=re.sub("Http", "http", reply, re.I) #fix for nice urls
-			#time.sleep(len(reply)*0.3*float(self.bot.getConfig("kiMod_wait", "2")))
 
 			if reply==string.upper(reply): #no UPPERCASE only Posts
 				reply=string.lower(reply)
-			delay=len(reply)*0.3*float(self.bot.getConfig("kiMod_wait", "2")) #a normal user does not type that fast
+			delay=len(reply)*0.3*float(self.bot.getConfig("wait", "2", "kiMod", self.bot.network, channel)) #a normal user does not type that fast
 			if private:
 				number=random.randint(1,1000)
-				chance=int(self.bot.getConfig("kiMod_answerQueryPercent", "70"))*10
+				chance=int(self.bot.getConfig("answerQueryPercent", "70", "kiMod", self.bot.network))*10
 				if number < chance:
 					#self.bot.sendmsg(user, reply, "UTF-8")
 					self.bot.scheduler.callLater(delay, self.bot.sendmsg, user, reply, "UTF-8")
 			else:
 				number=random.randint(1,1000)
-				chance=int(self.bot.getConfig("kiMod_answerPercent", "50"))*10
+				chance=int(self.bot.getConfig("answerPercent", "50", "kiMod", self.bot.network, channel))*10
 				if israndom:
 					#self.bot.sendmsg(channel, reply, "UTF-8")
 					self.bot.scheduler.callLater(delay, self.bot.sendmsg, channel, reply, "UTF-8")

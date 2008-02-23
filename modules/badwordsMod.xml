@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<!DOCTYPE config SYSTEM "config.dtd">
+<chatbot>
+	<option name="badwordsMod.file" value="/badwords.txt" />
+</chatbot>

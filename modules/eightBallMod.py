@@ -47,5 +47,5 @@ class chatMod(chatMod.chatMod):
 		]
 
 	def command(self, user, channel, command, options):
-		if command == "8ball" and options != "": #>7 = only if the user asked something.
+		if command == "8ball" and options != "": #only if the user asked something.
 			self.bot.sendmsg(channel, random.choice(self.answers))
