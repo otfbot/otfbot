@@ -21,17 +21,10 @@ import chatMod
 import functions
 
 class chatMod(chatMod.chatMod):
-	def default_settings():
-		settings={};
-		settings['karmaMod.file']=datadir+'/karma.txt'
-		settings['karmaMod.freestyle']="true"
-		settings['karmaMod.verbose']="true"
-		return settings
-
 	def __init__(self, bot):
 		self.bot=bot
 		self.karma={}
-		self.karma=functions.loadProperties(self.bot.getConfig("file", self.bot.getConfig("karmaMod.file", datadir+"/karma.txt"), "karmaMod", self.bot.network))
+		self.karma=functions.loadProperties(self.bot.getConfig("file", datadir+self.bot.getConfig("karmaMod.file", "/karma.txt"), "karmaMod", self.bot.network))
 		self.verbose=self.bot.getBoolConfig("karmaMod.verbose", "true")
 		self.freestyle=self.bot.getBoolConfig("karmaMod.freestyle", "true")
 
@@ -83,7 +76,7 @@ class chatMod(chatMod.chatMod):
 	def karma_down(self, what):
 		return self.do_karma(what, False)
 	def connectionLost(self, reason):
-		file=open(self.bot.getConfig("file", self.bot.getConfig("karmaMod.file", datadir+"/karma.txt"), "karmaMod", self.bot.network), "w")
+		file=open(self.bot.getConfig("file", datadir+self.bot.getConfig("karmaMod.file", "/karma.txt"), "karmaMod", self.bot.network), "w")
 		for user in self.karma.keys():
 			file.write(user+"="+str(self.karma[user])+"\n")
 		file.close()

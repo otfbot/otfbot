@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<!DOCTYPE config SYSTEM "config.dtd">
+<chatbot>
+	<option name="identifyMod.password" value="" />
+	<option name="identifyMod.setBotFlag" value="true" />
+</chatbot>
