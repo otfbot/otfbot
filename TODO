@@ -18,3 +18,4 @@ rdfMod:
 * use real parser(?)
 kiMod:
 * limit brainsize (maybe requires hacking the megahalpython-binding)
+* I18N

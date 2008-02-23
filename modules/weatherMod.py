@@ -160,10 +160,6 @@ def getDirection(deg):
 		i += 1
 		d += 22.5
 
-def default_settings():
-	settings={};
-	return settings
-		
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot = bot
