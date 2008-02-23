@@ -115,7 +115,8 @@ classes=[]
 for file in os.listdir("modules"):
 	if len(file)>=3 and file[-3:]==".py":
 		classes.append(__import__(file[:-3]))
-		classes[-1].datadir = "modules/"+classes[-1].__name__+"-data"
+		#classes[-1].datadir = "modules/"+classes[-1].__name__+"-data"
+		classes[-1].datadir = "data/"+classes[-1].__name__
 		corelogger.debug("Loading module "+classes[-1].__name__)
 
 ###############################################################################
