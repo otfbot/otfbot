@@ -136,8 +136,11 @@ class config:
 					self.network_options[network]={}
 				self.network_options[network][option]=default
 			else:
-				self.set(option, default, still_default=False) #this will write the default value to config
-				#XXX: you may want to set still_default=True to avoid a big config full of default_values
+				if option=="config.writeDefaultValues" or (self.has("config.writeDefaultValues") and self.get("config.writeDefaultValues", "False") in ["true", "True", "on", "On", "1"]): #write this config option as defaultvalue, even if the default is not to write default values.
+					self.set(option, default, still_default=False) #this will write the default value to the config
+					print "foo"
+				else:
+					self.set(option, default, still_default=True) #this will avoid a config with a lot of (maybe changed in later releases) default options.
 			return default
 
 	def has(self, option, module=None):

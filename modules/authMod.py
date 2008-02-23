@@ -20,12 +20,6 @@
 import random, re
 import chatMod
 
-def default_settings():
-	settings={};
-	settings['authMod.whitelist']=''
-	settings['authMod.password']=''
-	return settings
-		
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot

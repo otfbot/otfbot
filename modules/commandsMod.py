@@ -20,10 +20,6 @@
 import string, re
 import chatMod, functions
 
-def default_settings():
-	settings={};
-	return settings
-		
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot = bot
