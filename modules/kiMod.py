@@ -32,22 +32,34 @@ except ImportError:
 	CITE=0
 
 class responder:
+	"""a prototype of a artificial intelligence responder. 
+	It does nothing at all, but it contains all the methods
+	needed to extend it for a ai-responder"""
 	def __init__(self):
 		pass
 	def learn(self, string):
+		"""learns a new string, without responding"""
 		pass
 	def reply(self, msg):
+		"""reply to a string, potentially learning it"""
 		return ""
 	def cleanup(self):
+		"""cleanup before shutdown, if needed"""
 		pass
 
 class megahalResponder(responder):
+	"""implements a responder based on the megahal ai-bot"""
 	def __init__(self, bot):
+		"""starts the megahal program"""
 		mh_python.setnobanner()
 		mh_python.setdir(datadir)
 		mh_python.initbrain()
 		self.bot=bot
 	def learn(self, msg):
+		"""learns msg without responding
+		@type	msg:	string
+		@param	msg:	the string to learn
+		"""
 		try:
 			msg=unicode(msg, "UTF-8").encode("iso-8859-15")
 		except UnicodeEncodeError:
@@ -58,6 +70,12 @@ class megahalResponder(responder):
 			#pass
 		mh_python.learn(msg)
 	def reply(self, msg):
+		"""replies to msg, and learns it
+		@param	msg: the string to reply to
+		@type	msg: string
+		@rtype: string
+		@returns the answer of the megahal bot
+		"""
 		try:
 			string=unicode(msg, "UTF-8").encode("iso-8859-15")
 		except UnicodeEncodeError:
@@ -69,6 +87,7 @@ class megahalResponder(responder):
 		return unicode(mh_python.doreply(string), "iso-8859-15").encode("UTF-8")
 
 	def cleanup(self):
+		"""clean megahal shutdown"""
 		mh_python.cleanup()
 
 class citeResponder(responder):
