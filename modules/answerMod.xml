@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!DOCTYPE config SYSTEM "../etc/config.dtd">
 <chatbot>
-	<option name="answersMod.file" value="/answers.txt" />
-	<option name="answersMod.fileencoding" value="iso-8859-15" />
+	<option name="answerMod.file" value="answers.txt" />
+	<option name="answerMod.fileencoding" value="iso-8859-15" />
 </chatbot>

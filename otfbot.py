@@ -145,6 +145,14 @@ def hasConfig(option, module=None):
 	return theconfig.has(option, module)
 def getConfig(option, defaultvalue="", module=None, network=None, channel=None):
 	return theconfig.get(option, defaultvalue, module, network, channel)
+def getPathConfig(option, datadir, defaultvalue="", module=None, network=None, channel=None):
+	value=theconfig.get(option, defaultvalue, module, network, channel)
+	if value[0]=="/":
+		print "absolute path!"
+		return value
+	else:
+		print value
+		return datadir+"/"+value
 def getBoolConfig(option, defaultvalue="", module=None, network=None, channel=None):
 	if theconfig.get(option, defaultvalue, module, network, channel) in ["True","true","On","on","1"]:
 		return True
@@ -276,6 +284,8 @@ class Bot(irc.IRCClient):
 		return getConfig(option, defaultvalue, module, network, channel)
 	def getBoolConfig(self, option, defaultvalue="", module=None, network=None, channel=None):
 		return getBoolConfig(option, defaultvalue, module, network, channel)
+	def getPathConfig(self, option, datadir, defaultvalue="", module=None, network=None, channel=None):
+		return getPathConfig(option, datadir, defaultvalue, module, network, channel)
 	def getSubOptions(self, list):
 		return theconfig.getsubopts(list)
 	def getNetworks(self):
