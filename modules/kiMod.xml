@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!DOCTYPE config SYSTEM "config.dtd">
+<!DOCTYPE config SYSTEM "../etc/config.dtd">
 <chatbot>
 	<option name="kiMod.module" value="megahal" />
 	<option name="kiMod.mysqlHost" value="" />
