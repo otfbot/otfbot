@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!DOCTYPE config SYSTEM "config.dtd">
+<!DOCTYPE config SYSTEM "../etc/config.dtd">
 <chatbot>
 	<option name="answersMod.file" value="/answers.txt" />
 	<option name="answersMod.fileencoding" value="iso-8859-15" />
