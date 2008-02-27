@@ -20,11 +20,27 @@
 # 
 
 """Chat Bot"""
-from twisted.words.protocols import irc
 
-from twisted.internet import reactor, protocol, error, ssl
+# standard Python libs
 import os, random, string, re, sys, traceback, atexit
+# libs from Python twisted
+from twisted.words.protocols import irc
+from twisted.internet import reactor, protocol, error, ssl
+
+# Path for auxilary libs of otfbot
+sys.path.insert(1,"lib")
+# modules from otfbot
 import functions, config, scheduler
+
+# some constants for paths, might be read from configfile in future
+path_log="var/otfbot.log"
+path_pid="var/otfbot.pid"
+path_cfg="etc/otfbot.xml"
+path_mods="modules"
+path_data="data"
+
+# Path for bot-modules
+sys.path.insert(1,path_mods)
 
 ###############################################################################
 # Parse commandline options
@@ -66,8 +82,8 @@ import logging
 import logging.handlers
 # Basic settings for logging
 # logging to logfile
-filelogger = logging.handlers.RotatingFileHandler('otfbot.log','a',1048576,5)
-#filelogger = logging.FileHandler('otfbot.log','a')
+filelogger = logging.handlers.RotatingFileHandler(path_log,'a',1048576,5)
+#filelogger = logging.FileHandler(path_log,'a')
 logging.getLogger('').setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s %(name)-18s %(module)-18s %(levelname)-8s %(message)s')
 filelogger.setFormatter(formatter)
@@ -110,13 +126,12 @@ def exithook():
 	corelogger.info("-------------------------")
 
 # Load modules
-sys.path.insert(1,"modules")
 classes=[]
-for file in os.listdir("modules"):
+for file in os.listdir(path_mods):
 	if len(file)>=3 and file[-3:]==".py":
 		classes.append(__import__(file[:-3]))
 		#classes[-1].datadir = "modules/"+classes[-1].__name__+"-data"
-		classes[-1].datadir = "data/"+classes[-1].__name__
+		classes[-1].datadir = path_data+"/"+classes[-1].__name__
 		corelogger.debug("Loading module "+classes[-1].__name__)
 
 ###############################################################################
@@ -138,9 +153,9 @@ def getBoolConfig(option, defaultvalue="", module=None, network=None, channel=No
 def loadConfig(myconfigfile, modulesconfigdir):
 	if os.path.exists(myconfigfile):
 		myconfig=config.config(logging, myconfigfile)
-		for file in os.listdir("modules"):
+		for file in os.listdir(path_mods):
 			if len(file)>=4 and file[-4:]==".xml":
-				tmp=config.config(logging, "modules/"+file)
+				tmp=config.config(logging, path_mods+"/"+file)
 				for option in tmp.generic_options.keys():
 					if not myconfig.has(option):
 						myconfig.set(tmp.get(option, ""), still_default=True)
@@ -166,7 +181,7 @@ def loadConfig(myconfigfile, modulesconfigdir):
 		file.close()
 		#no logger here: the user needs to read this on console, not in logfile
 		print "Default Settings loaded."
-		print "Edit config.xml to configure the bot."
+		print "Edit "+path_cfg+" to configure the bot."
 		sys.exit(0)
 	return myconfig
 
@@ -681,12 +696,12 @@ class BotFactory(protocol.ReconnectingClientFactory):
 try:
 	configfile=parser.configfile
 except AttributeError:
-	configfile="etc/config.xml"
-modulesconfigdir="modules" #TODO: configuration-option(?)
+	configfile=path_cfg
+modulesconfigdir=path_mods #TODO: configuration-option(?)
 theconfig=loadConfig(configfile, modulesconfigdir)
 
 # writing PID-File
-pidfile=theconfig.get('pidfile','otfbot.pid','main')
+pidfile=theconfig.get('pidfile',path_pid,'main')
 f=open(pidfile,'w')
 f.write(str(os.getpid())+"\n")
 f.close()
