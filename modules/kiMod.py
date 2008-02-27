@@ -241,7 +241,7 @@ class chatMod(chatMod.chatMod):
 
 		#bot answers random messages
 		number=random.randint(1,1000)
-		chance=int(float(self.bot.getConfig("randomPercent", "0"))*10, "kiMod", self.bot.network, channel)
+		chance=int(float(self.bot.getConfig("randomPercent", "0"), "kiMod", self.bot.network, channel)*10)
 		israndom=0
 		if number < chance:
 			israndom=1
