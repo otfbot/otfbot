@@ -25,7 +25,7 @@ class chatMod(chatMod.chatMod):
 		self.bot = bot
 
 	def start(self):
-		self.answersFile=datadir+self.bot.getConfig("file", "/answers.txt", "answerMod")
+		self.answersFile=self.bot.getPathConfig("file", datadir, "answers.txt", "answerMod")
 		self.answers = functions.loadProperties(self.answersFile)
 
 	def msg(self, user, channel, msg):
