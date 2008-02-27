@@ -681,7 +681,7 @@ class BotFactory(protocol.ReconnectingClientFactory):
 try:
 	configfile=parser.configfile
 except AttributeError:
-	configfile="config.xml"
+	configfile="etc/config.xml"
 modulesconfigdir="modules" #TODO: configuration-option(?)
 theconfig=loadConfig(configfile, modulesconfigdir)
 
