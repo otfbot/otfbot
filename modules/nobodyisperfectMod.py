@@ -23,34 +23,22 @@
 #actual Gameflow -> !startgame > join|add with "ich" > !startgame > Round1 > !restart >Roundbar |>!end/abort <>!vote end[e]/abort
 #Everything should work automatically except !restartgame, well after the gameadmin has been "removed", if he does not restart the game,
 #the game will pause as long as another player will do ![re]startgame(or !end/abort). The removed gameadmin might !join/add immediately without being the new gameadmin.
-
 #game modified and "prettyfied" by neTear 12/2007 01/2008 with Midnight Commander/Kate, just because python 'sucks'...
-#Bugfix: HoF (caught exception when file was empty)
-#Bugfix: now we should have the right status in all cases
-#Addition: using now self.bot.logger.* .oO(class)
 #Addition: saving the scoretable when game "ends" - for better HoF statistics in future
 #Addition: Timeout Warnings to players without action during QUIZ and WAITING_FOR_ANSWERS "Schnarchnasenorden" - this one is configurable, too ;)
-#Addition: Let the user vote for ending the game/game admin votes for all with !end - acutal round will continue
-#Addition: Gameadmin will now always be a player, except on !startgame
-#Addition: Nicknames are case-sensitive now #
-#Addition: nipmsg() NIPbuffer Favorits
-#Addition: Floodprotection without ".task", (channel/notyet) and user depending
-#Bugfix and Addition: Max. Nick Len. Players nickname longer than maxnicklen cannot (be) join/add
-#Todos: track .task errors,
-#NIP class
-#AND NOW again to something completely different! oO
-# irc outputs configurable/translated
-# channel userlist I saw something like that in main
+#Addition: Class Favorits will give sorted list (by points) for output
+#Bugfix and Addition: Max. Nick Len. Players nickname longer than maxnicklen cannot (be) join(ed)/add(ed)
+#Todos: track .task errors, maybe the pointer gets lost when stopping timer?
 # -*- coding: utf-8 -*- 
 import shutil, time, random, string, os
 import chatMod
-import twisted.internet.task as timehook # twisted seems to be ugly sometimes. see exception when timehook.stop()
+import twisted.internet.task as timehook
 import math #just used for voting, needed for "rounding", try another solution...
 import pickle
 import atexit
-#import unicodedata,codecs # pickle is broken with unicode
+import operator as favop
 HELPUSER="#CCHAR#join #CCHAR#part (mitspielen/aussteigen) #CCHAR#score #CCHAR#rules #CCHAR#+players"
-HELPADMIN="#CCHAR#abortgame #CCHAR#restartgame #CCHAR#add/remove Mitspieler #CCHAR#gamespeed #CCHAR#autoremove #CCHAR#autostart #CCHAR#kill "
+HELPADMIN="#CCHAR#abortgame #CCHAR#restartgame #CCHAR#add/remove Mitspieler #CCHAR#gamespeed #CCHAR#autoremove #CCHAR#kill "
 HELPBUG="Genervte #BOLD#irssi#BOLD#-Anwender moegen ein \"/set mirc_blink_fix on\" machen, oder x-chat,chatzilla,mIRC oder Telnet... benutzen ;)"
 
 #game phases
@@ -74,6 +62,7 @@ class chatMod(chatMod.chatMod):
 		self.nip_init()
 		self.init_vars()
 		self.fav.load(self.nipdatadir+self.favfile)
+		self.fav.sort() #sorting all entries
 
 	class fp_handler():#
 		def __init__(self):
@@ -161,6 +150,16 @@ class chatMod(chatMod.chatMod):
 					print "Error reading file "+favfile
 				finally:
 					pass
+		def sort(self, player=None):
+				try:
+					if not player:
+						for player in self.player.keys():
+							self.player[player]=sorted(self.getlist(player), key=favop.itemgetter(1), reverse=True)
+					else:
+						self.player[player]=sorted(self.getlist(player), key=favop.itemgetter(1), reverse=True)
+				except:
+					print "Error while sorting Favorites"
+					pass
 
 	class NIPqb():
 		def __init__(self):
@@ -214,13 +213,14 @@ class chatMod(chatMod.chatMod):
 
 	def nipexithook(self):
 		self.NIPbuffer.save(self.nipdatadir+"NIPbuffer")
-		self.nip_hof_update(self.nipdatadir+self.hofdatafile)
+		if not self.phase==NO_GAME:
+			self.nip_hof_update(self.nipdatadir+self.hofdatafile)
 		self.save_score(True)
 		self.fav.save(self.nipdatadir+self.favfile)
 		pass
 	
 	
-	def nip_init(self): #on the way to a nipclass oO
+	def nip_init(self):
 		self.gamechannel="" #this is not multichannel compatible! # now it is (more|less) ;)
 		self.data_update_needed=False
 		self.init_autocmd()
@@ -234,7 +234,6 @@ class chatMod(chatMod.chatMod):
 		self.minplayersold=0 #toogle cmd "testing"
 		self.autoremove=1 #"!autoremove" toggles 0|1, if set to 1 - players will be removed from list when they do not send in question/answer 
 		self.splitpoints=1 #!splitpoints" toggles between 0|1, used to show splittet points. if true returns details in scoring 
-		self.autostart=0  #!autostart just the flag, well should be obsolete
 		self.hookaction="None" #which function to call on timerhook
 		self.hof_show_max_player=8  #max player from HoF to send in channel #
 		self.hof_max_player=999 #max players in hof-file
@@ -243,7 +242,7 @@ class chatMod(chatMod.chatMod):
 		self.uservoted_end=[]
 		self.votedEnd=0
 		self.newplayers=[] #used as buffer for joining during game round 
-		self.hof=[] #
+		self.hof=[]
 		self.hof=self.nip_hof(self.nipdatadir+self.hofdatafile,"read") #
 		self.NIPbuffer.load(self.nipdatadir+"NIPbuffer")
 		#################
@@ -261,11 +260,11 @@ class chatMod(chatMod.chatMod):
 		self.maxplayers=int(self.bot.getConfig("maxPlayer", "12", "NIP"))
 		self.fp_time=int(self.bot.getConfig("FPTime", "5", "NIP")) #default time for floodprotection
 		
-		self.kcs_config=str(self.bot.getConfig("FPSpecialCommands", "place 0,savegame 52,halloffame 12,place 0,vote 0,scores 12,abortgame 0,add 0,remove 0", "NIP", None, None)) #overwrite default fp_time, note: no whitespace after ","
+		self.kcs_config=str(self.bot.getConfig("FPSpecialCommands", "favorits 0,place 0,savegame 52,halloffame 12,place 0,vote 0,scores 12,abortgame 0,add 0,remove 0", "NIP")) #overwrite default fp_time, note: no whitespace after ",".
 		
-		self.maxnicklen=int(self.bot.getConfig("maxNickLength", "13", "NIP"))
-	 
-		self.init_timeouts(int(self.bot.getConfig("TimeOutBase", "60", "NIP"))) # see function for more info
+		self.maxnicklen=int(self.bot.getConfig("maxNickLength", "14", "NIP"))
+		self.userWarnMax=(int(self.bot.getConfig("AutoremovepPlayerKickAfterRounds", "2", "NIP"))) #better name?
+		self.init_timeouts(int(self.bot.getConfig("TimeOutBase", "60", "NIP"))) #see function
 		self.TGAMEADMIN=str(self.bot.getConfig("NameGameAdmin", "#BOLD#NIP-Admin#BOLD#", "NIP"))
 		self.TGAMEMASTER=str(self.bot.getConfig("NameGameMaster", "#BOLD#QUIZ-Meister#BOLD#", "NIP"))
 		self.TNIPQUESTION=str(self.bot.getConfig("NameNipQuestion", "#BOLD##DBLUE#NIP-Frage#NORM#" ,"NIP"))
@@ -290,7 +289,7 @@ class chatMod(chatMod.chatMod):
 	def init_autocmd(self):
 		#knowncommands
 		#you have to make every command used in game a "knowncommand" while using "auto_command or Floodprotection".... even those for replace_command
-		self.kcs=["vote","halloffame","hof","place","splitpoints","abortgame","resetgame","end","add", "remove", "startgame", "restartgame", "kill", "scores", "ranking", "gamespeed", "autoremove", "stats","favorits","groupies","continue", "players","rules","status","niphelp","join","part","help","autostart","testing","netear","p_kater"]
+		self.kcs=["vote","halloffame","hof","place","splitpoints","abortgame","resetgame","end","add", "remove", "startgame", "restartgame", "kill", "scores", "ranking", "gamespeed", "autoremove", "stats","favorits","groupies","continue", "players","rules","status","niphelp","join","part","help","testing","netear","p_kater"]
 		self.kcs.sort()
 		i=0
 		for cmd in self.kcs: #Todo: use_ this in autocommand
@@ -379,6 +378,7 @@ class chatMod(chatMod.chatMod):
 		self.roundofgame=1 #counter, used in game as info, maybe good for new statistic
 		self.eoq_cnt=0 #see end_of_quiz ~used for debugging #obsolete when everything works
 		self.votedEnd=0 #important to reset here...
+		self.userWarnCnt={} #used for autoremoving player after foo times giving no "quiz-answer"
 
 
 	def init_vars_for_restart(self):
@@ -445,32 +445,31 @@ class chatMod(chatMod.chatMod):
 	
 	
         def nTimerhook(self):
-		#concluding note, *this* seems to be thread-safe
 		self.gl_ts-=self.polltime
 		if self.gl_ts <= 0:
 			if self.nTimer.running:
-				try:
-					self.nTimer.stop() #stops twisted.internet.task.LoopingCall...., well at this point twisted throws error messages
-				except:
-					self.bot.logger.warn("Timer should be stopped, but isn't")
-
+				self.nTimer.stop() #stops twisted.internet.task.LoopingCall...., lost pointer?
+				self.bot.logger.debug("Timer stopped gl_ts="+str(self.gl_ts))
+			else: #stopped before, should fix runtime-race condition when game ends
+				self.bot.logger.debug("Timer stopped before. No hookaction in Phase="+str(self.phase)+" action="+self.hookaction)
+				return 0
 			if self.hookaction=="end_of_quiz":
-				self.bot.logger.debug("set hookaction->"+str(self.hookaction))
+				self.bot.logger.debug("hookaction->"+str(self.hookaction)+" Phase:"+str(self.phase))
 				self.hookaction="None"
 				self.end_of_quiz()
 		 
 			elif self.hookaction=="end_of_answertime":
-				self.bot.logger.debug("set hookaction->"+str(self.hookaction))
+				self.bot.logger.debug("hookaction->"+str(self.hookaction)+" Phase:"+str(self.phase))
 				self.hookaction="None"
 				self.end_of_answertime()
 
 			elif self.hookaction=="notify_gameadmin":
-				self.bot.logger.debug("set hookaction->"+str(self.hookaction))
+				self.bot.logger.debug("hookaction->"+str(self.hookaction)+" Phase:"+str(self.phase))
 				self.hookaction="None"
 				self.notify_gameadmin()
 		
 			elif self.hookaction=="kick_gameadmin":
-				self.bot.logger.debug("set hookaction->"+str(self.hookaction))
+				self.bot.logger.debug("hookaction->"+str(self.hookaction)+" Phase:"+str(self.phase))
 				self.hookaction="None"
 				self.kick_gameadmin()
 				if self.phase==WAITING_FOR_PLAYERS:
@@ -559,13 +558,8 @@ class chatMod(chatMod.chatMod):
 		self.bot.logger.debug("kick_gameadmin refby "+str(refby))
 		if self.gameadmin!="":
 			gameadmin=self.gameadmin
-			#if str(self.gameadmin) in self.players: 
-			#if str(self.gameadmin) in self.players or str(self.gameadmin)==self.gamemaster: #removing from all
-			#Gameadmin also removed from players 
-			#self.del_player(str(self.gameadmin), refby) 
-			#atext="Spielt nicht mehr mit."
 			self.nipmsg("PRE_X"+self.TGAMEADMIN+" #UNDERLINE#"+gameadmin+"#UNDERLINE# hat wohl keine Lust mehr. Pause?")
-			self.gameadmin="" #also done in del_player
+			self.gameadmin=""
 		else:
 			self.show_players()
 			self.nipmsg("PRE_XWeiter geht's mit #BOLD##CCHAR#restartgame ")
@@ -579,13 +573,10 @@ class chatMod(chatMod.chatMod):
 	def stop_timer(self):
 		if self.nTimer.running:
 			self.nTimer.stop()
-		if self.nTimer.running:
-			self.bot.logger.error("Timer stopped but running, Must not happen") #this happend once, cannot reproduce
 		self.gl_ts=0 #
-		
+
+
 	def add_player(self, addnick):
-		#important TODO: catch nicks with "=" -> is used as separator in hof...
-		# "=" is not everywhere an illegal nick char, is it? Ok RFC2812 says it is, so no need for that athe moment
 		if self.phase==NO_GAME:
 			return 0
 		if len(addnick) > self.maxnicklen:
@@ -631,7 +622,11 @@ class chatMod(chatMod.chatMod):
 
 			if c: #changed
 				if delnick: #
-					self.nipmsg("PRE_X"+delnick+" spielt nicht mehr mit.")
+					if refby=="autoremoving":
+						self.nipmsg("PRE_X"+delnick+" mangels Lebenszeichen automatisch aus dem Spiel entfernt.")
+					else:
+						self.nipmsg("PRE_X"+delnick+" spielt nicht mehr mit.")
+					
 				if delnick in self.uservoted_end:
 					self.uservoted_end.remove(delnick)
 				#remove from join buffer
@@ -645,7 +640,6 @@ class chatMod(chatMod.chatMod):
 
 
 	def show_players(self):
-		#Todo, .maxplayer (addplayer)
 		pnr=len(self.players)
 		pnr=0
 		splayers=""
@@ -683,7 +677,7 @@ class chatMod(chatMod.chatMod):
 		self.bot.logger.debug("new_gameadmin <"+gnick+"> phase:"+str(self.phase))
 		if self.phase==GAME_WAITING: #not for no_game
 			self.nTimerset('GAMEADMINNOTIFY',"notify_gameadmin")
-		if len(gnick) <= self.maxnicklen: 
+		if len(gnick) <= self.maxnicklen:
 			self.gameadmin=gnick
 			if not gnick in self.players: #"if" should be obsolete due to add_player()
 				self.add_player(gnick)
@@ -706,8 +700,6 @@ class chatMod(chatMod.chatMod):
 			return 1
 	########################### a hoockaction
 	def end_of_answertime(self):
-		#if self.nTimer.running:
-		#	self.nTimer.stop() #should be obsolete here
 		self.phase=QUIZ
 		self.nTimerset('QUIZ_TIME', "end_of_quiz") #needs to be here 
 		count=1
@@ -727,16 +719,16 @@ class chatMod(chatMod.chatMod):
 		self.nipmsg("PRE_C#DGREY##UNDERLINE#_-=Und nun nur die Zahl als Antwort=-_")
 
 	#### functions below belong to end_of_quiz
-	def add_allscore(self, player, qty):
+	def add_allscore(self, player, qty=None):
 		self.bot.logger.debug("add_allscore:"+player+" "+str(qty))
-		#just send negative values for qty if you wanna to "punish" a player
+		#just send negative values for qty if you want to "punish" a player
 		# if qty is 0 self.score[user] will be used to calc gameround points
-		if qty != 0: #
+		if  qty!=None:
 			if str(player) in self.allscore.keys():
 				self.allscore[player]+=qty
 			else:
 				self.allscore[player]=qty
-		else: #round "allscore" calculation was in eoq 
+		else: #round "allscore" calculation
 			if str(player) in self.answeruser.values(): #we are evil at that point - no point for no given answer
 				if player in self.allscore.keys():
 					self.allscore[player]+=self.score[player]
@@ -747,7 +739,7 @@ class chatMod(chatMod.chatMod):
 				self.bot.logger.debug("Setting data update is needed")
 
 	def answer_from_who(self):
-		#show who gave which answer, right answer at first
+		#show who gave which answer, return right answer at first
 		snum=0
 		firsttext="PRE_C"+"" #
 		text=""
@@ -781,20 +773,42 @@ class chatMod(chatMod.chatMod):
 				if str(player) in self.answeruser.values(): #we are !evil, no points for no given nip answer but guessing ;)
 					self.nipmsg("PRE_S"+player+" bekommt #BOLD#"+str(pscore)+"#BOLD##NORM# "+pword+" "+pscores)
 				else:
-					self.nipmsg("PRE_P"+player+" #UNDERLINE#bekaeme#UNDERLINE##BOLD# "+str(pscore)+"#BOLD##NORM# "+pword+"#DGREY# (Keine moegl. Antwort geliefert, keine Puenktchen!)") 
+					self.nipmsg("PRE_P"+player+" #UNDERLINE#bekaeme#UNDERLINE##BOLD# "+str(pscore)+"#BOLD##NORM# "+pword+"#DGREY# (Keine moegl. Antwort geliefert, keine Puenktchen!)")
+					
 				
 			#set in allscore
 			for user in self.score:
-				self.add_allscore(user, 0) # one function for "player punishment" and game points)	
+				self.add_allscore(user)
 
-	def autoremoving(self):
-		atext="" #
-		if self.gamemaster==self.gameadmin:
-			if self.autoremove and not self.votedEnd:
-				self.kick_gameadmin("end_of_quiz")
+
+	def check_for_answer(self):
+		for player in self.players:
+			if not player in self.answeruser.values():
+				if self.userWarnCnt.has_key(player):
+					self.userWarnCnt[player]+=1
+				else:
+					self.userWarnCnt[player]=1
+			else:
+				if self.userWarnCnt.has_key(player):
+					self.userWarnCnt[player]=0
+
+	
+	def autoremoving(self, justplayer=None):
+		if not justplayer:
+			atext="" #
+			if self.gamemaster==self.gameadmin:
+				if self.autoremove and not self.votedEnd:
+					self.kick_gameadmin("end_of_quiz")
+			else:
+				if self.autoremove and not self.votedEnd:
+					self.del_player(self.gamemaster, "end_of_quiz")
 		else:
-			if self.autoremove and not self.votedEnd:
-				self.del_player(self.gamemaster, "end_of_quiz")
+			self.bot.logger.debug("autoremoving player")	
+			for player in self.players:
+				if player in self.userWarnCnt.keys():
+					if int(self.userWarnCnt.get(player,0))>=self.userWarnMax:
+						self.del_player(player,"autoremoving")
+
 
 	def correct_answer(self, snum):
 		gm=self.gamemaster
@@ -826,7 +840,7 @@ class chatMod(chatMod.chatMod):
 		
 	##################### a hookaction	
 	def end_of_quiz(self):
-		self.bot.logger.debug("end_of_quiz")
+		self.bot.logger.debug("end_of_quiz:"+str(self.roundofgame)+"-"+str(self.eoq_cnt))
 		
 		if not self.votedEnd: #votedEnd also means gameadmin did !abortgame
 		   self.phase=GAME_WAITING
@@ -848,13 +862,14 @@ class chatMod(chatMod.chatMod):
 			else:
 				self.autoremoving() #
 				self.nipmsg(self.no_nip_question())
-		#add player who joined during gameplay
-		
 		if self.votedEnd:
 			self.end_of_game()
 		#last but not least co
 		else:
-			self.add_new_players() #those joined during quiztime
+			if self.autoremove:
+				self.check_for_answer()
+				self.autoremoving(True)# check for lazy player
+			self.add_new_players() #tadd hose joined during quiztime
 			if self.eoq_cnt < self.roundofgame:
 				self.eoq_cnt=self.roundofgame #
 			self.eoq_cnt=self.roundofgame
@@ -863,7 +878,6 @@ class chatMod(chatMod.chatMod):
 
 	def end_of_game(self):
 		self.stop_timer()
-		#self.nipmsg("PRE_SHall of Fame aktualisiert,  gespeichert.")
 		self.nipmsg("PRE_XSpiel beendet, #CCHAR#startgame startet ein Neues")
 		self.phase=NO_GAME
 		self.gameadmin=""
@@ -939,13 +953,11 @@ class chatMod(chatMod.chatMod):
 			cmd="restartgame"
 		if cmd=="p_kater":
 			cmd="rules"
+		if cmd=="help":
+			cmd="niphelp"
 		return cmd
 	
 	def check_channel(self, cchannel, ccommand):
-		#how to check another netinstance? so we could "invite" players from other nets
-		#self.bot.logger.debug("channel: "+cchannel+" vs "+self.gamechannel)
-		#if cchannel not in self.channels:
-		#   return 0
 		if ccommand=="status": #ccmd allowed in any channel
 			return 1
 		if cchannel not in self.channels:
@@ -987,8 +999,6 @@ class chatMod(chatMod.chatMod):
 			self.bot.logger.debug("No vote...")
 	
 	def check_nip_buffer(self, user): #in game
-		#question=self.NIPbuffer.get(user, "question")
-		#answer=self.NIPbuffer.get(user, "answer")
 		uservals=self.NIPbuffer.get(user)
 		if uservals[0]!="" and uservals[1]!="":
 			self.question=uservals[0]
@@ -1004,7 +1014,6 @@ class chatMod(chatMod.chatMod):
 			return False
 	
 	def nip_buffer(self, user, channel, command, options):
-		#!question !answer !tip !nip oO
 		bmsg=""
 		cmd=command[0]
 		if cmd=="h":
@@ -1021,14 +1030,12 @@ class chatMod(chatMod.chatMod):
 
 	def command(self, user, channel, command, options):
 			user=user.split("!")[0]
-			if channel==self.bot.nickname and user!=self.gamemaster and self.phase!=WAITING_FOR_QUESTION and self.phase!=WAITING_FOR_QUIZMASTER_ANSWER:
-
-				self.nip_buffer(user, channel, command, options)
-				
+			if channel==self.bot.nickname and user!=self.gamemaster:
+				self.nip_buffer(user, channel, command, options) # we check for cmd 
 			if not self.check_channel(channel, command): #try this here (is confed gamechannel or a command for all channels)
 				return 0
-			command=self.auto_command(command, user, channel) #so the user may cut the commands 
-			command=self.replace_command(command) #so we could use synonyms
+			command=self.auto_command(command, user, channel) #abbreviated commands
+			command=self.replace_command(command) #for synonyms
 			check_fp=self.cmd_is_fp(command, user) #floodprotection
 			if check_fp:
 				if check_fp >-1:
@@ -1078,21 +1085,6 @@ class chatMod(chatMod.chatMod):
 								addword="aktiv"
 							if not self.phase==NO_GAME:
 								self.nipmsg("PRE_X#BOLD#Autoremove#BOLD# ist #BOLD#"+addword+"#BOLD#. Wechsel nur durch den "+self.TGAMEADMIN+" moeglich!")
-
-					elif command=="autostart":
-						if user==self.gameadmin:
-							if self.autostart==0:
-								self.autostart=1
-								self.nipmsg("PRE_X#BOLD#Autostart#BOLD# ist nun #BOLD#aktiv#BOLD#, Ich starte/restarte automatisch neue Runden nach ~"+str(STARTPHASE)+"Sekunden")
-							else:
-								self.autostart=0
-								self.nipmsg("PRE_X#BOLD#Autostart#BOLD# ist nun #BOLD#inaktiv#BOLD#.")
-						else:
-							addword="inaktiv"
-							if self.autostart==1:
-								addword="aktiv"
-							if not self.phase==NO_GAME:
-								self.nipmsg("PRE_X#BOLD#Autostart#BOLD# ist #BOLD#"+addword+"#BOLD#+. Wechsel nur durch den "+self.TGAMEADMIN+" moeglich!")
 
 					elif command=="splitpoints":
 						if user==self.gameadmin:
@@ -1219,9 +1211,6 @@ class chatMod(chatMod.chatMod):
 					elif command=="startgame":
 						##### if not self.gamechannel (see check_channel)means there is no game on network!
 						if self.phase==NO_GAME:
-							#if len(self.allscore) > 0:
-							#		self.save_score() #actScoreTable file update only
-							#		self.nipmsg("PRE_XSpielstand archiviert und geloescht!")
 							if len(user) < self.maxnicklen:
 								self.gamechannel=channel #needed for queries which result in a public answer # settint the . gamechannel also means there is a game running in this channel
 								self.bot.logger.info("Setting Gamechannel to "+channel)
@@ -1256,7 +1245,7 @@ class chatMod(chatMod.chatMod):
 							else:
 								self.nipmsg("PRE_X"+self.gameadmin+": Zuwenig Mitspieler! Mindestens "+str(self.minplayers)+" muessen mitspielen. #BOLD#\"ich\" rufen!")
 			
-						elif self.gameadmin=="": #Auto_new_gameadmin..
+						elif self.gameadmin=="": #Auto_new_gameadmin
 							self.new_gameadmin(user)
 
 					elif command=="abortgame": #now "end of game"
@@ -1367,7 +1356,6 @@ class chatMod(chatMod.chatMod):
 
 
 	def show_halloffame(self, channel, user, pagekey=None):
-		
 		pointlen=len(str(self.hof[0][1])) # for building the length in formatted output
 		expand=""
 		if pointlen>3:
@@ -1441,7 +1429,7 @@ class chatMod(chatMod.chatMod):
 	def userKicked(self, kickee, channel, kicker, message):
 		player=kickee
 		playerkicker=kicker
-		#remove gamemaster and or gameadmin from game if kicked, 
+		#remove gamemaster and or gameadmin from game if kicked
 		if self.gamechannel==channel:
 			if self.gameadmin==player:
 				self.kick_gameadmin()
@@ -1626,6 +1614,7 @@ class chatMod(chatMod.chatMod):
 								#Favorits
 								player=self.answeruser[int(msg)]#put that in .add oO
 								self.fav.add(player, user)
+								self.fav.sort(player)
 								
 								if self.splitpoints:
 									self.scores[self.answeruser[int(msg)]]=self.scores[self.answeruser[int(msg)]]+" 3<-"+user #
@@ -1634,6 +1623,7 @@ class chatMod(chatMod.chatMod):
 								#Favorits
 								player=self.answeruser[int(msg)]
 								self.fav.add(player, user)
+								self.fav.sort(player)
 								
 								if self.splitpoints:
 									self.scores[self.answeruser[int(msg)]]=" 3<-"+user
