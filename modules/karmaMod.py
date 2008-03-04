@@ -20,6 +20,12 @@
 import chatMod
 import os.path,pickle
 
+def sortedbyvalue(dict):
+	"""Helper function to return a [(value, key)] list from a dict"""
+	items=[(k,v) for (v,k) in dict.items()]
+	items.reverse()
+	return items
+
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
@@ -83,6 +89,28 @@ class chatMod(chatMod.chatMod):
 					reasons+=" .. "+self.karma[options][4][-num]
 				reasons=reasons[4:]
 				self.bot.sendmsg(channel, reasons)
+		elif command == "who-karmaup":
+			options.strip()
+			people=""
+			if options in self.karma.keys():
+				items=sortedbyvalue(self.karma[options][1])
+				num=min(num_user, len(items))
+				while num > 0:
+					num-=1
+					people+=" .. "+items[-num][1]+"="+str(items[-num][0])
+				people=people[4:]
+				self.bot.sendmsg(channel, people)
+		elif command == "who-karmadown":
+			options.strip()
+			people=""
+			if options in self.karma.keys():
+				items=sortedbyvalue(self.karma[options][2])
+				num=min(num_user, len(items))
+				while num > 0:
+					num-=1
+					people+=" .. "+items[-num][1]+"="+str(items[-num][0])
+				people=people[4:]
+				self.bot.sendmsg(channel, people)
 		elif self.freestyle:
 			if options[-2:]=="++":
 				up=True
@@ -96,9 +124,10 @@ class chatMod(chatMod.chatMod):
 			elif command[-2:]=="--":
 				up=False
 				what=command[:-2]
-			self.do_karma(what, up, reason, user)
-			if self.verbose:
-				self.tell_karma(what, channel)
+			if what:
+				self.do_karma(what, up, reason, user)
+				if self.verbose:
+					self.tell_karma(what, channel)
 
 	def tell_karma(self, what, channel):
 		self.bot.sendmsg(channel, "Karma: "+what+": "+str(self.get_karma(what))) 
@@ -121,9 +150,9 @@ class chatMod(chatMod.chatMod):
 		else:
 			self.karma[what][0]=int(self.karma[what][0])-1
 			if not user in self.karma[what][2].keys():
-				self.karma[what][2][user]=-1
+				self.karma[what][2][user]=1
 			else:
-				self.karma[what][2][user]-=1
+				self.karma[what][2][user]+=1
 			if reason:
 				self.karma[what][4].append(str(reason))
 	def karma_up(self, what, reason=None):
