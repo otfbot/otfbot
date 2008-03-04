@@ -24,9 +24,9 @@ class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
 		self.karma={}
-		karmapath=datadir+datadir+"/"+self.bot.getConfig("file", self.bot.getConfig("karmaMod.file", "karma.dat"), "karmaMod", self.bot.network)
-		if os.path.exists(karmapath):
-			karmafile=open(karmapath, "r")
+		self.karmapath=self.bot.getPathConfig("file", datadir, "karma.dat", "karmaMod", self.bot.network)
+		if os.path.exists(self.karmapath):
+			karmafile=open(self.karmapath, "r")
 			self.karma=pickle.load(karmafile)
 			karmafile.close()
 		self.verbose=self.bot.getBoolConfig("karmaMod.verbose", "true")
@@ -36,26 +36,17 @@ class chatMod(chatMod.chatMod):
 		up=False
 		what=None
 		reason=None
+
+		#return on why/who karma up/down
+		num_reasons=5
+		num_user=5
+
 		tmp=options.split("#",1)
 		options=tmp[0].strip()
 		if len(tmp)==2:
 			reason=tmp[1]
 
-		if self.freestyle:
-			if options[-2:]=="++":
-				up=True
-				what=command+" "+options[:-2]
-			elif options[-2:]=="--":
-				up=False
-				what=command+" "+options[:-2]
-			elif command[-2:]=="++":
-				up=True
-				what=command[:-2]
-			elif command[-2:]=="--":
-				up=False
-				what=command[:-2]
-
-		elif command == "karma":
+		if command == "karma":
 			if options == "":
 				self.bot.sendmsg(channel, "Nutzen: !karma name++ oder !karma name--")
 				return
@@ -69,10 +60,46 @@ class chatMod(chatMod.chatMod):
 				else:
 					self.tell_karma(options, channel)
 					return
-		#Execute it
-		self.do_karma(what, up, reason, user)
-		if self.verbose:
-			self.tell_karma(what, channel)
+			self.do_karma(what, up, reason, user)
+			if self.verbose:
+				self.tell_karma(what, channel)
+		elif command == "why-karmaup" or command == "wku":
+			options.strip()
+			reasons=""
+			if options in self.karma.keys():
+				num=min(num_reasons, len(self.karma[options][3]))
+				while num > 0:
+					num-=1
+					reasons+=" .. "+self.karma[options][3][-num]
+				reasons=reasons[4:]
+				self.bot.sendmsg(channel, reasons)
+		elif command == "why-karmadown" or command == "wkd":
+			options.strip()
+			reasons=""
+			if options in self.karma.keys():
+				num=min(num_reasons, len(self.karma[options][4]))
+				while num > 0:
+					num-=1
+					reasons+=" .. "+self.karma[options][4][-num]
+				reasons=reasons[4:]
+				self.bot.sendmsg(channel, reasons)
+		elif self.freestyle:
+			if options[-2:]=="++":
+				up=True
+				what=command+" "+options[:-2]
+			elif options[-2:]=="--":
+				up=False
+				what=command+" "+options[:-2]
+			elif command[-2:]=="++":
+				up=True
+				what=command[:-2]
+			elif command[-2:]=="--":
+				up=False
+				what=command[:-2]
+			self.do_karma(what, up, reason, user)
+			if self.verbose:
+				self.tell_karma(what, channel)
+
 	def tell_karma(self, what, channel):
 		self.bot.sendmsg(channel, "Karma: "+what+": "+str(self.get_karma(what))) 
 	def get_karma(self, what):
@@ -104,9 +131,7 @@ class chatMod(chatMod.chatMod):
 	def karma_down(self, what, reason=None):
 		return self.do_karma(what, False, reason)
 	def connectionLost(self, reason):
-		karmafile=open(datadir+"/"+self.bot.getConfig("file", self.bot.getConfig("karmaMod.file", "karma.dat"), "karmaMod", self.bot.network), "w")
-		#for user in self.karma.keys():
-		#	file.write(user+"="+str(self.karma[user])+"\n")
+		karmafile=open(self.karmapath, "w")
 		pickle.dump(self.karma, karmafile)
 		karmafile.close()
 
