@@ -36,7 +36,7 @@ class chatMod(chatMod.chatMod):
 				self.bot.sendmsg(channel, random.choice(self.marvin), self.bot.getConfig("fileencoding", "iso-8859-15", "marvinMod"))
 
 	def start(self):
-		self.marvin=functions.loadList(datadir+self.bot.getConfig("file","/marvin.txt", "marvinMod"))
+		self.marvin=functions.loadList(self.bot.getPathConfig("file", datadir, "marvin.txt", "marvinMod"))
 
 	def reload(self):
 		self.start()

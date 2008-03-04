@@ -186,7 +186,7 @@ class chatMod(chatMod.chatMod):
 	def start(self):
 		self.logger = self.bot.logging.getLogger("core.kiMod")
 		self.channels=[]
-		self.wordpairsFile=datadir+self.bot.getConfig("wordpairsFile", "/wordpairs.txt")#XXX: this needs to be utf-8 encoded
+		self.wordpairsFile=self.bot.getPathConfig("wordpairsFile", datadir, "wordpairs.txt")#XXX: this needs to be utf-8 encoded
 		self.wordpairs=functions.loadProperties(self.wordpairsFile)
 
 		module=self.bot.getConfig("module", "megahal", "kiMod", self.bot.network)

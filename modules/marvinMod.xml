@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE config SYSTEM "../etc/config.dtd">
 <chatbot>
-	<option name="marvinMod.file" value="/marvin.txt" />
+	<option name="marvinMod.file" value="marvin.txt" />
 	<option name="marvinMod.percent" value="2" />
 	<option name="marvinMod.fileencoding" value="iso-8859-15" />
 </chatbot>
