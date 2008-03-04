@@ -39,7 +39,7 @@ class chatMod(chatMod.chatMod):
 			self.sent_identification=True
 		if self.bot.getBoolConfig("setBotFlag", "True", "identifyMod", self.bot.network):
 			self.logger.info("setting usermode +b")
-			self.bot.mode(self.bot.nickname, 1, "B")	
+			self.bot.mode(self.bot.nickname, 1, "B")
 			
 	def noticed(self, user, channel, msg):
 		user=user.split("!")[0]
