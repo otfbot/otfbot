@@ -7,7 +7,7 @@ core:
 * get modechars and channeltypes from servergreeting
 * ability not to *load* modules for certain networks
 * don't use global variables in Bot (classes, logging, modechars, ..)
-* put the stuff, which is now plain in otfbot.py in a class
+** own class-file for bot, factory (not possible at the moment because of too much global vars)
 * limit the commands processed (maybe put some users temporarily on ignore) and limit the lines sent per minute
 modules:
 * extent modules-api
@@ -19,3 +19,4 @@ rdfMod:
 kiMod:
 * limit brainsize (maybe requires hacking the megahalpython-binding)
 * I18N
+* use getPathConfig everywhere. (search for "datadir" for lines which need it)
