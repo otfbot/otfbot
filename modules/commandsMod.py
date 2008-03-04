@@ -23,7 +23,6 @@ import chatMod, functions
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot = bot
-		self.commandChar={}
 		self.channels=[]
 
 	def connectionMade(self):
@@ -31,7 +30,6 @@ class chatMod(chatMod.chatMod):
 		
 	def joined(self, channel):
 		self.commands[channel]=functions.loadProperties(self.bot.getPathConfig("file", datadir, "commands.txt", "commandsMod", self.bot.network, channel))
-		self.commandChar[channel]=self.bot.getConfig("commandChar", "!", "commandsMod", self.bot.network, channel)
 	
 	def command(self, user, channel, command, options):
 		user = user.split("!")[0] #only nick
