@@ -8,7 +8,7 @@
 	<option name="kiMod.mysqlDB" value="chatbot" />
 	<option name="kiMod.mysqlKeywordsTable" value="keywords" />
 	<option name="kiMod.mysqlStringsTable" value="strings" />
-	<option name="kiMod.wordpairsFile" value="/wordpairs.txt" />
+	<option name="kiMod.wordpairsFile" value="wordpairs.txt" />
 	<option name="kiMod.randomPercent" value="0" />
 	<option name="kiMod.answerPercent" value="50" />
 	<option name="kiMod.answerQueryPercent" value="70" />
