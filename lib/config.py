@@ -78,7 +78,7 @@ class config:
 			pass
 		self.generic_options=self.getoptions(options)
 		for option in self.generic_options.keys():
-			self.generic_options_default[option]=True
+			self.generic_options_default[option]=False
 	
 		#network specific
 		networks=[]
