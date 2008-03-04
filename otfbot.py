@@ -170,13 +170,6 @@ def loadConfig(myconfigfile, modulesconfigdir):
 
 	else:
 		myconfig=config.config(logging)
-		for myclass in classes:
-			try:
-				modconfig=myclass.default_settings()
-				for item in modconfig.keys():
-					myconfig.set(item, modconfig[item], still_default=True)
-			except AttributeError:
-				pass
 		
 		myconfig.set('enabled', 'false', 'main', 'irc.samplenetwork')
 		myconfig.set('enabled', 'false', 'main', 'irc.samplenetwork', '#example')
