@@ -19,4 +19,10 @@ rdfMod:
 kiMod:
 * limit brainsize (maybe requires hacking the megahalpython-binding)
 * I18N
-* use getPathConfig everywhere. (search for "datadir" for lines which need it)
+* karmaMod with one karmafile per channel
+** open in join
+** close in leave
+** closeall in disconnect
+** dict with channel -> karma-structure
+** dict with channel -> filename to write on leave
+** allow shared karma (write only once if filename is the same, two pointers to one structure in channel->karma dict)
