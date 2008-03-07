@@ -29,14 +29,35 @@ def sortedbyvalue(dict):
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
-		self.karma={}
-		self.karmapath=self.bot.getPathConfig("file", datadir, "karma.dat", "karmaMod", self.bot.network)
-		if os.path.exists(self.karmapath):
-			karmafile=open(self.karmapath, "r")
-			self.karma=pickle.load(karmafile)
-			karmafile.close()
+		self.karmas={} #channel ->  (what -> karma-struct)
+		self.karmapaths={} #path -> (what -> channel) (pointer!)
 		self.verbose=self.bot.getBoolConfig("karmaMod.verbose", "true")
 		self.freestyle=self.bot.getBoolConfig("karmaMod.freestyle", "true")
+
+	def loadKarma(self, channel):
+		karmapath=self.bot.getPathConfig("file", datadir, "karma.dat", "karmaMod", self.bot.network, channel)
+		if not karmapath in self.karmapaths.keys():
+			if os.path.exists(karmapath):
+				karmafile=open(karmapath, "r")
+				self.karmas[channel]=pickle.load(karmafile)
+				self.karmapaths[karmapath]=channel
+				karmafile.close()
+			else:
+				self.karmas[channel]={} #what -> karma-struct
+		else:
+			self.karmas[channel]=self.karmas[self.karmapaths[karmapath]] #pointer(!) to shared karma
+
+	def saveKarma(self, channel):
+		#Attention: we write the files from karmapaths(which are unique), not from the channels array!
+		karmapath=self.bot.getPathConfig("file", datadir, "karma.dat", "karmaMod", self.bot.network, channel)
+		karmafile=open(karmapath, "w")
+		pickle.dump(self.karmas[channel], karmafile)
+		karmafile.close()
+
+	def joined(self, channel):
+		self.loadKarma(channel)
+	def left(self, channel):
+		self.saveKarma(channel)
 
 	def command(self, user, channel, command, options):
 		up=False
@@ -66,7 +87,7 @@ class chatMod(chatMod.chatMod):
 				else:
 					self.tell_karma(options, channel)
 					return
-			self.do_karma(what, up, reason, user)
+			self.do_karma(channel, what, up, reason, user)
 			if self.verbose:
 				self.tell_karma(what, channel)
 		elif command == "why-karmaup" or command == "wku":
@@ -125,42 +146,38 @@ class chatMod(chatMod.chatMod):
 				up=False
 				what=command[:-2]
 			if what:
-				self.do_karma(what, up, reason, user)
+				self.do_karma(channel, what, up, reason, user)
 				if self.verbose:
 					self.tell_karma(what, channel)
 
 	def tell_karma(self, what, channel):
-		self.bot.sendmsg(channel, "Karma: "+what+": "+str(self.get_karma(what))) 
-	def get_karma(self, what):
-		if not what in self.karma.keys():
-			self.karma[what]=[0,{},{},[],[]] #same as below!
-		return self.karma[what][0]
-	def do_karma(self, what, up, reason, user):
+		self.bot.sendmsg(channel, "Karma: "+what+": "+str(self.get_karma(channel, what))) 
+	def get_karma(self, channel, what):
+		if not what in self.karmas[channel].keys():
+			self.karmas[channel][what]=[0,{},{},[],[]] #same as below!
+		return self.karmas[channel][what][0]
+	def do_karma(self, channel, what, up, reason, user):
 		user=user.split("!")[0]
-		if not what in self.karma.keys():
-			self.karma[what]=[0,{},{},[],[]] #score, who-up, who-down, why-up, why-down
+		karma=self.karmas[channel]
+		if not what in karma.keys():
+			karma[what]=[0,{},{},[],[]] #score, who-up, who-down, why-up, why-down
 		if up:
-			self.karma[what][0]=int(self.karma[what][0])+1
-			if not user in self.karma[what][1].keys():
-				self.karma[what][1][user]=1
+			karma[what][0]=int(karma[what][0])+1
+			if not user in karma[what][1].keys():
+				karma[what][1][user]=1
 			else:
-				self.karma[what][1][user]+=1
+				karma[what][1][user]+=1
 			if reason:
-				self.karma[what][3].append(str(reason))
+				karma[what][3].append(str(reason))
 		else:
-			self.karma[what][0]=int(self.karma[what][0])-1
-			if not user in self.karma[what][2].keys():
-				self.karma[what][2][user]=1
+			karma[what][0]=int(karma[what][0])-1
+			if not user in karma[what][2].keys():
+				karma[what][2][user]=1
 			else:
-				self.karma[what][2][user]+=1
+				karma[what][2][user]+=1
 			if reason:
-				self.karma[what][4].append(str(reason))
-	def karma_up(self, what, reason=None):
-		return self.do_karma(what, True, reason)
-	def karma_down(self, what, reason=None):
-		return self.do_karma(what, False, reason)
+				karma[what][4].append(str(reason))
 	def connectionLost(self, reason):
-		karmafile=open(self.karmapath, "w")
-		pickle.dump(self.karma, karmafile)
-		karmafile.close()
+		for karmapath in self.karmapaths.keys():
+			saveKarma(self, self.karmapaths[karmapath])
 
