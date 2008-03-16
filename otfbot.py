@@ -148,10 +148,8 @@ def getConfig(option, defaultvalue="", module=None, network=None, channel=None):
 def getPathConfig(option, datadir, defaultvalue="", module=None, network=None, channel=None):
 	value=theconfig.get(option, defaultvalue, module, network, channel)
 	if value[0]=="/":
-		print "absolute path!"
 		return value
 	else:
-		print value
 		return datadir+"/"+value
 def getBoolConfig(option, defaultvalue="", module=None, network=None, channel=None):
 	if theconfig.get(option, defaultvalue, module, network, channel) in ["True","true","On","on","1"]:
