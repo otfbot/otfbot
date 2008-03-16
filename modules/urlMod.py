@@ -35,15 +35,20 @@ class chatMod(chatMod.chatMod):
 	def command(self, user, channel, command, options):
 		response = ""
 		if command == "preview" or command == "tinyurl+preview":
-			f = urllib2.urlopen(options)
+			req = urllib2.Request(options)
 			try:
+				f = urllib2.urlopen(req)
 				self.parser.feed(f.read())
 				if self.parser.get_result() != "":
 					response += self.parser.get_result()
-			except HTMLParseError:
-				pass
+				f.close()
+			except urllib2.HTTPError, e:
+				response += str(e)
+			except urllib2.URLError, e:
+				response += req.get_host()+": "+str(e.reason[1])
+			except HTMLParseError, e:
+				logger.debug(e)
 			self.parser.reset()
-			f.close()
 		if command == "tinyurl" or command == "tinyurl+preview":
 			url=urllib2.urlopen("http://tinyurl.com/api-create.php?url="+options)
 			response += " ("+url.read()+")"
