@@ -1,6 +1,0 @@
-<?xml version="1.0"?>
-<!DOCTYPE config SYSTEM "../etc/config.dtd">
-<chatbot>
-	<option name="tinyurlMod.auto" value="False" />
-	<option name="tinyurlMod.autoLength" value="35" />
-</chatbot>
