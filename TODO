@@ -26,3 +26,4 @@ kiMod:
 ** dict with channel -> karma-structure
 ** dict with channel -> filename to write on leave
 ** allow shared karma (write only once if filename is the same, two pointers to one structure in channel->karma dict)
+* authMod should use network information for whitelist(!)

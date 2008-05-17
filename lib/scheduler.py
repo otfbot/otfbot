@@ -38,7 +38,12 @@ class Scheduler:
 			@param **kwargs: keyworded arguments for the function
 			@type **kwargs: dict
 		"""
-		self.reactor.callLater(time,function,*args,**kwargs)
+		return self.reactor.callLater(time,function,*args,**kwargs)
+	def cancelCallLater(self, callID):
+		""" cancel a delayed call
+			@param callID: the call to cancel (id returned in callLater)
+		"""
+		return self.reactor.cancelCallLater(callID)
 
 	def callPeriodic(self,delay,function,kwargs={}):
 		""" executes C{function} every C{delay} seconds with keyword arguments C{**kwargs}
