@@ -14,8 +14,6 @@ modules:
 * http://peak.telecommunity.com/DevCenter/PythonEggs
 logMod:
 * make logfilerotation working (should work, if needed more exactly use scheduler)
-rdfMod:
-* use real parser(?)
 kiMod:
 * limit brainsize (maybe requires hacking the megahalpython-binding)
 * I18N
