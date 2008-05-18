@@ -17,8 +17,8 @@
 # (c) 2005-2007 by Alexander Schier
 #
 
-import chatMod, rdfParser
-import time
+import chatMod
+import time, feedparser
 
 
 class chatMod(chatMod.chatMod):
@@ -106,10 +106,10 @@ class chatMod(chatMod.chatMod):
 
 		self.rdfLastLoaded[url]=int(time.time()) #to be removed, too?
 		self.logger.debug("loading new Headlines")
-		rdf=rdfParser.parse(url)
+		parsed=feedparser.parse(url)
 		self.rdfHeadlines[url]=[]
-		for key in rdf['links']:
-			self.rdfHeadlines[url].append((key, rdf['elements'][key]))
+		for entry in parsed['entries']:
+			self.rdfHeadlines[url].append((entry['link'], entry['title']))
 	def postNews(self, channel, url, rdfPostMax):
 		had_new=False #new urls? needed for wait-time modification
 		numPostUrls=rdfPostMax
