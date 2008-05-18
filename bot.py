@@ -105,9 +105,7 @@ class Bot(irc.IRCClient):
 	def getConfig(self, option, defaultvalue="", module=None, network=None, channel=None):
 		return self.theconfig.getConfig(option, defaultvalue, module, network, channel)
 	def getBoolConfig(self, option, defaultvalue="", module=None, network=None, channel=None):
-		if self.theconfig.get(option, defaultvalue, module, network, channel) in ["True","true","On","on","1"]:
-			return True
-		return False
+		return self.theconfig.getBoolConfig(option, defaultvalue, module, network, channel)
 	def getPathConfig(self, option, datadir, defaultvalue="", module=None, network=None, channel=None):
 		return self.theconfig.getPathConfig(option, datadir, defaultvalue, module, network, channel)
 	def getSubOptions(self, list):
