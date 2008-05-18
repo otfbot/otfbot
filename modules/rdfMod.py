@@ -18,8 +18,12 @@
 #
 
 import chatMod
-import time, feedparser
-
+import time
+feedparser_available=True
+try:
+	import feedparser
+except ImportError:
+	feedparser_available=False
 
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
@@ -27,6 +31,8 @@ class chatMod(chatMod.chatMod):
 		self.bot = bot
 		self.end = False
 		self.logger = self.bot.logging.getLogger("rdfMod")
+		if not feedparser_available:
+			self.logger.error("feedparser module not installed. rdfMod disabled.")
 		
 		self.rdfHeadlines={} #map url -> [(url, headline), ...]
 		self.readUrls={} #map channel->[url, url, ...]
@@ -66,6 +72,8 @@ class chatMod(chatMod.chatMod):
 		self.addSource(rdfUrl, channel, rdfMinWait, rdfMaxWait, rdfWaitFactor, rdfPostMax)
 
 	def joined(self, channel):
+		if not feedparser_available:
+			return
 		numRdfs=int(self.bot.getConfig("numRdfs", 0, "rdfMod", self.bot.network, channel))
 		if numRdfs > 0:
 			self.logger.debug("Found "+str(numRdfs)+" RDF-Urls:")
@@ -148,6 +156,8 @@ class chatMod(chatMod.chatMod):
 		bot=self.bot
 
 	def command(self, user, channel, command, options):
+		if not feedparser_available:
+			return
 		if command=="refresh":
 			if self.bot.auth(user) >= 10:
 				if options!="":
