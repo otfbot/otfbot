@@ -255,9 +255,7 @@ class config:
 		else:
 			return datadir+"/"+value
 	def getBoolConfig(self, option, defaultvalue="", module=None, network=None, channel=None):
-		if self.get(option, defaultvalue, module, network, channel) in ["True","true","On","on","1"]:
-			return True
-		return False
+		return self.get(option, defaultvalue, module, network, channel) in ["True","true","On","on","1"]:
 	
 	def writeConfig(self, configfile):
 		file=open(configfile, "w")
