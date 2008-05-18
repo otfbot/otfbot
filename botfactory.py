@@ -23,9 +23,11 @@ class BotFactory(protocol.ReconnectingClientFactory):
 	"""The Factory for the Bot"""
 	instances = {}
 
-	def __init__(self, bot, logger):
+	def __init__(self, bot, logger, theconfig, classes):
 		self.corelogger=logger
 		self.protocol=bot
+		self.theconfig=theconfig
+		self.classes=classes
 
 	def _addnetwork(self,addr,nw):
 		self.instances[addr] = nw
@@ -64,6 +66,7 @@ class BotFactory(protocol.ReconnectingClientFactory):
 		#self._checkforshutdown()
 	
 	def buildProtocol(self,addr):
-		proto=protocol.ReconnectingClientFactory.buildProtocol(self,addr)
+		#proto=protocol.ReconnectingClientFactory.buildProtocol(self,addr)
+		proto=self.protocol(self.theconfig, self.classes)
 		self._addnetwork(addr.host, proto)
 		return proto
