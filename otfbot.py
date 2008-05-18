@@ -101,6 +101,12 @@ if options.debug > 0:
 	logging.getLogger('').addHandler(console)
 	#corelogger.addHandler(console)
 corelogger = logging.getLogger('core')
+corelogger.info("  ___ _____ _____ ____        _   ")
+corelogger.info(" / _ \_   _|  ___| __ )  ___ | |_ ")
+corelogger.info("| | | || | | |_  |  _ \ / _ \| __|")
+corelogger.info("| |_| || | |  _| | |_) | (_) | |_ ")
+corelogger.info(" \___/ |_| |_|   |____/ \___/ \__|")
+corelogger.info("")
 corelogger.info("Starting OtfBot - Version svn "+"$Revision$".split(" ")[1])
 
 def logerror(logger, module, exception):
