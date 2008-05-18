@@ -2,3 +2,4 @@ needed pythonmodules:
 * twisted
 * python-xml (PyExpat)
 * python-pyopenssl
+* python-feedparser
