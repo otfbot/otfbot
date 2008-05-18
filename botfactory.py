@@ -17,7 +17,7 @@
 # (c) 2008 by Alexander Schier
 # (c) 2008 by Robert Weidlich
 # 
-from twisted.internet import protocol, reactor
+from twisted.internet import protocol, reactor, error
 
 class BotFactory(protocol.ReconnectingClientFactory):
 	"""The Factory for the Bot"""
