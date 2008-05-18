@@ -31,6 +31,7 @@ from twisted.internet import reactor, protocol, error, ssl
 sys.path.insert(1,"lib")
 # modules from otfbot
 import functions, config, scheduler
+from botfactory import BotFactory
 
 # some constants for paths, might be read from configfile in future
 path_log="var/otfbot.log"
@@ -194,10 +195,6 @@ def writeConfig():
 	file.close()
 
 
-# some constants, can be retrieved from serveranswer while connecting.
-modchars={'a':'!','o':'@','h':'%','v':'+'}
-modcharvals={'!':4,'@':3,'%':2,'+':1,' ':0}
-
 class Bot(irc.IRCClient):
 	""" The Protocol of our IRC-Bot
 		@ivar mods: contains references to all modules, which are loaded
@@ -212,6 +209,10 @@ class Bot(irc.IRCClient):
 		@ivar scheduler: a instance of the L{Scheduler}
 		@ivar nickname: the nick of the bot
 	"""
+	# some constants, can be retrieved from serveranswer while connecting.
+	modchars={'a':'!','o':'@','h':'%','v':'+'}
+	modcharvals={'!':4,'@':3,'%':2,'+':1,' ':0}
+
 	def __init__(self):
 		#list of mods, which the bot should use
 		#you may need to configure them first
@@ -648,52 +649,6 @@ class Bot(irc.IRCClient):
 		self._apirunner("sendLine",{"line":line})
 		irc.IRCClient.sendLine(self, line)
 
-class BotFactory(protocol.ReconnectingClientFactory):
-	"""The Factory for the Bot"""
-	protocol = Bot
-	instances = {}
-
-	def _addnetwork(self,addr,nw):
-		self.instances[addr] = nw
-
-	def _removenetwork(self,addr):
-		if self.instances.has_key(addr):
-			del self.instances[addr]
-	
-	def _getnetwork(self,addr):
-		return self.instances[addr]
-
-	def _getnetworkslist(self):
-		return self.instances.keys()
-
-	def _checkforshutdown(self):
-		if len(self.instances)==0:
-			corelogger.info("Not Connected to any network. Shutting down.")
-			#TODO: add sth to stop modules
-			reactor.stop()
-	
-	def clientConnectionLost(self, connector, reason):
-		clean = error.ConnectionDone()
-		if reason.getErrorMessage() == str(clean):
-			self._removenetwork(connector.host)
-			self._checkforshutdown()
-			corelogger.info("Cleanly disconnected from "+connector.host)
-		else:
-			corelogger.error("Disconnected from "+connector.host+": "+str(reason.getErrorMessage())+".")
-			protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
-		#	connector.connect()
-		
-	def clientConnectionFailed(self, connector, reason):
-		corelogger.error("Connection to "+connector.host+" failed: "+str(reason.getErrorMessage()))
-		self._removenetwork(connector.host)
-		protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
-		#self._checkforshutdown()
-	
-	def buildProtocol(self,addr):
-		proto=protocol.ReconnectingClientFactory.buildProtocol(self,addr)
-		self._addnetwork(addr.host, proto)
-		return proto
-
 try:
 	configfile=parser.configfile
 except AttributeError:
@@ -713,7 +668,7 @@ atexit.register(exithook)
 networks=theconfig.getNetworks()
 connections={}
 if networks:
-	f = BotFactory()
+	f = BotFactory(Bot, corelogger)
 	for network in networks:
 		if(getBoolConfig('enabled', 'unset', 'main', network)):
 			#channels=theconfig.getChannels(network)
