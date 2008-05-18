@@ -19,7 +19,7 @@
 # (c) 2005, 2006 by Alexander Schier
 #
 
-import handyxml, xml.parsers.expat, sys
+import handyxml, xml.parsers.expat, sys, os, logging
 
 class config:
 	#private
@@ -59,6 +59,7 @@ class config:
 		self.generic_options={}
 		self.network_options={}
 		self.channel_options={}
+		self.filename=filename
 
 		#still the default value?
 		self.generic_options_default={}
@@ -237,3 +238,56 @@ class config:
 		
 		ret+="</chatbot>\n"
 		return ret
+################################################################################
+	#some highlevel functions
+	def setConfig(self, option, value, module=None, network=None, channel=None):
+		self.set(option, value, module, network, channel)
+		self.writeConfig(self.filename)
+			
+	def hasConfig(self, option, module=None):
+		return self.has(option, module)
+	def getConfig(self, option, defaultvalue="", module=None, network=None, channel=None):
+		return self.get(option, defaultvalue, module, network, channel)
+	def getPathConfig(self, option, datadir, defaultvalue="", module=None, network=None, channel=None):
+		value=self.get(option, defaultvalue, module, network, channel)
+		if value[0]=="/":
+			return value
+		else:
+			return datadir+"/"+value
+	def getBoolConfig(self, option, defaultvalue="", module=None, network=None, channel=None):
+		if self.get(option, defaultvalue, module, network, channel) in ["True","true","On","on","1"]:
+			return True
+		return False
+	
+	def writeConfig(self, configfile):
+		file=open(configfile, "w")
+		file.write(self.exportxml())
+		file.close()
+def loadConfig(myconfigfile, modulesconfigdir):
+	if os.path.exists(myconfigfile):
+		myconfig=config(logging, myconfigfile)
+		for file in os.listdir(modulesconfigdir):
+			if len(file)>=4 and file[-4:]==".xml":
+				tmp=config(logging, modulesconfigdir+"/"+file)
+				for option in tmp.generic_options.keys():
+					if not myconfig.has(option):
+						myconfig.set(tmp.get(option, ""), still_default=True)
+	
+	else:
+		myconfig=config(logging)
+		
+		myconfig.set('enabled', 'false', 'main', 'irc.samplenetwork')
+		myconfig.set('enabled', 'false', 'main', 'irc.samplenetwork', '#example')
+		myconfig.set('nickname', 'OtfBot', 'main')
+		myconfig.set('encoding', 'UTF-8', 'main')
+		myconfig.set('pidfile','otfbot.pid','main')
+		
+		file=open(myconfigfile, "w")
+		file.write(myconfig.exportxml())
+		file.close()
+		#no logger here: the user needs to read this on console, not in logfile
+		print "Default Settings loaded."
+		print "Edit "+myconfigfile+" to configure the bot."
+		sys.exit(0)
+	return myconfig
+	
