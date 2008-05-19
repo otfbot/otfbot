@@ -36,6 +36,7 @@ class chatMod(chatMod.chatMod):
 		response = ""
 		if command == "preview" or command == "tinyurl+preview":
 			req = urllib2.Request(options)
+			req.add_header("user-agent", "OTFBot (svn r%s; otfbot.berlios.de)"%(self.bot.svnrevision))
 			try:
 				f = urllib2.urlopen(req)
 				self.parser.feed(f.read())
