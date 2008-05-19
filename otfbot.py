@@ -22,7 +22,7 @@
 """Chat Bot"""
 
 # standard Python libs
-import os, random, string, re, sys, traceback, atexit
+import os, random, string, re, sys, atexit
 # libs from Python twisted
 from twisted.words.protocols import irc
 from twisted.internet import reactor, protocol, error, ssl
@@ -107,21 +107,9 @@ corelogger.info("| | | || | | |_  |  _ \ / _ \| __|")
 corelogger.info("| |_| || | |  _| | |_) | (_) | |_ ")
 corelogger.info(" \___/ |_| |_|   |____/ \___/ \__|")
 corelogger.info("")
-corelogger.info("Starting OtfBot - Version svn "+"$Revision$".split(" ")[1])
+svnrevision="$Revision$".split(" ")[1]
+corelogger.info("Starting OtfBot - Version svn "+svnrevision)
 
-def logerror(logger, module, exception):
-	""" format a exception nicely and pass it to the logger
-		@param logger: the logger instance to use
-		@param module: the module in which the exception occured
-		@type module: string
-		@param exception: the exception
-		@type exception: exception
-	"""
-	logger.error("Exception in Module "+module+": "+str(exception))
-	tb_list = traceback.format_tb(sys.exc_info()[2])
-	for entry in tb_list:
-		for line in entry.strip().split("\n"):
-			logger.error(line)
 
 ###############################################################################
 
@@ -166,6 +154,7 @@ networks=theconfig.getNetworks()
 connections={}
 if networks:
 	f = BotFactory(Bot, corelogger, theconfig, classes)
+	f.svnrevision=svnrevision
 	for network in networks:
 		if(theconfig.getBoolConfig('enabled', 'unset', 'main', network)):
 			#channels=theconfig.getChannels(network)
