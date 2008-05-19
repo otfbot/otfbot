@@ -20,13 +20,13 @@
 
 import urllib2, re, string
 import chatMod
+import urlutils
 from HTMLParser import HTMLParser
 from HTMLParser import HTMLParseError
 
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot = bot
-		urllib2.install_opener(urllib2.build_opener(urllib2.HTTPRedirectHandler()))
 		self.parser = titleExtractor()
 		self.autoTiny=self.bot.getConfig("autotiny", "False", "urlMod", self.bot.network)
 		self.autoTinyLength=int(self.bot.getConfig("autoLength", "50", "urlMod", self.bot.network))
@@ -35,25 +35,15 @@ class chatMod(chatMod.chatMod):
 	def command(self, user, channel, command, options):
 		response = ""
 		if command == "preview" or command == "tinyurl+preview":
-			req = urllib2.Request(options)
-			req.add_header("user-agent", "OTFBot (svn r%s; otfbot.berlios.de)"%(self.bot.svnrevision))
 			try:
-				f = urllib2.urlopen(req)
-				self.parser.feed(f.read())
+				self.parser.feed(urlutils.download(options))
 				if self.parser.get_result() != "":
 					response += self.parser.get_result()
-				f.close()
-			except urllib2.HTTPError, e:
-				response += str(e)
-			except urllib2.URLError, e:
-				response += req.get_host()+": "+str(e.reason[1])
 			except HTMLParseError, e:
 				logger.debug(e)
 			self.parser.reset()
 		if command == "tinyurl" or command == "tinyurl+preview":
-			url=urllib2.urlopen("http://tinyurl.com/api-create.php?url="+options)
-			response += " ("+url.read()+")"
-			url.close()
+			response += " ("+urlutils.download("http://tinyurl.com/api-create.php?url="+options)+")"
 		if response != "":
 			self.bot.sendmsg(channel, "[Link Info] "+response)
 

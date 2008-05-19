@@ -19,6 +19,7 @@
 
 import chatMod
 import time
+import urlutils
 feedparser_available=True
 try:
 	import feedparser
@@ -114,7 +115,8 @@ class chatMod(chatMod.chatMod):
 
 		self.rdfLastLoaded[url]=int(time.time()) #to be removed, too?
 		self.logger.debug("loading new Headlines")
-		parsed=feedparser.parse(url)
+		#parsed=feedparser.parse(url) #direct
+		parsed=feedparser.parse(urlutils.download(url)) #with OtfBot Useragent
 		self.rdfHeadlines[url]=[]
 		for entry in parsed['entries']:
 			self.rdfHeadlines[url].append((entry['link'], entry['title']))
