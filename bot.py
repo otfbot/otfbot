@@ -21,7 +21,7 @@ from twisted.words.protocols import irc
 from twisted.internet import reactor
 import logging
 import logging.handlers
-import sys
+import sys, traceback
 sys.path.insert(1,"lib")
 import scheduler
 class Bot(irc.IRCClient):
@@ -79,7 +79,7 @@ class Bot(irc.IRCClient):
 				try:
 					getattr(mod,apifunction)(**args)
 				except Exception, e:
-					logerror(self.logger, mod.name, e)
+					self.logerror(self.logger, mod.name, e)
 	
 	# public API
 	def startMods(self):
@@ -209,7 +209,7 @@ class Bot(irc.IRCClient):
 			try:
 				chatMod.stop()
 			except Exception, e:
-				logerror(self.logger, mod.name, e)
+				self.logerror(self.logger, mod.name, e)
 		self.mods=[]
 		self.startMods()	
 	
@@ -478,3 +478,16 @@ class Bot(irc.IRCClient):
 	def sendLine(self, line):
 		self._apirunner("sendLine",{"line":line})
 		irc.IRCClient.sendLine(self, line)
+	def logerror(self, logger, module, exception):
+		""" format a exception nicely and pass it to the logger
+			@param logger: the logger instance to use
+			@param module: the module in which the exception occured
+			@type module: string
+			@param exception: the exception
+			@type exception: exception
+		"""
+		logger.error("Exception in Module "+module+": "+str(exception))
+		tb_list = traceback.format_tb(sys.exc_info()[2])
+		for entry in tb_list:
+			for line in entry.strip().split("\n"):
+				logger.error(line)
