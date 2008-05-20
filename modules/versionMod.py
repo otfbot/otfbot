@@ -16,7 +16,6 @@
 # 
 # (c) 2008 by Alexander Schier
 
-import random, re
 import chatMod
 
 class chatMod(chatMod.chatMod):
