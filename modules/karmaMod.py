@@ -179,5 +179,5 @@ class chatMod(chatMod.chatMod):
 				karma[what][4].append(str(reason))
 	def connectionLost(self, reason):
 		for karmapath in self.karmapaths.keys():
-			self.saveKarma(self, self.karmapaths[karmapath])
+			self.saveKarma(self.karmapaths[karmapath])
 
