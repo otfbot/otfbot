@@ -38,9 +38,6 @@ class Bot(irc.IRCClient):
 		@ivar scheduler: a instance of the L{Scheduler}
 		@ivar nickname: the nick of the bot
 	"""
-	# some constants, can be retrieved from serveranswer while connecting.
-	modchars={'a':'!','o':'@','h':'%','v':'+'}
-	modcharvals={'!':4,'@':3,'%':2,'+':1,' ':0}
 
 	def __init__(self, theconfig, classes):
 		#list of mods, which the bot should use
@@ -56,6 +53,10 @@ class Bot(irc.IRCClient):
 
 		self.versionName="OtfBot"
 		self.versionNum="svn "+"$Revision: 177 $".split(" ")[1]
+		# some constants, can be retrieved from serveranswer while connecting.
+		self.modchars={'a':'!','o':'@','h':'%','v':'+'}
+		self.modcharvals={'!':4,'@':3,'%':2,'+':1,' ':0}
+
 		self.logging = logging
 		self.logger = logging.getLogger("core")
 		self.logger.info("Starting new Botinstance")
@@ -390,10 +391,10 @@ class Bot(irc.IRCClient):
 		self._apirunner("modeChanged",{"user":user,"channel":channel,"set":set,"modes":modes,"args":args})
 		i=0
 		for arg in args:
-			if modes[i] in modchars.keys() and set == True:
-				if modcharvals[modchars[modes[i]]] > modcharvals[self.users[channel][arg]['modchar']]:
-					self.users[channel][arg]['modchar'] = modchars[modes[i]]
-			elif modes[i] in modchars.keys() and set == False:
+			if modes[i] in self.modchars.keys() and set == True:
+				if self.modcharvals[self.modchars[modes[i]]] > self.modcharvals[self.users[channel][arg]['modchar']]:
+					self.users[channel][arg]['modchar'] = self.modchars[modes[i]]
+			elif modes[i] in self.modchars.keys() and set == False:
 				#FIXME: ask for the real mode
 				self.users[channel][arg]['modchar'] = ' '
 			i=i+1
