@@ -74,7 +74,7 @@ if os.getuid()==0:
 if options.foreground == False and not options.debug > 0:
 	try:
 		import subprocess
-		subprocess.Popen([sys.argv[0],"-f"])
+		subprocess.Popen(["python",sys.argv[0],"-f"])
 		sys.exit(0)
 	except ImportError:
 		pass
