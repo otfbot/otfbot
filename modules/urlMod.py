@@ -40,7 +40,9 @@ class chatMod(chatMod.chatMod):
 				if self.parser.get_result() != "":
 					response += self.parser.get_result()
 			except HTMLParseError, e:
-				logger.debug(e)
+				self.logger.debug(e)
+				del self.parser
+				self.parser=titleExtractor()
 			self.parser.reset()
 		if command == "tinyurl" or command == "tinyurl+preview":
 			response += " ("+urlutils.download("http://tinyurl.com/api-create.php?url="+options)+")"
