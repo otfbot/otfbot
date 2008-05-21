@@ -21,7 +21,7 @@ from twisted.words.protocols import irc
 from twisted.internet import reactor
 import logging
 import logging.handlers
-import sys, traceback
+import sys, traceback, string
 sys.path.insert(1,"lib")
 import scheduler
 class Bot(irc.IRCClient):
