@@ -290,9 +290,7 @@ def loadConfig(myconfigfile, modulesconfigdir):
 		myconfig.set('encoding', 'UTF-8', 'main')
 		myconfig.set('pidfile','otfbot.pid','main')
 		
-		file=open(myconfigfile, "w")
-		file.write(myconfig.exportxml())
-		file.close()
+		myconfig.writeConfig(myconfigfile)
 		#no logger here: the user needs to read this on console, not in logfile
 		print "Default Settings loaded."
 		print "Edit "+myconfigfile+" to configure the bot."
