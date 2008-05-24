@@ -223,8 +223,9 @@ def loadConfig(myconfigfile, modulesconfigdir):
 	else:
 		myconfig=config(logging)
 		
-		myconfig.set('enabled', 'false', 'main', 'irc.samplenetwork')
-		myconfig.set('enabled', 'false', 'main', 'irc.samplenetwork', '#example')
+		myconfig.set('enabled', 'false', 'main', 'samplenetwork')
+		myconfig.set('server', 'localhost', 'main', 'samplenetwork')
+		myconfig.set('enabled', 'false', 'main', 'samplenetwork', '#example')
 		myconfig.set('nickname', 'OtfBot', 'main')
 		myconfig.set('encoding', 'UTF-8', 'main')
 		myconfig.set('pidfile','otfbot.pid','main')
