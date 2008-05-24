@@ -224,7 +224,7 @@ class Bot(irc.IRCClient):
 			self.channels=tmp
 		self.nickname=unicode(self.getConfig("nickname", "OtfBot", 'main', self.network)).encode("iso-8859-1")
 		self.logger = self.logging.getLogger(self.network)
-		self.logger.info("made connection to "+self.network)
+		self.logger.info("made connection to "+self.transport.addr[0])
 		irc.IRCClient.connectionMade(self)
 		for mod in self.mods:
 			mod.setLogger(self.logger)
