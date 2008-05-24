@@ -150,7 +150,7 @@ class config:
 			self.generic_options[option]=value
 			self.generic_options_default[option]=still_default
 
-	def del(self, option, module=None, network=None, channel=None):
+	def delete(self, option, module=None, network=None, channel=None):
 		if module:
 			option=module+"."+option
 		if network and channel:
@@ -198,7 +198,7 @@ class config:
 		self.writeConfig(self.filename)
 			
 	def delConfig(self, option, module=None, network=None, channel=None):
-		del(option, module, network, channel)
+		delete(option, module, network, channel)
 	def hasConfig(self, option, module=None):
 		return self.has(option, module)
 	def getConfig(self, option, defaultvalue="", module=None, network=None, channel=None):
