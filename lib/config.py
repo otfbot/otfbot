@@ -58,7 +58,6 @@ class config:
 		self.logger=logging.getLogger("config")
 		self.generic_options={}
 		self.network_options={}
-		self.channel_options={}
 		self.filename=filename
 
 		#still the default value?
@@ -71,26 +70,17 @@ class config:
 			configs=yaml.load_all(open(filename, "r"))
 			self.generic_options=configs.next()
 			self.network_options=configs.next()
-			self.channel_options=configs.next()
 			for option in self.generic_options.keys():
 				self.generic_options_default[option]=False
 		except IOError:
 			pass #does not exist
-	
-	def getsubopts(self, list):
-		if len(list) == 1:
-			return self.channel_options[list[0]]
-		elif len(list) == 2:
-			return self.channel_options[list[0]][list[1]]
-		elif len(list) == 3:
-			return self.channel_options[list[0]][list[1]][list[2]]
 	
 	def get(self, option, default, module=None, network=None, channel=None):
 			if module:
 				option=module+"."+option
 
 			try:
-				return self.channel_options[network][channel][option]
+				return self.network_options[network][channel][option]
 			except KeyError:
 				pass
 			try:
@@ -103,11 +93,11 @@ class config:
 				pass
 			#set default in config, and return it
 			if network and channel:
-				if not network in self.channel_options.keys():
-					self.channel_options[network]={}
-				if not channel in self.channel_options[network].keys():
-					self.channel_options[network][channel]={}
-				self.channel_options[network][channel][option]=default
+				if not network in self.network_options.keys():
+					self.network_options[network]={}
+				if not channel in self.network_options[network].keys():
+					self.network_options[network][channel]={}
+				self.network_options[network][channel][option]=default
 			elif network:
 				if not network in self.network_options.keys():
 					self.network_options[network]={}
@@ -134,10 +124,11 @@ class config:
 			if option in self.network_options[network].keys():
 				networks.append(network)
 
-		for network in self.channel_options.keys():
-			for channel in self.channel_options[network].keys():
-				if option in self.channel_options[network][channel].keys():
-					channels.append((network, channel))
+		for network in self.network_options.keys():
+			for channel in self.network_options[network].keys():
+				if type(channel)==type({}):
+					if option in self.network_options[network][channel].keys():
+						channels.append((network, channel))
 		return (general, networks, channels)
 
 	
@@ -146,11 +137,11 @@ class config:
 				option=module+"."+option
 
 		if network and channel:
-			if not network in self.channel_options.keys():
-				self.channel_options[network]={}
-			if not channel in self.channel_options[network].keys():
-				self.channel_options[network][channel]={}
-			self.channel_options[network][channel][option]=value
+			if not network in self.network_options.keys():
+				self.network_options[network]={}
+			if not channel in self.network_options[network].keys():
+				self.network_options[network][channel]={}
+			self.network_options[network][channel][option]=value
 		elif network:
 			if not network in self.network_options.keys():
 				self.network_options[network]={}
@@ -164,20 +155,17 @@ class config:
 		ret=[]
 		for network in self.network_options.keys():
 			ret.append(network)
-		#it is not sure, that we have a network in network and channel options
-		for network in self.channel_options.keys():
-			if not network in ret:
-				ret.append(network)
 		return ret
 	def getChannels(self, network):
 		#TODO: Return only channels, which are active
-		# code from otfbot.py
-		#	for channel in channels:
-        #        if(not getBoolConfig('enabled','unset','main', network)):
-        #            channels.remove(channel)
-		if network in self.channel_options.keys():
+		if network in self.network_options.keys():
 			try:
-				return self.channel_options[network].keys()
+				options=self.network_options[network].keys()
+				ret=[]
+				for option in options:
+					if type(self.network_options[network][option])==type({}):
+						ret.append(option)
+				return ret
 			except AttributeError:
 				return []
 
@@ -186,7 +174,7 @@ class config:
 			import yaml
 		except ImportError:
 			return ""
-		return yaml.dump_all([self.generic_options,self.network_options,self.channel_options], default_flow_style=False)
+		return yaml.dump_all([self.generic_options,self.network_options], default_flow_style=False)
 ################################################################################
 	#some highlevel functions
 	def setConfig(self, option, value, module=None, network=None, channel=None):
