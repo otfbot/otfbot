@@ -158,17 +158,34 @@ class chatMod(chatMod.chatMod):
 		bot=self.bot
 
 	def command(self, user, channel, command, options):
+		if self.bot.auth(user) >= 10:
+			self.logger.debug(user+" has no permission to enforce rdf refresh")
+			return
 		if not feedparser_available:
 			return
 		if command=="refresh":
-			if self.bot.auth(user) >= 10:
-				if options!="":
-					num=int(options)
-					if num!=0:
-						rdfUrl=self.bot.getConfig("rdf"+str(num)+".url", "", "rdfMod", self.bot.network, channel)
-						self.callIDs[rdfUrl].cancel()
-						self.loadNews(rdfUrl)
-						self.postNews(channel, rdfUrl, int(self.bot.getConfig("rdf"+str(num)+".postMax", "", "rdfMod", self.bot.network, channel) ))
-						self.loadSource(num, channel)
+			if options!="":
+				num=int(options)
+				if num!=0:
+					rdfUrl=self.bot.getConfig("rdf"+str(num)+".url", "", "rdfMod", self.bot.network, channel)
+					self.callIDs[rdfUrl].cancel()
+					self.loadNews(rdfUrl)
+					self.postNews(channel, rdfUrl, int(self.bot.getConfig("rdf"+str(num)+".postMax", "3", "rdfMod", self.bot.network, channel) ))
+					self.loadSource(num, channel)
+		elif command=="addrdf":
+			options=options.split(" ")
+			num=int(self.bot.getConfig("numRdfs", 0, "rdfMod", self.bot.network, channel))+1
+			self.bot.setConfig("numRdfs", num, "rdfMod", self.bot.network, channel)
+			if len(options) ==5:
+				self.bot.setConfig("rdf"+str(num)+".waitFactor", options[4], "rdfMod", self.bot.network, channel)
+			if len(options) >=4:
+				self.bot.setConfig("rdf"+str(num)+".maxWait", options[3], "rdfMod", self.bot.network, channel)
+			if len(options) >=3:
+				self.bot.setConfig("rdf"+str(num)+".minWait", options[2], "rdfMod", self.bot.network, channel)
+			if len(options) >= 2:
+				self.bot.setConfig("rdf"+str(num)+".postMax", options[1], "rdfMod", self.bot.network, channel)
+			if len(options) >=1:
+				self.bot.setConfig("rdf"+str(num)+".url", options[0], "rdfMod", self.bot.network, channel)
 			else:
-				self.logger.debug(user+" has no permission to enforce rdf refresh")
+				self.bot.sendmsg(channel, "Error: Syntax !addrdf url postMax minWait maxWait factor")
+			self.loadSource(num, channel)
