@@ -19,7 +19,7 @@
 # (c) 2005, 2006 by Alexander Schier
 #
 
-import sys, os, logging
+import handyxml, xml.parsers.expat, sys, os, logging
 
 class config:
 	#private
@@ -54,7 +54,7 @@ class config:
 
 	#public
 	def __init__(self, logging, filename=None):
-		"""Initialize the config class and load a config"""
+		"""Initialize the config class and load a xml config"""
 		self.logger=logging.getLogger("config")
 		self.generic_options={}
 		self.network_options={}
@@ -66,16 +66,40 @@ class config:
 		if not filename:
 			return
 		
-		import yaml
 		try:
-			configs=yaml.load_all(open(filename, "r"))
-			self.generic_options=configs.next()
-			self.network_options=configs.next()
-			self.channel_options=configs.next()
-			for option in self.generic_options.keys():
-				self.generic_options_default[option]=False
-		except IOError:
-			pass #does not exist
+			self.doc=handyxml.xml(filename)
+		except xml.parsers.expat.ExpatError, e:
+			self.logger.error("Error when loading configfile: "+str(e))
+			sys.exit(1)
+		#generic options
+		options={}
+		try:
+			options=self.doc.option
+		except AttributeError:
+			pass
+		self.generic_options=self.getoptions(options)
+		for option in self.generic_options.keys():
+			self.generic_options_default[option]=False
+	
+		#network specific
+		networks=[]
+		try:
+			networks=self.doc.network
+		except AttributeError:
+			pass
+		self.network_options=self.getsuboptions(networks);
+	
+		#channel specific (format = channel_options[network][channel])
+		for network in networks:
+			channels=[]
+			try:
+				channels=network.channel
+			except AttributeError:
+				pass
+			try:
+				self.channel_options[network.name]=self.getsuboptions(channels)
+			except AttributeError:
+				self.logger.error("Config Error: network has no name")
 	
 	def getsubopts(self, list):
 		if len(list) == 1:
@@ -187,6 +211,39 @@ class config:
 		except ImportError:
 			return ""
 		return yaml.dump_all([self.generic_options,self.network_options,self.channel_options], default_flow_style=False)
+	def exportxml(self):
+		ret="<?xml version=\"1.0\"?>\n"
+		ret+="<!DOCTYPE config SYSTEM \"config.dtd\">\n"
+		ret+="<chatbot>\n"
+		indent="	";
+		#generic options
+		for option in self.sorted(self.generic_options.keys()):
+			if not self.generic_options_default[option]:
+				ret+=indent+"<option name=\""+option+"\" value=\""+self.generic_options[option]+"\" />\n"
+			
+		channel_networks=self.channel_options.keys() #list of networks with *channel* settings
+		all_networks=self.network_options.keys() #list of *all* networks
+		for network in channel_networks:
+			if not network in all_networks:
+				all_networks.append(network)
+			
+		for network in all_networks:
+			ret+=indent+"<network name=\""+network+"\">\n"
+			#network specific
+			if network in self.network_options.keys():
+				for option in self.sorted(self.network_options[network].keys()):
+					ret+=indent*2+"<option name=\""+option+"\" value=\""+self.network_options[network][option]+"\" />\n"
+			#channel specific
+			if network in channel_networks:
+				for channel in self.channel_options[network].keys():
+					ret+=indent*2+"<channel name=\""+channel+"\">\n"
+					for option in self.sorted(self.channel_options[network][channel].keys()):
+						ret+=indent*3+"<option name=\""+str(option)+"\" value=\""+str(self.channel_options[network][channel][option])+"\" />\n"
+					ret+=indent*2+"</channel>\n"
+			ret+=indent+"</network>\n"
+		
+		ret+="</chatbot>\n"
+		return ret
 ################################################################################
 	#some highlevel functions
 	def setConfig(self, option, value, module=None, network=None, channel=None):
@@ -208,13 +265,17 @@ class config:
 	
 	def writeConfig(self, configfile):
 		file=open(configfile, "w")
+		file.write(self.exportxml())
+		file.close()
+
+		file=open(configfile+".yaml", "w")
 		file.write(self.exportyaml())
 		file.close()
 def loadConfig(myconfigfile, modulesconfigdir):
 	if os.path.exists(myconfigfile):
 		myconfig=config(logging, myconfigfile)
 		for file in os.listdir(modulesconfigdir):
-			if len(file)>=4 and file[-4:]==".yaml":
+			if len(file)>=4 and file[-4:]==".xml":
 				tmp=config(logging, modulesconfigdir+"/"+file)
 				for option in tmp.generic_options.keys():
 					if not myconfig.has(option):
