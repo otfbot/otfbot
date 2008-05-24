@@ -1,0 +1,2 @@
+logMod.path: "$n-$c/$y-$m-$d.log"
+logMod.dir: "."
