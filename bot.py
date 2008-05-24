@@ -98,6 +98,8 @@ class Bot(irc.IRCClient):
 		self._apirunner("start")
 
 	# configstuff, should maybe be moved to a config-instance at self.config
+	def delConfig(self, option, module=None, network=None, channel=None):
+		self.theconfig.delConfig(option, module, network, channel)
 	def setConfig(self, option, value, module=None, network=None, channel=None):
 		return self.theconfig.setConfig(option, value, module, network, channel)
 	def hasConfig(self, option, module=None):

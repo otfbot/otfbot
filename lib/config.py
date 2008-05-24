@@ -150,6 +150,22 @@ class config:
 			self.generic_options[option]=value
 			self.generic_options_default[option]=still_default
 
+	def del(self, option, module=None, network=None, channel=None):
+		if module:
+			option=module+"."+option
+		if network and channel:
+			try:
+				del self.network_options[network][channel][option]
+			except IndexError:
+				pass #does not exist anyway
+		elif network:
+			try:
+				#this can be used to delete a channel definition
+				del self.network_options[network][option]
+			except IndexError:
+				pass #does not exist anyway
+		else:
+			del self.generic_options[option]
 
 	def getNetworks(self):
 		ret=[]
@@ -181,6 +197,8 @@ class config:
 		self.set(option, value, module, network, channel)
 		self.writeConfig(self.filename)
 			
+	def delConfig(self, option, module=None, network=None, channel=None):
+		del(option, module, network, channel)
 	def hasConfig(self, option, module=None):
 		return self.has(option, module)
 	def getConfig(self, option, defaultvalue="", module=None, network=None, channel=None):
