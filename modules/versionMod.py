@@ -25,3 +25,11 @@ class chatMod(chatMod.chatMod):
 	def command(self, user, channel, command, options):
 		if command == "version":
 				self.bot.sendmsg(channel, "r"+str(self.bot.svnrevision))
+	def ctcpQuery(self, user, channel, messages):
+		(query,t) = messages[0]
+		answer = None
+		if query == "VERSION":
+			answer = "OtfBot SVN r"+str(self.bot.svnrevision)
+		if answer: 
+			self.bot.ctcpMakeReply(user.split("!")[0], [(query,answer)])
+			self.logger.info("Answered to CTCP "+query+" Request from "+user.split("!")[0])

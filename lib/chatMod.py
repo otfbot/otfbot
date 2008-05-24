@@ -57,7 +57,7 @@ class chatMod:
 	def noticed(self, user, channel, msg):
 		"""we got a notice"""
 		pass
-	def action(self, user, channel, message):
+	def action(self, user, channel, messages):
 		"""action (/me) received"""
 		pass
 	def modeChanged(self, user, channel, set, modes, args):
@@ -104,3 +104,6 @@ class chatMod:
 		pass
 	def lineReceived(self,line):
 		pass
+	def ctcpQuery(self, user, channel, messages):
+		""" called for ctcp queries
+		"""
