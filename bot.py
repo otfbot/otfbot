@@ -430,14 +430,11 @@ class Bot(irc.IRCClient):
 		"""
 		pass
 	
-	#def ctcpQuery(self, user, channel, messages):
-	#	(query,t) = messages[0]
-	#	answer = None
-	#	#if query == "VERSION":
-	#	#	answer = "chatBot - a python IRC-Bot"
-	#	if answer: 
-	#		self.ctcpMakeReply(user.split("!")[0], [(query,answer)])
-	#		self.logger.info("Answered to CTCP "+query+" Request from "+user.split("!")[0])
+	def ctcpQuery(self, user, channel, messages):
+		""" called by twisted,
+			if a C{user} sent a ctcp query
+		"""
+		self._apirunner("ctcpQuery",{"user":user,"channel":channel,"messages":messages})
 		
 	def userRenamed(self, oldname, newname):
 		""" called by twisted,
