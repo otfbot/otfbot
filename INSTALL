@@ -1,5 +1,5 @@
 needed pythonmodules:
 * twisted
-* python-xml (PyExpat)
+* python-yaml
 * python-pyopenssl
 * python-feedparser

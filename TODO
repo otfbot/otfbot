@@ -25,3 +25,4 @@ kiMod:
 ** dict with channel -> filename to write on leave
 ** allow shared karma (write only once if filename is the same, two pointers to one structure in channel->karma dict)
 * authMod should use network information for whitelist(!)
+* check if rdfMod with dynamic Factor works as intended! (0.3 - 5.0 seems to be stuck at 0.3)
