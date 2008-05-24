@@ -205,6 +205,12 @@ class config:
 			except AttributeError:
 				return []
 
+	def exportyaml(self):
+		try:
+			import yaml
+		except ImportError:
+			return ""
+		return yaml.dump_all([self.generic_options,self.network_options,self.channel_options], default_flow_style=False)
 	def exportxml(self):
 		ret="<?xml version=\"1.0\"?>\n"
 		ret+="<!DOCTYPE config SYSTEM \"config.dtd\">\n"
@@ -260,6 +266,10 @@ class config:
 	def writeConfig(self, configfile):
 		file=open(configfile, "w")
 		file.write(self.exportxml())
+		file.close()
+
+		file=open(configfile+".yaml", "w")
+		file.write(self.exportyaml())
 		file.close()
 def loadConfig(myconfigfile, modulesconfigdir):
 	if os.path.exists(myconfigfile):
