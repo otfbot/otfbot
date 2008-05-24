@@ -45,7 +45,6 @@ class Bot(irc.IRCClient):
 		self.classes = classes
 		self.users={}
 		self.channels=[]
-		self.network=None
 		self.theconfig=theconfig
 	
 		self.mods = []
@@ -220,16 +219,11 @@ class Bot(irc.IRCClient):
 			this is called by twisted
 			, when the connection to the irc-server was made
 		"""
-		self.network=self.transport.addr[0]
 		tmp=self.getChannels(self.network)
 		if tmp:
 			self.channels=tmp
 		self.nickname=unicode(self.getConfig("nickname", "OtfBot", 'main', self.network)).encode("iso-8859-1")
-		if len(self.network.split(".")) < 2:
-			nw = self.network
-		else:
-			nw = self.network.split(".")[-2]
-		self.logger = self.logging.getLogger(nw)
+		self.logger = self.logging.getLogger(self.network)
 		self.logger.info("made connection to "+self.network)
 		irc.IRCClient.connectionMade(self)
 		for mod in self.mods:

@@ -157,19 +157,15 @@ if networks:
 	f.svnrevision=svnrevision
 	for network in networks:
 		if(theconfig.getBoolConfig('enabled', 'unset', 'main', network)):
-			#channels=theconfig.getChannels(network)
-			#if not channels:
-			#	channels=[]
-			#for channel in channels:
-			#	if(not getBoolConfig('enabled','unset','main', network)):
-			#		channels.remove(channel)
 			password=theconfig.getConfig('password', '', 'main', network)
 			if(password!=""):
 				f.protocol.password=unicode(password).encode("iso-8859-1")
+			f.protocol.network=network
 
+			servername=theconfig.getConfig("server", "localhost", "main", network)
 			if (theconfig.getBoolConfig('ssl','False','main',network)):
 				s = ssl.ClientContextFactory()
-				connections[network]=reactor.connectSSL(unicode(network).encode("iso-8859-1"), int(theconfig.getConfig('port','6697','main',network)), f,s);
+				connections[network]=reactor.connectSSL(servername, int(theconfig.getConfig('port','6697','main',network)), f,s);
 			else:
-				connections[network]=reactor.connectTCP(unicode(network).encode("iso-8859-1"), int(theconfig.getConfig('port','6667','main',network)), f)
+				connections[network]=reactor.connectTCP(servername, int(theconfig.getConfig('port','6667','main',network)), f)
 	reactor.run()
