@@ -69,5 +69,6 @@ class BotFactory(protocol.ReconnectingClientFactory):
 		#proto=protocol.ReconnectingClientFactory.buildProtocol(self,addr)
 		proto=self.protocol(self.theconfig, self.classes)
 		proto.svnrevision=self.svnrevision
+		proto.factory=self
 		self._addnetwork(addr.host, proto)
 		return proto

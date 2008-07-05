@@ -142,7 +142,8 @@ class controlInterface:
 			@type bot: a L{Bot} Instance
 		"""
 		self.bot=bot
-		self.configshell=None
+		self.subcmd=""
+		self.subcmdval=""
 	
 	def _output(self, string):
 		""" helper function which set the encoding to utf8
@@ -156,48 +157,58 @@ class controlInterface:
 			@rtype: string
 			@return: the output of the command
 		"""
-		tmp = request.strip().split(" ",1)
-		if len(tmp) == 1:
-			command=tmp[0]
-			argument=""
+		# try to guess, what is meant
+		tmp = request.strip().split(" ")
+		# try 1: a command in the current namespace
+		func = getattr(self,"_cmd_"+self.subcmd+"_"+tmp[0], None)
+		args = " ".join(tmp[1:])
+		# try 2: a toplevel command
+		if not callable(func):
+			func = getattr(self,"_cmd_"+tmp[0], None)
+			args = " ".join(tmp[1:])
+		# try 3: directly called subcommand
+		if not callable(func) and len(tmp) > 1:
+			func = getattr(self,"_cmd_"+tmp[0]+"_"+tmp[1], None)
+			args = " ".join(tmp[2:])
+		# try 4: change the namespace
+		if not callable(func):
+			found=False;
+			for c in dir(self):
+				if c[5:5+len(tmp[0])] == tmp[0]:
+					self.subcmd=tmp[0]
+					return self._output("Changing to namespace "+tmp[0])
+		if callable(func):
+			return self._output(func(args))
 		else:
-			(command, argument) = tmp
-		if self.configshell:
-			output = self.configshell.input(request)
-			if (output == self.configshell.DESTROY_ME):
-				self.configshell=None
-				return self._output("Leaving configshell ...")
-			else:
-				return self._output(output)
-		else:
-			try:
-				return self._output(getattr(self,"_cmd_"+command)(argument))
-			except AttributeError, e:
-				return self._output("no such command: "+str(command))
+			return self._output("no such command: "+str(tmp[0]))
 			
-	def _cmd_config(self,argument):
-		self.configshell=configShell(self.bot)
-		return "Entering configshell ..."
 	def _cmd_help(self,argument):
 		commands = []
 		for c in dir(self):
 			if c[:5] == "_cmd_":
 				commands.append(c[5:])
 		return "Available commands: "+" ".join(commands)
-	def _cmd_reload(self,argument):
+	def _cmd_config(self,argument):
+		self.configshell=configShell(self.bot)
+		return "Entering configshell ..."
+
+	
+	def _cmd_modules_reload(self,argument):
 		self.bot.reloadModules()
 		return "Reloading all modules ..."
-	def _cmd_listmodules(self,argument):
+	def _cmd_modules_list(self,argument):
 		module=[]
 		for mod in self.bot.mods:
 			module.append(mod.name)
 		return " ".join(module)
+	
 	def _cmd_stop(self,argument):
 		conns=self.bot.factory._getnetworkslist()
 		for c in conns:
-			self.bot.factory._getnetwork(c).quit()
+			self.bot.getFactory()._getnetwork(c).quit()
 		return "Disconnecting from all networks und exiting ..."
-	def _cmd_disconnect(self,argument):
+	
+	def _cmd_network_disconnect(self,argument):
 		conns=self.bot.factory._getnetworkslist()
 		if argument != "":
 			if argument in conns:
@@ -208,7 +219,7 @@ class controlInterface:
 		else:
 			self.bot.quit("Bye.")
 			return "Disconnecting from current network. Bye."
-	def _cmd_connect(self,argument):
+	def _cmd_network_connect(self,argument):
 		args = argument.split(" ")
 		if len(args) < 1 or len(args) > 2:
 			return "Usage: connect irc.network.tld [port]"
@@ -219,21 +230,26 @@ class controlInterface:
 				port=6667
 			c = self.bot.getReactor().connectTCP(args[0],port,self.bot.factory)
 			return "Connecting to "+str(c)
-	def _cmd_listnetworks(self,argument):
+	def _cmd_network_list(self,argument):
 		return "Currently connected to: "+" ".join(self.bot.factory._getnetworkslist())
-	def _cmd_currentnetwork(self,argument):
+	def _cmd_network_current(self,argument):
 		return "Current network: "+self.bot.network
-	def _cmd_changenetwork(self,argument):
+	def _cmd_network_change(self,argument):
 		self.bot=self.bot.getFactory()._getnetwork(argument)
 		return "changed network to "+self.bot.network
-	def _cmd_listchannels(self,argument):
-		return "Currently in: "+" ".join(self.bot.channels)
+	
 	def _cmd_changenick(self,argument):
 		if argument == "":
 			return "Usage: changenick newnick"
 		else:
 			self.bot.setNick(argument)
-	def _cmd_join(self,argument):
+	
+	def _cmd_channel(self,arg):
+		self.subcmd="channel"
+		self.subcmdval=arg
+	def _cmd_channel_list(self,argument):
+		return "Currently in: "+" ".join(self.bot.channels)
+	def _cmd_channel_join(self,argument):
 		args=argument.split(" ",1)
 		if len(args) == 0:
 			return "Usage: join channel [key]"
@@ -243,7 +259,7 @@ class controlInterface:
 			else:
 				self.bot.join(args[0],args[1])
 			return "Joined "+str(argument)
-	def _cmd_part(self,argument):
+	def _cmd_channel_part(self,argument):
 		args=argument.split(" ",1)
 		if len(args) == 0:
 			return "Usage: part channel [message]"
@@ -254,7 +270,7 @@ class controlInterface:
 				partmsg=""
 			self.bot.leave(args[0],partmsg)
 			return "Left "+args[0]
-	def _cmd_kick(self,argument):
+	def _cmd_channel_kick(self,argument):
 		args=argument.split(" ",2)
 		if len(args) < 2:
 			return "Usage: kick channel user [message]"
@@ -264,7 +280,7 @@ class controlInterface:
 			else:
 				self.bot.kick(args[0],args[1],args[3])
 			return "Kicked "+args[1]+" from "+args[0]+"."
-	def _cmd_say(self,argument):
+	def _cmd_channel_say(self,argument):
 		args=argument.split(" ",1)
 		if len(args) < 2:
 			return "Usage: say channel|user message"
