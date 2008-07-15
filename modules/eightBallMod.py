@@ -17,7 +17,7 @@
 # (c) 2006 by Alexander Schier
 #
 
-import random
+import random, re
 import chatMod
 
 class chatMod(chatMod.chatMod):
@@ -46,6 +46,10 @@ class chatMod(chatMod.chatMod):
 		"Ask again later (Frag spaeter nochmal)"
 		]
 
+	def msg(self, user, channel, msg):
+		regex=re.match("[abcdefghijklmnopqrstuvxyz][^\.\?!:;]*\?", msg.lower())
+		if regex:
+			self.bot.sendmsg(channel, random.choice(self.answers))
 	def command(self, user, channel, command, options):
 		if command == "8ball" and options != "": #only if the user asked something.
 			self.bot.sendmsg(channel, random.choice(self.answers))

@@ -26,3 +26,26 @@ kiMod:
 ** allow shared karma (write only once if filename is the same, two pointers to one structure in channel->karma dict)
 * authMod should use network information for whitelist(!)
 * check if rdfMod with dynamic Factor works as intended! (0.3 - 5.0 seems to be stuck at 0.3)
+
+2008-07-15 09:31:52,156 samplenetwork rdfMod             DEBUG    http://www.heise.de/newsticker/heise-atom.xml (update every 0.2 - 5.0 minutes), waitFactor 1.5.
+2008-07-15 09:32:04,163 samplenetwork rdfMod             DEBUG    loading new Headlines
+2008-07-15 09:32:04,725 samplenetwork rdfMod             DEBUG    posted 2 new URLs
+2008-07-15 09:32:16,727 samplenetwork rdfMod             DEBUG    loading new Headlines
+2008-07-15 09:32:17,278 samplenetwork rdfMod             DEBUG    posted 0 new URLs
+2008-07-15 09:32:17,278 samplenetwork rdfMod             DEBUG    new wait-time: 0.3
+2008-07-15 09:32:35,279 samplenetwork rdfMod             DEBUG    loading new Headlines
+2008-07-15 09:32:35,868 samplenetwork rdfMod             DEBUG    posted 0 new URLs
+2008-07-15 09:32:35,869 samplenetwork rdfMod             DEBUG    new wait-time: 0.3
+2008-07-15 09:32:53,871 samplenetwork rdfMod             DEBUG    loading new Headlines
+2008-07-15 09:32:54,397 samplenetwork rdfMod             DEBUG    posted 0 new URLs
+2008-07-15 09:32:54,398 samplenetwork rdfMod             DEBUG    new wait-time: 0.3
+2008-07-15 09:33:12,402 samplenetwork rdfMod             DEBUG    loading new Headlines
+2008-07-15 09:33:12,952 samplenetwork rdfMod             DEBUG    posted 0 new URLs
+2008-07-15 09:33:12,952 samplenetwork rdfMod             DEBUG    new wait-time: 0.3
+2008-07-15 09:33:30,955 samplenetwork rdfMod             DEBUG    loading new Headlines
+2008-07-15 09:33:31,511 samplenetwork rdfMod             DEBUG    posted 0 new URLs
+2008-07-15 09:33:31,512 samplenetwork rdfMod             DEBUG    new wait-time: 0.3
+2008-07-15 09:33:49,515 samplenetwork rdfMod             DEBUG    loading new Headlines
+2008-07-15 09:33:50,047 samplenetwork rdfMod             DEBUG    posted 0 new URLs
+2008-07-15 09:33:50,047 samplenetwork rdfMod             DEBUG    new wait-time: 0.3
+
