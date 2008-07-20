@@ -1,4 +1,5 @@
 # This file is part of OtfBot.
+# -*- coding: utf-8 -*-
 #
 # OtfBot is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -44,8 +45,31 @@ class chatMod(chatMod.chatMod):
 				del self.parser
 				self.parser=titleExtractor()
 			self.parser.reset()
-		if command == "tinyurl" or command == "tinyurl+preview":
+		elif command == "tinyurl" or command == "tinyurl+preview":
 			response += " ("+urlutils.download("http://tinyurl.com/api-create.php?url="+options)+")"
+		elif command == "googlefight":
+			words=options.split(":")
+			if len(words) == 2:
+				data1=urlutils.download('http://www.google.de/search?hl=de&q="%s"'%words[0])
+				data2=urlutils.download('http://www.google.de/search?hl=de&q="%s"'%words[1])
+
+				count1="0"
+				count2="0"
+				match=re.match(".*<b>1</b> - <b>10</b>.*?<b>([0-9\.]*)</b>.*", data1, re.S)
+				if match:
+					count1=match.group(1)
+				else:
+					print data1
+				match=re.match(".*<b>1</b> - <b>10</b>.*?<b>([0-9\.]*)</b>.*", data2, re.S)
+				if match:
+					count2=match.group(1)
+
+				if(int(re.sub("\.", "", count1))>int(re.sub("\.", "", count2))):
+					self.bot.sendmsg(channel, "Google Fight!: %s siegt ueber %s (%s zu %s Treffer)"%(words[0], words[1], str(count1), count2))
+				else:
+					self.bot.sendmsg(channel, "Google Fight!: %s siegt ueber %s (%s zu %s Treffer)"%(words[1], words[0], str(count2), count1))
+			else:
+				self.bot.sendmsg(channel, "!googlefight wort1:wort2")
 		if response != "":
 			self.bot.sendmsg(channel, "[Link Info] "+response)
 
