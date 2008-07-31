@@ -266,7 +266,7 @@ class chatMod(chatMod.chatMod):
 				self.logger.error("Cannot use niall.")
 		else:
 			self.logger.error("No responder for module %s!"%module)
-		atext.register(self.responder.cleanup)
+		atexit.register(self.responder.cleanup)
 
 	def joined(self, channel):
 		self.channels.append(channel)
