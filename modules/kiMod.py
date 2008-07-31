@@ -77,7 +77,7 @@ class niallResponder(responder):
 			#pass
 		reply=unicode(niall.reply(msg), "iso-8859-15").encode("UTF-8")
 		niall.learn(msg)
-		return reply:
+		return reply
 	def cleanup(self):
 		niall.save_dictionary("niall.dict")
 		niall.free()
