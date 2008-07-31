@@ -94,7 +94,7 @@ class chatMod(chatMod.chatMod):
 			@type hadNew: bool
 			@param hadNew: set to true, if new news were loaded
 		"""
-		newWait=1
+		newWait=1.0
 		if hadNew:
 			if curWait != minWait:
 				self.logger.debug("new wait-time: "+str(minWait)+ " (minimum)")
@@ -102,7 +102,7 @@ class chatMod(chatMod.chatMod):
 		else:
 			newWait=curWait*factor
 			if newWait > maxWait:
-				newWait=manWait
+				newWait=maxWait
 				self.logger.debug("new wait-time: "+str(newWait)+" (maximum)")
 			else:
 				self.logger.debug("new wait-time: "+str(newWait))
@@ -133,7 +133,7 @@ class chatMod(chatMod.chatMod):
 				had_new=True
 		self.logger.debug("posted "+str(rdfPostMax-numPostUrls)+" new URLs")
 		return had_new
-	def postNewsLoop(self, channel, url, curWait=5, minWait=1, maxWait=60, factor=1.5, rdfPostMax=3):
+	def postNewsLoop(self, channel, url, curWait=5.0, minWait=1.0, maxWait=60.0, factor=1.5, rdfPostMax=3):
 		"""load News if needed and Post them to a channel"""
 		if self.end:
 			return
