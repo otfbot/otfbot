@@ -17,7 +17,7 @@
 # (c) 2005, 2006 by Alexander Schier
 #
 
-import string, re, random, time
+import string, re, random, time, atexit
 import chatMod, functions
 
 MEGAHAL=1
@@ -266,6 +266,7 @@ class chatMod(chatMod.chatMod):
 				self.logger.error("Cannot use niall.")
 		else:
 			self.logger.error("No responder for module %s!"%module)
+		atext.register(self.responder.cleanup)
 
 	def joined(self, channel):
 		self.channels.append(channel)
