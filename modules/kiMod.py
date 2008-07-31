@@ -22,6 +22,7 @@ import chatMod, functions
 
 MEGAHAL=1
 CITE=1
+NIALL=1
 try:
 	import mh_python
 except ImportError:
@@ -30,6 +31,10 @@ try:
 	import MySQLdb
 except ImportError:
 	CITE=0
+try:
+	import niall
+except ImportError:
+	NIALL=0
 
 class responder:
 	"""a prototype of a artificial intelligence responder. 
@@ -46,6 +51,36 @@ class responder:
 	def cleanup(self):
 		"""cleanup before shutdown, if needed"""
 		pass
+
+class niallResponder(responder):
+	def __init__(self):
+		niall.init()
+		niall.load_dictionary("niall.dict")
+	def learn(self, msg):
+		try:
+			msg=unicode(msg, "UTF-8").encode("iso-8859-15")
+		except UnicodeEncodeError:
+			return
+			#pass
+		except UnicodeDecodeError:
+			return
+			#pass
+		niall.learn(str(msg))
+	def reply(self, msg):
+		try:
+			msg=unicode(msg, "UTF-8").encode("iso-8859-15")
+		except UnicodeEncodeError:
+			return
+			#pass
+		except UnicodeDecodeError:
+			return
+			#pass
+		reply=unicode(niall.reply(msg), "iso-8859-15").encode("UTF-8")
+		niall.learn(msg)
+		return reply:
+	def cleanup(self):
+		niall.save_dictionary("niall.dict")
+		niall.free()
 
 class megahalResponder(responder):
 	"""implements a responder based on the megahal ai-bot"""
@@ -190,7 +225,7 @@ class chatMod(chatMod.chatMod):
 		self.wordpairs=functions.loadProperties(self.wordpairsFile)
 
 		module=self.bot.getConfig("module", "megahal", "kiMod", self.bot.network)
-		self.logger.debug("kiMod: using module "+module+",cite="+str(CITE)+",megahal="+str(MEGAHAL))
+		self.logger.debug("kiMod: using module "+module+",cite="+str(CITE)+",megahal="+str(MEGAHAL)+",niall="+str(NIALL))
 		if module=="cite":
 			if CITE:
 				try:
@@ -223,6 +258,14 @@ class chatMod(chatMod.chatMod):
 						self.responder=citeResponder(self.bot)
 					except "boterror":
 						self.logger.error("Error connecting the cite-DB.")
+		elif module=="niall":
+			if NIALL:
+				self.responder=niallResponder()
+			else:
+				self.responder=responder()
+				self.logger.error("Cannot use niall.")
+		else:
+			self.logger.error("No responder for module %s!"%module)
 
 	def joined(self, channel):
 		self.channels.append(channel)
@@ -264,7 +307,7 @@ class chatMod(chatMod.chatMod):
 			self.responder.learn(msg)
 		if reply!="":
 			#reply=re.sub(" "+self.bot.nickname, " "+user, reply) #more secure to match only the name
-			reply=re.sub(self.lnickname, user, reply, re.I) 
+			reply=re.sub(self.lnickname, user, str(reply), re.I) 
 			for key in self.wordpairs.keys():
 				reply=re.sub(key, self.wordpairs[key], reply, re.I)
 			
