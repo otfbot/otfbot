@@ -184,7 +184,6 @@ class citeResponder(responder):
 			for word in words:
 				if len(word) > len(topword):
 					topword=word
-			#print "Topword: "+topword
 			self.cursor.execute("SELECT stringid FROM "+MySQLdb.escape_string(self.keywordsTable)+" WHERE keyword LIKE '%"+MySQLdb.escape_string(topword)+"%';")
 			ids=(self.cursor.fetchall());
 			if len(ids)==0:
@@ -217,12 +216,13 @@ class citeResponder(responder):
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
-	
+
 	def start(self):
 		self.logger = self.bot.logging.getLogger("core.kiMod")
 		self.channels=[]
 		self.wordpairsFile=self.bot.getPathConfig("wordpairsFile", datadir, "wordpairs.txt")#XXX: this needs to be utf-8 encoded
 		self.wordpairs=functions.loadProperties(self.wordpairsFile)
+		self.nicklist=[string.lower(self.bot.getConfig("nickname", "otfbot", "main", self.bot.network))]
 
 		module=self.bot.getConfig("module", "megahal", "kiMod", self.bot.network)
 		self.logger.debug("kiMod: using module "+module+",cite="+str(CITE)+",megahal="+str(MEGAHAL)+",niall="+str(NIALL))
@@ -272,6 +272,12 @@ class chatMod(chatMod.chatMod):
 		self.channels.append(channel)
 	def msg(self, user, channel, msg):
 		user=user.split("!")[0]
+		if not user in self.nicklist:
+			self.nicklist.append(string.lower(user))
+
+		#TODO: dynamic!
+		if string.lower(user) in ["thomasbot", "x-d", "wtfialice", "otfbot"]:
+			return
 		if user == self.bot.nickname:
 			return
 		if not channel in self.channels: 
@@ -289,23 +295,27 @@ class chatMod(chatMod.chatMod):
 		israndom=0
 		if number < chance:
 			israndom=1
+		#bot answers if it hears its name
+		ishighlighted=self.lnickname in string.lower(msg)
 			
+
+		#test, if it starts with user:
+		for nick in self.nicklist:
+			print nick
+			if string.lower(msg[0:len(nick)])==nick:
+				msg=msg[len(nick)+1:] #cut of len of nick + one char (":", ",", " ", etc.)
+
+		if len(msg) and msg[0]==" ": 
+			msg=msg[1:]
+
 		if self.lnickname==string.lower(channel):
 			private=1
 			reply=self.responder.reply(msg)
-		#elif string.lower(msg[0:len(self.bot.nickname)])==string.lower(self.bot.nickname) or number<chance:
-		elif (self.lnickname in string.lower(msg)) or israndom:
-			if string.lower(msg[:len(self.lnickname)])==self.lnickname:
-				msg=msg[len(self.lnickname)+1:] #+1 for the following ":", " " or ","
-			if len(msg) and msg[0]==" ": 
-				msg=msg[1:]
+		elif ishighlighted or israndom:
 			reply=self.responder.reply(msg)
 		else:
-			#TODO: match with nicklist
-			if not re.match("^(:|;|http)", msg):
-				msg=re.sub("^[^ ]*?[:,;]", "", msg)
-				#msg=re.sub("^[a-zA-Z]*?[:;,]", "", msg)
 			self.responder.learn(msg)
+
 		if reply!="":
 			#reply=re.sub(" "+self.bot.nickname, " "+user, reply) #more secure to match only the name
 			reply=re.sub(self.lnickname, user, str(reply), re.I) 
