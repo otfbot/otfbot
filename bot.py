@@ -323,7 +323,8 @@ class Bot(irc.IRCClient):
 		# to be removed
 		self._apirunner("privmsg",{"user":user,"channel":channel,"msg":msg})
 
-		if channel.lower() == self.nickname.lower():
+		#if channel.lower() == self.nickname.lower():
+		if channel.lower()[0] in "abcdefghijklmnopqrstuvwxyz":
 			self._apirunner("query",{"user":user,"channel":channel,"msg":msg})
 			return
 		
