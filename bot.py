@@ -46,6 +46,7 @@ class Bot(irc.IRCClient):
 		self.users={}
 		self.channels=[]
 		self.theconfig=theconfig
+		self.realname=self.getConfig("realname", "A Bot", "main", self.network)
 	
 		self.mods = []
 		self.numMods = 0
