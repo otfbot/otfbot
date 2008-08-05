@@ -173,6 +173,7 @@ static PyMethodDef NiallMethods[] = {
 	{"reply", niall_reply, METH_VARARGS, "Reply to a string"},
 	{"new_dictionary", niall_new_dictionary, METH_VARARGS, "Start a new Dictionary"},
 	{"save_dictionary", niall_save_dictionary, METH_VARARGS, "Save the Dictionary"},
+	{"list_dictionary", niall_list_dictionary, METH_VARARGS, "List the Dictionary"},
 	{"load_dictionary", niall_load_dictionary, METH_VARARGS, "Load a Dictionary"},
 	{"correct_spelling", niall_correct_spelling, METH_VARARGS, "Corrects a wrong word"},
 	{"set_callbacks", niall_set_callbacks, METH_VARARGS, "set the callback functions"},
