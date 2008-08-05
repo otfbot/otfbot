@@ -270,24 +270,32 @@ class chatMod(chatMod.chatMod):
 
 	def joined(self, channel):
 		self.channels.append(channel)
+	def query(self, user, channel, msg):
+		user=user.split("!")[0]
+		reply=self.responder.reply(msg)
+		number=random.randint(1,1000)
+		chance=int(self.bot.getConfig("answerQueryPercent", "70", "kiMod", self.bot.network))*10
+		delay=len(reply)*0.3*float(self.bot.getConfig("wait", "2", "kiMod", self.bot.network)) #a normal user does not type that fast
+		if number < chance:
+			#self.bot.sendmsg(user, reply, "UTF-8")
+			self.bot.scheduler.callLater(delay, self.bot.sendmsg, user, reply, "UTF-8")
 	def msg(self, user, channel, msg):
 		user=user.split("!")[0]
 		if not user in self.nicklist:
 			self.nicklist.append(string.lower(user))
 
 		#TODO: dynamic!
-		if string.lower(user) in ["thomasbot", "x-d", "wtfialice", "otfbot"]:
+		if string.lower(user) in ["thomasbot", "x-d", "wtfialice", "otfbot", "trina", "vanessa"]:
 			return
 		if user == self.bot.nickname:
 			return
-		if not channel in self.channels: 
-			return
+		#if not channel in self.channels: 
+		#	return
 		if msg[0]=="!":
 			return
 			
 
 		reply=""
-		private=0
 
 		#bot answers random messages
 		number=random.randint(1,1000)
@@ -301,17 +309,14 @@ class chatMod(chatMod.chatMod):
 
 		#test, if it starts with user:
 		for nick in self.nicklist:
-			print nick
 			if string.lower(msg[0:len(nick)])==nick:
 				msg=msg[len(nick)+1:] #cut of len of nick + one char (":", ",", " ", etc.)
 
 		if len(msg) and msg[0]==" ": 
 			msg=msg[1:]
 
-		if self.lnickname==string.lower(channel):
-			private=1
-			reply=self.responder.reply(msg)
-		elif ishighlighted or israndom:
+		channel=string.lower(channel)
+		if ishighlighted or israndom:
 			reply=self.responder.reply(msg)
 		else:
 			self.responder.learn(msg)
@@ -327,21 +332,14 @@ class chatMod(chatMod.chatMod):
 			if reply==string.upper(reply): #no UPPERCASE only Posts
 				reply=string.lower(reply)
 			delay=len(reply)*0.3*float(self.bot.getConfig("wait", "2", "kiMod", self.bot.network, channel)) #a normal user does not type that fast
-			if private:
-				number=random.randint(1,1000)
-				chance=int(self.bot.getConfig("answerQueryPercent", "70", "kiMod", self.bot.network))*10
-				if number < chance:
-					#self.bot.sendmsg(user, reply, "UTF-8")
-					self.bot.scheduler.callLater(delay, self.bot.sendmsg, user, reply, "UTF-8")
-			else:
-				number=random.randint(1,1000)
-				chance=int(self.bot.getConfig("answerPercent", "50", "kiMod", self.bot.network, channel))*10
-				if israndom:
-					#self.bot.sendmsg(channel, reply, "UTF-8")
-					self.bot.scheduler.callLater(delay, self.bot.sendmsg, channel, reply, "UTF-8")
-				elif number < chance: #apply answerPercent only on answers
-					#self.bot.sendmsg(channel, user+": "+reply, "UTF-8")
-					self.bot.scheduler.callLater(delay, self.bot.sendmsg, channel, user+": "+reply, "UTF-8")
+			number=random.randint(1,1000)
+			chance=int(self.bot.getConfig("answerPercent", "50", "kiMod", self.bot.network, channel))*10
+			if israndom:
+				#self.bot.sendmsg(channel, reply, "UTF-8")
+				self.bot.scheduler.callLater(delay, self.bot.sendmsg, channel, reply, "UTF-8")
+			elif number < chance: #apply answerPercent only on answers
+				#self.bot.sendmsg(channel, user+": "+reply, "UTF-8")
+				self.bot.scheduler.callLater(delay, self.bot.sendmsg, channel, user+": "+reply, "UTF-8")
 
 	def connectionMade(self):
 		self.lnickname=string.lower(self.bot.nickname)
