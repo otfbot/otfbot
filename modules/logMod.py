@@ -108,7 +108,10 @@ class chatMod(chatMod.chatMod):
 
 	def query(self, user, channel, msg):
 		user=user.split("!")[0]
-		self.logPrivate(user, "<"+user+"> "+msg)
+		if user==self.bot.nickname:
+			self.logPrivate(channel, "<"+user+"> "+msg)
+		else:
+			self.logPrivate(user, "<"+user+"> "+msg)
 	
 	def noticed(self, user, channel, msg):
 		if user != "":
