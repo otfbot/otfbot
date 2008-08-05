@@ -65,7 +65,8 @@ class niallResponder(responder):
 		except UnicodeDecodeError:
 			return
 			#pass
-		niall.learn(str(msg))
+		if msg:
+			niall.learn(str(msg))
 	def reply(self, msg):
 		try:
 			msg=unicode(msg, "UTF-8").encode("iso-8859-15")
@@ -76,7 +77,10 @@ class niallResponder(responder):
 			return
 			#pass
 		reply=unicode(niall.reply(msg), "iso-8859-15").encode("UTF-8")
-		niall.learn(msg)
+		if reply==None:
+			reply=""
+		if msg:
+			niall.learn(msg)
 		return reply
 	def cleanup(self):
 		niall.save_dictionary("niall.dict")
@@ -272,6 +276,8 @@ class chatMod(chatMod.chatMod):
 		self.channels.append(channel)
 	def query(self, user, channel, msg):
 		user=user.split("!")[0]
+		if user[0:len(self.lnickname)]==self.lnickname:
+			return
 		reply=self.responder.reply(msg)
 		number=random.randint(1,1000)
 		chance=int(self.bot.getConfig("answerQueryPercent", "70", "kiMod", self.bot.network))*10
