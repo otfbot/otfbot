@@ -315,6 +315,7 @@ class chatMod(chatMod.chatMod):
 		if not user in self.nicklist:
 			self.nicklist.append(string.lower(user))
 		if string.lower(user) in self.bot.getConfig("ignore", "", "kiMod", self.bot.network, channel).split(","):
+			return
 
 		if user == self.bot.nickname:
 			return
