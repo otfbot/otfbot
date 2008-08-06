@@ -397,6 +397,12 @@ class Bot(irc.IRCClient):
 				self.users[channel][arg]['modchar'] = ' '
 			i=i+1
 
+	def kickedFrom(self, channel, kicker, message):
+		""" called by twisted,
+			if the bot was kicked
+		"""
+		self._apirunner("kickedFrom",{"channel":channel,"kicker":kicker,"message":message})
+
 	def userKicked(self, kickee, channel, kicker, message):
 		""" called by twisted,
 			if a user was kicked

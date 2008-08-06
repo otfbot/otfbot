@@ -63,6 +63,9 @@ class chatMod:
 	def modeChanged(self, user, channel, set, modes, args):
 		"""mode changed"""
 		pass
+	def kickedFrom(self, channel, kicker, message):
+		"""someone kicked the bot"""
+		pass
 	def userKicked(self, kickee, channel, kicker, message):
 		"""someone kicked someone else"""
 		pass
