@@ -54,6 +54,15 @@ class responder:
 		pass
 
 def ascii_string(msg):
+	"""
+	make sure, the string uses only ascii chars
+	(at the moment it removes any char but a-ZA-Z@. and space)
+
+	Example:
+
+	>>> ascii_string("Umlaute: äöüÜÖÄß!")
+	'Umlaute aeoeueUeOeAess'
+	"""
 	msg=re.sub("ö", "oe", msg)
 	msg=re.sub("ü", "ue", msg)
 	msg=re.sub("ä", "ae", msg)
@@ -290,6 +299,8 @@ class chatMod(chatMod.chatMod):
 		user=user.split("!")[0]
 		if user[0:len(self.lnickname)]==self.lnickname:
 			return
+		if string.lower(user) in self.bot.getConfig("ignore", "", "kiMod", self.bot.network).split(","):
+			return
 		reply=self.responder.reply(msg)
 		if not reply:
 			return
@@ -303,10 +314,8 @@ class chatMod(chatMod.chatMod):
 		user=user.split("!")[0]
 		if not user in self.nicklist:
 			self.nicklist.append(string.lower(user))
+		if string.lower(user) in self.bot.getConfig("ignore", "", "kiMod", self.bot.network, channel).split(","):
 
-		#TODO: dynamic!
-		if string.lower(user) in ["thomasbot", "x-d", "wtfialice", "otfbot", "trina", "vanessa", "mephisto"]:
-			return
 		if user == self.bot.nickname:
 			return
 		#if not channel in self.channels: 
@@ -369,3 +378,6 @@ class chatMod(chatMod.chatMod):
 	def stop(self):
 		self.responder.cleanup()
 
+if __name__ == "__main__":
+	import doctest
+	doctest.testmod()
