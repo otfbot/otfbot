@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 # This file is part of OtfBot.
 #
 # OtfBot is free software; you can redistribute it and/or modify
@@ -52,13 +53,23 @@ class responder:
 		"""cleanup before shutdown, if needed"""
 		pass
 
+def ascii_string(msg):
+	msg=re.sub("ö", "oe", msg)
+	msg=re.sub("ü", "ue", msg)
+	msg=re.sub("ä", "ae", msg)
+	msg=re.sub("ß", "ss", msg)
+	msg=re.sub("Ö", "Oe", msg)
+	msg=re.sub("Ü", "Ue", msg)
+	msg=re.sub("Ä", "Ae", msg)
+	return re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@. ]", "", msg)
 class niallResponder(responder):
-	def __init__(self):
+	def __init__(self, bot):
 		niall.init()
+		niall.set_callbacks(bot.logger.info, bot.logger.warning, bot.logger.error)
 		niall.load_dictionary("niall.dict")
 	def learn(self, msg):
 		try:
-			msg=unicode(msg, "UTF-8").encode("iso-8859-15")
+			msg=ascii_string(unicode(msg, "UTF-8").encode("iso-8859-15"))
 		except UnicodeEncodeError:
 			return
 			#pass
@@ -69,21 +80,22 @@ class niallResponder(responder):
 			niall.learn(str(msg))
 	def reply(self, msg):
 		try:
-			msg=unicode(msg, "UTF-8").encode("iso-8859-15")
+			msg=ascii_string(unicode(msg, "UTF-8").encode("iso-8859-15"))
 		except UnicodeEncodeError:
 			return
 			#pass
 		except UnicodeDecodeError:
 			return
 			#pass
-		reply=unicode(niall.reply(msg), "iso-8859-15").encode("UTF-8")
+		reply=unicode(niall.reply(str(msg)), "iso-8859-15").encode("UTF-8")
 		if reply==None:
 			reply=""
 		if msg:
-			niall.learn(msg)
+			niall.learn(str(msg))
+			niall.save_dictionary("niall.dict")
 		return reply
 	def cleanup(self):
-		niall.save_dictionary("niall.dict")
+		#niall.save_dictionary("niall.dict")
 		niall.free()
 
 class megahalResponder(responder):
@@ -264,7 +276,7 @@ class chatMod(chatMod.chatMod):
 						self.logger.error("Error connecting the cite-DB.")
 		elif module=="niall":
 			if NIALL:
-				self.responder=niallResponder()
+				self.responder=niallResponder(self.bot)
 			else:
 				self.responder=responder()
 				self.logger.error("Cannot use niall.")
@@ -279,6 +291,8 @@ class chatMod(chatMod.chatMod):
 		if user[0:len(self.lnickname)]==self.lnickname:
 			return
 		reply=self.responder.reply(msg)
+		if not reply:
+			return
 		number=random.randint(1,1000)
 		chance=int(self.bot.getConfig("answerQueryPercent", "70", "kiMod", self.bot.network))*10
 		delay=len(reply)*0.3*float(self.bot.getConfig("wait", "2", "kiMod", self.bot.network)) #a normal user does not type that fast
@@ -291,7 +305,7 @@ class chatMod(chatMod.chatMod):
 			self.nicklist.append(string.lower(user))
 
 		#TODO: dynamic!
-		if string.lower(user) in ["thomasbot", "x-d", "wtfialice", "otfbot", "trina", "vanessa"]:
+		if string.lower(user) in ["thomasbot", "x-d", "wtfialice", "otfbot", "trina", "vanessa", "mephisto"]:
 			return
 		if user == self.bot.nickname:
 			return
@@ -327,7 +341,7 @@ class chatMod(chatMod.chatMod):
 		else:
 			self.responder.learn(msg)
 
-		if reply!="":
+		if reply:
 			#reply=re.sub(" "+self.bot.nickname, " "+user, reply) #more secure to match only the name
 			reply=re.sub(self.lnickname, user, str(reply), re.I) 
 			for key in self.wordpairs.keys():
