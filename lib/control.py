@@ -17,121 +17,6 @@
 # (c) 2007 Robert Weidlich
 #
 
-""" Control the bot during runtime """
-class configShell:
-	""" Implements a shell-like Interface for manipulating the configuration """
-	DESTROY_ME=234
-	def __init__(self, bot):
-		"""
-			@type bot: a L{Bot}-Instance
-		"""
-		self.bot=bot
-		self.configlevel=[]
-
-	def _getlevellist(self):
-		""" get a list of items at the current level
-			@return: a list of items in the current level 
-			@rtype: list
-		"""
-		if len(self.configlevel) == 0:
-			return self.bot.getNetworks()
-		elif len(self.configlevel) == 1:
-			return self.bot.getChannels(self.configlevel[0])
-		else:
-			return self.bot.getSubOptions(self.configlevel)
-	
-	def _ls(self):
-		""" get the content of the current level
-			@rtype: string
-		"""
-		return " | ".join(self._getlevellist())
-		
-	def _cd(self, string):
-		""" change into C{string}
-			@param string: the item to change into (might be a network, a channel, a module or a level above (..))
-			@type string: string
-		"""
-		if string == ".." and len(self.configlevel)>=0:
-			self.configlevel.pop()
-		else:
-			num=int(string)
-			if 0 < num and num < len(self._getlevellist())+1:
-				self.configlevel.append(self._getlevellist()[num-1])
-			else:
-				return "No such setting: "+str(num)
-	
-	def _get(self,string):
-		""" get the value of a certain item
-			@param string: the identifier of the item to get
-			@type string: string
-			@return: the value of the requested item
-			@rtype: string
-		"""
-		msg=string.split(" ")
-		#self.logger.debug(msg)
-		if len(msg) == 4:
-			res=self.bot.getConfig(msg[0], "",msg[1],msg[2],msg[3])
-		elif len(msg) == 3:
-			res=self.bot.getConfig(msg[0], "", msg[1], msg[2])
-		elif len(msg) == 2:
-			res=self.bot.getConfig(msg[0], "", msg[1])
-		elif len(msg) == 1:
-			res=self.bot.getConfig(msg[0], "")
-		if len(msg) == 0 or len(msg) > 4:
-			return "Syntax: config get key [modul] [network] [channel]"
-		else:
-			#self.logger.debug(".".join(msg))
-			#self.logger.debug(res)
-			return ".".join(msg)+"="+res
-	
-	def _set(self, item, value):
-		"""
-			should set C{item} to C{value}
-			@param item: the item to update
-			@type item: string
-			@param value: the value to set
-			@type value: string
-			@note: this function does currently nothing.
-		"""
-		#FIXME: 
-		#msg=msg[4:]
-		#tmp=msg.split("=")
-		#if len(tmp) != 2:
-		#	self.bot.sendmsg(nick, "Syntax: config set key=value")
-		#	return
-		#self.bot.setConfig(tmp[0], tmp[1])
-		return "function is out of order"
-	
-	def input(self, request):
-		""" Pass all input to this function
-		
-			this function accepts the input, handles it to the right function and returns the result
-			@param request: the command and argument
-			@type request: string
-			@rtype: string
-			@return: the result of the command
-		"""
-		tmp = request.strip().split(" ",1)
-		if len(tmp) == 1:
-			command = tmp[0]
-			argument = ""
-		else:
-			(command, argument) = tmp
-		if command == "ls":
-			return self._ls()
-		elif command == "cd":
-			return self._cd(argument)
-		elif command == "quit":
-			return self.DESTROY_ME
-		elif command == "get":
-			return self._get(argument)
-		elif command == "set":
-			return self._set(argument)
-		else:
-			return "config shell: '"+command+"' is not a valid command"
-			#self.bot.sendmsg(nick, "Syntax: config [get <key> [modul] [network] [channel]|set <key=value>]")
-
-
 class controlInterface:
 	""" allows to control the behaviour of the bot during runtime
 	
@@ -157,19 +42,19 @@ class controlInterface:
 			@rtype: string
 			@return: the output of the command
 		"""
-		# try to guess, what is meant
+		# try to guess, what the user wants
 		tmp = request.strip().split(" ")
 		# try 1: a command in the current namespace
 		func = getattr(self,"_cmd_"+self.subcmd+"_"+tmp[0], None)
 		args = " ".join(tmp[1:])
-		# try 2: a toplevel command
-		if not callable(func):
-			func = getattr(self,"_cmd_"+tmp[0], None)
-			args = " ".join(tmp[1:])
-		# try 3: directly called subcommand
+		# try 2: directly called subcommand
 		if not callable(func) and len(tmp) > 1:
 			func = getattr(self,"_cmd_"+tmp[0]+"_"+tmp[1], None)
 			args = " ".join(tmp[2:])
+		# try 3: a toplevel command
+		if not callable(func):
+			func = getattr(self,"_cmd_"+tmp[0], None)
+			args = " ".join(tmp[1:])
 		# try 4: change the namespace
 		if not callable(func):
 			found=False;
@@ -180,27 +65,32 @@ class controlInterface:
 		if callable(func):
 			return self._output(func(args))
 		else:
-			return self._output("no such command: "+str(tmp[0]))
+			return self._output("No such command: "+str(tmp[0]))
 			
 	def _cmd_help(self,argument):
 		commands = []
 		for c in dir(self):
 			if c[:5] == "_cmd_":
-				commands.append(c[5:])
-		return "Available commands: "+" ".join(commands)
+				commands.append(c[5:].replace("_"," "))
+		return "Available commands: "+", ".join(commands)
 	def _cmd_config(self,argument):
 		self.configshell=configShell(self.bot)
-		return "Entering configshell ..."
+		return "This part is still broken"
 
 	
 	def _cmd_modules_reload(self,argument):
-		self.bot.reloadModules()
-		return "Reloading all modules ..."
+		tmp = argument.split(" ")
+		if len(tmp) == 0:
+			self.bot.reloadModules()
+			return "Reloading all modules ..."
+		if len(tmp) == 1:
+			return "Reload module "+tmp[0]+" (not working atm)"
+		return "Usage: [modules] reload [modName]"
 	def _cmd_modules_list(self,argument):
 		module=[]
 		for mod in self.bot.mods:
 			module.append(mod.name)
-		return " ".join(module)
+		return "The following modules are currently loaded: "+", ".join(module)
 	
 	def _cmd_stop(self,argument):
 		conns=self.bot.factory._getnetworkslist()
@@ -243,10 +133,12 @@ class controlInterface:
 			return "Usage: changenick newnick"
 		else:
 			self.bot.setNick(argument)
+			return "I am now known as "+argument
 	
 	def _cmd_channel(self,arg):
 		self.subcmd="channel"
 		self.subcmdval=arg
+		return "Changing to namespace "+arg
 	def _cmd_channel_list(self,argument):
 		return "Currently in: "+" ".join(self.bot.channels)
 	def _cmd_channel_join(self,argument):
@@ -261,28 +153,54 @@ class controlInterface:
 			return "Joined "+str(argument)
 	def _cmd_channel_part(self,argument):
 		args=argument.split(" ",1)
-		if len(args) == 0:
-			return "Usage: part channel [message]"
+		if self.subcmd == "channel" and self.subcmdval != "":
+			partmsg=argument
+			channel=self.subcmdval
+			self.subcmd=""
+			self.subcmdval=""
+		elif len(args) == 0:
+			return "Usage: channel part channel [message]"
 		else:
 			if len(args) > 1:
 				partmsg=args[1]
 			else:
 				partmsg=""
-			self.bot.leave(args[0],partmsg)
-			return "Left "+args[0]
+			channel=args[0]
+		self.bot.leave(channel,partmsg)
+		return "Left "+channel
 	def _cmd_channel_kick(self,argument):
-		args=argument.split(" ",2)
-		if len(args) < 2:
-			return "Usage: kick channel user [message]"
-		else:
+		msg=""
+		if self.subcmd == "channel" and self.subcmdval != "":
+			args=argument.split(" ",1)
+			channel=self.subcmdval
+			if len(args) == 0:
+				return "Usage: kick user [message]"
+			user=args[0]
 			if len(args) == 2:
-				self.bot.kick(args[0],args[1])
-			else:
-				self.bot.kick(args[0],args[1],args[3])
-			return "Kicked "+args[1]+" from "+args[0]+"."
-	def _cmd_channel_say(self,argument):
-		args=argument.split(" ",1)
-		if len(args) < 2:
-			return "Usage: say channel|user message"
+				msg=args[1]
 		else:
-			self.bot.sendmsg(args[0],args[1])
+			args=argument.split(" ",2)
+			if len(args) < 2:
+				return "Usage: channel kick channel user [message]"
+			else:
+				channel=args[0]
+				user=args[1]
+				if len(args) == 3:
+					msg = args[3]
+		if msg:
+			self.bot.kick(channel,user,msg)
+		else:
+			self.bot.kick(channel,user)
+		return "Kicked "+user+" from "+channel+"."
+	def _cmd_channel_say(self,argument):
+		if self.subcmd == "channel" and self.subcmdval != "":
+			channel=self.subcmdval
+			msg=argument
+		else:
+			args=argument.split(" ",1)
+			if len(args) < 2:
+				return "Usage: channel say channel|user message"
+			channel=args[0]
+			msg=args[1]
+		self.bot.sendmsg(channel,msg)
+		return " "

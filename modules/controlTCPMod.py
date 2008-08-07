@@ -24,7 +24,7 @@
 from twisted.internet import protocol, error
 from twisted.protocols import basic
 import chatMod
-from control import configShell, controlInterface
+from control import controlInterface
 
 class BotProtocol(basic.LineOnlyReceiver):
 	PLAIN=0
