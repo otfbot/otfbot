@@ -1,0 +1,12 @@
+Source: otfbot
+Section: net
+Priority: optional
+Maintainer: Robert Weidlich <otfbot-maintainer@xenim.de>
+Build-Depends: debhelper (>= 5)
+Standards-Version: 3.7.2
+
+Package: otfbot
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: An IRC-Bot written in python on top of twisted
+ <insert long description, indented with spaces>
