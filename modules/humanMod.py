@@ -135,12 +135,12 @@ class chatMod(chatMod.chatMod):
 		if self.connected and self.f.proto.loggedin:
 			self.f.proto.sendLine(line)
 	def msg(self, user, channel, msg):
-		if not self.connected and self.f.proto.loggedin:
+		if not (self.connected and self.f.proto.loggedin):
 			return
-		if string.lower(user) == string.lower(self.bot.nickname) and self.f.proto:
+		if string.lower(user) == string.lower(self.bot.nickname):
 			self.f.proto.sendMessage("PRIVMSG", channel, ":"+msg, prefix=self.f.proto.hostmask)
 	def query(self, user, channel, msg):
-		if not self.connected and self.f.proto.loggedin:
+		if not (self.connected and self.f.proto.loggedin):
 			return
 		if string.lower(user) == string.lower(self.bot.nickname) and self.f.proto:
 			#TODO FIXME: this is a workaround. the external irc client does not recognize own messages from queries (xchat)
