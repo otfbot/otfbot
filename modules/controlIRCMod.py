@@ -19,7 +19,7 @@
 
 import random, re, string
 import chatMod
-from control import configShell, controlInterface
+from control import controlInterface
 
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
