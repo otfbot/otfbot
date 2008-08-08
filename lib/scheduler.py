@@ -19,14 +19,10 @@
 # (c) 2007 by Robert Weidlich
 
 """ Contains a Wrapperclass for the twisted Scheduler """
+from twisted.internet import reactor
 
 class Scheduler:
 	"""Wrapper class for the scheduling functions of twisted.internet.reactor.ReactorTime"""
-	def __init__(self,reactor):
-		"""
-			@type reactor: twisted.internet.reactor
-		"""
-		self.reactor=reactor
 	def callLater(self,time,function,*args,**kwargs):
 		""" executes C{function} after C{time} seconds with arguments C{*args} and keyword arguments C{**kwargs}
 			@param time: seconds to wait before executing C{function}
@@ -38,12 +34,12 @@ class Scheduler:
 			@param **kwargs: keyworded arguments for the function
 			@type **kwargs: dict
 		"""
-		return self.reactor.callLater(time,function,*args,**kwargs)
+		return reactor.callLater(time,function,*args,**kwargs)
 	def cancelCallLater(self, callID):
 		""" cancel a delayed call
 			@param callID: the call to cancel (id returned in callLater)
 		"""
-		return self.reactor.cancelCallLater(callID)
+		return reactor.cancelCallLater(callID)
 
 	def callPeriodic(self,delay,function,kwargs={}):
 		""" executes C{function} every C{delay} seconds with keyword arguments C{**kwargs}
@@ -58,6 +54,6 @@ class Scheduler:
 		def func(delay,function,**kwargs):
 			args=(delay,function)
 			if function(**kwargs):
-				self.reactor.callLater(delay,func,*args,**kwargs)
+				reactor.callLater(delay,func,*args,**kwargs)
 		args=(delay,function)
-		self.reactor.callLater(delay,func,*args,**kwargs)
+		reactor.callLater(delay,func,*args,**kwargs)
