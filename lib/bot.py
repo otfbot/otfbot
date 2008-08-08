@@ -62,7 +62,7 @@ class Bot(irc.IRCClient):
 		self.logging = logging
 		self.logger = logging.getLogger("core")
 		self.logger.info("Starting new Botinstance")
-		self.scheduler = scheduler.Scheduler(self.getReactor())
+		self.scheduler = scheduler.Scheduler()
 		self.startMods()
 	
 	def _apirunner(self,apifunction,args={}):
@@ -94,10 +94,6 @@ class Bot(irc.IRCClient):
 			self.mods.append( chatModule.chatMod(self) )
 			self.mods[-1].setLogger(self.logger)
 			self.mods[-1].name = chatModule.__name__
-			#try:
-			#	self.mods[-1].start()
-			#except AttributeError:
-			#	pass
 		self._apirunner("start")
 
 	# configstuff, should maybe be moved to a config-instance at self.config
@@ -130,12 +126,6 @@ class Bot(irc.IRCClient):
 			@return: a dict with the channelnames as keys
 		"""
 		return self.users
-	def getReactor(self):
-		""" get the reactor 
-			@rtype: twisted.internet.reactor
-			@return: the current reactor
-		"""
-		return reactor
 	def getFactory(self):
 		""" get the factory
 			@rtype: BotFactory
