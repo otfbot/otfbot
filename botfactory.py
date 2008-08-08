@@ -18,57 +18,36 @@
 # (c) 2008 by Robert Weidlich
 # 
 from twisted.internet import protocol, reactor, error
+import logging
+from bot import Bot
 
 class BotFactory(protocol.ReconnectingClientFactory):
 	"""The Factory for the Bot"""
-	instances = {}
 
-	def __init__(self, bot, logger, theconfig, classes):
-		self.corelogger=logger
-		self.protocol=bot
+	def __init__(self, network, ipc, theconfig, classes):
+		self.logger=logging.getLogger(network)
+		self.protocol=Bot
 		self.theconfig=theconfig
 		self.classes=classes
+		self.network=network
+		self.ipc=ipc
 
-	def _addnetwork(self,addr,nw):
-		self.instances[addr] = nw
-
-	def _removenetwork(self,addr):
-		if self.instances.has_key(addr):
-			del self.instances[addr]
-	
-	def _getnetwork(self,addr):
-		return self.instances[addr]
-
-	def _getnetworkslist(self):
-		return self.instances.keys()
-
-	def _checkforshutdown(self):
-		if len(self.instances)==0:
-			self.corelogger.info("Not Connected to any network. Shutting down.")
-			#TODO: add sth to stop modules
-			reactor.stop()
-	
 	def clientConnectionLost(self, connector, reason):
+		self.ipc.rm(self.network)
 		clean = error.ConnectionDone()
 		if reason.getErrorMessage() == str(clean):
-			self._removenetwork(connector.host)
-			self._checkforshutdown()
-			self.corelogger.info("Cleanly disconnected from "+connector.host)
+			self.logger.info("Cleanly disconnected from "+connector.host)
 		else:
-			self.corelogger.error("Disconnected from "+connector.host+": "+str(reason.getErrorMessage())+".")
-			protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
-		#	connector.connect()
+			self.logger.error("Disconnected from "+connector.host+": "+str(reason.getErrorMessage())+".")
+			#protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
 		
 	def clientConnectionFailed(self, connector, reason):
-		self.corelogger.error("Connection to "+connector.host+" failed: "+str(reason.getErrorMessage()))
-		self._removenetwork(connector.host)
-		protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
-		#self._checkforshutdown()
+		self.logger.error("Connection to "+connector.host+" failed: "+str(reason.getErrorMessage()))
+		#protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
 	
 	def buildProtocol(self,addr):
 		#proto=protocol.ReconnectingClientFactory.buildProtocol(self,addr)
-		proto=self.protocol(self.theconfig, self.classes)
-		proto.svnrevision=self.svnrevision
-		proto.factory=self
-		self._addnetwork(addr.host, proto)
+		proto=self.protocol(self.theconfig, self.classes, self.network)
+		proto.ipc=self.ipc
+		self.ipc.add(self.network,proto)
 		return proto

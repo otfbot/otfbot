@@ -150,7 +150,6 @@ class chatMod(chatMod.chatMod):
 		self.stop()
 
 	def stop(self):
-		self.logger.info("Got Stop Signal.")
 		self.end=1
 
 	def connectionMade(self):
