@@ -39,14 +39,16 @@ class Bot(irc.IRCClient):
 		@ivar nickname: the nick of the bot
 	"""
 
-	def __init__(self, theconfig, classes):
+	def __init__(self, theconfig, classes, network):
 		#list of mods, which the bot should use
 		#you may need to configure them first
 		self.classes = classes
 		self.users={}
 		self.channels=[]
+		self.network=network
 		self.theconfig=theconfig
 		self.realname=self.getConfig("realname", "A Bot", "main", self.network)
+		self.password=self.getConfig('password', None, 'main', network)
 	
 		self.mods = []
 		self.numMods = 0
@@ -493,3 +495,7 @@ class Bot(irc.IRCClient):
 		for entry in tb_list:
 			for line in entry.strip().split("\n"):
 				logger.error(line)
+	def disconnect(self):
+		"""disconnects cleanly from the current network"""
+		self._apirunner("stop")
+		self.quit('Bye')		

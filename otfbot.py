@@ -22,7 +22,7 @@
 """Chat Bot"""
 
 # standard Python libs
-import os, random, string, re, sys, atexit
+import os, random, string, re, sys, atexit, time
 # libs from Python twisted
 from twisted.words.protocols import irc
 from twisted.internet import reactor, protocol, error, ssl
@@ -82,6 +82,8 @@ if options.foreground == False and not options.debug > 0:
 # Setup Logging
 import logging
 import logging.handlers
+from twisted.python import log
+import log as otfbotlog
 # Basic settings for logging
 # logging to logfile
 filelogger = logging.handlers.RotatingFileHandler(path_log,'a',1048576,5)
@@ -109,6 +111,9 @@ corelogger.info(" \___/ |_| |_|   |____/ \___/ \__|")
 corelogger.info("")
 svnrevision="$Revision$".split(" ")[1]
 corelogger.info("Starting OtfBot - Version svn "+svnrevision)
+# get messages from twisted as well
+plo=otfbotlog.PythonLoggingObserver()
+plo.start()
 
 
 ###############################################################################
@@ -147,25 +152,46 @@ f=open(pidfile,'w')
 f.write(str(os.getpid())+"\n")
 f.close()
 
+
+def disconnect():
+	corelogger.info("Disconnecting from all networks")
+	for i in ipc.getall():
+		corelogger.info("Disconnecting from "+i)
+		ipc.get(i).disconnect()
+	reactor.doIteration(0)
+
 # registering the exithook function
-atexit.register(exithook)
+reactor.addSystemEventTrigger('before','shutdown',disconnect)
+reactor.addSystemEventTrigger('during','shutdown',exithook)
 
-networks=theconfig.getNetworks()
-connections={}
-if networks:
-	f = BotFactory(Bot, corelogger, theconfig, classes)
-	f.svnrevision=svnrevision
-	for network in networks:
+
+class InstanceCommunication:
+	def __init__(self):
+		self.ins={}
+		self.logger=logging.getLogger("ipc")
+	def add(self,name,inst):
+		self.ins[name]=inst
+	def rm(self,name):
+		del(self.ins[name])
+	def get(self,name):
+		return self.ins[name]
+	def show(self):
+		corelogger.info(str(self.ins))
+	def getall(self):
+		return self.ins
+	def connectNetwork(self,network):
+		self.logger.info("Trying to connect to "+network)
 		if(theconfig.getBoolConfig('enabled', 'unset', 'main', network)):
-			password=theconfig.getConfig('password', '', 'main', network)
-			if(password!=""):
-				f.protocol.password=unicode(password).encode("iso-8859-1")
-			f.protocol.network=network
-
+			f = BotFactory(network, self, theconfig, classes)
 			servername=theconfig.getConfig("server", "localhost", "main", network)
 			if (theconfig.getBoolConfig('ssl','False','main',network)):
 				s = ssl.ClientContextFactory()
-				connections[network]=reactor.connectSSL(servername, int(theconfig.getConfig('port','6697','main',network)), f,s);
+				reactor.connectSSL(servername, int(theconfig.getConfig('port','6697','main',network)), f,s)
 			else:
-				connections[network]=reactor.connectTCP(servername, int(theconfig.getConfig('port','6667','main',network)), f)
-	reactor.run()
+				reactor.connectTCP(servername, int(theconfig.getConfig('port','6667','main',network)), f)
+		
+ipc=InstanceCommunication()
+
+for network in theconfig.getNetworks():
+	ipc.connectNetwork(network)
+reactor.run()
