@@ -17,6 +17,8 @@
 # (c) 2007 Robert Weidlich
 #
 
+from twisted.internet import reactor
+
 class controlInterface:
 	""" allows to control the behaviour of the bot during runtime
 	
@@ -93,39 +95,33 @@ class controlInterface:
 		return "The following modules are currently loaded: "+", ".join(module)
 	
 	def _cmd_stop(self,argument):
-		conns=self.bot.factory._getnetworkslist()
-		for c in conns:
-			self.bot.getFactory()._getnetwork(c).quit()
+		reactor.stop()
 		return "Disconnecting from all networks und exiting ..."
 	
 	def _cmd_network_disconnect(self,argument):
-		conns=self.bot.factory._getnetworkslist()
+		conns=self.bot.ipc.getall()
 		if argument != "":
 			if argument in conns:
-				self.bot.factory._getnetwork(argument).quit()
+				self.bot.ipc.get(argument).disconnect()
 				return "Disconnecting from "+str(argument)
 			else:
 				return "Not connected to "+str(argument)
 		else:
-			self.bot.quit("Bye.")
+			self.bot.disconnect()
 			return "Disconnecting from current network. Bye."
 	def _cmd_network_connect(self,argument):
 		args = argument.split(" ")
 		if len(args) < 1 or len(args) > 2:
 			return "Usage: connect irc.network.tld [port]"
 		else:
-			if len(args) == 2:
-				port=args[1]
-			else:
-				port=6667
-			c = self.bot.getReactor().connectTCP(args[0],port,self.bot.factory)
-			return "Connecting to "+str(c)
+			self.bot.ipc.connectNetwork(argument)
+			return "Connecting to "+str(argument)
 	def _cmd_network_list(self,argument):
-		return "Currently connected to: "+" ".join(self.bot.factory._getnetworkslist())
+		return "Currently connected to: "+" ".join(self.bot.ipc.getall())
 	def _cmd_network_current(self,argument):
 		return "Current network: "+self.bot.network
 	def _cmd_network_change(self,argument):
-		self.bot=self.bot.getFactory()._getnetwork(argument)
+		self.bot=self.bot.ipc.get(argument)
 		return "changed network to "+self.bot.network
 	
 	def _cmd_changenick(self,argument):

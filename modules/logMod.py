@@ -172,5 +172,5 @@ class chatMod(chatMod.chatMod):
 			net=self.bot.network.split(".")[-2]
 		self.logpath=Template(self.logpath).safe_substitute({'n':net})
 
-	def connectionLost(self, reason):
-		self.stop()
+#	def connectionLost(self, reason):
+#		self.stop()
