@@ -21,7 +21,7 @@
 #	   * configuring point of listening (TCP, SSL, Socket)
 #	   * clientapp
 
-from twisted.internet import protocol, error
+from twisted.internet import protocol, error, reactor
 from twisted.protocols import basic
 import chatMod
 from control import controlInterface
@@ -86,7 +86,7 @@ class chatMod(chatMod.chatMod):
 	def start(self):
 		self.f=BotProtocolFactory(self.bot)
 		try:
-			self.bot.getReactor().listenTCP(5022, self.f)
+			reactor.listenTCP(5022, self.f)
 		except (error.CannotListenError):
 			pass
 		

@@ -35,8 +35,8 @@ from botfactory import BotFactory
 from bot import Bot
 
 # some constants for paths, might be read from configfile in future
-path_log="var/otfbot.log"
-path_pid="var/otfbot.pid"
+path_log="otfbot.log"
+path_pid="otfbot.pid"
 path_cfg="etc/otfbot.yaml"
 path_mods="modules"
 path_data="data"
