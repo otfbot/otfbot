@@ -53,9 +53,11 @@ class config:
 		return list
 
 	#public
-	def __init__(self, logging, filename=None):
+	def __init__(self, mylogging=None, filename=None):
 		"""Initialize the config class and load a config"""
-		self.logger=logging.getLogger("config")
+		if mylogging==None:
+			mylogging=logging
+		self.logger=mylogging.getLogger("config")
 		self.generic_options={}
 		self.network_options={}
 		self.filename=filename
@@ -76,6 +78,15 @@ class config:
 			pass #does not exist
 	
 	def get(self, option, default, module=None, network=None, channel=None):
+			"""
+			get an option and set the default value, if the option is unset.
+
+			>>> c=config()
+			>>> c.get("option", "default")
+			'default'
+			>>> c.get("option", "unset?")
+			'default'
+			"""
 			if module:
 				option=module+"."+option
 
@@ -110,7 +121,20 @@ class config:
 			return default
 
 	def has(self, option, module=None):
-		"""test, in which networks/channels a option is set. Returns a tuple: (general_bool, network_list, (network, channel) list)"""
+		"""
+		test, in which networks/channels a option is set. 
+		Returns a tuple: (general_bool, network_list, (network, channel) list)
+
+		>>> c=config()
+		>>> c.has("testkey")
+		(False, [], [])
+		>>> c.set("testkey", "testvalue")
+		>>> c.has("testkey")
+		(True, [], [])
+		>>> c.set("testkey", "othervalue", network="samplenetwork")
+		>>> c.has("testkey")
+		(True, ['samplenetwork'], [])
+		"""
 		general=False
 		networks=[]
 		channels=[]
@@ -151,6 +175,15 @@ class config:
 			self.generic_options_default[option]=still_default
 
 	def delete(self, option, module=None, network=None, channel=None):
+		"""
+		>>> c=config()
+		>>> c.set("key", "value")
+		>>> c.get("key", "unset")
+		'value'
+		>>> c.delete("key")
+		>>> c.get("key", "unset")
+		'unset'
+		"""
 		if module:
 			option=module+"."+option
 		if network and channel:
@@ -210,6 +243,18 @@ class config:
 		else:
 			return datadir+"/"+value
 	def getBoolConfig(self, option, defaultvalue="", module=None, network=None, channel=None):
+		"""
+		>>> c=config()
+		>>> c.set("key", "1")
+		>>> c.set("key2", "on")
+		>>> c.set("key3", "True")
+		>>> c.getBoolConfig("key") and c.getBoolConfig("key2") and c.getBoolConfig("key3")
+		True
+		>>> c.set("key", "False")
+		>>> c.set("key2", "any string which is not in [True, true, on, On, 1]")
+		>>> c.getBoolConfig("key") or c.getBoolConfig("key2")
+		False
+		"""
 		return self.get(option, defaultvalue, module, network, channel) in ["True","true","On","on","1"]
 	
 	def writeConfig(self, configfile):
@@ -243,3 +288,6 @@ def loadConfig(myconfigfile, modulesconfigdir):
 		sys.exit(0)
 	return myconfig
 	
+if __name__ == '__main__':
+	import doctest
+	doctest.testmod()
