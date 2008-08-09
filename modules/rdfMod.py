@@ -157,7 +157,7 @@ class chatMod(chatMod.chatMod):
 		bot=self.bot
 
 	def command(self, user, channel, command, options):
-		if self.bot.auth(user) >= 10:
+		if self.bot.auth(user) <= 10:
 			self.logger.debug(user+" has no permission to enforce rdf refresh")
 			return
 		if not feedparser_available:
