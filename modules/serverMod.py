@@ -72,37 +72,51 @@ class server(IRCUser):
 		self.firstnick=True
 		self._apirunner=self.bot._apirunner
 	def connectionMade(self):
-		pass
+		self._apirunner("connectionMade")
 	def irc_PART(self, prefix, params):
-		self.part(self.getHostmask(), params[0])
+		self._apirunner("irc_PART", {"prefix": prefix, "params": params})
 	def irc_JOIN(self, prefix, params):
-		self.join(self.getHostmask(), params[0])
-		self.irc_NAMES("", params)
+		self._apirunner("irc_JOIN", {"prefix": prefix, "params": params})
 	def irc_PRIVMSG(self, prefix, params):
-		print params
+		self._apirunner("irc_PRIVMSG", {"prefix": prefix, "params": params})
 	def irc_NAMES(self, prefix, params):
-		self.names(self.name, params[0], [self.name, "er", "sie"])
+		self._apirunner("irc_NAMES", {"prefix": prefix, "params": params})
 	def irc_USER(self, prefix, params):
 		self.user=params[0]
 		self.hostname=params[2]
 		self.realname=params[3]
-		self.userlist=[
-				(self.user, self.getHostmask(), "server", self.name, "G", 1, "realname")
-				]
+		self._apirunner("irc_USER", {"prefix": prefix, "params": params})
+		#self.userlist=[
+		#		(self.user, self.getHostmask(), "server", self.name, "G", 1, "realname")
+		#		]
 	def irc_MODE(self, prefix, params):
-		pass
+		self._apirunner("irc_MODE", {"prefix": prefix, "params": params})
 	def irc_NICK(self, prefix, params):
 		self.name=params[0]
-		if self.firstnick:
-			self.userlist=[
-				(self.user, self.getHostmask(), "server", self.name, "G", 1, "realname")
-			]
-			self.irc_JOIN("", ["#control"])
-			self.firstnick=False
-		self.name=params[0]
+		#if self.firstnick:
+		#	self.userlist=[
+		#		(self.user, self.getHostmask(), "server", self.name, "G", 1, "realname")
+		#	]
+		#	self.irc_JOIN("", ["#control"])
+		#	self.firstnick=False
 		self.sendMessage("NICK", prefix=self.getHostmask())
+		self._apirunner("irc_NICK", {"prefix": prefix, "params": params})
 	def irc_WHO(self, prefix, params):
-		self.who(self.name, params[0], self.userlist)
+		self._apirunner("irc_WHO", {"prefix": prefix, "params": params})
+	def irc_PASS(self, prefix, params):
+		self._apirunner("irc_PASS", {"prefix": prefix, "params": params})
+	def irc_PING(self, prefix, params):
+		self._apirunner("irc_PING", {"prefix": prefix, "params": params})
+	def irc_PART(self, prefix, params):
+		self._apirunner("irc_PART", {"prefix": prefix, "params": params})
+	def irc_TOPIC(self, prefix, params):
+		self._apirunner("irc_TOPIC", {"prefix": prefix, "params": params})
+	def irc_WHOIS(self, prefix, params):
+		self._apirunner("irc_WHOIS", {"prefix": prefix, "params": params})
+	def irc_OPER(self, prefix, params):
+		self._apirunner("irc_OPER", {"prefix": prefix, "params": params})
+	def irc_LIST(self, prefix, params):
+		self._apirunner("irc_LIST", {"prefix": prefix, "params": params})
 	def getHostmask(self):
 		return "%s!%s@%s"%(self.name, self.user, self.hostname)
 
