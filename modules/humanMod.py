@@ -138,9 +138,9 @@ class serverMod:
 		else:
 			#query. TODO: network-nick here too, to get the network
 			#self.server.bot.ipc[network].sendmsg(params[0], params[1])
+			pass
 
 class chatMod(chatMod.chatMod):
-	connected=False
 	def __init__(self, bot):
 		self.bot=bot
 		self.enabled=self.bot.getBoolConfig("active", "False", "humanMod")
@@ -149,7 +149,8 @@ class chatMod(chatMod.chatMod):
 		self.f=ServerProtocolFactory(self)
 		
 	def msg(self, user, channel, msg):
-		self.bot.server.sendmsg(user, "#"+self.network+"-"+channel, msg)
+		if hasattr(self.bot, "server") and self.bot.server != None and self.bot.server.connected:
+			self.bot.server.sendmsg(user, "#"+self.network+"-"+channel, msg)
 	def query(self, user, channel, msg):
 		if not self.bot.server.connected:
 			return
