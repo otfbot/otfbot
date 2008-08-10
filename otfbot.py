@@ -180,6 +180,8 @@ class InstanceCommunication:
 		del(self.ins[name])
 	def get(self,name):
 		return self.ins[name]
+	def __getitem__(self, name):
+		return self.ins[name]
 	def show(self):
 		corelogger.info(str(self.ins))
 	def getall(self):

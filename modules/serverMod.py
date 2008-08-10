@@ -20,6 +20,7 @@ import chatMod
 from twisted.internet import reactor, protocol
 from twisted.words.protocols.irc import IRC
 from twisted.words.service import IRCUser
+import logging, traceback, sys
 
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
@@ -34,12 +35,6 @@ class ircServerFactory(protocol.ServerFactory):
 	def __init__(self):
 		self.protocol=server
 
-class serverMod:
-	def __init__(self, server):
-		pass
-	def start(self):
-		print "Hello World!"
-
 class server(IRCUser):
 	def __init__(self, bot):
 		self.bot=bot
@@ -47,11 +42,25 @@ class server(IRCUser):
 		self.user="user"
 		self.firstnick=True
 		self.mods=[]
+		self.logger=logging.getLogger("serverMod")
 		for c in self.bot.classes:
 			if hasattr(c, "serverMod"):
 				self.mods.append(c.serverMod(self))
 				self.mods[-1].name=c.__name__
 			self._apirunner("start")
+	def logerror(self, logger, module, exception):
+		""" format a exception nicely and pass it to the logger
+			@param logger: the logger instance to use
+			@param module: the module in which the exception occured
+			@type module: string
+			@param exception: the exception
+			@type exception: exception
+		"""
+		logger.error("Exception in Module "+module+": "+str(exception))
+		tb_list = traceback.format_tb(sys.exc_info()[2])
+		for entry in tb_list:
+			for line in entry.strip().split("\n"):
+				logger.error(line)
 	def _apirunner(self,apifunction,args={}):
 		"""
 			Pass all calls to modules callbacks through this method, they 
@@ -67,9 +76,10 @@ class server(IRCUser):
 		for mod in self.mods:
 			#if (args.has_key("channel") and args["channel"] in self.channels and mod.name in self.getConfig("modsEnabled",[],"main",self.network,args["channel"])) or not args.has_key("channel") or args["channel"] not in self.channels:
 			try:
-				getattr(mod,apifunction)(**args)
+				if hasattr(mod, apifunction):
+					getattr(mod,apifunction)(**args)
 			except Exception, e:
-				pass #self.logerror(self.logger, mod.name, e)
+				self.logerror(self.logger, mod.name, e)
 	def connectionMade(self):
 		self._apirunner("connectionMade")
 	def irc_PART(self, prefix, params):
