@@ -34,12 +34,9 @@ class BotFactory(protocol.ReconnectingClientFactory):
 
 	def clientConnectionLost(self, connector, reason):
 		self.ipc.rm(self.network)
-		clean = error.ConnectionDone()
-		if reason.getErrorMessage() == str(clean):
-			self.logger.info("Cleanly disconnected from "+connector.host)
-		else:
-			self.logger.error("Disconnected from "+connector.host+": "+str(reason.getErrorMessage())+".")
-			#protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
+		if not reason.check(error.ConnectionDone):
+			self.logger.error("Got disconnected from "+connector.host+": "+str(reason.getErrorMessage()))
+			protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
 		
 	def clientConnectionFailed(self, connector, reason):
 		self.logger.error("Connection to "+connector.host+" failed: "+str(reason.getErrorMessage()))
