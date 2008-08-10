@@ -124,11 +124,20 @@ class serverMod:
 	def irc_USER(self, prefix, params):
 		for network in self.server.bot.ipc.getall():
 			bot=self.server.bot.ipc[network]
+			bot.server=self.server
 			for channel in bot.channels:
 				self.server.join(self.server.getHostmask(), "#"+network+"-"+channel)
 				self.mychannels.append("#"+network+"-"+channel)
 	def sendmsg(self, user, channel, msg):
 		self.server.privmsg(user, channel, msg)
+	def irc_PRIVMSG(self, prefix, params):
+		if params[0][0]=="#":
+			if params[0] in self.mychannels:
+				(network, channel)=params[0][1:].split("-",1)
+				self.server.bot.ipc[network].sendmsg(channel, params[1])
+		else:
+			#query. TODO: network-nick here too, to get the network
+			#self.server.bot.ipc[network].sendmsg(params[0], params[1])
 
 class chatMod(chatMod.chatMod):
 	connected=False
@@ -139,26 +148,17 @@ class chatMod(chatMod.chatMod):
 			return
 		self.f=ServerProtocolFactory(self)
 		
-	#def start(self):
-	#	if not self.enabled:
-	#		return
-	#	self.bot.getReactor().listenTCP(6667, self.f)
-	
-	#def lineReceived(self, line):
-	#	if self.connected and self.f.proto.loggedin:
-	#		self.f.proto.sendLine(line)
 	def msg(self, user, channel, msg):
-		#if not (server.connected and self.f.proto.loggedin):
-		#	return
-		#if string.lower(user) == string.lower(self.bot.nickname):
-		print user, self.network, channel, msg
-		self.bot.server.sendMessage("PRIVMSG", "#control", ":"+msg, prefix=user)
-		self.bot.server.privmsg(user, "#control", msg)
-		print user, channel, msg
+		self.bot.server.sendmsg(user, "#"+self.network+"-"+channel, msg)
 	def query(self, user, channel, msg):
-		if not (self.connected and self.f.proto.loggedin):
+		if not self.bot.server.connected:
 			return
-		if string.lower(user) == string.lower(self.bot.nickname) and self.f.proto:
+		#if string.lower(user) == string.lower(self.bot.nickname) and self.f.proto:
 			#TODO FIXME: this is a workaround. the external irc client does not recognize own messages from queries (xchat)
 			#or are just the parameters wrong? so it will show the foreign nick, but prefix the message with <botnick>
-			self.f.proto.sendMessage("PRIVMSG", channel, ":<"+self.bot.nickname+"> "+msg, prefix=channel)
+		#if not (server.connected and self.f.proto.loggedin):
+		#	return
+		if string.lower(user) == string.lower(self.bot.nickname):
+			self.bot.server.sendmsg(user, self.bot.server.name, "<"+self.bot.nickname+"> "+msg)
+		else:
+			self.bot.server.sendmsg(user, self.bot.server.name, msg)
