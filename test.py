@@ -12,10 +12,7 @@ if len(args)!=1:
 import doctest
 try:
 	module=__import__(args[0])
-	finder=doctest.DocTestFinder()
-	runner=doctest.DebugRunner(verbose=True)
-	for test in finder.find(module):
-		runner.run(test)
+	doctest.testmod(module)
 except ImportError:
 	print "import error for module \"%s\""%args[0]
 
