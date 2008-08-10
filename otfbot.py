@@ -153,7 +153,7 @@ def createClassList():
 		theconfig.set("modsEnabled", [i.__name__ for i in classes], "main")
 
 if not theconfig: #file could not be loaded, i.e at first start
-	theconfig=config.config(logging)
+	theconfig=config.config()
 	theconfig.set('enabled', 'false', 'main', 'samplenetwork')
 	theconfig.set('server', 'localhost', 'main', 'samplenetwork')
 	theconfig.set('enabled', 'false', 'main', 'samplenetwork', '#example')
