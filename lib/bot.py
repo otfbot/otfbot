@@ -50,7 +50,7 @@ class Bot(irc.IRCClient):
 		self.realname=self.getConfig("realname", "A Bot", "main", self.network)
 		self.password=self.getConfig('password', None, 'main', network)
 	
-		self.mods = []
+		self.mods = {}
 		self.numMods = 0
 
 		self.versionName="OtfBot"
@@ -76,7 +76,7 @@ class Bot(irc.IRCClient):
 			@type	args:	dict
 			@param	args:	the arguments for the callback
 		"""
-		for mod in self.mods:
+		for mod in self.mods.values():
 			if (args.has_key("channel") and args["channel"] in self.channels and mod.name in self.getConfig("modsEnabled",[],"main",self.network,args["channel"])) or not args.has_key("channel") or args["channel"] not in self.channels:
 				try:
 					getattr(mod,apifunction)(**args)
@@ -90,9 +90,9 @@ class Bot(irc.IRCClient):
 		"""
 		for chatModule in self.classes:
 			#if self.getConfig("enabled","true",chatModule.__name__,self.network)
-			self.mods.append( chatModule.chatMod(self) )
-			self.mods[-1].setLogger(self.logger)
-			self.mods[-1].name = chatModule.__name__
+			self.mods[chatModule.__name__]=chatModule.chatMod(self)
+			self.mods[chatModule.__name__].setLogger(self.logger)
+			self.mods[chatModule.__name__].name=chatModule.__name__
 		self._apirunner("start")
 
 	# configstuff, should maybe be moved to a config-instance at self.config
@@ -140,7 +140,7 @@ class Bot(irc.IRCClient):
 			@return: the level of access rights (0 = nothing, 10 = everything)
 		"""
 		level=0
-		for mod in self.mods:
+		for mod in self.mods.values():
 			try:
 				retval=mod.auth(user)
 				if retval > level:
@@ -199,12 +199,12 @@ class Bot(irc.IRCClient):
 		for chatModule in self.classes:
 			self.logger.info("reloading "+chatModule.__name__)
 			reload(chatModule)
-		for chatMod in self.mods:
+		for chatMod in self.mods.values():
 			try:
 				chatMod.stop()
 			except Exception, e:
 				self.logerror(self.logger, mod.name, e)
-		self.mods=[]
+		self.mods={}
 		self.startMods()	
 	
 	# Callbacks
@@ -219,7 +219,7 @@ class Bot(irc.IRCClient):
 		self.nickname=unicode(self.getConfig("nickname", "OtfBot", 'main', self.network)).encode("iso-8859-1")
 		self.logger.info("made connection to "+self.transport.addr[0])
 		irc.IRCClient.connectionMade(self)
-		for mod in self.mods:
+		for mod in self.mods.values():
 			mod.setLogger(self.logger)
 			mod.network=self.network
 		self._apirunner("connectionMade")
