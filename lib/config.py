@@ -53,11 +53,9 @@ class config:
 		return list
 
 	#public
-	def __init__(self, mylogging=None, filename=None):
+	def __init__(self, filename=None):
 		"""Initialize the config class and load a config"""
-		if mylogging==None:
-			mylogging=logging
-		self.logger=mylogging.getLogger("config")
+		self.logger=logging.getLogger("config")
 		self.generic_options={}
 		self.network_options={}
 		self.filename=filename
@@ -263,10 +261,10 @@ class config:
 		file.close()
 def loadConfig(myconfigfile, modulesconfigdir):
 	if os.path.exists(myconfigfile):
-		myconfig=config(logging, myconfigfile)
+		myconfig=config(myconfigfile)
 		for file in os.listdir(modulesconfigdir):
 			if len(file)>=4 and file[-4:]==".yaml":
-				tmp=config(logging, modulesconfigdir+"/"+file)
+				tmp=config(modulesconfigdir+"/"+file)
 				for option in tmp.generic_options.keys():
 					if not myconfig.has(option):
 						myconfig.set(tmp.get(option, ""), still_default=True)
