@@ -117,6 +117,19 @@ class ServerProtocolFactory(protocol.ServerFactory):
 			self.mod.connected=True
 			return proto
 
+class serverMod:
+	def __init__(self, server):
+		self.server=server
+		self.mychannels=[]
+	def irc_USER(self, prefix, params):
+		for network in self.server.bot.ipc.getall():
+			bot=self.server.bot.ipc[network]
+			for channel in bot.channels:
+				self.server.join(self.server.getHostmask(), "#"+network+"-"+channel)
+				self.mychannels.append("#"+network+"-"+channel)
+	def sendmsg(self, user, channel, msg):
+		self.server.privmsg(user, channel, msg)
+
 class chatMod(chatMod.chatMod):
 	connected=False
 	def __init__(self, bot):
@@ -126,19 +139,22 @@ class chatMod(chatMod.chatMod):
 			return
 		self.f=ServerProtocolFactory(self)
 		
-	def start(self):
-		if not self.enabled:
-			return
-		self.bot.getReactor().listenTCP(6667, self.f)
+	#def start(self):
+	#	if not self.enabled:
+	#		return
+	#	self.bot.getReactor().listenTCP(6667, self.f)
 	
-	def lineReceived(self, line):
-		if self.connected and self.f.proto.loggedin:
-			self.f.proto.sendLine(line)
+	#def lineReceived(self, line):
+	#	if self.connected and self.f.proto.loggedin:
+	#		self.f.proto.sendLine(line)
 	def msg(self, user, channel, msg):
-		if not (self.connected and self.f.proto.loggedin):
-			return
-		if string.lower(user) == string.lower(self.bot.nickname):
-			self.f.proto.sendMessage("PRIVMSG", channel, ":"+msg, prefix=self.f.proto.hostmask)
+		#if not (server.connected and self.f.proto.loggedin):
+		#	return
+		#if string.lower(user) == string.lower(self.bot.nickname):
+		print user, self.network, channel, msg
+		self.bot.server.sendMessage("PRIVMSG", "#control", ":"+msg, prefix=user)
+		self.bot.server.privmsg(user, "#control", msg)
+		print user, channel, msg
 	def query(self, user, channel, msg):
 		if not (self.connected and self.f.proto.loggedin):
 			return
