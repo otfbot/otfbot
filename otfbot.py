@@ -145,6 +145,20 @@ except AttributeError:
 	configfile=path_cfg
 modulesconfigdir=path_mods #TODO: configuration-option(?)
 theconfig=config.loadConfig(configfile, modulesconfigdir)
+if not theconfig: #file could not be loaded, i.e at first start
+	theconfig=config.config(logging)
+	theconfig.set('enabled', 'false', 'main', 'samplenetwork')
+	theconfig.set('server', 'localhost', 'main', 'samplenetwork')
+	theconfig.set('enabled', 'false', 'main', 'samplenetwork', '#example')
+	theconfig.set('nickname', 'OtfBot', 'main')
+	theconfig.set('encoding', 'UTF-8', 'main')
+	theconfig.set('pidfile','otfbot.pid','main')
+		
+	theconfig.writeConfig(configfile)
+	#no logger here: the user needs to read this on console, not in logfile
+	print "Default Settings loaded."
+	print "Edit "+configfile+" to configure the bot."
+	sys.exit(0)
 
 # writing PID-File
 pidfile=theconfig.getConfig('pidfile',path_pid,'main')
