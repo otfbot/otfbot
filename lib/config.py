@@ -148,7 +148,7 @@ class config:
 
 		for network in self.network_options.keys():
 			for channel in self.network_options[network].keys():
-				if type(channel)==type({}):
+				if type(self.network_options[network][channel])==type({}):
 					if option in self.network_options[network][channel].keys():
 						channels.append((network, channel))
 		return (general, networks, channels)
