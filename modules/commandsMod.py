@@ -63,6 +63,20 @@ class chatMod(chatMod.chatMod):
 			return ""
 
 	def respond(self, channel, user, command, options):
+		"""
+		respond to a command, substituting USER by the actual user
+		and OTHER by the given options
+
+		>>> c=chatMod(None)
+		>>> c.commands={} #just for the example to work
+		>>> c.commands['general']={"test": "USER wanted a test", "test_": "USER wanted to show OTHER how it works"}
+		>>> c.commands['network']={}
+		>>> #example begins here:
+		>>> c.respond("", "testuser", "test", "")
+		'testuser wanted a test'
+		>>> c.respond("", "testuser", "test", "you")
+		'testuser wanted to show you how it works'
+		"""
 		answer = ""
 		if len(options) >1:
 			answer=self.getCommand(channel, command+"_")
