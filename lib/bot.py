@@ -78,7 +78,7 @@ class Bot(irc.IRCClient):
 			@param	args:	the arguments for the callback
 		"""
 		for mod in self.mods:
-			if (args.has_key("channel") and args["channel"] in self.channels and self.getBoolConfig("enabled","True",mod.name,self.network,args["channel"])) or not args.has_key("channel") or args["channel"] not in self.channels:
+			if (args.has_key("channel") and args["channel"] in self.channels and mod.name in self.getConfig("modsEnabled",[],"main",self.network,args["channel"])) or not args.has_key("channel") or args["channel"] not in self.channels:
 				try:
 					getattr(mod,apifunction)(**args)
 				except Exception, e:
