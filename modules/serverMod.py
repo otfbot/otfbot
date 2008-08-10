@@ -28,8 +28,6 @@ class chatMod(chatMod.chatMod):
 	def start(self):
 		if not self.bot.getBoolConfig("active", "False", "serverMod"):
 			return
-		self.server=server(self.bot)
-		self.bot.server=self.server
 		reactor.listenTCP(6667, ircServerFactory(self.bot))
 
 class server(IRCUser):
@@ -125,6 +123,9 @@ class server(IRCUser):
 		self._apirunner("irc_LIST", {"prefix": prefix, "params": params})
 	def getHostmask(self):
 		return "%s!%s@%s"%(self.name, self.user, self.hostname)
+	def sendmsg(self, user, channel, msg):
+		if self.connected:
+			self.privmsg(user, channel, msg)
 
 class ircServerFactory(protocol.ServerFactory):
 	def __init__(self, bot):
@@ -134,4 +135,5 @@ class ircServerFactory(protocol.ServerFactory):
 		proto=self.protocol(self.bot)
 		proto.connected=True
 		proto.factory=self
+		self.bot.server=proto
 		return proto
