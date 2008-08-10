@@ -19,7 +19,7 @@
 
 import chatMod
 import time
-import urlutils
+import urlutils, logging
 feedparser_available=True
 try:
 	import feedparser
@@ -31,7 +31,8 @@ class chatMod(chatMod.chatMod):
 
 		self.bot = bot
 		self.end = False
-		self.logger = self.bot.logging.getLogger("rdfMod")
+		# TODO:add a start()-method with the following 3 lines
+		self.logger = logging.getLogger("rdfMod")
 		if not feedparser_available:
 			self.logger.error("feedparser module not installed. rdfMod disabled.")
 		

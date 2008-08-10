@@ -241,7 +241,6 @@ class citeResponder(responder):
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
-		self.logger=self.bot.logger
 
 	def start(self):
 		self.channels=[]

@@ -59,8 +59,7 @@ class Bot(irc.IRCClient):
 		self.modchars={'a':'!','o':'@','h':'%','v':'+'}
 		self.modcharvals={'!':4,'@':3,'%':2,'+':1,' ':0}
 
-		self.logging = logging
-		self.logger = logging.getLogger("core")
+		self.logger = logging.getLogger(self.network)
 		self.logger.info("Starting new Botinstance")
 		self.scheduler = scheduler.Scheduler()
 		self.startMods()
@@ -218,7 +217,6 @@ class Bot(irc.IRCClient):
 		if tmp:
 			self.channels=tmp
 		self.nickname=unicode(self.getConfig("nickname", "OtfBot", 'main', self.network)).encode("iso-8859-1")
-		self.logger = self.logging.getLogger(self.network)
 		self.logger.info("made connection to "+self.transport.addr[0])
 		irc.IRCClient.connectionMade(self)
 		for mod in self.mods:
