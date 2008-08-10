@@ -131,7 +131,6 @@ theconfig=config.loadConfig(configfile, modulesconfigdir)
 
 def createClassList():
 	if theconfig.hasConfig("modsEnabled", "main")[0]==False: #TODO: how to handle if only classes have module-lists?
-		print [i.__name__ for i in classes]
 		theconfig.set("modsEnabled", [i.__name__ for i in classes], "main")
 
 if not theconfig: #file could not be loaded, i.e at first start
