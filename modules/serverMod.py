@@ -24,34 +24,10 @@ from twisted.words.service import IRCUser
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
-		self.mods=[]
-	def _apirunner(self,apifunction,args={}):
-		"""
-			Pass all calls to modules callbacks through this method, they 
-			are checked whether they should be executed or not.
-			
-			Example C{self._apirunner("privmsg",{"user":user,"channel":channel,"msg":msg})}
-			
-			@type	apifunction: string
-			@param	apifunction: the name of the callback function
-			@type	args:	dict
-			@param	args:	the arguments for the callback
-		"""
-		for mod in self.mods:
-			#if (args.has_key("channel") and args["channel"] in self.channels and mod.name in self.getConfig("modsEnabled",[],"main",self.network,args["channel"])) or not args.has_key("channel") or args["channel"] not in self.channels:
-			try:
-				getattr(mod,apifunction)(**args)
-			except Exception, e:
-				pass #self.logerror(self.logger, mod.name, e)
 	def start(self):
 		if not self.bot.getBoolConfig("active", "False", "serverMod"):
 			return
 		self.server=server(self.bot)
-		for c in self.bot.classes:
-			if hasattr(c, "serverMod"):
-				self.mods.append(c.serverMod(self.server))
-				self.mods[-1].name=c.__name__
-			self._apirunner("start")
 		reactor.listenTCP(6667, ircServerFactory(self.bot))
 
 class ircServerFactory(protocol.ServerFactory):
@@ -70,7 +46,30 @@ class server(IRCUser):
 		self.name="nickname"
 		self.user="user"
 		self.firstnick=True
-		self._apirunner=self.bot._apirunner
+		self.mods=[]
+		for c in self.bot.classes:
+			if hasattr(c, "serverMod"):
+				self.mods.append(c.serverMod(self))
+				self.mods[-1].name=c.__name__
+			self._apirunner("start")
+	def _apirunner(self,apifunction,args={}):
+		"""
+			Pass all calls to modules callbacks through this method, they 
+			are checked whether they should be executed or not.
+			
+			Example C{self._apirunner("privmsg",{"user":user,"channel":channel,"msg":msg})}
+			
+			@type	apifunction: string
+			@param	apifunction: the name of the callback function
+			@type	args:	dict
+			@param	args:	the arguments for the callback
+		"""
+		for mod in self.mods:
+			#if (args.has_key("channel") and args["channel"] in self.channels and mod.name in self.getConfig("modsEnabled",[],"main",self.network,args["channel"])) or not args.has_key("channel") or args["channel"] not in self.channels:
+			try:
+				getattr(mod,apifunction)(**args)
+			except Exception, e:
+				pass #self.logerror(self.logger, mod.name, e)
 	def connectionMade(self):
 		self._apirunner("connectionMade")
 	def irc_PART(self, prefix, params):
