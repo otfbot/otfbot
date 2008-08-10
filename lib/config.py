@@ -271,22 +271,9 @@ def loadConfig(myconfigfile, modulesconfigdir):
 					if not myconfig.has(option):
 						myconfig.set(tmp.get(option, ""), still_default=True)
 	
+		return myconfig
 	else:
-		myconfig=config(logging)
-		
-		myconfig.set('enabled', 'false', 'main', 'samplenetwork')
-		myconfig.set('server', 'localhost', 'main', 'samplenetwork')
-		myconfig.set('enabled', 'false', 'main', 'samplenetwork', '#example')
-		myconfig.set('nickname', 'OtfBot', 'main')
-		myconfig.set('encoding', 'UTF-8', 'main')
-		myconfig.set('pidfile','otfbot.pid','main')
-		
-		myconfig.writeConfig(myconfigfile)
-		#no logger here: the user needs to read this on console, not in logfile
-		print "Default Settings loaded."
-		print "Edit "+myconfigfile+" to configure the bot."
-		sys.exit(0)
-	return myconfig
+		return None
 	
 if __name__ == '__main__':
 	import doctest
