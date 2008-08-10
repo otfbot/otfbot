@@ -19,20 +19,13 @@
 # (c) 2006 by Robert Weidlich
 # 
 
-"""Chat Bot"""
+"""OTFBot"""
 
-# standard Python libs
-import os, random, string, re, sys, atexit, time
-# libs from Python twisted
-from twisted.words.protocols import irc
-from twisted.internet import reactor, protocol, error, ssl
-
-# Path for auxilary libs of otfbot
-sys.path.insert(1,"lib")
-# modules from otfbot
+import os, sys, atexit
+from twisted.internet import reactor, error, ssl
+sys.path.insert(1,"lib") # Path for auxilary libs of otfbot
 import functions, config
 from botfactory import BotFactory
-from bot import Bot
 
 # some constants for paths, might be read from configfile in future
 path_log="otfbot.log"
@@ -46,18 +39,8 @@ sys.path.insert(1,path_mods)
 
 ###############################################################################
 # Parse commandline options
-from optparse import OptionParser
-parser = OptionParser()
-parser.add_option("-c","--config",dest="configfile",metavar="FILE",help="Location of configfile",type="string")
-parser.add_option("-d","--debug",dest="debug",metavar="LEVEL",help="Show debug messages of level LEVEL (10, 20, 30, 40 or 50). Implies -f.", type="int", default=0)
-parser.add_option("-f","--nodetach",dest="foreground",help="Do not fork into background.",action="store_true", default=False)
-
-parser.add_option("-u","--user",dest="userid",help="if run as root, the bot needs a userid to chuid to.",type="int", default=0)
-parser.add_option("-g","--group",dest="groupid",help="if run as root, the bot needs a groupid to chgid to.",type="int", default=0)
-
-(options,args)=parser.parse_args()
-if options.debug and options.debug not in (10,20,30,40,50):
-	parser.error("Unknown value for --debug")
+import cmdlineparser
+(options, args) = cmdlineparser.parse()
 ###############################################################################
 #check for root rights
 if os.getuid()==0:
@@ -139,9 +122,9 @@ for file in os.listdir(path_mods):
 # some config functions
 theconfig=None
 
-try:
-	configfile=parser.configfile
-except AttributeError:
+if options.configfile != None:
+	configfile=options.configfile
+else:
 	configfile=path_cfg
 modulesconfigdir=path_mods #TODO: configuration-option(?)
 theconfig=config.loadConfig(configfile, modulesconfigdir)
