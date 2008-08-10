@@ -29,11 +29,8 @@ class chatMod(chatMod.chatMod):
 		if not self.bot.getBoolConfig("active", "False", "serverMod"):
 			return
 		self.server=server(self.bot)
+		self.bot.server=self.server
 		reactor.listenTCP(6667, ircServerFactory(self.bot))
-
-class ircServerFactory(protocol.ServerFactory):
-	def __init__(self):
-		self.protocol=server
 
 class server(IRCUser):
 	def __init__(self, bot):
@@ -41,12 +38,12 @@ class server(IRCUser):
 		self.name="nickname"
 		self.user="user"
 		self.firstnick=True
-		self.mods=[]
+		self.mods={}
 		self.logger=logging.getLogger("serverMod")
 		for c in self.bot.classes:
 			if hasattr(c, "serverMod"):
-				self.mods.append(c.serverMod(self))
-				self.mods[-1].name=c.__name__
+				self.mods[c.__name__]=c.serverMod(self)
+				self.mods[c.__name__].name=c.__name__
 			self._apirunner("start")
 	def logerror(self, logger, module, exception):
 		""" format a exception nicely and pass it to the logger
@@ -73,7 +70,7 @@ class server(IRCUser):
 			@type	args:	dict
 			@param	args:	the arguments for the callback
 		"""
-		for mod in self.mods:
+		for mod in self.mods.values():
 			#if (args.has_key("channel") and args["channel"] in self.channels and mod.name in self.getConfig("modsEnabled",[],"main",self.network,args["channel"])) or not args.has_key("channel") or args["channel"] not in self.channels:
 			try:
 				if hasattr(mod, apifunction):
@@ -102,16 +99,16 @@ class server(IRCUser):
 		self._apirunner("irc_MODE", {"prefix": prefix, "params": params})
 	def irc_NICK(self, prefix, params):
 		self.name=params[0]
-		#if self.firstnick:
-		#	self.userlist=[
-		#		(self.user, self.getHostmask(), "server", self.name, "G", 1, "realname")
-		#	]
-		#	self.irc_JOIN("", ["#control"])
-		#	self.firstnick=False
 		self.sendMessage("NICK", prefix=self.getHostmask())
 		self._apirunner("irc_NICK", {"prefix": prefix, "params": params})
 	def irc_WHO(self, prefix, params):
 		self._apirunner("irc_WHO", {"prefix": prefix, "params": params})
+	def irc_QUIT(self, prefix, params):
+		self._apirunner("irc_QUIT", {"prefix": prefix, "params": params})
+		self.connected=False
+	def connectionLost(self, reason):
+		self._apirunner("irc_QUIT", {"reason": reason})
+		self.connected=False
 	def irc_PASS(self, prefix, params):
 		self._apirunner("irc_PASS", {"prefix": prefix, "params": params})
 	def irc_PING(self, prefix, params):
@@ -135,4 +132,6 @@ class ircServerFactory(protocol.ServerFactory):
 		self.bot=bot
 	def buildProtocol(self, addr):
 		proto=self.protocol(self.bot)
+		proto.connected=True
+		proto.factory=self
 		return proto
