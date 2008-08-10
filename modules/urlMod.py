@@ -35,6 +35,7 @@ class chatMod(chatMod.chatMod):
 
 	def command(self, user, channel, command, options):
 		response = ""
+		self.parser= titleExtractor()
 		if command == "preview" or command == "tinyurl+preview":
 			try:
 				self.parser.feed(urlutils.download(options))
