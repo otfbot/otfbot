@@ -165,7 +165,7 @@ class citeResponder(responder):
 			self.db=MySQLdb.connect(host=self.host, user=self.user, passwd=self.passwd, db=self.database)
 			self.cursor=self.db.cursor()
 		except MySQLdb.OperationalError:
-			raise "boterror", "Error Connecting the DB"
+			raise Exception("boterror", "Error Connecting the DB")
 		self.cursor.execute("SHOW TABLES;");
 		tmp=self.cursor.fetchall()
 		#get list of tables

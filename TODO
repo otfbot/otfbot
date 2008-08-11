@@ -14,7 +14,7 @@ modules:
 * extent modules-api
 * let modules register their commands
 * http://peak.telecommunity.com/DevCenter/PythonEggs
-* load/unload/reload single modules while the bot is running
+* load/unload single modules while the bot is running
 logMod:
 * make logfilerotation working (should work, if needed more exactly use scheduler)
 kiMod:
