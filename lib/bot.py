@@ -77,12 +77,12 @@ class Bot(irc.IRCClient):
 			@param	args:	the arguments for the callback
 		"""
 		for mod in self.mods.values():
-			if (args.has_key("channel") and args["channel"] in self.channels and mod.name in self.getConfig("modsEnabled",[],"main",self.network,args["channel"])) or not args.has_key("channel") or args["channel"] not in self.channels:
-				try:
-					if hasattr(mod, apifunction):
-						getattr(mod,apifunction)(**args)
-				except Exception, e:
-					self.logerror(self.logger, mod.name, e)
+			#if (args.has_key("channel") and args["channel"] in self.channels and mod.name in self.getConfig("modsEnabled",[],"main",self.network,args["channel"])) or not args.has_key("channel") or args["channel"] not in self.channels:
+			try:
+				if hasattr(mod, apifunction):
+					getattr(mod,apifunction)(**args)
+			except Exception, e:
+				self.logerror(self.logger, mod.name, e)
 	
 	# public API
 	def startMods(self):
@@ -91,12 +91,13 @@ class Bot(irc.IRCClient):
 		"""
 		for chatModule in self.classes:
 			#if self.getConfig("enabled","true",chatModule.__name__,self.network)
-			if hasattr(chatModule, "chatMod"):
-				self.mods[chatModule.__name__]=chatModule.chatMod(self)
-				self.mods[chatModule.__name__].setLogger(self.logger)
-				self.mods[chatModule.__name__].name=chatModule.__name__
-				if hasattr(self, "network"): #needed for reload!
-					self.mods[chatModule.__name__].network=self.network
+			if chatModule.__name__ in self.getConfig("modsEnabled", [], "main", self.network):
+				if hasattr(chatModule, "chatMod"):
+					self.mods[chatModule.__name__]=chatModule.chatMod(self)
+					self.mods[chatModule.__name__].setLogger(self.logger)
+					self.mods[chatModule.__name__].name=chatModule.__name__
+					if hasattr(self, "network"): #needed for reload!
+						self.mods[chatModule.__name__].network=self.network
 		self._apirunner("start")
 
 	# configstuff, should maybe be moved to a config-instance at self.config
