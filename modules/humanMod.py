@@ -82,6 +82,7 @@ class ServerProtocol(basic.LineOnlyReceiver):
 			#self.sendMessage(irc.RPL_CREATED+" "+self.nickname,":This server was created on %(creationDate)s",prefix="localhost")
 			self.mod.bot.sendLine("VERSION")
 			self.sendMessage("NICK",":"+self.mod.bot.nickname,prefix=self.hostmask)
+
 			self.hostmask=self.mod.bot.nickname+"!"+args[0]+"@"+self.transport.client[0];
 			
 			for c in self.mod.bot.channels:
@@ -135,9 +136,10 @@ class serverMod:
 			if params[0] in self.mychannels:
 				(network, channel)=params[0][1:].split("-",1)
 				self.server.bot.ipc[network].sendmsg(channel, params[1])
-		else:
+		elif "-" in params[0]:
 			#query. TODO: network-nick here too, to get the network
-			#self.server.bot.ipc[network].sendmsg(params[0], params[1])
+			(network, nick)=params[0].split("-", 1)
+			self.server.bot.ipc[network].sendmsg(nick, params[1])
 			pass
 
 class chatMod(chatMod.chatMod):
@@ -154,12 +156,10 @@ class chatMod(chatMod.chatMod):
 	def query(self, user, channel, msg):
 		if not self.bot.server.connected:
 			return
-		#if string.lower(user) == string.lower(self.bot.nickname) and self.f.proto:
-			#TODO FIXME: this is a workaround. the external irc client does not recognize own messages from queries (xchat)
-			#or are just the parameters wrong? so it will show the foreign nick, but prefix the message with <botnick>
-		#if not (server.connected and self.f.proto.loggedin):
-		#	return
+		#TODO FIXME: this is a workaround. the external irc client does not recognize own messages from queries (xchat)
+		#or are just the parameters wrong? so it will show the foreign nick, but prefix the message with <botnick>
 		if string.lower(user) == string.lower(self.bot.nickname):
-			self.bot.server.sendmsg(user, self.bot.server.name, "<"+self.bot.nickname+"> "+msg)
+			self.bot.server.sendmsg(self.network+"-"+channel, self.bot.server.name, "< %s> "%self.bot.nickname+msg)
 		else:
-			self.bot.server.sendmsg(user, self.bot.server.name, msg)
+			#self.bot.server.sendmsg(self.network+"-"+user, self.bot.server.name, msg)
+			self.bot.server.sendmsg(self.network+"-"+user, self.bot.server.name, "< %s> "%user.split("!")[0]+msg)
