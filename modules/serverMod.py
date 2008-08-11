@@ -37,7 +37,7 @@ class serverMod:
 	def irc_USER(self, prefix, params):
 		self.server.sendMessage(irc.RPL_WELCOME, ":connected to OTFBot IRC", prefix="localhost")
 		self.server.sendMessage(irc.RPL_YOURHOST, ":Your host is %(serviceName)s, running version %(serviceVersion)s" % {"serviceName": self.server.transport.server.getHost(),"serviceVersion": self.server.bot.versionNum},prefix="localhost")
-		self.server.sendMessage("NICK", ":"+self.server.bot.nickname, prefix=self.server.getHostmask())
+		self.server.sendMessage("NICK", ":"+self.server.bot.nickname, prefix=self.server.getHostmask())#, prefix=self.server.getHostmask())
 
 class server(IRCUser):
 	def __init__(self, bot):
@@ -140,9 +140,10 @@ class ircServerFactory(protocol.ServerFactory):
 	def __init__(self, bot):
 		self.protocol=server
 		self.bot=bot
+		self.bot.servers=[]
 	def buildProtocol(self, addr):
 		proto=self.protocol(self.bot)
 		proto.connected=True
 		proto.factory=self
-		self.bot.server=proto
+		self.bot.servers.append(proto)
 		return proto

@@ -151,15 +151,17 @@ class chatMod(chatMod.chatMod):
 		self.f=ServerProtocolFactory(self)
 		
 	def msg(self, user, channel, msg):
-		if hasattr(self.bot, "server") and self.bot.server != None and self.bot.server.connected:
-			self.bot.server.sendmsg(user, "#"+self.network+"-"+channel, msg)
+		for server in self.bot.servers:
+			if server.connected:
+				server.sendmsg(user, "#"+self.network+"-"+channel, msg)
 	def query(self, user, channel, msg):
-		if not self.bot.server.connected:
-			return
 		#TODO FIXME: this is a workaround. the external irc client does not recognize own messages from queries (xchat)
 		#or are just the parameters wrong? so it will show the foreign nick, but prefix the message with <botnick>
-		if string.lower(user) == string.lower(self.bot.nickname):
-			self.bot.server.sendmsg(self.network+"-"+channel, self.bot.server.name, "< %s> "%self.bot.nickname+msg)
-		else:
-			#self.bot.server.sendmsg(self.network+"-"+user, self.bot.server.name, msg)
-			self.bot.server.sendmsg(self.network+"-"+user, self.bot.server.name, "< %s> "%user.split("!")[0]+msg)
+		for server in self.bot.servers:
+			if not server.connected:
+				return
+			if string.lower(user) == string.lower(self.bot.nickname):
+				server.sendmsg(self.network+"-"+channel, server.name, "< %s> "%self.bot.nickname+msg)
+			else:
+				#server.sendmsg(self.network+"-"+user, self.bot.server.name, msg)
+				server.sendmsg(self.network+"-"+user, server.name, "< %s> "%user.split("!")[0]+msg)
