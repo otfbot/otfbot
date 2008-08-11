@@ -19,7 +19,25 @@ class serverMod:
 				self.server.privmsg(self.server.getHostmask(), "#control", "Topics: commands, config. type help <topic> for more help.")
 			elif msg=="help commands":
 				self.server.privmsg(self.server.getHostmask(), "#control", "\"say servertag #channelname something\" - say something")
+				self.server.privmsg(self.server.getHostmask(), "#control", "\"connect servertag\" - connect to a known server")
+				self.server.privmsg(self.server.getHostmask(), "#control", "\"connect servertag irc.hostname.example\" - connect to a new server at irc.hostname.example")
+				self.server.privmsg(self.server.getHostmask(), "#control", "\"disconnect servertag [quitmessage]\" - disconnect from a server")
 			elif words[0]=="say":
 				self.server.bot.ipc[words[1]].sendmsg(words[2], " ".join(words[3:]))
+			elif words[0]=="connect":
+				if len(words)==3:
+					self.server.bot.setConfig("server", words[2], "main", words[1])
+					self.server.bot.setConfig("enabled", "true", "main", words[1])
+					self.server.bot.ipc.connectNetwork(words[1])
+				elif len(words)==2:
+					self.server.bot.setConfig("enabled", "true", "main", words[1])
+					self.server.bot.ipc.connectNetwork(words[1])
+			elif words[0]=="disconnect":
+				self.server.bot.setConfig("enabled", "false", "main", words[1])
+				if len(words)>=2 and words[1] in self.server.bot.ipc.getall():
+					if len(words)>=3:
+						self.server.bot.ipc[words[1]].quit(" ".join(words[2:]))
+					else:
+						self.server.bot.ipc[words[1]].quit()
 			else:
-				print words
+				pass
