@@ -52,10 +52,11 @@ class server(IRCUser):
 		self.mods={}
 		self.logger=logging.getLogger("serverMod")
 		for c in self.bot.classes:
-			if hasattr(c, "serverMod"):
-				self.mods[c.__name__]=c.serverMod(self)
-				self.mods[c.__name__].name=c.__name__
-			self._apirunner("start")
+			if c.__name__ in self.getConfig("modsEnabled", [], "main", self.network):
+				if hasattr(c, "serverMod"):
+					self.mods[c.__name__]=c.serverMod(self)
+					self.mods[c.__name__].name=c.__name__
+		self._apirunner("start")
 	def logerror(self, logger, module, exception):
 		""" format a exception nicely and pass it to the logger
 			@param logger: the logger instance to use
