@@ -1,5 +1,6 @@
 import chatMod
 import time
+from twisted.internet import reactor
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
@@ -29,6 +30,8 @@ class serverMod:
 				self.server.privmsg(self.server.getHostmask(), "#control", "\"connect servertag irc.hostname.example\" - connect to a new server at irc.hostname.example")
 				self.server.privmsg(self.server.getHostmask(), "#control", "\"disconnect servertag [quitmessage]\" - disconnect from a server")
 				self.server.privmsg(self.server.getHostmask(), "#control", "\"ping servertag\" - ping a server")
+				self.server.privmsg(self.server.getHostmask(), "#control", "\"nick servertag newnickname\" - change the nick on a network")
+				self.server.privmsg(self.server.getHostmask(), "#control", "\"quit\" - Stop the Bot")
 			elif words[0]=="say":
 				self.server.bot.ipc[words[1]].sendmsg(words[2], " ".join(words[3:]))
 			elif words[0]=="connect":
@@ -49,5 +52,11 @@ class serverMod:
 			elif len(words)==2 and words[0]=="ping":
 				if words[1] in self.server.bot.ipc.getall():
 					self.server.bot.ipc[words[1]].sendLine("PING %f"%time.time())
-			else:
-				pass
+			elif len(words)==3 and words[0]=="nick":
+				try:
+					self.server.bot.ipc[words[1]].setNick(words[2])
+					self.server.bot.setConfig("nickname", words[2], "main", words[1])
+				except ValueError:
+					pass
+			elif words[0]=="quit":
+				reactor.stop()

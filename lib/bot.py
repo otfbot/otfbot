@@ -79,7 +79,8 @@ class Bot(irc.IRCClient):
 		for mod in self.mods.values():
 			if (args.has_key("channel") and args["channel"] in self.channels and mod.name in self.getConfig("modsEnabled",[],"main",self.network,args["channel"])) or not args.has_key("channel") or args["channel"] not in self.channels:
 				try:
-					getattr(mod,apifunction)(**args)
+					if hasattr(mod, apifunction):
+						getattr(mod,apifunction)(**args)
 				except Exception, e:
 					self.logerror(self.logger, mod.name, e)
 	
@@ -90,9 +91,10 @@ class Bot(irc.IRCClient):
 		"""
 		for chatModule in self.classes:
 			#if self.getConfig("enabled","true",chatModule.__name__,self.network)
-			self.mods[chatModule.__name__]=chatModule.chatMod(self)
-			self.mods[chatModule.__name__].setLogger(self.logger)
-			self.mods[chatModule.__name__].name=chatModule.__name__
+			if hasattr(chatModule, "chatMod"):
+				self.mods[chatModule.__name__]=chatModule.chatMod(self)
+				self.mods[chatModule.__name__].setLogger(self.logger)
+				self.mods[chatModule.__name__].name=chatModule.__name__
 		self._apirunner("start")
 
 	# configstuff, should maybe be moved to a config-instance at self.config
