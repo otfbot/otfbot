@@ -51,7 +51,11 @@ class serverMod:
 		try:
 			(network, channel)=params[0][1:].split("-", 1) #[1:] and (a,b) can raise ValueErrors
 			if network in self.server.bot.ipc.getall():
-				self.server.bot.ipc[network].join(channel)
+				if len(params)>=2: #password given
+					self.server.bot.setConfig("password",params[1], "main", network, channel)
+					self.server.bot.ipc[network].join(channel, params[1])
+				else:
+					self.server.bot.ipc[network].join(channel)
 				self.server.join(self.server.getHostmask(), "#%s-%s"%(network, channel))
 				self.server.names(self.server.name, "#"+network+"-"+channel, [self.server.bot.users[channel][nickname]['modchar'].strip()+nickname for nickname in self.server.bot.users[channel].keys()])
 				self.mychannels.append("#%s-%s"%(network, channel))
