@@ -148,6 +148,7 @@ class serverMod:
 			if network in self.server.bot.ipc.getall():
 				self.server.bot.ipc[network].join(channel)
 				self.server.join(self.server.getHostmask(), "#%s-%s"%(network, channel))
+				self.server.names(self.server.name, "#"+network+"-"+channel, [self.server.bot.users[channel][nickname]['modchar'].strip()+nickname for nickname in self.server.bot.users[channel].keys()])
 				self.mychannels.append("#%s-%s"%(network, channel))
 		except ValueError:
 			pass
