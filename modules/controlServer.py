@@ -31,6 +31,7 @@ class serverMod:
 				self.server.privmsg(self.server.getHostmask(), "#control", "\"disconnect servertag [quitmessage]\" - disconnect from a server")
 				self.server.privmsg(self.server.getHostmask(), "#control", "\"ping servertag\" - ping a server")
 				self.server.privmsg(self.server.getHostmask(), "#control", "\"nick servertag newnickname\" - change the nick on a network")
+				self.server.privmsg(self.server.getHostmask(), "#control", "\"reload servertag/all\" - reload chat Modules for one/all networks")
 				self.server.privmsg(self.server.getHostmask(), "#control", "\"quit\" - Stop the Bot")
 			elif words[0]=="say":
 				self.server.bot.ipc[words[1]].sendmsg(words[2], " ".join(words[3:]))
@@ -60,3 +61,9 @@ class serverMod:
 					pass
 			elif words[0]=="quit":
 				reactor.stop()
+			elif len(words)==2 and words[0]=="reload":
+				if words[1]=="all":
+					self.server.bot.reloadModules(True) #all networks
+				else:
+					if words[1] in self.server.bot.ipc.getall().keys():
+						self.server.bot.ipc[words[1]].reloadModules(False)

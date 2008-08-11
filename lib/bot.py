@@ -95,6 +95,8 @@ class Bot(irc.IRCClient):
 				self.mods[chatModule.__name__]=chatModule.chatMod(self)
 				self.mods[chatModule.__name__].setLogger(self.logger)
 				self.mods[chatModule.__name__].name=chatModule.__name__
+				if hasattr(self, "network"): #needed for reload!
+					self.mods[chatModule.__name__].network=self.network
 		self._apirunner("start")
 
 	# configstuff, should maybe be moved to a config-instance at self.config
@@ -194,20 +196,34 @@ class Bot(irc.IRCClient):
 		self.me(channel, action)
 		self.action(self.nickname, channel, action)
 	
-	def reloadModules(self):
+	def reloadModules(self, all=True):
 		"""
 			call this to reload all modules
 		"""
 		for chatModule in self.classes:
 			self.logger.info("reloading "+chatModule.__name__)
 			reload(chatModule)
-		for chatMod in self.mods.values():
-			try:
-				chatMod.stop()
-			except Exception, e:
-				self.logerror(self.logger, mod.name, e)
-		self.mods={}
-		self.startMods()	
+		if all: #global
+			for network in self.ipc.getall().keys():
+				for chatMod in self.ipc[network].mods.values():
+					try:
+						chatMod.stop()
+					except Exception, e:
+						self.logerror(self.logger, chatMod.name, e)
+					del(chatMod)
+					self.ipc[network].mods={}
+				self.ipc[network].startMods()	
+		else:
+			for chatMod in self.mods.values():
+				print chatMod.name
+				try:
+					chatMod.stop()
+				except Exception, e:
+					self.logerror(self.logger, chatMod.name, e)
+				del(chatMod)
+				self.mods={}
+			self.startMods()	
+
 	
 	# Callbacks
 	def connectionMade(self):
