@@ -57,7 +57,12 @@ class serverMod:
 				else:
 					self.server.bot.ipc[network].join(channel)
 				self.server.join(self.server.getHostmask(), "#%s-%s"%(network, channel))
-				self.server.names(self.server.name, "#"+network+"-"+channel, [self.server.bot.users[channel][nickname]['modchar'].strip()+nickname for nickname in self.server.bot.users[channel].keys()])
+				names=[]
+				if channel in self.server.bot.users.keys():
+					names=[self.server.bot.users[channel][nickname]['modchar'].strip()+nickname for nickname in self.server.bot.users[channel].keys()]
+				else:
+					self.server.bot.ipc[network].names(channel) #invoke now, names will be in callback on chatMod
+				self.server.names(self.server.name, "#"+network+"-"+channel, names)
 				self.mychannels.append("#%s-%s"%(network, channel))
 		except ValueError:
 			pass
@@ -93,3 +98,9 @@ class chatMod(chatMod.chatMod):
 			else:
 				#server.sendmsg(self.network+"-"+user, self.bot.server.name, msg)
 				server.sendmsg(self.network+"-"+user, server.name, "< %s> "%user.split("!")[0]+msg)
+	def irc_RPL_NAMREPLY(self, prefix, params):
+		for server in self.bot.ipc.servers:
+			if not server.connected:
+				return
+			server.names(server.getHostmask(), "#"+self.network+"-"+params[2], self.bot.users[params[2]])
+
