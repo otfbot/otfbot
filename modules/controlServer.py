@@ -1,6 +1,12 @@
 import chatMod
+import time
 class chatMod(chatMod.chatMod):
-	pass
+	def __init__(self, bot):
+		self.bot=bot
+	def irc_unknown(self, prefix, command, params):
+		if command=="PONG":
+			for server in self.bot.ipc.servers:
+				server.sendmsg(self.bot.nickname+"!bot@localhost", "#control", "%f sec. to %s."%(round(time.time()-float(params[1]), 3), params[0]))
 class serverMod:
 	def __init__(self, server):
 		self.server=server
@@ -22,6 +28,7 @@ class serverMod:
 				self.server.privmsg(self.server.getHostmask(), "#control", "\"connect servertag\" - connect to a known server")
 				self.server.privmsg(self.server.getHostmask(), "#control", "\"connect servertag irc.hostname.example\" - connect to a new server at irc.hostname.example")
 				self.server.privmsg(self.server.getHostmask(), "#control", "\"disconnect servertag [quitmessage]\" - disconnect from a server")
+				self.server.privmsg(self.server.getHostmask(), "#control", "\"ping servertag\" - ping a server")
 			elif words[0]=="say":
 				self.server.bot.ipc[words[1]].sendmsg(words[2], " ".join(words[3:]))
 			elif words[0]=="connect":
@@ -39,5 +46,8 @@ class serverMod:
 						self.server.bot.ipc[words[1]].quit(" ".join(words[2:]))
 					else:
 						self.server.bot.ipc[words[1]].quit()
+			elif len(words)==2 and words[0]=="ping":
+				if words[1] in self.server.bot.ipc.getall():
+					self.server.bot.ipc[words[1]].sendLine("PING %f"%time.time())
 			else:
 				pass
