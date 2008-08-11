@@ -26,10 +26,11 @@ import logging, traceback, sys
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
-	def start(self):
+	def connectionMade(self):
 		if not self.bot.getBoolConfig("active", "False", "serverMod"):
 			return
-		reactor.listenTCP(6667, ircServerFactory(self.bot))
+		if not hasattr(self.bot.ipc, "server"):
+			self.bot.ipc.server=reactor.listenTCP(6667, ircServerFactory(self.bot))
 
 class serverMod:
 	def __init__(self, server):
@@ -143,10 +144,10 @@ class ircServerFactory(protocol.ServerFactory):
 	def __init__(self, bot):
 		self.protocol=server
 		self.bot=bot
-		self.bot.servers=[]
+		self.bot.ipc.servers=[]
 	def buildProtocol(self, addr):
 		proto=self.protocol(self.bot)
 		proto.connected=True
 		proto.factory=self
-		self.bot.servers.append(proto)
+		self.bot.ipc.servers.append(proto)
 		return proto
