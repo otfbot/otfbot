@@ -32,13 +32,13 @@ class chatMod(chatMod.chatMod):
 		self.bot = bot
 		self.end = False
 		# TODO:add a start()-method with the following 3 lines
-		self.logger = logging.getLogger("rdfMod")
+		self.logger = logging.getLogger("feedMod")
 		if not feedparser_available:
-			self.logger.error("feedparser module not installed. rdfMod disabled.")
+			self.logger.error("feedparser module not installed. feedMod disabled.")
 		
-		self.rdfHeadlines={} #map url -> [(url, headline), ...]
+		self.feedHeadlines={} #map url -> [(url, headline), ...]
 		self.readUrls={} #map channel->[url, url, ...]
-		self.rdfLastLoaded={} #map url->timestamp
+		self.feedLastLoaded={} #map url->timestamp
 		self.callIDs={} #map url -> callLater ID
 
 	def addSource(self, url, channel, minWait, maxWait, factor, postMax):
@@ -58,28 +58,28 @@ class chatMod(chatMod.chatMod):
 		self.callIDs[url]=self.bot.scheduler.callLater(minWait*60, self.postNewsLoop, channel, url, minWait, minWait, maxWait, factor, postMax)
 
 		self.readUrls[channel]=[]
-		self.rdfLastLoaded[url]=0
-		self.rdfHeadlines[url]=[]
+		self.feedLastLoaded[url]=0
+		self.feedHeadlines[url]=[]
 
 		self.logger.debug(url+" (update every "+str(minWait)+" - "+str(maxWait)+" minutes), waitFactor "+str(factor)+".")
 
 	def loadSource(self, num, channel):
-		rdfUrl=self.bot.getConfig("rdf"+str(num)+".url", "", "rdfMod", self.bot.network, channel)
+		feedUrl=self.bot.getConfig("feed"+str(num)+".url", "", "feedMod", self.bot.network, channel)
 
-		rdfMinWait=float(self.bot.getConfig("rdf"+str(num)+".minWait", "5.0", "rdfMod", self.bot.network, channel))
-		rdfMaxWait=float(self.bot.getConfig("rdf"+str(num)+".maxWait", "60.0", "rdfMod", self.bot.network, channel))
-		rdfWaitFactor=float(self.bot.getConfig("rdf"+str(num)+".waitFactor", "1.5", "rdfMod", self.bot.network, channel))
-		rdfPostMax=int(self.bot.getConfig("rdf"+str(num)+".postMax", "3", "rdfMod", self.bot.network, channel))
+		feedMinWait=float(self.bot.getConfig("feed"+str(num)+".minWait", "5.0", "feedMod", self.bot.network, channel))
+		feedMaxWait=float(self.bot.getConfig("feed"+str(num)+".maxWait", "60.0", "feedMod", self.bot.network, channel))
+		feedWaitFactor=float(self.bot.getConfig("feed"+str(num)+".waitFactor", "1.5", "feedMod", self.bot.network, channel))
+		feedPostMax=int(self.bot.getConfig("feed"+str(num)+".postMax", "3", "feedMod", self.bot.network, channel))
 
-		self.addSource(rdfUrl, channel, rdfMinWait, rdfMaxWait, rdfWaitFactor, rdfPostMax)
+		self.addSource(feedUrl, channel, feedMinWait, feedMaxWait, feedWaitFactor, feedPostMax)
 
 	def joined(self, channel):
 		if not feedparser_available:
 			return
-		numRdfs=int(self.bot.getConfig("numRdfs", 0, "rdfMod", self.bot.network, channel))
-		if numRdfs > 0:
-			self.logger.debug("Found "+str(numRdfs)+" RDF-Urls:")
-			for i in xrange(1,numRdfs+1):
+		numFeeds=int(self.bot.getConfig("numFeeds", 0, "feedMod", self.bot.network, channel))
+		if numFeeds > 0:
+			self.logger.debug("Found "+str(numFeeds)+" Feed-Urls:")
+			for i in xrange(1,numFeeds+1):
 				self.loadSource(i, channel)
 				
 	def getWaitTime(self, curWait, minWait, maxWait, factor, hadNew):
@@ -110,41 +110,37 @@ class chatMod(chatMod.chatMod):
 		return newWait
 		
 	def loadNews(self, url):
-		#TO BE REMOVED: this is not needed with one schedulejob per source
-		#self.logger.debug("RDF-Check for "+channel+" and url "+url)
-		#if self.rdfLastLoaded[url] <= int(time.time()-(curWait*60)): #last load older than the wait of this rdf for this channel
-
-		self.rdfLastLoaded[url]=int(time.time()) #to be removed, too?
+		self.feedLastLoaded[url]=int(time.time()) #to be removed, too?
 		self.logger.debug("loading new Headlines")
 		#parsed=feedparser.parse(url) #direct
 		parsed=feedparser.parse(urlutils.download(url)) #with OtfBot Useragent
-		self.rdfHeadlines[url]=[]
+		self.feedHeadlines[url]=[]
 		for entry in parsed['entries']:
-			self.rdfHeadlines[url].append((entry['link'], entry['title']))
-	def postNews(self, channel, url, rdfPostMax):
+			self.feedHeadlines[url].append((entry['link'], entry['title']))
+	def postNews(self, channel, url, feedPostMax):
 		had_new=False #new urls? needed for wait-time modification
-		numPostUrls=rdfPostMax
-		for (url, headline) in self.rdfHeadlines[url]:
+		numPostUrls=feedPostMax
+		for (url, headline) in self.feedHeadlines[url]:
 			if not url in self.readUrls[channel]:
 				if numPostUrls > 0:
 					numPostUrls-=1
 					self.bot.sendmsg(channel.encode("UTF-8"), (url+" - "+headline).encode("UTF-8"), "UTF-8");
 					#self.readUrls[channel].append(url) #with this line, all urls will be posted, but the queue may get longer and longer
-				self.readUrls[channel].append(url) #with this line, we will throw away all new urls, which are more than rdfPostMax
+				self.readUrls[channel].append(url) #with this line, we will throw away all new urls, which are more than feedPostMax
 				had_new=True
-		self.logger.debug("posted "+str(rdfPostMax-numPostUrls)+" new URLs")
+		self.logger.debug("posted "+str(feedPostMax-numPostUrls)+" new URLs")
 		return had_new
-	def postNewsLoop(self, channel, url, curWait=5.0, minWait=1.0, maxWait=60.0, factor=1.5, rdfPostMax=3):
+	def postNewsLoop(self, channel, url, curWait=5.0, minWait=1.0, maxWait=60.0, factor=1.5, feedPostMax=3):
 		"""load News if needed and Post them to a channel"""
 		if self.end:
 			return
 
 
 		self.loadNews(url)
-		had_new=self.postNews(channel, url, rdfPostMax)	
+		had_new=self.postNews(channel, url, feedPostMax)	
 
 		newWait=self.getWaitTime(curWait, minWait, maxWait, factor, had_new)
-		self.callIDs[url]=self.bot.scheduler.callLater(newWait*60, self.postNewsLoop, channel, url, curWait, minWait, maxWait, factor, rdfPostMax) #recurse
+		self.callIDs[url]=self.bot.scheduler.callLater(newWait*60, self.postNewsLoop, channel, url, curWait, minWait, maxWait, factor, feedPostMax) #recurse
 
 
 	def connectionLost(self, reason):
@@ -165,25 +161,25 @@ class chatMod(chatMod.chatMod):
 				if options!="":
 					num=int(options)
 					if num!=0:
-						rdfUrl=self.bot.getConfig("rdf"+str(num)+".url", "", "rdfMod", self.bot.network, channel)
-						self.callIDs[rdfUrl].cancel()
-						self.loadNews(rdfUrl)
-						self.postNews(channel, rdfUrl, int(self.bot.getConfig("rdf"+str(num)+".postMax", "3", "rdfMod", self.bot.network, channel) ))
+						feedUrl=self.bot.getConfig("feed"+str(num)+".url", "", "feedMod", self.bot.network, channel)
+						self.callIDs[feedUrl].cancel()
+						self.loadNews(feedUrl)
+						self.postNews(channel, feedUrl, int(self.bot.getConfig("feed"+str(num)+".postMax", "3", "feedMod", self.bot.network, channel) ))
 						self.loadSource(num, channel)
-			elif command=="addrdf":
+			elif command=="addfeed":
 				options=options.split(" ")
-				num=int(self.bot.getConfig("numRdfs", 0, "rdfMod", self.bot.network, channel))+1
-				self.bot.setConfig("numRdfs", num, "rdfMod", self.bot.network, channel)
+				num=int(self.bot.getConfig("numFeeds", 0, "feedMod", self.bot.network, channel))+1
+				self.bot.setConfig("numFeeds", num, "feedMod", self.bot.network, channel)
 				if len(options) ==5:
-					self.bot.setConfig("rdf"+str(num)+".waitFactor", options[4], "rdfMod", self.bot.network, channel)
+					self.bot.setConfig("feed"+str(num)+".waitFactor", options[4], "feedMod", self.bot.network, channel)
 				if len(options) >=4:
-					self.bot.setConfig("rdf"+str(num)+".maxWait", options[3], "rdfMod", self.bot.network, channel)
+					self.bot.setConfig("feed"+str(num)+".maxWait", options[3], "feedMod", self.bot.network, channel)
 				if len(options) >=3:
-					self.bot.setConfig("rdf"+str(num)+".minWait", options[2], "rdfMod", self.bot.network, channel)
+					self.bot.setConfig("feed"+str(num)+".minWait", options[2], "feedMod", self.bot.network, channel)
 				if len(options) >= 2:
-					self.bot.setConfig("rdf"+str(num)+".postMax", options[1], "rdfMod", self.bot.network, channel)
+					self.bot.setConfig("feed"+str(num)+".postMax", options[1], "feedMod", self.bot.network, channel)
 				if len(options) >=1:
-					self.bot.setConfig("rdf"+str(num)+".url", options[0], "rdfMod", self.bot.network, channel)
+					self.bot.setConfig("feed"+str(num)+".url", options[0], "feedMod", self.bot.network, channel)
 				else:
-					self.bot.sendmsg(channel, "Error: Syntax !addrdf url postMax minWait maxWait factor")
+					self.bot.sendmsg(channel, "Error: Syntax !addfeed url postMax minWait maxWait factor")
 				self.loadSource(num, channel)
