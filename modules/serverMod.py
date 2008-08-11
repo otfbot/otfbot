@@ -36,12 +36,23 @@ class serverMod:
 	def __init__(self, server):
 		self.server=server
 		self.first=True
-	def irc_USER(self, prefix, params):
-		self.server.sendMessage(irc.RPL_WELCOME, ":connected to OTFBot IRC", prefix="localhost")
-		self.server.sendMessage(irc.RPL_YOURHOST, ":Your host is %(serviceName)s, running version %(serviceVersion)s" % {"serviceName": self.server.transport.server.getHost(),"serviceVersion": self.server.bot.versionNum},prefix="localhost")
-		#self.server.sendMessage("NICK", ":"+self.server.bot.nickname, prefix=self.server.getHostmask())#, prefix=self.server.getHostmask())
+	#def irc_USER(self, prefix, params):
 	def irc_PING(self, prefix, params):
 		self.server.sendMessage("PONG", ":"+params[0])
+	def irc_USER(self, prefix, params):
+		self.server.user=params[0]
+		self.server.hostname=params[2]
+		self.server.realname=params[3]
+	def irc_NICK(self, prefix, params):
+		self.server.name=params[0]
+		if self.first:
+			self.server.name=self.server.bot.nickname
+			self.server.sendMessage(irc.RPL_WELCOME, ":connected to OTFBot IRC", prefix="localhost")
+			self.server.sendMessage(irc.RPL_YOURHOST, ":Your host is %(serviceName)s, running version %(serviceVersion)s" % {"serviceName": self.server.transport.server.getHost(),"serviceVersion": self.server.bot.versionNum},prefix="localhost")
+			self.server.sendMessage(irc.RPL_MOTD, ":Welcome to the Bot-Control-Server", prefix="localhost")
+			self.first=False
+	def irc_QUIT(self, prefix, params):
+		self.server.connected=False
 
 class server(IRCUser):
 	def __init__(self, bot):
@@ -52,7 +63,7 @@ class server(IRCUser):
 		self.mods={}
 		self.logger=logging.getLogger("serverMod")
 		for c in self.bot.classes:
-			if c.__name__ in self.bot.getConfig("modsEnabled", [], "main", self.network):
+			if c.__name__ in self.bot.getConfig("modsEnabled", [], "main", self.bot.network):
 				if hasattr(c, "serverMod"):
 					self.mods[c.__name__]=c.serverMod(self)
 					self.mods[c.__name__].name=c.__name__
@@ -86,55 +97,28 @@ class server(IRCUser):
 			#if (args.has_key("channel") and args["channel"] in self.channels and mod.name in self.getConfig("modsEnabled",[],"main",self.network,args["channel"])) or not args.has_key("channel") or args["channel"] not in self.channels:
 			try:
 				if hasattr(mod, apifunction):
-					getattr(mod,apifunction)(**args)
+					getattr(mod, apifunction)(**args)
 			except Exception, e:
 				self.logerror(self.logger, mod.name, e)
+	def handleCommand(self, command, prefix, params):
+		"""Determine the function to call for the given command and call
+        it with the given arguments.
+        """
+		###twisted handling###
+        #method = getattr(self, "irc_%s" % command, None)
+        #try:
+        #    if method is not None:
+        #        method(prefix, params)
+        #    else:
+        #        self.irc_unknown(prefix, command, params)
+        #except:
+        #    log.deferr()
+		###we use _apirunner instead###
+		self._apirunner("irc_%s"%command, {'prefix': prefix, 'params': params})
 	def connectionMade(self):
 		self._apirunner("connectionMade")
-	def irc_PART(self, prefix, params):
-		self._apirunner("irc_PART", {"prefix": prefix, "params": params})
-	def irc_JOIN(self, prefix, params):
-		self._apirunner("irc_JOIN", {"prefix": prefix, "params": params})
-	def irc_PRIVMSG(self, prefix, params):
-		self._apirunner("irc_PRIVMSG", {"prefix": prefix, "params": params})
-	def irc_NAMES(self, prefix, params):
-		self._apirunner("irc_NAMES", {"prefix": prefix, "params": params})
-	def irc_USER(self, prefix, params):
-		self.user=params[0]
-		self.hostname=params[2]
-		self.realname=params[3]
-		self._apirunner("irc_USER", {"prefix": prefix, "params": params})
-		#self.userlist=[
-		#		(self.user, self.getHostmask(), "server", self.name, "G", 1, "realname")
-		#		]
-	def irc_MODE(self, prefix, params):
-		self._apirunner("irc_MODE", {"prefix": prefix, "params": params})
-	def irc_NICK(self, prefix, params):
-		self.name=params[0]
-		self.sendMessage("NICK", prefix=self.getHostmask())
-		self._apirunner("irc_NICK", {"prefix": prefix, "params": params})
-	def irc_WHO(self, prefix, params):
-		self._apirunner("irc_WHO", {"prefix": prefix, "params": params})
-	def irc_QUIT(self, prefix, params):
-		self._apirunner("irc_QUIT", {"prefix": prefix, "params": params})
-		self.connected=False
 	def connectionLost(self, reason):
-		self._apirunner("irc_QUIT", {"reason": reason})
 		self.connected=False
-	def irc_PASS(self, prefix, params):
-		self._apirunner("irc_PASS", {"prefix": prefix, "params": params})
-	def irc_PING(self, prefix, params):
-		self._apirunner("irc_PING", {"prefix": prefix, "params": params})
-	def irc_PART(self, prefix, params):
-		self._apirunner("irc_PART", {"prefix": prefix, "params": params})
-	def irc_TOPIC(self, prefix, params):
-		self._apirunner("irc_TOPIC", {"prefix": prefix, "params": params})
-	def irc_WHOIS(self, prefix, params):
-		self._apirunner("irc_WHOIS", {"prefix": prefix, "params": params})
-	def irc_OPER(self, prefix, params):
-		self._apirunner("irc_OPER", {"prefix": prefix, "params": params})
-	def irc_LIST(self, prefix, params):
-		self._apirunner("irc_LIST", {"prefix": prefix, "params": params})
 	def getHostmask(self):
 		return "%s!%s@%s"%(self.name, self.user, self.hostname)
 	def sendmsg(self, user, channel, msg):
