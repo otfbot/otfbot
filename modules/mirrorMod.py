@@ -27,5 +27,4 @@ class chatMod(chatMod.chatMod):
 	def msg(self, user, channel, msg):
 		if (self.network, channel) in self.bot.hasConfig("mirrorto", "mirrorMod")[2]:
 			(target_network, target_channel)=self.bot.getConfig("mirrorto", "unset", "mirrorMod", self.network, channel).split("-", 1)
-			print target_network, target_channel
 			self.bot.ipc[target_network].sendmsg(target_channel, ("< %s> "+msg)%user.split("!")[0])
