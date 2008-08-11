@@ -140,6 +140,23 @@ class serverMod:
 			#query. TODO: network-nick here too, to get the network
 			(network, nick)=params[0].split("-", 1)
 			self.server.bot.ipc[network].sendmsg(nick, params[1])
+	def irc_JOIN(self, prefix, params):
+		try:
+			(network, channel)=params[0][1:].split("-", 1) #[1:] and (a,b) can raise ValueErrors
+			if network in self.server.bot.ipc.getall():
+				self.server.bot.ipc[network].join(channel)
+				self.server.join(self.server.getHostmask(), "#%s-%s"%(network, channel))
+				self.mychannels.append("#%s-%s"%(network, channel))
+		except ValueError:
+			pass
+	def irc_PART(self, prefix, params):
+		try:
+			(network, channel)=params[0][1:].split("-", 1) #[1:] and (a,b) can raise ValueErrors
+			if network in self.server.bot.ipc.getall():
+				self.server.bot.ipc[network].part(channel)
+				self.server.part(self.server.getHostmask(), "#%s-%s"%(network, channel))
+				self.mychannels.remove("#%s-%s"%(network, channel))
+		except ValueError:
 			pass
 
 class chatMod(chatMod.chatMod):
