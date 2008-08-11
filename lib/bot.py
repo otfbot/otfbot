@@ -322,30 +322,12 @@ class Bot(irc.IRCClient):
 		# to be called for messages in channels
 		self._apirunner("msg",{"user":user,"channel":channel,"msg":msg})
 
-		#DEBUG stuff
-		#nick = user.split("!")[0]
-		#if channel == self.nickname and self.auth(nick) > 9:
-		#if msg == "!who":
-		#	self.sendLine("WHO "+channel)
-		#if msg[:6] == "!whois":
-		#	self.sendLine("WHOIS "+msg[7:])
-		#if msg == "!user":
-		#	self.sendmsg(channel,str(self.users))
-
 	def irc_unknown(self, prefix, command, params):
 		""" called by twisted
 			for every line that has no own callback
 		"""
 		#self.logger.debug(str(prefix)+" : "+str(command)+" : "+str(params))
 		#parse /names-list which is sent when joining a channel
-		if command == "RPL_NAMREPLY":
-			for nick in params[3].strip().split(" "):
-				if nick[0] in "@%+!":
-					s=nick[0]
-					nick=nick[1:]
-				else:
-					s=" "
-				self.users[params[2]][nick]={'modchar':s}
 		self._apirunner("irc_unknown",{"prefix":prefix,"command":command,"params":params})
 
 	def noticed(self, user, channel, msg):
@@ -449,6 +431,18 @@ class Bot(irc.IRCClient):
 			if the topic was updated
 		"""
 		self._apirunner("topicUpdated",{"user":user,"channel":channel,"newTopic":newTopic})
+
+	def names(self, channel):
+		self.sendLine("NAMES %s"%channel)
+		self.users[channel]={}
+	def irc_RPL_NAMREPLY(self, prefix, params):
+		for nick in params[3].strip().split(" "):
+			if nick[0] in "@%+!":
+				s=nick[0]
+				nick=nick[1:]
+			else:
+				s=" "
+			self.users[params[2]][nick]={'modchar':s}
 
 	def lineReceived(self, line):
 		""" called by twisted
