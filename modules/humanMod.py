@@ -122,15 +122,16 @@ class serverMod:
 	def __init__(self, server):
 		self.server=server
 		self.mychannels=[]
-	def irc_USER(self, prefix, params):
+		self.first=True
+	def irc_NICK(self, prefix, params):
+		if not self.first:
+			return
+		self.first=False
 		for network in self.server.bot.ipc.getall():
 			bot=self.server.bot.ipc[network]
-			bot.server=self.server
 			for channel in bot.channels:
 				self.server.join(self.server.getHostmask(), "#"+network+"-"+channel)
 				self.mychannels.append("#"+network+"-"+channel)
-	def sendmsg(self, user, channel, msg):
-		self.server.privmsg(user, channel, msg)
 	def irc_PRIVMSG(self, prefix, params):
 		if params[0][0]=="#":
 			if params[0] in self.mychannels:
