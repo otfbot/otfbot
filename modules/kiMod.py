@@ -22,16 +22,11 @@ import string, re, random, time, atexit
 import chatMod, functions
 
 MEGAHAL=1
-CITE=1
 NIALL=1
 try:
 	import mh_python
 except ImportError:
 	MEGAHAL=0
-try:
-	import MySQLdb
-except ImportError:
-	CITE=0
 try:
 	import niall
 except ImportError:
@@ -150,92 +145,6 @@ class megahalResponder(responder):
 		"""clean megahal shutdown"""
 		mh_python.cleanup()
 
-class citeResponder(responder):
-	def __init__(self, bot):
-		self.host=bot.getConfig("mysqlHost", "", "kiMod", bot.network)
-		self.user=bot.getConfig("mysqlUser", "", "kiMod", bot.network)
-		self.passwd=bot.getConfig("mysqlPasswd", "", "kiMod", bot.network)
-		self.database=bot.getConfig("mysqlDB", "chatbot", "kiMod", bot.network)
-		self.keywordsTable=bot.getConfig("keywordsTable", "keywords", "kiMod", bot.network)
-		self.stringsTable=bot.getConfig("stringsTable", "strings", "kiMod", bot.network)
-		self.maxStrings=int(bot.getConfig("maxStrings", "1000", "kiMod", bot.network))
-		self.logger=bot.logger
-		
-		try:
-			self.db=MySQLdb.connect(host=self.host, user=self.user, passwd=self.passwd, db=self.database)
-			self.cursor=self.db.cursor()
-		except MySQLdb.OperationalError:
-			raise Exception("boterror", "Error Connecting the DB")
-		self.cursor.execute("SHOW TABLES;");
-		tmp=self.cursor.fetchall()
-		#get list of tables
-		tables=[]
-		for i in tmp:
-			tables.append(i[0])
-		
-		#create tables, if needed
-		if not self.keywordsTable in tables:
-			self.cursor.execute("CREATE TABLE "+MySQLdb.escape_string(self.keywordsTable)+"(keyword TEXT, stringid INT);");
-			self.logger.info("created keywords table:"+self.keywordsTable)
-		if not self.stringsTable in tables:
-			self.cursor.execute("CREATE TABLE "+MySQLdb.escape_string(self.stringsTable)+"(id INT AUTO_INCREMENT, string TEXT, PRIMARY KEY(id));");
-			self.logger.info("created strings table:"+self.stringsTable)
-
-	def learn(self, string):
-		cursor=self.cursor;
-		words=self.getwords(string)
-		self.cursor.execute("SELECT id FROM "+MySQLdb.escape_string(self.stringsTable)+" WHERE string = '"+MySQLdb.escape_string(string)+"';")
-		if len(words) >1 and not len(self.cursor.fetchall()): #Do not learn single word / do not leran something twice
-			self.cursor.execute("INSERT INTO "+MySQLdb.escape_string(self.stringsTable)+" (string) VALUES (\""+MySQLdb.escape_string(string)+"\");")
-			self.cursor.execute("SELECT LAST_INSERT_ID();")
-			id=(self.cursor.fetchall())[0][0];
-			if id>self.maxStrings:
-				self.cursor.execute("DELETE FROM "+MySQLdb.escape_string(self.stringsTable)+" WHERE id < "+MySQLdb.escape_string(str(id-self.maxStrings)));
-			for word in words:
-				if word!="":
-					self.cursor.execute("INSERT INTO "+MySQLdb.escape_string(self.keywordsTable)+" VALUES (\""+MySQLdb.escape_string(word)+"\","+MySQLdb.escape_string(str(id))+");")
-				if id>self.maxStrings:
-					self.cursor.execute("DELETE FROM "+MySQLdb.escape_string(self.keywordsTable)+" WHERE stringid < "+MySQLdb.escape_string(str(id-self.maxStrings)));
-
-	def reply(self, msg):
-		#self.learn(msg)
-		ids=()
-		words=self.getwords(msg)
-		notwords=[]
-		reply=""
-		#try to find the best(long) keyword in database
-		while len(words) and len(ids)==0:
-			topword=""
-			for word in words:
-				if len(word) > len(topword):
-					topword=word
-			self.cursor.execute("SELECT stringid FROM "+MySQLdb.escape_string(self.keywordsTable)+" WHERE keyword LIKE '%"+MySQLdb.escape_string(topword)+"%';")
-			ids=(self.cursor.fetchall());
-			if len(ids)==0:
-				notwords.append(topword)
-			words2=[]
-			for word in words:
-				if not word in notwords:
-					words2.append(word)
-			words=words2
-
-		if len(ids):
-			id=random.choice(ids)[0] #choose one (if multiple matches)
-			self.cursor.execute("SELECT string FROM "+MySQLdb.escape_string(self.stringsTable)+" WHERE id='"+MySQLdb.escape_string(str(id))+"';")
-			ret=self.cursor.fetchall()
-			if len(ret):
-				reply=(ret)[0][0]
-		self.learn(msg)
-		return reply
-
-	def getwords(self, string):
-		#string=re.sub("[.,!?;\"':]", " ", string)
-		string=re.sub("[.,!?\"']", " ", string) #save the smileys ;-)
-		words=string.split(" ")
-		return words
-	def cleanup(self):
-		pass
-
 
 
 class chatMod(chatMod.chatMod):
@@ -249,25 +158,18 @@ class chatMod(chatMod.chatMod):
 		self.nicklist=[string.lower(self.bot.getConfig("nickname", "otfbot", "main", self.bot.network))]
 
 		module=self.bot.getConfig("module", "megahal", "kiMod", self.bot.network)
-		self.logger.debug("kiMod: using module "+module+",cite="+str(CITE)+",megahal="+str(MEGAHAL)+",niall="+str(NIALL))
-		if module=="cite":
-			if CITE:
-				try:
-					self.responder=citeResponder(self.bot)
-					self.logger.debug("kiMod: using cite module")
-				except "boterror":
-					self.logger.error("Error connecting the cite-DB.")
-					self.responder=responder() #null responder
-					#Fallback
-					if MEGAHAL:
-						self.logger.warning("kiMod: Using Megahal instead")
-						self.responder=megahalResponder(bot)
+		self.logger.debug("kiMod: using module "+module+",megahal="+str(MEGAHAL)+",niall="+str(NIALL))
+		if module=="niall":
+			if NIALL:
+				self.responder=niallResponder(self.bot)
+				self.logger.info("kiMod: using niall module")
 			else:
-				self.logger.error("Cannot use citeDB. Module MySQLdb not availible.")
+				self.logger.warning("Cannot use niall. Module niall not availible.")
 				if MEGAHAL:
-					self.logger.warning("Using Megahal instead")
+					self.logger.info("Using Megahal instead")
 					self.responder=megahalResponder(self.bot)
 				else:
+					self.logger.info("Using no KI.")
 					self.responder=responder() #null responder
 		elif module=="megahal":
 			if MEGAHAL:
@@ -276,20 +178,9 @@ class chatMod(chatMod.chatMod):
 				self.logger.error("Cannot use megahal. Module mh_python not availible.")
 				self.responder=responder() #null responder
 				#Fallback
-				if CITE:
-					self.logger.warning("Trying citeDB instead.")
-					try:
-						self.responder=citeResponder(self.bot)
-					except "boterror":
-						self.logger.error("Error connecting the cite-DB.")
-		elif module=="niall":
-			if NIALL:
-				self.responder=niallResponder(self.bot)
-			else:
-				self.responder=responder()
-				self.logger.error("Cannot use niall.")
-		else:
-			self.logger.error("No responder for module %s!"%module)
+				if NIALL:
+					self.logger.warning("Trying niall instead.")
+					self.responder=niallResponder(self.bot)
 		atexit.register(self.responder.cleanup)
 
 	def joined(self, channel):
