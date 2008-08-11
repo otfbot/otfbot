@@ -19,6 +19,7 @@
 import chatMod
 from twisted.internet import reactor, protocol
 from twisted.words.protocols.irc import IRC
+from twisted.words.protocols import irc
 from twisted.words.service import IRCUser
 import logging, traceback, sys
 
@@ -29,6 +30,14 @@ class chatMod(chatMod.chatMod):
 		if not self.bot.getBoolConfig("active", "False", "serverMod"):
 			return
 		reactor.listenTCP(6667, ircServerFactory(self.bot))
+
+class serverMod:
+	def __init__(self, server):
+		self.server=server
+	def irc_USER(self, prefix, params):
+		self.server.sendMessage(irc.RPL_WELCOME, ":connected to OTFBot IRC", prefix="localhost")
+		self.server.sendMessage(irc.RPL_YOURHOST, ":Your host is %(serviceName)s, running version %(serviceVersion)s" % {"serviceName": self.server.transport.server.getHost(),"serviceVersion": self.server.bot.versionNum},prefix="localhost")
+		self.server.sendMessage("NICK", ":"+self.server.bot.nickname, prefix=self.server.getHostmask())
 
 class server(IRCUser):
 	def __init__(self, bot):
