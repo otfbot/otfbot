@@ -52,7 +52,7 @@ class server(IRCUser):
 		self.mods={}
 		self.logger=logging.getLogger("serverMod")
 		for c in self.bot.classes:
-			if c.__name__ in self.getConfig("modsEnabled", [], "main", self.network):
+			if c.__name__ in self.bot.getConfig("modsEnabled", [], "main", self.network):
 				if hasattr(c, "serverMod"):
 					self.mods[c.__name__]=c.serverMod(self)
 					self.mods[c.__name__].name=c.__name__
