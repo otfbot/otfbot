@@ -441,6 +441,7 @@ class Bot(irc.IRCClient):
 			else:
 				s=" "
 			self.users[params[2]][nick]={'modchar':s}
+		self._apirunner("irc_RPL_NAMREPLY",{"prefix":prefix,"params":params})
 
 	def lineReceived(self, line):
 		""" called by twisted
