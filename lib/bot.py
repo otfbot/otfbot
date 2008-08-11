@@ -326,8 +326,6 @@ class Bot(irc.IRCClient):
 		""" called by twisted
 			for every line that has no own callback
 		"""
-		#self.logger.debug(str(prefix)+" : "+str(command)+" : "+str(params))
-		#parse /names-list which is sent when joining a channel
 		self._apirunner("irc_unknown",{"prefix":prefix,"command":command,"params":params})
 
 	def noticed(self, user, channel, msg):
