@@ -1,6 +1,7 @@
 import chatMod
 import time
 from twisted.internet import reactor
+from control import controlInterface
 
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
@@ -14,12 +15,19 @@ class serverMod:
 	def __init__(self, server):
 		self.server=server
 		self.first=True
+		self.configmode=False
+		self.control=None
 	def irc_NICK(self, prefix, params):
 		if self.first:
 			self.server.join(self.server.getHostmask(), "#control")
 			self.server.privmsg(self.server.getHostmask(), "#control", "Welcome to the OTFBot control channel. Type \"help\" for help ;).")
 			self.server.names(self.server.name, "#control", ['OtfBot', self.server.name])
+	def configmsg(self, msg):
+		self.server.privmsg(self.server.getHostmask(), "#control", self.control.input(msg))
 	def irc_PRIVMSG(self, prefix, params):
+		if self.control and not params[1]=="endcontrol":
+			self.configmsg(params[1])
+			return
 		msg=params[1]
 		channel=params[0]
 		words=msg.split(" ")
@@ -34,7 +42,15 @@ class serverMod:
 				self.server.privmsg(self.server.getHostmask(), "#control", "\"ping servertag\" - ping a server")
 				self.server.privmsg(self.server.getHostmask(), "#control", "\"nick servertag newnickname\" - change the nick on a network")
 				self.server.privmsg(self.server.getHostmask(), "#control", "\"reload servertag/all\" - reload chat Modules for one/all networks")
+				self.server.privmsg(self.server.getHostmask(), "#control", "\"config\" - start config mode")
+				self.server.privmsg(self.server.getHostmask(), "#control", "\"endconfig\" - end config mode")
 				self.server.privmsg(self.server.getHostmask(), "#control", "\"quit\" - Stop the Bot")
+			elif msg=="config":
+				self.control=controlInterface(self.server.bot)
+				self.server.privmsg(self.server.getHostmask(), "#control", "Entered configuration modus. type 'endcontrol' to exit")
+			elif msg=="endconfig":
+				self.control=None
+				self.server.privmsg(self.server.getHostmask(), "#control", "bye")
 			elif words[0]=="say":
 				self.server.bot.ipc[words[1]].sendmsg(words[2], " ".join(words[3:]))
 			elif words[0]=="connect":
