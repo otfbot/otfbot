@@ -32,8 +32,18 @@ class chatMod(chatMod.chatMod):
 		if not hasattr(self.bot.ipc, "servers"):
 			self.bot.ipc.servers=[]
 			print "init servers"
-		if not hasattr(self.bot.ipc, "server"):
-			self.bot.ipc.server=reactor.listenTCP(6667, ircServerFactory(self.bot))
+		if not hasattr(self.bot.ipc, "server"): #first start
+			self.createServer()
+		elif hasattr(self.bot.ipc.server, "called"): #after reload a Deferred object
+			if self.bot.ipc.server.called: #but it was already called, port is free now
+				self.createServer()
+			else: #not called, yet
+				self.bot.ipc.server.addCallback(self.createServer) #restart server as soon as possible
+	def createServer(self):
+		self.bot.ipc.server=reactor.listenTCP(6667, ircServerFactory(self.bot))
+	def stop(self):
+		self.bot.ipc.server=self.bot.ipc.server.loseConnection()
+		
 
 class serverMod:
 	def __init__(self, server):
