@@ -76,8 +76,8 @@ class controlInterface:
 				commands.append(c[5:].replace("_"," "))
 		return "Available commands: "+", ".join(commands)
 	def _cmd_config(self,argument):
-		self.configshell=configShell(self.bot)
 		return "This part is still broken"
+		self.configshell=configShell(self.bot)
 
 	
 	def _cmd_modules_reload(self,argument):
