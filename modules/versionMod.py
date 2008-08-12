@@ -29,7 +29,7 @@ class chatMod(chatMod.chatMod):
 		(query,t) = messages[0]
 		answer = None
 		if query == "VERSION":
-			answer = "mirc"
+			answer = "OTFBot"
 		if answer: 
 			self.bot.ctcpMakeReply(user.split("!")[0], [(query,answer)])
 			self.logger.info("Answered to CTCP "+query+" Request from "+user.split("!")[0])
