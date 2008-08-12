@@ -211,6 +211,7 @@ class Bot(irc.IRCClient):
 		if all: #global
 			for network in self.ipc.getall().keys():
 				for chatMod in self.ipc[network].mods.values():
+					self.logger.info("reloading %s for network %s"%(chatModule.__name__, network))
 					try:
 						chatMod.stop()
 					except Exception, e:
@@ -220,7 +221,7 @@ class Bot(irc.IRCClient):
 				self.ipc[network].startMods()	
 		else:
 			for chatMod in self.mods.values():
-				print chatMod.name
+				self.logger.info("reloading %s for network %s"%(chatModule.__name__, self.network))
 				try:
 					chatMod.stop()
 				except Exception, e:
