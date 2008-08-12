@@ -23,6 +23,11 @@ from twisted.words.protocols import irc
 from twisted.words import service
 from twisted.protocols import basic
 
+def sendNames(server, network, channel):
+	if network in server.bot.ipc.getall().keys():
+		names=[server.bot.ipc[network].users[channel][nickname]['modchar'].strip()+nickname for nickname in server.bot.ipc[network].users[channel].keys()]
+		server.names(server.name, "#"+network+"-"+channel, names)
+
 class serverMod:
 	def __init__(self, server):
 		self.server=server
@@ -37,8 +42,7 @@ class serverMod:
 			for channel in bot.channels:
 				self.server.join(self.server.getHostmask(), "#"+network+"-"+channel)
 				if channel in self.server.bot.users.keys():
-					names=[self.server.bot.users[channel][nickname]['modchar'].strip()+nickname for nickname in self.server.bot.users[channel].keys()]
-					self.server.names(self.server.getHostmask(), "#"+network+"-"+channel, names)
+					sendNames(self.server, network, channel)
 				self.mychannels.append("#"+network+"-"+channel)
 	def irc_PRIVMSG(self, prefix, params):
 		if params[0][0]=="#":
@@ -59,12 +63,10 @@ class serverMod:
 				else:
 					self.server.bot.ipc[network].join(channel)
 				self.server.join(self.server.getHostmask(), "#%s-%s"%(network, channel))
-				names=[]
 				if channel in self.server.bot.users.keys():
-					names=[self.server.bot.users[channel][nickname]['modchar'].strip()+nickname for nickname in self.server.bot.users[channel].keys()]
-					self.server.names(self.server.name, "#"+network+"-"+channel, names)
-				else:
-					self.server.bot.ipc[network].names(channel) #invoke now, names will be in callback on chatMod
+					sendNames(self.server, network, channel)
+				#else: #should not be needed, every join produces a names list, which is maintained over /nick /part, etc.
+				#	self.server.bot.ipc[network].names(channel) #invoke now, names will be in callback on chatMod
 				self.mychannels.append("#%s-%s"%(network, channel))
 		except ValueError:
 			pass
@@ -104,13 +106,10 @@ class chatMod(chatMod.chatMod):
 			else:
 				#server.sendmsg(self.network+"-"+user, self.bot.server.name, msg)
 				server.sendmsg(self.network+"-"+user, server.name, "< %s> "%user.split("!")[0]+msg)
-	def irc_RPL_NAMREPLY(self, prefix, params):
+	def irc_RPL_ENDOFNAMES(self, prefix, params):
 		if not self.enabled:
 			return
 		for server in self.bot.ipc.servers:
-			if not server.connected:
-				return
-			names=[self.bot.users[params[2]][nickname]['modchar'].strip()+nickname for nickname in self.bot.users[params[2]].keys()]
-			for server in self.bot.ipc.servers:
-				server.names(server.getHostmask(), "#"+self.network+"-"+params[2], names)
+			if server.connected:
+				sendNames(server, self.network, params[1])
 
