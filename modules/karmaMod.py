@@ -18,7 +18,7 @@
 #
 
 import chatMod
-import os.path,pickle
+import pickle, os
 
 def sortedbyvalue(dict):
 	"""Helper function to return a [(value, key)] list from a dict"""
@@ -35,6 +35,8 @@ class chatMod(chatMod.chatMod):
 		self.freestyle=self.bot.getBoolConfig("karmaMod.freestyle", "true")
 
 	def loadKarma(self, channel):
+		if not os.path.exists(datadir):
+			os.makedirs(datadir)
 		karmapath=self.bot.getPathConfig("file", datadir, "karma.dat", "karmaMod", self.bot.network, channel)
 		if not karmapath in self.karmapaths.keys():
 			if os.path.exists(karmapath):
