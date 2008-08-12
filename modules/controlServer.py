@@ -1,13 +1,15 @@
 import chatMod
 import time
 from twisted.internet import reactor
+
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
 	def irc_unknown(self, prefix, command, params):
 		if command=="PONG":
-			for server in self.bot.ipc.servers:
-				server.sendmsg(self.bot.nickname+"!bot@localhost", "#control", "%f sec. to %s."%(round(time.time()-float(params[1]), 3), params[0]))
+			if hasattr(self.bot.ipc, "servers"): #only if servermod is active
+				for server in self.bot.ipc.servers:
+					server.sendmsg(self.bot.nickname+"!bot@localhost", "#control", "%f sec. to %s."%(round(time.time()-float(params[1]), 3), params[0]))
 class serverMod:
 	def __init__(self, server):
 		self.server=server

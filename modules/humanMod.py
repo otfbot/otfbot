@@ -79,15 +79,19 @@ class serverMod:
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
-		self.enabled=self.bot.getBoolConfig("active", "False", "humanMod")
+		self.enabled=self.bot.getBoolConfig("active", "False", "humanMod") and self.bot.getConfig("active", "False", "serverMod")
 		if not self.enabled:
 			return
 		
 	def msg(self, user, channel, msg):
+		if not self.enabled:
+			return
 		for server in self.bot.ipc.servers:
 			if server.connected:
 				server.sendmsg(user, "#"+self.network+"-"+channel, msg)
 	def query(self, user, channel, msg):
+		if not self.enabled:
+			return
 		#TODO FIXME: this is a workaround. the external irc client does not recognize own messages from queries (xchat)
 		#or are just the parameters wrong? so it will show the foreign nick, but prefix the message with <botnick>
 		for server in self.bot.ipc.servers:
@@ -99,6 +103,8 @@ class chatMod(chatMod.chatMod):
 				#server.sendmsg(self.network+"-"+user, self.bot.server.name, msg)
 				server.sendmsg(self.network+"-"+user, server.name, "< %s> "%user.split("!")[0]+msg)
 	def irc_RPL_NAMREPLY(self, prefix, params):
+		if not self.enabled:
+			return
 		for server in self.bot.ipc.servers:
 			if not server.connected:
 				return
