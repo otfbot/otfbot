@@ -175,7 +175,7 @@ class chatMod(chatMod.chatMod):
 			if MEGAHAL:
 				self.responder=megahalResponder(self.bot)
 			else:
-				self.logger.error("Cannot use megahal. Module mh_python not availible.")
+				self.logger.warning("Cannot use megahal. Module mh_python not availible.")
 				self.responder=responder() #null responder
 				#Fallback
 				if NIALL:
