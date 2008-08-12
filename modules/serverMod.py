@@ -29,6 +29,9 @@ class chatMod(chatMod.chatMod):
 	def connectionMade(self):
 		if not self.bot.getBoolConfig("active", "False", "serverMod"):
 			return
+		if not hasattr(self.bot.ipc, "servers"):
+			self.bot.ipc.servers=[]
+			print "init servers"
 		if not hasattr(self.bot.ipc, "server"):
 			self.bot.ipc.server=reactor.listenTCP(6667, ircServerFactory(self.bot))
 
@@ -57,6 +60,7 @@ class serverMod:
 class server(IRCUser):
 	def __init__(self, bot):
 		self.bot=bot
+		self.ipc=bot.ipc
 		self.name="nickname"
 		self.user="user"
 		self.firstnick=True
@@ -119,6 +123,7 @@ class server(IRCUser):
 		self._apirunner("connectionMade")
 	def connectionLost(self, reason):
 		self.connected=False
+		self.bot.ipc.servers.remove(self)
 	def getHostmask(self):
 		return "%s!%s@%s"%(self.name, self.user, self.hostname)
 	def sendmsg(self, user, channel, msg):
