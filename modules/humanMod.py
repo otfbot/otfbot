@@ -36,7 +36,9 @@ class serverMod:
 			bot=self.server.bot.ipc[network]
 			for channel in bot.channels:
 				self.server.join(self.server.getHostmask(), "#"+network+"-"+channel)
-				self.server.names(self.server.name, "#"+network+"-"+channel, [self.server.bot.users[channel][nickname]['modchar'].strip()+nickname for nickname in self.server.bot.users[channel].keys()])
+				#if channel in self.bot.users.keys():
+					#names=[self.server.bot.users[channel][nickname]['modchar'].strip()+nickname for nickname in self.server.bot.users[channel].keys()]
+					#self.server.names(self.server.name, "#"+network+"-"+channel, names)
 				self.mychannels.append("#"+network+"-"+channel)
 	def irc_PRIVMSG(self, prefix, params):
 		if params[0][0]=="#":
@@ -60,9 +62,9 @@ class serverMod:
 				names=[]
 				if channel in self.server.bot.users.keys():
 					names=[self.server.bot.users[channel][nickname]['modchar'].strip()+nickname for nickname in self.server.bot.users[channel].keys()]
+					self.server.names(self.server.name, "#"+network+"-"+channel, names)
 				else:
 					self.server.bot.ipc[network].names(channel) #invoke now, names will be in callback on chatMod
-				self.server.names(self.server.name, "#"+network+"-"+channel, names)
 				self.mychannels.append("#%s-%s"%(network, channel))
 		except ValueError:
 			pass
@@ -108,5 +110,6 @@ class chatMod(chatMod.chatMod):
 		for server in self.bot.ipc.servers:
 			if not server.connected:
 				return
-			server.names(server.getHostmask(), "#"+self.network+"-"+params[2], self.bot.users[params[2]])
+				names=[self.server.bot.users[channel][nickname]['modchar'].strip()+nickname for nickname in self.server.bot.users[channel].keys()]
+			server.names(server.getHostmask(), "#"+self.network+"-"+params[2], names)
 
