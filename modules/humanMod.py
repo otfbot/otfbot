@@ -28,7 +28,7 @@ class serverMod:
 		self.server=server
 		self.mychannels=[]
 		self.first=True
-	def irc_NICK(self, prefix, params):
+	def irc_USER(self, prefix, params):
 		if not self.first:
 			return
 		self.first=False
@@ -36,9 +36,9 @@ class serverMod:
 			bot=self.server.bot.ipc[network]
 			for channel in bot.channels:
 				self.server.join(self.server.getHostmask(), "#"+network+"-"+channel)
-				#if channel in self.bot.users.keys():
-					#names=[self.server.bot.users[channel][nickname]['modchar'].strip()+nickname for nickname in self.server.bot.users[channel].keys()]
-					#self.server.names(self.server.name, "#"+network+"-"+channel, names)
+				if channel in self.server.bot.users.keys():
+					names=[self.server.bot.users[channel][nickname]['modchar'].strip()+nickname for nickname in self.server.bot.users[channel].keys()]
+					self.server.names(self.server.getHostmask(), "#"+network+"-"+channel, names)
 				self.mychannels.append("#"+network+"-"+channel)
 	def irc_PRIVMSG(self, prefix, params):
 		if params[0][0]=="#":
@@ -110,6 +110,7 @@ class chatMod(chatMod.chatMod):
 		for server in self.bot.ipc.servers:
 			if not server.connected:
 				return
-				names=[self.server.bot.users[channel][nickname]['modchar'].strip()+nickname for nickname in self.server.bot.users[channel].keys()]
-			server.names(server.getHostmask(), "#"+self.network+"-"+params[2], names)
+			names=[self.bot.users[params[2]][nickname]['modchar'].strip()+nickname for nickname in self.bot.users[params[2]].keys()]
+			for server in self.bot.ipc.servers:
+				server.names(server.getHostmask(), "#"+self.network+"-"+params[2], names)
 
