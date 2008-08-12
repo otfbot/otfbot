@@ -76,18 +76,42 @@ class controlInterface:
 				commands.append(c[5:].replace("_"," "))
 		return "Available commands: "+", ".join(commands)
 	def _cmd_config(self,argument):
-		return "This part is still broken"
-		self.configshell=configShell(self.bot)
+		return "type \"config set\" or \"config get\" for usage information"
 
+	def _cmd_config_reload(self, argument):
+		self.bot.loadConfig()
+		return "reloaded config from file"
+
+	def _cmd_config_set(self, argument):
+		args=argument.split(" ")
+		if len(args)==2:
+			return self.bot.getConfig(args[0], args[1], set_default=False)
+		elif len(args)==3:
+			return self.bot.getConfig(args[0], args[1], args[2], set_default=False)
+		elif len(args)==4:
+			return self.bot.getConfig(args[0], args[1], args[2], args[3], set_default=False)
+		else:
+			return "config set setting value [network] [channel]"
+
+	def _cmd_config_get(self, argument):
+		args=argument.split(" ")
+		if len(args)==1:
+			return self.bot.getConfig(args[0], "[unset]", set_default=False)
+		elif len(args)==2:
+			return self.bot.getConfig(args[0], "[unset]", args[1], set_default=False)
+		elif len(args)==3:
+			return self.bot.getConfig(args[0], "[unset]", args[1], args[2], set_default=False)
+		else:
+			return "config get setting [network] [channel]"
 	
 	def _cmd_modules_reload(self,argument):
 		tmp = argument.split(" ")
-		if len(tmp) == 0:
-			return "Reloaded all modules ..."
 		if len(tmp) == 1:
 			if tmp[0] in self.bot.ipc.getall().keys():
 				self.bot.ipc[tmp[0]].reloadModules(False)
 				return "Reloaded modules of network "+tmp[0]
+			elif tmp[0]=="all":
+				self.bot.ipc[tmp[0]].reloadModules(True)
 			else:
 				return "network %s not connected"%tmp[0]
 		return "Usage: [modules] reload [modName]"
