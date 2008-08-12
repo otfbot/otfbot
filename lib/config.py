@@ -75,9 +75,11 @@ class config:
 		except IOError:
 			pass #does not exist
 	
-	def get(self, option, default, module=None, network=None, channel=None):
+	def get(self, option, default, module=None, network=None, channel=None, set_default=True):
 			"""
 			get an option and set the default value, if the option is unset.
+			@param set_default if True, the default will be set in the config, if its used.
+			if False, the default will be returned, but the config will not be changed.
 
 			>>> c=config()
 			>>> c.get("option", "default")
@@ -112,7 +114,15 @@ class config:
 					self.network_options[network]={}
 				self.network_options[network][option]=default
 			else:
-				if option=="config.writeDefaultValues" or (self.has("config.writeDefaultValues") and self.get("config.writeDefaultValues", "False") in ["true", "True", "on", "On", "1"]): #write this config option as defaultvalue, even if the default is not to write default values.
+				#config.writeDefaultValues is a global setting, 
+				#which decides if the getConfig default-values are written to config,
+				#if they are in no defaultconfig-snippets present
+				#set_default is a local setting, which decides the same,
+				#so modules can decide, if they want to write the default value to the config.
+				#if the global setting is false, its never written to config.
+
+				#write this config.writeDefaultValues option as defaultvalue, even if the default is not to write default values.
+				if option=="config.writeDefaultValues" or (self.has("config.writeDefaultValues") and self.getBoolConfig("config.writeDefaultValues", "False") and set_default):
 					self.set(option, default, still_default=False) #this will write the default value to the config
 				else:
 					self.set(option, default, still_default=True) #this will avoid a config with a lot of (maybe changed in later releases) default options.
