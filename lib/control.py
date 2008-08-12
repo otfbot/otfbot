@@ -83,10 +83,13 @@ class controlInterface:
 	def _cmd_modules_reload(self,argument):
 		tmp = argument.split(" ")
 		if len(tmp) == 0:
-			self.bot.reloadModules()
-			return "Reloading all modules ..."
+			return "Reloaded all modules ..."
 		if len(tmp) == 1:
-			return "Reload module "+tmp[0]+" (not working atm)"
+			if tmp[0] in self.bot.ipc.getall().keys():
+				self.bot.ipc[tmp[0]].reloadModules(False)
+				return "Reloaded modules of network "+tmp[0]
+			else:
+				return "network %s not connected"%tmp[0]
 		return "Usage: [modules] reload [modName]"
 	def _cmd_modules_list(self,argument):
 		module=[]
@@ -111,11 +114,22 @@ class controlInterface:
 			return "Disconnecting from current network. Bye."
 	def _cmd_network_connect(self,argument):
 		args = argument.split(" ")
-		if len(args) < 1 or len(args) > 2:
-			return "Usage: connect irc.network.tld [port]"
-		else:
-			self.bot.ipc.connectNetwork(argument)
+		if len(args)==1:
+			self.bot.setConfig("enabled", "true", "main", args[0])
+			self.bot.ipc.connectNetwork(args[0])
 			return "Connecting to "+str(argument)
+		elif len(args)==2:
+			self.bot.setConfig("server", args[1], "main", args[0])
+			self.bot.setConfig("enabled", "true", "main", args[0])
+			self.bot.ipc.connectNetwork(words[1])
+			return "Connecting to "+str(args[0])
+		else:
+			return "Usage: connect irc.network.tld [port]"
+	def _cmd_network_ping(self, argument):
+		args=argument.split(" ")
+		if args[0] in self.bot.ipc.getall().keys():
+			self.bot.ipc[args[0]].sendLine("PING %f"%time.time())
+			return "pinging network %s"%args[0]
 	def _cmd_network_list(self,argument):
 		return "Currently connected to: "+" ".join(self.bot.ipc.getall())
 	def _cmd_network_current(self,argument):
