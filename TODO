@@ -56,3 +56,4 @@ rdfMod:
 2008-07-15 09:33:50,047 samplenetwork rdfMod             DEBUG    posted 0 new URLs
 2008-07-15 09:33:50,047 samplenetwork rdfMod             DEBUG    new wait-time: 0.3
 
+* replace all noncritical error-loggers with warning-loggers (see CODING)
