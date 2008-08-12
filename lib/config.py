@@ -242,8 +242,8 @@ class config:
 		delete(option, module, network, channel)
 	def hasConfig(self, option, module=None):
 		return self.has(option, module)
-	def getConfig(self, option, defaultvalue="", module=None, network=None, channel=None):
-		return self.get(option, defaultvalue, module, network, channel)
+	def getConfig(self, option, defaultvalue="", module=None, network=None, channel=None, set_default=True):
+		return self.get(option, defaultvalue, module, network, channel, set_default)
 	def getPathConfig(self, option, datadir, defaultvalue="", module=None, network=None, channel=None):
 		value=self.get(option, defaultvalue, module, network, channel)
 		if value[0]=="/":
