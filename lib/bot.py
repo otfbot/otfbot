@@ -456,6 +456,8 @@ class Bot(irc.IRCClient):
 	def names(self, channel):
 		self.sendLine("NAMES %s"%channel)
 		self.users[channel]={}
+	def irc_RPL_ENDOFNAMES(self, prefix, params):
+		self._apirunner("irc_RPL_ENDOFNAMES",{"prefix":prefix,"params":params})
 	def irc_RPL_NAMREPLY(self, prefix, params):
 		for nick in params[3].strip().split(" "):
 			if nick[0] in "@%+!":
