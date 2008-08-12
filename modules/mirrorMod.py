@@ -48,14 +48,16 @@ class chatMod(chatMod.chatMod):
 		if (self.network, channel) in self.bot.hasConfig("mirrorto", "mirrorMod")[2]:
 			(target_network, target_channel)=self.bot.getConfig("mirrorto", "unset", "mirrorMod", self.network, channel).split("-", 1)
 			self.bot.ipc[target_network].sendmsg(target_channel, "%s has left %s"%(user.split("!")[0], channel))
-	def userQuit(self, user, channel):
-		if (self.network, channel) in self.bot.hasConfig("mirrorto", "mirrorMod")[2]:
-			(target_network, target_channel)=self.bot.getConfig("mirrorto", "unset", "mirrorMod", self.network, channel).split("-", 1)
-			self.bot.ipc[target_network].sendmsg(target_channel, "%s has quit %s"%(user.split("!")[0], channel))
+	def userQuit(self, user, quitMessage):
+		for (network, channel) in self.bot.hasConfig("mirrorto", "mirrorMod")[2]:
+			if self.network == network:
+				(target_network, target_channel)=self.bot.getConfig("mirrorto", "unset", "mirrorMod", self.network, channel).split("-", 1)
+				self.bot.ipc[target_network].sendmsg(target_channel, "%s has quit [%s]"%(user.split("!")[0], quitMessage))
 	def userRenamed(self, oldname, newname):
-		if (self.network, channel) in self.bot.hasConfig("mirrorto", "mirrorMod")[2]:
-			(target_network, target_channel)=self.bot.getConfig("mirrorto", "unset", "mirrorMod", self.network, channel).split("-", 1)
-			self.bot.ipc[target_network].sendmsg(target_channel, "%s is now known as %s"%(oldname, newname))
+		for (network, channel) in self.bot.hasConfig("mirrorto", "mirrorMod")[2]:
+			if self.network == network:
+				(target_network, target_channel)=self.bot.getConfig("mirrorto", "unset", "mirrorMod", self.network, channel).split("-", 1)
+				self.bot.ipc[target_network].sendmsg(target_channel, "%s is now known as %s"%(oldname, newname))
 	def modeChanged(self, user, channel, set, modes, args):
 		if (self.network, channel) in self.bot.hasConfig("mirrorto", "mirrorMod")[2]:
 			(target_network, target_channel)=self.bot.getConfig("mirrorto", "unset", "mirrorMod", self.network, channel).split("-", 1)
