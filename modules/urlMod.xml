@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<!DOCTYPE config SYSTEM "../etc/config.dtd">
-<chatbot>
-	<option name="urlMod.autoTiny" value="False" />
-	<option name="urlMod.autoPreview" value="False" />
-	<option name="urlMod.autoLength" value="35" />
-</chatbot>

@@ -1,6 +1,0 @@
-<?xml version="1.0"?>
-<!DOCTYPE config SYSTEM "../etc/config.dtd">
-<chatbot>
-	<option name="logMod.path" value="$n-$c/$y-$m-$d.log" />
-	<option name="logMod.dir" value="." />
-</chatbot>

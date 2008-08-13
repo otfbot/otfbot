@@ -1,6 +1,0 @@
-<?xml version="1.0"?>
-<!DOCTYPE config SYSTEM "../etc/config.dtd">
-<chatbot>
-	<option name="commandsMod.file" value="commands.txt" />
-	<option name="commandsMod.fileencoding" value="iso-8859-15" />
-</chatbot>

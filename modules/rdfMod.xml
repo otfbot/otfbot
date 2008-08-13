@@ -1,5 +1,0 @@
-<?xml version="1.0"?>
-<!DOCTYPE config SYSTEM "../etc/config.dtd">
-<chatbot>
-	<option name="rdfMod.numRdfs" value="0" />
-</chatbot>
