@@ -18,6 +18,7 @@
 #
 
 from twisted.internet import reactor
+import yaml #needed for parsing dicts from set config
 
 class controlInterface:
 	""" allows to control the behaviour of the bot during runtime
@@ -83,17 +84,23 @@ class controlInterface:
 		return "reloaded config from file"
 
 	def _cmd_config_set(self, argument):
+		#TODO: it is not possible to set options to values with spaces at the moment
 		args=argument.split(" ")
 		if len(args)==2:
-			return self.bot.getConfig(args[0], args[1], set_default=False)
+			self.bot.setConfig(args[0], yaml.load(args[1]))
+			return self.bot.getConfig(args[0], "[unset]")
 		elif len(args)==3:
-			return self.bot.getConfig(args[0], args[1], args[2], set_default=False)
+			return self.bot.setConfig(args[0], yaml.load(args[1]), args[2])
+			return self.bot.getConfig(args[0], "[unset]", args[2])
 		elif len(args)==4:
-			return self.bot.getConfig(args[0], args[1], args[2], args[3], set_default=False)
+			return self.bot.setConfig(args[0], yaml.load(args[1]), args[2], args[3])
+			return self.bot.getConfig(args[0], "[unset]", args[2], args[3])
 		else:
 			return "config set setting value [network] [channel]"
 
 	def _cmd_config_get(self, argument):
+		if len(argument)==0:
+			return "config get setting [network] [channel]"
 		args=argument.split(" ")
 		if len(args)==1:
 			return self.bot.getConfig(args[0], "[unset]", set_default=False)
@@ -101,9 +108,26 @@ class controlInterface:
 			return self.bot.getConfig(args[0], "[unset]", args[1], set_default=False)
 		elif len(args)==3:
 			return self.bot.getConfig(args[0], "[unset]", args[1], args[2], set_default=False)
-		else:
-			return "config get setting [network] [channel]"
 	
+	def _cmd_modules_start(self, argument):
+		if len(argument)==0:
+			return "modules start module [module2] [module3] [...]"
+		mods = argument.split(" ")
+		for mod in mods:
+			for c in self.bot.classes:
+				if c.__name__==mod:
+					for network in self.bot.ipc.getall():
+						self.bot.ipc[network].startMod(c)
+		return "started modules"
+	def _cmd_modules_stop(self, argument):
+		if len(argument)==0:
+			return "modules stop module [module2] [module3] [...]"
+		mods = argument.split(" ")
+		for mod in mods:
+			if mod in self.bot.mods: #TODO: this does not work with different mods per network.
+				for network in self.bot.ipc.getall():
+					self.bot.ipc[network].stopMod(mod)
+		return "stopped modules"
 	def _cmd_modules_reload(self,argument):
 		tmp = argument.split(" ")
 		if len(tmp) in [1,2]:
