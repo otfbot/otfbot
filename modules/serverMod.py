@@ -21,7 +21,7 @@ from twisted.internet import reactor, protocol
 from twisted.words.protocols.irc import IRC
 from twisted.words.protocols import irc
 from twisted.words.service import IRCUser
-import logging, traceback, sys
+import logging, traceback, sys, time
 
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
@@ -32,17 +32,24 @@ class chatMod(chatMod.chatMod):
 		if not hasattr(self.bot.ipc, "servers"):
 			self.bot.ipc.servers=[]
 			print "init servers"
-		if not hasattr(self.bot.ipc, "server"): #first start
+		if not hasattr(self.bot.ipc, "server") or self.bot.ipc.server==None:
 			self.createServer()
-		elif hasattr(self.bot.ipc.server, "called"): #after reload a Deferred object
-			if self.bot.ipc.server.called: #but it was already called, port is free now
-				self.createServer()
-			else: #not called, yet
-				self.bot.ipc.server.addCallback(self.createServer) #restart server as soon as possible
+		#elif hasattr(self.bot.ipc.server, "called"): #after reload a Deferred object
+		#	if self.bot.ipc.server.called: #but it was already called, port is free now
+		#		self.createServer()
+		#	else: #not called, yet
+		#		self.bot.ipc.server.addCallback(self.createServer) #restart server as soon as possible
 	def createServer(self):
 		self.bot.ipc.server=reactor.listenTCP(6667, ircServerFactory(self.bot))
 	def stop(self):
-		self.bot.ipc.server=self.bot.ipc.server.loseConnection()
+		for server in self.bot.ipc.servers:
+			server.stop()
+		if hasattr(self.bot.ipc, "server") and hasattr(self.bot.ipc.server, "loseConnection"): #no Deferred object
+			print "losing my connection"
+			deferred_port_close=self.bot.ipc.server.loseConnection()
+			while not deferred_port_close.called:
+				time.sleep(1)
+			self.bot.ipc.server=None
 		
 
 class serverMod:
@@ -139,6 +146,11 @@ class server(IRCUser):
 	def sendmsg(self, user, channel, msg):
 		if self.connected:
 			self.privmsg(user, channel, msg)
+	def stop(self):
+		self._apirunner("stop")
+		for mod in self.mods.keys():
+			del(self.mods[mod])
+		self.mods={}
 
 class ircServerFactory(protocol.ServerFactory):
 	def __init__(self, bot):
