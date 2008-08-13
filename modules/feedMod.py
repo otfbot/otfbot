@@ -139,7 +139,7 @@ class chatMod(chatMod.chatMod):
 		had_new=self.postNews(channel, url, feedPostMax)	
 
 		newWait=self.getWaitTime(curWait, minWait, maxWait, factor, had_new)
-		self.callIDs[url]=self.bot.scheduler.callLater(newWait*60, self.postNewsLoop, channel, url, curWait, minWait, maxWait, factor, feedPostMax) #recurse
+		self.callIDs[url]=self.bot.scheduler.callLater(newWait*60, self.postNewsLoop, channel, url, newWait, minWait, maxWait, factor, feedPostMax) #recurse
 
 	def connectionLost(self, reason):
 		self.stop()
