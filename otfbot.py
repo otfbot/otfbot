@@ -22,13 +22,14 @@
 """OTFBot"""
 
 import os, sys, atexit
-from twisted.internet import reactor, error, ssl
+from twisted.internet import reactor, ssl
 sys.path.insert(1,"lib") # Path for auxilary libs of otfbot
 import functions, config
 from botfactory import BotFactory
 
 # some constants for paths, might be read from configfile in future
 path_log="otfbot.log"
+path_errorlog="error.log"
 path_pid="otfbot.pid"
 path_cfg="etc/otfbot.yaml"
 path_mods="modules"
@@ -70,11 +71,15 @@ import log as otfbotlog
 # Basic settings for logging
 # logging to logfile
 filelogger = logging.handlers.RotatingFileHandler(path_log,'a',1048576,5)
+errorlogger = logging.handlers.RotatingFileHandler(path_errorlog,'a',1048576,5)
+errorlogger.setLevel(logging.ERROR)
 #filelogger = logging.FileHandler(path_log,'a')
 logging.getLogger('').setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s %(name)-18s %(module)-18s %(levelname)-8s %(message)s')
 filelogger.setFormatter(formatter)
+errorlogger.setFormatter(formatter)
 logging.getLogger('').addHandler(filelogger)
+logging.getLogger('').addHandler(errorlogger)
 #corelogger.addHandler(filelogger)
 
 if options.debug > 0:

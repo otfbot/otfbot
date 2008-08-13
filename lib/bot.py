@@ -235,15 +235,19 @@ class Bot(irc.IRCClient):
 			if chatModule.__name__ in self.getConfig("modsEnabled", [], "main", self.network):
 				self.startMod(chatModule)
 	def startMod(self, moduleClass):
-		if hasattr(moduleClass, "chatMod"):
-			self.logger.info("starting %s for network %s"%(moduleClass.__name__, self.network))
-			self.mods[moduleClass.__name__]=moduleClass.chatMod(self)
-			self.mods[moduleClass.__name__].setLogger(self.logger)
-			self.mods[moduleClass.__name__].name=moduleClass.__name__
-			if hasattr(self, "network"): #needed for reload!
-				self.mods[moduleClass.__name__].network=self.network
-			if hasattr(self.mods[moduleClass.__name__], "start"):
-				self.mods[moduleClass.__name__].start()
+			if hasattr(moduleClass, "chatMod"):
+				try:
+					self.logger.info("starting %s for network %s"%(moduleClass.__name__, self.network))
+					mod=moduleClass.chatMod(self)
+					self.mods[moduleClass.__name__]=mod
+					self.mods[moduleClass.__name__].setLogger(self.logger)
+					self.mods[moduleClass.__name__].name=moduleClass.__name__
+					if hasattr(self, "network"): #needed for reload!
+						self.mods[moduleClass.__name__].network=self.network
+					if hasattr(self.mods[moduleClass.__name__], "start"):
+						self.mods[moduleClass.__name__].start()
+				except Exception, e:
+					self.logerror(self.logger, moduleClass.__name__, e)
 
 	# Callbacks
 	def connectionMade(self):

@@ -28,7 +28,6 @@ except ImportError:
 
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
-
 		self.bot = bot
 		self.end = False
 		# TODO:add a start()-method with the following 3 lines
