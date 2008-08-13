@@ -46,10 +46,11 @@ class chatMod(chatMod.chatMod):
 	def createServer(self, *args):
 		self.bot.ipc.server=reactor.listenTCP(int(self.bot.getConfig("port", "6667", "serverMod")), ircServerFactory(self.bot), interface=self.bot.getConfig("interface", "127.0.0.1", "serverMod"))
 	def stop(self):
-		for server in self.bot.ipc.servers:
-			server.stop()
-		if hasattr(self.bot.ipc, "server") and hasattr(self.bot.ipc.server, "loseConnection"): #no Deferred object
-			self.bot.ipc.server=self.bot.ipc.server.loseConnection()
+		if hasattr(self.bot.ipc, "servers"):
+			for server in self.bot.ipc.servers:
+				server.stop()
+			if hasattr(self.bot.ipc, "server") and hasattr(self.bot.ipc.server, "loseConnection"): #no Deferred object
+				self.bot.ipc.server=self.bot.ipc.server.loseConnection()
 		
 
 class serverMod:
