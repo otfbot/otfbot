@@ -96,13 +96,17 @@ class Bot(irc.IRCClient):
 		for chatModule in self.classes:
 			#if self.getConfig("enabled","true",chatModule.__name__,self.network)
 			if chatModule.__name__ in self.getConfig("modsEnabled", [], "main", self.network):
-				if hasattr(chatModule, "chatMod"):
-					self.mods[chatModule.__name__]=chatModule.chatMod(self)
-					self.mods[chatModule.__name__].setLogger(self.logger)
-					self.mods[chatModule.__name__].name=chatModule.__name__
-					if hasattr(self, "network"): #needed for reload!
-						self.mods[chatModule.__name__].network=self.network
-		self._apirunner("start")
+				self.startMod(chatModule)
+	def startMod(self, moduleClass):
+		if hasattr(moduleClass, "chatMod"):
+			self.mods[moduleClass.__name__]=moduleClass.chatMod(self)
+			self.mods[moduleClass.__name__].setLogger(self.logger)
+			self.mods[moduleClass.__name__].name=moduleClass.__name__
+			if hasattr(self, "network"): #needed for reload!
+				self.mods[moduleClass.__name__].network=self.network
+			if hasattr(self.mods[moduleClass.__name__], "start"):
+				self.mods[moduleClass.__name__].start()
+
 
 	# configstuff, should maybe be moved to a config-instance at self.config
 	def delConfig(self, option, module=None, network=None, channel=None):
@@ -201,36 +205,55 @@ class Bot(irc.IRCClient):
 		self.me(channel, action)
 		self.action(self.nickname, channel, action)
 	
+	def reloadModuleClass(self, moduleClass):
+			self.logger.info("reloading class "+moduleClass.__name__)
+			reload(moduleClass)
+	def restartModule(self, moduleName, network):
+		if network in self.ipc.getall() and moduleName in self.ipc[network].mods.keys():
+			chatMod=self.ipc[network].mods[moduleName]
+			self.logger.info("restarting %s for network %s"%(moduleName, network))
+			try:
+				chatMod.stop()
+			except Exception, e:
+				self.logerror(self.logger, chatMod.name, e)
+			del(chatMod)
+			c=None
+			#this is not optimal, because each module needs to iterate over all classes
+			for c in self.classes:
+				if c.__name__==moduleName:
+					break
+			self.startMod(c)
+
 	def reloadModules(self, all=True):
 		"""
 			call this to reload all modules
 		"""
 		for chatModule in self.classes:
-			self.logger.info("reloading "+chatModule.__name__)
-			reload(chatModule)
+			self.reloadModuleClass(chatModule)
 		if all: #global
 			for network in self.ipc.getall().keys():
 				for mod in self.ipc[network].mods.keys():
-					chatMod=self.ipc[network].mods[mod]
-					self.logger.info("reloading %s for network %s"%(mod, network))
-					try:
-						chatMod.stop()
-					except Exception, e:
-						self.logerror(self.logger, chatMod.name, e)
-					del(chatMod)
-					self.ipc[network].mods={}
-				self.ipc[network].startMods()	
+					self.restartModule(mod, network)
+				#	chatMod=self.ipc[network].mods[mod]
+				#	self.logger.info("reloading %s for network %s"%(mod, network))
+				#	try:
+				#		chatMod.stop()
+				#	except Exception, e:
+				#		self.logerror(self.logger, chatMod.name, e)
+				#	del(chatMod)
+				#self.ipc[network].mods={}
+				#self.ipc[network].startMods()	
 		else:
 			for chatMod in self.mods.values():
-				self.logger.info("reloading %s for network %s"%(chatModule.__name__, self.network))
-				try:
-					chatMod.stop()
-				except Exception, e:
-					self.logerror(self.logger, chatMod.name, e)
-				del(chatMod)
-				self.mods={}
-			self.startMods()	
-
+				self.restartModule(chatMod.name, self.network)
+				#self.logger.info("reloading %s for network %s"%(chatModule.__name__, self.network))
+				#try:
+				#	chatMod.stop()
+				#except Exception, e:
+				#	self.logerror(self.logger, chatMod.name, e)
+				#del(chatMod)
+				#self.mods={}
+			#self.startMods()	
 	
 	# Callbacks
 	def connectionMade(self):
