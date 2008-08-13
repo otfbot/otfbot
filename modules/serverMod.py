@@ -44,7 +44,7 @@ class chatMod(chatMod.chatMod):
 				if self.bot.ipc.server.callbacks==[]:
 					self.bot.ipc.server.addCallback(self.createServer) #restart server as soon as possible
 	def createServer(self, *args):
-		self.bot.ipc.server=reactor.listenTCP(6667, ircServerFactory(self.bot))
+		self.bot.ipc.server=reactor.listenTCP(int(self.bot.getConfig("port", "6667", "serverMod")), ircServerFactory(self.bot), interface=self.bot.getConfig("interface", "127.0.0.1", "serverMod"))
 	def stop(self):
 		for server in self.bot.ipc.servers:
 			server.stop()
