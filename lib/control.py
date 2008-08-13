@@ -84,19 +84,22 @@ class controlInterface:
 		return "reloaded config from file"
 
 	def _cmd_config_set(self, argument):
-		#TODO: it is not possible to set options to values with spaces at the moment
+		#how this works:
+		#args[x][:8] is checked for network= or channel=. channel= must come after network=
+		#args[x][8:] is the network/channelname without the prefix
+		#" ".join(args[x:]) joins all arguments after network= and channel= to a string from word x to the end of input
 		args=argument.split(" ")
-		if len(args)==2:
-			self.bot.setConfig(args[0], yaml.load(args[1]))
+		if len(args)>=4 and len(args[0])>=8 and len(args[1])>=8 and args[0][:8]=="network=" and args[1][:8]=="channel=":
+			self.bot.setConfig(args[2], yaml.load(" ".join(args[3:])), args[0][8:], args[1][8:])
+			return self.bot.getConfig(args[2], "[unset]", args[0][8:], args[1][8:])
+		elif len(args)>=3 and len(args[0])>=8 and args[0][:8]=="network=":
+			self.bot.setConfig(args[1], yaml.load(" ".join(args[2:])), args[0][8:])
+			return self.bot.getConfig(args[1], "[unset]", args[0][8:])
+		elif len(argument):
+			self.bot.setConfig(args[0], yaml.load(" ".join(args[1:])))
 			return self.bot.getConfig(args[0], "[unset]")
-		elif len(args)==3:
-			return self.bot.setConfig(args[0], yaml.load(args[1]), args[2])
-			return self.bot.getConfig(args[0], "[unset]", args[2])
-		elif len(args)==4:
-			return self.bot.setConfig(args[0], yaml.load(args[1]), args[2], args[3])
-			return self.bot.getConfig(args[0], "[unset]", args[2], args[3])
 		else:
-			return "config set setting value [network] [channel]"
+			return "config set setting [network=networkname] [channel=#somechannel] value"
 
 	def _cmd_config_get(self, argument):
 		if len(argument)==0:
