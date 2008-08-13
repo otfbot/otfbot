@@ -29,7 +29,7 @@ class config:
 			try:
 				ret[option.name]=option.value
 			except AttributeError:
-				self.logger.error("Config Error: Option name or value missing")
+				self.logger.warning("Config Error: Option name or value missing")
 		return ret
 		
 	def getsuboptions(self, list):
@@ -44,7 +44,7 @@ class config:
 			try:
 				ret[item.name]=tmp
 			except AttributeError:
-				self.logger.error("Config Error: network/channel has no name")
+				self.logger.warning("Config Error: network/channel has no name")
 		return ret
 
 	def sorted(self, list):
