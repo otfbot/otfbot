@@ -1,6 +1,0 @@
-<?xml version="1.0"?>
-<!DOCTYPE config SYSTEM "../etc/config.dtd">
-<chatbot>
-	<option name="authMod.whitelist" value="" />
-	<option name="authMod.password" value="" />
-</chatbot>
