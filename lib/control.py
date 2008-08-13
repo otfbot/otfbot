@@ -106,15 +106,33 @@ class controlInterface:
 	
 	def _cmd_modules_reload(self,argument):
 		tmp = argument.split(" ")
-		if len(tmp) == 1:
+		if len(tmp) in [1,2]:
 			if tmp[0] in self.bot.ipc.getall().keys():
-				self.bot.ipc[tmp[0]].reloadModules(False)
-				return "Reloaded modules of network "+tmp[0]
+				if len(tmp) == 1:
+					self.bot.ipc[tmp[0]].reloadModules(False)
+					return "Reloaded all modules of network "+tmp[0]
+				else:
+					if tmp[1] in self.bot.mods.keys():
+						for c in self.bot.classes:
+							if c.__name__==tmp[1]:
+								self.bot.reloadModuleClass(c)
+								self.bot.restartModule(tmp[1], tmp[0])
+								break
 			elif tmp[0]=="all":
-				self.bot.ipc[tmp[0]].reloadModules(True)
+				if len(tmp) == 1:
+					self.bot.reloadModules(True)
+					return "reloaded all modules for all networks"
+				else:
+					if tmp[1] in self.bot.mods.keys(): #any bot instance is ok, because every bot has the same mod classes
+						for c in self.bot.classes:
+							if c.__name__==tmp[1]:
+								self.bot.reloadModuleClass(c)
+								for network in self.bot.ipc.getall():
+									self.bot.ipc[network].restartModule(tmp[1], network)
+								break
 			else:
 				return "network %s not connected"%tmp[0]
-		return "Usage: [modules] reload [modName]"
+		return "Usage: [modules] reload network/all [modname]"
 	def _cmd_modules_list(self,argument):
 		module=[]
 		for mod in self.bot.mods:
