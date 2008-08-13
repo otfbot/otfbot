@@ -125,7 +125,7 @@ class config:
 				if option=="config.writeDefaultValues" or (self.has("config.writeDefaultValues") and self.getBoolConfig("config.writeDefaultValues", "False") and set_default):
 					self.set(option, default, still_default=False) #this will write the default value to the config
 				else:
-					self.set(option, default, still_default=True) #this will avoid a config with a lot of (maybe changed in later releases) default options.
+					self.set(option, default, still_default=True) #this will avoid a config with a lot of default options.
 			return default
 
 	def has(self, option, module=None):
@@ -267,6 +267,10 @@ class config:
 	
 	def writeConfig(self, configfile):
 		file=open(configfile, "w")
+		#still_default options
+		for option in self.generic_options_default.keys():
+			if option in self.generic_options:
+				del(self.generic_options[option])
 		file.write(self.exportyaml())
 		file.close()
 def loadConfig(myconfigfile, modulesconfigdir):
