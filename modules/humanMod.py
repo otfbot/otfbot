@@ -50,7 +50,6 @@ class serverMod:
 				(network, channel)=params[0][1:].split("-",1)
 				self.server.bot.ipc[network].sendmsg(channel, params[1])
 		elif "-" in params[0]:
-			#query. TODO: network-nick here too, to get the network
 			(network, nick)=params[0].split("-", 1)
 			self.server.bot.ipc[network].sendmsg(nick, params[1])
 	def irc_JOIN(self, prefix, params):
@@ -85,6 +84,7 @@ class chatMod(chatMod.chatMod):
 		self.bot=bot
 		self.enabled=self.bot.getBoolConfig("active", "False", "humanMod") and self.bot.getConfig("active", "False", "serverMod")
 		if not self.enabled:
+			self.bot.logger.debug("humanMod not enabled")
 			return
 		
 	def msg(self, user, channel, msg):
