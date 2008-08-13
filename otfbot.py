@@ -65,10 +65,10 @@ def main():
 
 	###############################################################################
 	# some settings
-	path_log=theconfig.getConfig("logfile", "otfbot.log", "main")
-	path_errorlog=theconfig.getConfig("errorlog", "error.log", "main")
-	path_pid=theconfig.getConfig("pidfile", "otfbot.pid", "main")
-	path_data=theconfig.getConfig("datadir", "data", "main")
+	path_log=theconfig.getConfig("logfile", "otfbot.log", "main", set_default=False)
+	path_errorlog=theconfig.getConfig("errorlog", "error.log", "main", set_default=False)
+	path_pid=theconfig.getConfig("pidfile", "otfbot.pid", "main", set_default=False)
+	path_data=theconfig.getConfig("datadir", "data", "main", set_default=False)
 	###############################################################################
 	# Setup Logging
 
