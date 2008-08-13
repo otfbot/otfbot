@@ -34,7 +34,7 @@ class chatMod(chatMod.chatMod):
 		# TODO:add a start()-method with the following 3 lines
 		self.logger = logging.getLogger("feedMod")
 		if not feedparser_available:
-			self.logger.error("feedparser module not installed. feedMod disabled.")
+			self.logger.warning("feedparser module not installed. feedMod disabled.")
 		
 		self.feedHeadlines={} #map url -> [(url, headline), ...]
 		self.readUrls={} #map channel->[url, url, ...]
@@ -50,10 +50,10 @@ class chatMod(chatMod.chatMod):
 			@param postMax: maximum new items to post on update
 		"""
 		if(minWait > maxWait):
-			self.logger.error(url+" maxWait is bigger than minWait. Skipping feed.")
+			self.logger.warning(url+" maxWait is bigger than minWait. Skipping feed.")
 			return
 		if factor==0:
-			self.logger.error(url+" has a waitFactor of 0. Skipping feed.")
+			self.logger.warning(url+" has a waitFactor of 0. Skipping feed.")
 			return
 		self.callIDs[url]=self.bot.scheduler.callLater(minWait*60, self.postNewsLoop, channel, url, minWait, minWait, maxWait, factor, postMax)
 
@@ -135,13 +135,11 @@ class chatMod(chatMod.chatMod):
 		if self.end:
 			return
 
-
 		self.loadNews(url)
 		had_new=self.postNews(channel, url, feedPostMax)	
 
 		newWait=self.getWaitTime(curWait, minWait, maxWait, factor, had_new)
 		self.callIDs[url]=self.bot.scheduler.callLater(newWait*60, self.postNewsLoop, channel, url, curWait, minWait, maxWait, factor, feedPostMax) #recurse
-
 
 	def connectionLost(self, reason):
 		self.stop()
