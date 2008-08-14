@@ -88,7 +88,7 @@ def main():
 		# logging to stdout
 		console = logging.StreamHandler()
 		logging.getLogger('').setLevel(options.debug)
-		formatter = logging.Formatter('%(asctime)s %(name)-10s %(module)-18s %(levelname)-8s %(message)s')
+		formatter = logging.Formatter('%(asctime)s %(name)-18s %(module)-18s %(levelname)-8s %(message)s')
 		console.setFormatter(formatter)
 		logging.getLogger('').addHandler(console)
 		#corelogger.addHandler(console)
