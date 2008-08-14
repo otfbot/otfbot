@@ -269,7 +269,7 @@ class config:
 		file=open(configfile, "w")
 		#still_default options
 		for option in self.generic_options_default.keys():
-			if self.generic_options_default[option]:
+			if option in self.generic_options.keys() and self.generic_options_default[option]:
 				del(self.generic_options[option])
 		file.write(self.exportyaml())
 		file.close()

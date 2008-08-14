@@ -45,7 +45,7 @@ def loadProperties(propertiesFile):
 				if len(pair)==2:
 					properties[pair[0]] = pair[1]
 	except IOError:
-		print "loadProperties: Creating", propertiesFile
+		#print "loadProperties: Creating", propertiesFile
 		if (not os.path.isdir(os.path.dirname(propertiesFile))):
 			os.makedirs(os.path.dirname(propertiesFile))
 		propFile = open(propertiesFile, "w")
@@ -73,7 +73,7 @@ def loadList(listFile):
 			if word != "" and word[0] != '#':
 				list.append(word)
 	except IOError:
-		print "loadList: Creating", listFile
+		#print "loadList: Creating", listFile
 		if (not os.path.isdir(os.path.dirname(listFile))):
 			os.makedirs(os.path.dirname(listFile))
 		file = open(listFile, "w")
