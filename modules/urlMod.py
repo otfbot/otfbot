@@ -29,9 +29,9 @@ class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot = bot
 		self.parser = titleExtractor()
-		self.autoTiny=self.bot.getConfig("autotiny", "False", "urlMod", self.bot.network)
+		self.autoTiny=self.bot.getConfig("autotiny", False, "urlMod", self.bot.network)
 		self.autoTinyLength=int(self.bot.getConfig("autoLength", "50", "urlMod", self.bot.network))
-		self.autoPreview=self.bot.getConfig("autopreview", "False", "urlMod", self.bot.network)
+		self.autoPreview=self.bot.getConfig("autopreview", False, "urlMod", self.bot.network)
 
 	def command(self, user, channel, command, options):
 		response = ""

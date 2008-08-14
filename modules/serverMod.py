@@ -29,7 +29,7 @@ class chatMod(chatMod.chatMod):
 	def connectionMade(self):
 		self.start()
 	def start(self):
-		if not self.bot.getBoolConfig("active", "False", "serverMod"):
+		if not self.bot.getBoolConfig("active", False, "serverMod"):
 			print "DEBUG"
 			return
 		if not hasattr(self.bot, "ipc"): #wait until we have ipc (connectionMade)
