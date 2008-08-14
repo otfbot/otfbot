@@ -81,12 +81,15 @@ class Bot(irc.IRCClient):
 
 			#blacklist active modules for certain networks/channels
 			#if a channel is present, check if the module is disabled for the channel.
-			if (args.has_key("channel") and args["channel"] in self.channels and mod.name not in self.getConfig("modsDisabled",[],"main",self.network,args["channel"], set_default=False)) or not args.has_key("channel") or args["channel"] not in self.channels:
-				try:
-					if hasattr(mod, apifunction):
-						getattr(mod,apifunction)(**args)
-				except Exception, e:
-					self.logerror(self.logger, mod.name, e)
+			if args.has_key("channel") and mod.name in self.getConfig("modsDisabled",[],"main",self.network,args["channel"], set_default=False):
+				return
+			if mod.name in self.getConfig("modsDisabled", [], "main", self.network):
+				return
+			try:
+				if hasattr(mod, apifunction):
+					getattr(mod,apifunction)(**args)
+			except Exception, e:
+				self.logerror(self.logger, mod.name, e)
 	
 	# public API
 
