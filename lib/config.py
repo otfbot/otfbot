@@ -263,7 +263,7 @@ class config:
 		>>> c.getBoolConfig("key") or c.getBoolConfig("key2")
 		False
 		"""
-		return self.get(option, defaultvalue, module, network, channel) in ["True","true","On","on","1"]
+		return self.get(option, defaultvalue, module, network, channel) in ["True","true","On","on","1", True, 1]
 	
 	def writeConfig(self, configfile):
 		file=open(configfile, "w")

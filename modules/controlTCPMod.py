@@ -37,7 +37,7 @@ class BotProtocol(basic.LineOnlyReceiver):
 	def _output(self, data):
 		if self.terminal == self.READLINE:
 			self.sendLine("02 "+self.factory.bot.network)
-			self.sendLine("01 +channels,"+",".join(self.factory.bot.channels)+":+networks,"+",".join(self.factory.bot.factory._getnetworkslist())+":config:help:reload:listmodules:stop:quit:disconnect,+networks:connect:listnetworks:currentnetwork:changenetwork,+networks:listchannels:changenick:join:part,+channels:kick")
+			self.sendLine("01 +channels,"+",".join(self.factory.bot.channels)+":+networks,"+",".join(self.bot.ipc.getall())+":config:help:reload:listmodules:stop:quit:disconnect,+networks:connect:listnetworks:currentnetwork:changenetwork,+networks:listchannels:changenick:join:part,+channels:kick")
 		if not data or data == "" and self.terminal == self.READLINE:
 			self.sendLine("00")
 		else:
@@ -77,6 +77,7 @@ class BotProtocolFactory(protocol.ServerFactory):
 		
 	def buildProtocol(self,addr):
 		proto=protocol.ServerFactory.buildProtocol(self,addr)
+		proto.bot=self.bot
 		self.proto.append(proto)
 		return proto
 
