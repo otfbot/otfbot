@@ -30,7 +30,6 @@ class chatMod(chatMod.chatMod):
 		self.start()
 	def start(self):
 		if not self.bot.getBoolConfig("active", False, "serverMod"):
-			print "DEBUG"
 			return
 		if not hasattr(self.bot, "ipc"): #wait until we have ipc (connectionMade)
 			return
@@ -68,7 +67,7 @@ class serverMod:
 	def irc_NICK(self, prefix, params):
 		self.server.name=params[0]
 		if self.first:
-			self.server.name=self.server.bot.nickname
+			#self.server.name=self.server.bot.nickname
 			self.server.sendMessage(irc.RPL_WELCOME, ":connected to OTFBot IRC", prefix="localhost")
 			self.server.sendMessage(irc.RPL_YOURHOST, ":Your host is %(serviceName)s, running version %(serviceVersion)s" % {"serviceName": self.server.transport.server.getHost(),"serviceVersion": self.server.bot.versionNum},prefix="localhost")
 			self.server.sendMessage(irc.RPL_MOTD, ":Welcome to the Bot-Control-Server", prefix="localhost")
