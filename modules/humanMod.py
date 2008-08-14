@@ -34,6 +34,8 @@ class serverMod:
 		self.mychannels=[]
 		self.first=True
 	def irc_USER(self, prefix, params):
+		if not self.server.bot.mods['humanMod'].enabled:
+			return
 		if not self.first:
 			return
 		self.first=False
@@ -45,6 +47,8 @@ class serverMod:
 					sendNames(self.server, network, channel)
 				self.mychannels.append("#"+network+"-"+channel)
 	def irc_PRIVMSG(self, prefix, params):
+		if not self.server.bot.mods['humanMod'].enabled:
+			return
 		if params[0][0]=="#":
 			if params[0] in self.mychannels:
 				(network, channel)=params[0][1:].split("-",1)
@@ -53,6 +57,8 @@ class serverMod:
 			(network, nick)=params[0].split("-", 1)
 			self.server.bot.ipc[network].sendmsg(nick, params[1])
 	def irc_JOIN(self, prefix, params):
+		if not self.server.bot.mods['humanMod'].enabled:
+			return
 		try:
 			(network, channel)=params[0][1:].split("-", 1) #[1:] and (a,b) can raise ValueErrors
 			if network in self.server.bot.ipc.getall():
@@ -70,6 +76,8 @@ class serverMod:
 		except ValueError:
 			pass
 	def irc_PART(self, prefix, params):
+		if not self.server.bot.mods['humanMod'].enabled:
+			return
 		try:
 			(network, channel)=params[0][1:].split("-", 1) #[1:] and (a,b) can raise ValueErrors
 			if network in self.server.bot.ipc.getall():
@@ -82,7 +90,7 @@ class serverMod:
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
-		self.enabled=self.bot.getBoolConfig("active", False, "humanMod") and self.bot.getConfig("active", "False", "serverMod")
+		self.enabled=self.bot.getBoolConfig("active", False, "humanMod") and self.bot.getConfig("active", False, "serverMod")
 		if not self.enabled:
 			self.bot.logger.debug("humanMod not enabled")
 			return
