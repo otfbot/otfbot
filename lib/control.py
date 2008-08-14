@@ -172,6 +172,7 @@ class controlInterface:
 								self.bot.reloadModuleClass(c)
 								for network in self.bot.ipc.getall():
 									self.bot.ipc[network].restartModule(tmp[1], network)
+									return "restarted module %s"%tmp[1]
 								break
 			else:
 				return "network %s not connected"%tmp[0]
