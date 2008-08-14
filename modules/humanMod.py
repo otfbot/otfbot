@@ -15,6 +15,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 # 
 # (c) 2007 by Robert Weidlich
+# (c) 2008 by Alexander Schier
 #
 
 import chatMod, string
