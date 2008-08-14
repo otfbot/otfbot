@@ -45,6 +45,7 @@ class BotFactory(protocol.ReconnectingClientFactory):
 	def buildProtocol(self,addr):
 		#proto=protocol.ReconnectingClientFactory.buildProtocol(self,addr)
 		proto=self.protocol(self.theconfig, self.classes, self.network)
+		proto.factory=self
 		proto.ipc=self.ipc
 		self.ipc.add(self.network,proto)
 		return proto
