@@ -48,7 +48,7 @@ class chatMod(chatMod.chatMod):
 
 	def msg(self, user, channel, msg):
 		regex=re.match("[abcdefghijklmnopqrstuvxyz][^\.\?!:;]*\?", msg.lower())
-		if self.bot.getBoolConfig("autoAnswer", "False", "eightballMod", self.network, channel) and regex:
+		if self.bot.getBoolConfig("autoAnswer", False, "eightballMod", self.network, channel) and regex:
 			self.bot.sendmsg(channel, random.choice(self.answers))
 	def command(self, user, channel, command, options):
 		if command == "8ball" and options != "": #only if the user asked something.
