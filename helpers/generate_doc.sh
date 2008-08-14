@@ -11,9 +11,13 @@ dir=`dirname $0`
 cd $dir/..
 touch __init__.py
 touch modules/__init__.py
-pydoctor 	--add-package=. \
+OTFBOTDIR=`pwd`
+cd ..
+pydoctor 	--add-package=otfbot \
 		--project-name="OtfBot" \
 		--project-url="http://otfbot.berlios.de/" \
+		--html-output=$OTFBOTDIR/apidocs \
 		--make-html
+cd $OTFBOTDIR
 rm __init__.py modules/__init__.py
 cd $curdir
