@@ -32,7 +32,7 @@ class chatMod(chatMod.chatMod):
 		self.datadir=bot.getPathConfig("logMod.dir", datadir, ".") #XXX: this has no usable defaultconfig, because datadir is only known at runtime
 		self.logpath=self.datadir+"/"+bot.getConfig("logMod.path", "$n-$c/$y-$m-$d.log")
 		if not os.path.isdir(self.datadir):
-			os.mkdir(self.datadir)
+			os.makedirs(self.datadir)
 		locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
 		self.day=self.ts("%d") #saves the hour, to detect daychanges
 		for c in self.bot.channels:

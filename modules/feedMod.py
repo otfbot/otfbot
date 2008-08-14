@@ -82,7 +82,7 @@ class chatMod(chatMod.chatMod):
 				self.loadSource(i, channel)
 				
 	def getWaitTime(self, curWait, minWait, maxWait, factor, hadNew):
-		"""
+		""" calculate the new wait time
 			@type curWait: float
 			@param curWait: current wait time
 			@type minWait: float
