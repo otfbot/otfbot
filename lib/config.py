@@ -268,9 +268,10 @@ class config:
 	def writeConfig(self, configfile):
 		file=open(configfile, "w")
 		#still_default options
-		for option in self.generic_options_default.keys():
-			if option in self.generic_options.keys() and self.generic_options_default[option]:
-				del(self.generic_options[option])
+		if not self.getBoolConfig("writeDefaultValues", False):
+			for option in self.generic_options_default.keys():
+				if option in self.generic_options.keys() and self.generic_options_default[option]:
+					del(self.generic_options[option])
 		file.write(self.exportyaml())
 		file.close()
 def loadConfig(myconfigfile, modulesconfigdir):

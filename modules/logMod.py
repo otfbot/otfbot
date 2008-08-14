@@ -29,8 +29,9 @@ class chatMod(chatMod.chatMod):
 		self.channels={}
 		self.files={}
 		self.path={}
-		self.datadir=bot.getPathConfig("logMod.dir", datadir, ".") #XXX: this has no usable defaultconfig, because datadir is only known at runtime
-		self.logpath=self.datadir+"/"+bot.getConfig("logMod.path", "$n-$c/$y-$m-$d.log")
+		#this has no usable defaultconfig string, because datadir is only known at runtime
+		self.datadir=bot.getPathConfig("logdir", datadir, ".", "logMod") 
+		self.logpath=self.datadir+"/"+bot.getConfig("path", "$n-$c/$y-$m-$d.log", "logMod")
 		if not os.path.isdir(self.datadir):
 			os.makedirs(self.datadir)
 		locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
