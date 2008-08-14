@@ -87,7 +87,7 @@ class chatMod(chatMod.chatMod):
 	def start(self):
 		self.f=BotProtocolFactory(self.bot)
 		try:
-			reactor.listenTCP(5022, self.f)
+			reactor.listenTCP(int(self.bot.getConfig("port", 5022, "controlTCPMod")), self.f, interface=self.bot.getConfig("interface", "127.0.0.1", "controlTCPMod"))
 		except (error.CannotListenError):
 			pass
 		

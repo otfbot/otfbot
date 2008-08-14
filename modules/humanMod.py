@@ -82,7 +82,7 @@ class serverMod:
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
-		self.enabled=self.bot.getBoolConfig("active", "False", "humanMod") and self.bot.getConfig("active", "False", "serverMod")
+		self.enabled=self.bot.getBoolConfig("active", False, "humanMod") and self.bot.getConfig("active", "False", "serverMod")
 		if not self.enabled:
 			self.bot.logger.debug("humanMod not enabled")
 			return

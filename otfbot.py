@@ -54,9 +54,9 @@ def main():
 	new_config=False
 	if not theconfig: #file could not be loaded, i.e at first start
 		theconfig=config.config()
-		theconfig.set('enabled', 'false', 'main', 'samplenetwork')
+		theconfig.set('enabled', False, 'main', 'samplenetwork')
 		theconfig.set('server', 'localhost', 'main', 'samplenetwork')
-		theconfig.set('enabled', 'false', 'main', 'samplenetwork', '#example')
+		theconfig.set('enabled', False, 'main', 'samplenetwork', '#example')
 		theconfig.set('nickname', 'OtfBot', 'main')
 		theconfig.set('encoding', 'UTF-8', 'main')
 		#theconfig.set('pidfile','otfbot.pid','main')

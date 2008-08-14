@@ -122,7 +122,7 @@ class config:
 				#if the global setting is false, its never written to config.
 
 				#write this config.writeDefaultValues option as defaultvalue, even if the default is not to write default values.
-				if option=="config.writeDefaultValues" or (self.has("config.writeDefaultValues") and self.getBoolConfig("config.writeDefaultValues", "False") and set_default):
+				if option=="config.writeDefaultValues" or (self.has("config.writeDefaultValues") and self.getBoolConfig("config.writeDefaultValues", False) and set_default):
 					self.set(option, default, still_default=False) #this will write the default value to the config
 				else:
 					self.set(option, default, still_default=True) #this will avoid a config with a lot of default options.

@@ -301,7 +301,7 @@ class Bot(irc.IRCClient):
 		self.channels.append(channel)
 		self.users[channel]={}
 		self._apirunner("joined",{"channel":channel})
-		self.setConfig("enabled", "True", "main", self.network, channel)
+		self.setConfig("enabled", True, "main", self.network, channel)
 
 	def left(self, channel):
 		""" called by twisted,
