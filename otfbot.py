@@ -43,6 +43,17 @@ def main():
 	# Parse commandline options
 	(options, args) = cmdlineparser.parse()
 	###############################################################################
+	#check for root rights
+	if os.getuid()==0:
+		if options.userid and options.userid!=0 and options.groupid and options.groupid!=0:
+			from twisted.python.util import switchUID
+			#os.chroot(".") #DOES NOT WORK. pwd.getpwuid fails in switchUID, when chrooted.
+			switchUID(options.userid, options.groupid)
+		else:
+			print "Otfbot should not be run as root."
+			print "please use -u and -g to specify a userid/groupid"
+			sys.exit(1)
+	###############################################################################
 	# config
 	theconfig=None
 	if options.configfile != None:
@@ -132,18 +143,6 @@ def main():
 	f=open(pidfile,'w')
 	f.write(str(os.getpid())+"\n")
 	f.close()
-	###############################################################################
-
-	#check for root rights
-	if os.getuid()==0:
-		if options.userid and options.userid!=0 and options.groupid and options.groupid!=0:
-			from twisted.python.util import switchUID
-			#os.chroot(".") #DOES NOT WORK. pwd.getpwuid fails in switchUID, when chrooted.
-			switchUID(options.userid, options.groupid)
-		else:
-			print "Otfbot should not be run as root."
-			print "please use -u and -g to specify a userid/groupid"
-			sys.exit(1)
 	###############################################################################
 	# Detaching from console
 	if options.foreground == False and not options.debug > 0:
