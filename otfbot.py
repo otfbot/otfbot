@@ -21,22 +21,19 @@
 
 """OTFBot"""
 
-import os, sys, atexit
+import os, sys
 from twisted.internet import reactor, ssl
 sys.path.insert(1,"lib") # Path for auxilary libs of otfbot
-import functions, config
+import functions, config, cmdlineparser
 from botfactory import BotFactory
-import cmdlineparser
 
 #logging
-import logging
-import logging.handlers
-from twisted.python import log
+import logging, logging.handlers
 import log as otfbotlog
 
 def main():
 	# some constants for paths, might be read from configfile in future
-	path_cfg="etc/otfbot.yaml"
+	path_cfg="otfbot.yaml"
 	path_mods="modules"
 
 	###############################################################################
@@ -87,22 +84,18 @@ def main():
 	filelogger = logging.handlers.RotatingFileHandler(path_log,'a',1048576,5)
 	errorlogger = logging.handlers.RotatingFileHandler(path_errorlog,'a',1048576,5)
 	errorlogger.setLevel(logging.ERROR)
-	#filelogger = logging.FileHandler(path_log,'a')
 	logging.getLogger('').setLevel(logging.DEBUG)
 	formatter = logging.Formatter('%(asctime)s %(name)-18s %(module)-18s %(levelname)-8s %(message)s')
 	filelogger.setFormatter(formatter)
 	errorlogger.setFormatter(formatter)
 	logging.getLogger('').addHandler(filelogger)
 	logging.getLogger('').addHandler(errorlogger)
-	#corelogger.addHandler(filelogger)
 	if options.debug > 0:
 		# logging to stdout
 		console = logging.StreamHandler()
 		logging.getLogger('').setLevel(options.debug)
-		formatter = logging.Formatter('%(asctime)s %(name)-18s %(module)-18s %(levelname)-8s %(message)s')
 		console.setFormatter(formatter)
 		logging.getLogger('').addHandler(console)
-		#corelogger.addHandler(console)
 	corelogger = logging.getLogger('core')
 	corelogger.info("  ___ _____ _____ ____        _   ")
 	corelogger.info(" / _ \_   _|  ___| __ )  ___ | |_ ")
@@ -123,7 +116,6 @@ def main():
 	for file in os.listdir(path_mods):
 		if len(file)>=3 and file[-3:]==".py":
 			classes.append(__import__(file[:-3]))
-			#classes[-1].datadir = "modules/"+classes[-1].__name__+"-data"
 			classes[-1].datadir = path_data+"/"+classes[-1].__name__
 			corelogger.debug("Loading module "+classes[-1].__name__)
 	###############################################################################
