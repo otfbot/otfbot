@@ -43,13 +43,16 @@ class Bot(irc.IRCClient):
 		#list of mods, which the bot should use
 		#you may need to configure them first
 		self.classes = classes
-		self.users={}
 		self.channels=[]
 		self.network=network
 		self.theconfig=theconfig
 		self.realname=self.getConfig("realname", "A Bot", "main", self.network)
 		self.password=self.getConfig('password', None, 'main', network)
-	
+		self.nickname=unicode(self.getConfig("nickname", "OtfBot", 'main', self.network)).encode("iso-8859-1")
+		tmp=self.getChannels(self.network)
+		if tmp:
+			self.channels=tmp
+		
 		self.mods = {}
 		self.numMods = 0
 
@@ -258,15 +261,8 @@ class Bot(irc.IRCClient):
 			this is called by twisted
 			, when the connection to the irc-server was made
 		"""
-		tmp=self.getChannels(self.network)
-		if tmp:
-			self.channels=tmp
-		self.nickname=unicode(self.getConfig("nickname", "OtfBot", 'main', self.network)).encode("iso-8859-1")
 		self.logger.info("made connection to "+self.transport.addr[0])
 		irc.IRCClient.connectionMade(self)
-		for mod in self.mods.values():
-			mod.setLogger(self.logger)
-			mod.network=self.network
 		self._apirunner("connectionMade")
 
 	def connectionLost(self, reason):
@@ -302,7 +298,6 @@ class Bot(irc.IRCClient):
 		"""
 		self.logger.info("joined "+channel)
 		self.channels.append(channel)
-		self.users[channel]={}
 		self._apirunner("joined",{"channel":channel})
 		self.setConfig("enabled", True, "main", self.network, channel)
 
@@ -313,13 +308,16 @@ class Bot(irc.IRCClient):
 			@type channel: string
 		"""
 		self.logger.info("left "+channel)
-		del self.users[channel]
 		self.channels.remove(channel)
 		self._apirunner("left",{"channel":channel})
 		self.setConfig("enabled", "False", "main", self.network, channel) #disable the channel for the next start of the bot
 
 	def isupport(self, options):
-		self.logger.debug(options)
+		#self.logger.debug("isupport"+str(options))
+	def bounce(self, info):
+		#self.logger.debug("bounce:"+str(info))
+	def myInfo(self, servername, version, umodes, cmodes):
+		#self.logger.debug("myinfo: servername="+str(servername)+" version="+str(version)+" umodes="+str(umodes)+" cmodes="+str(cmodes))
 	def command(self, user, channel, command, options):
 		"""callback for !commands
 		@param user: the user, which issues the command
@@ -402,15 +400,6 @@ class Bot(irc.IRCClient):
 			if a usermode was changed
 		"""
 		self._apirunner("modeChanged",{"user":user,"channel":channel,"set":set,"modes":modes,"args":args})
-		i=0
-		for arg in args:
-			if modes[i] in self.modchars.keys() and set == True:
-				if self.modcharvals[self.modchars[modes[i]]] > self.modcharvals[self.users[channel][arg]['modchar']]:
-					self.users[channel][arg]['modchar'] = self.modchars[modes[i]]
-			elif modes[i] in self.modchars.keys() and set == False:
-				#FIXME: ask for the real mode
-				self.users[channel][arg]['modchar'] = ' '
-			i=i+1
 
 	def kickedFrom(self, channel, kicker, message):
 		""" called by twisted,
@@ -429,28 +418,24 @@ class Bot(irc.IRCClient):
 			if a C{user} joined the C{channel}
 		"""
 		self._apirunner("userJoined",{"user":user,"channel":channel})
-		self.users[channel][user.split("!")[0]]={'modchar':' '}
 
 	def userLeft(self, user, channel):
 		""" called by twisted,
 			if a C{user} left the C{channel}
 		"""
 		self._apirunner("userLeft",{"user":user,"channel":channel})
-		del self.users[channel][user.split("!")[0]]
 
 	def userQuit(self, user, quitMessage):
 		""" called by twisted,
 			of a C{user} quits
 		"""
 		self._apirunner("userQuit",{"user":user,"quitMessage":quitMessage})
-		for chan in self.users:
-			if self.users[chan].has_key(user):
-				del self.users[chan][user]
 
 	def yourHost(self, info):
 		""" called by twisted
 			with information about the IRC-Server we are connected to
 		"""
+		self.logger.debug(str(info))
 		pass
 	
 	def ctcpQuery(self, user, channel, messages):
@@ -463,10 +448,6 @@ class Bot(irc.IRCClient):
 		""" called by twisted,
 			if a user changed his nick
 		"""
-		for chan in self.users:
-			if self.users[chan].has_key(oldname):
-				self.users[chan][newname]=self.users[chan][oldname]
-				del self.users[chan][oldname]
 		self._apirunner("userRenamed",{"oldname":oldname,"newname":newname})
 
 	def topicUpdated(self, user, channel, newTopic):
@@ -475,19 +456,9 @@ class Bot(irc.IRCClient):
 		"""
 		self._apirunner("topicUpdated",{"user":user,"channel":channel,"newTopic":newTopic})
 
-	def names(self, channel):
-		self.sendLine("NAMES %s"%channel)
-		self.users[channel]={}
 	def irc_RPL_ENDOFNAMES(self, prefix, params):
 		self._apirunner("irc_RPL_ENDOFNAMES",{"prefix":prefix,"params":params})
 	def irc_RPL_NAMREPLY(self, prefix, params):
-		for nick in params[3].strip().split(" "):
-			if nick[0] in "@%+!":
-				s=nick[0]
-				nick=nick[1:]
-			else:
-				s=" "
-			self.users[params[2]][nick]={'modchar':s}
 		self._apirunner("irc_RPL_NAMREPLY",{"prefix":prefix,"params":params})
 
 	def lineReceived(self, line):
