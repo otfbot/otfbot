@@ -109,8 +109,6 @@ class Bot(irc.IRCClient):
 		return self.theconfig.getBoolConfig(option, defaultvalue, module, network, channel)
 	def getPathConfig(self, option, datadir, defaultvalue="", module=None, network=None, channel=None):
 		return self.theconfig.getPathConfig(option, datadir, defaultvalue, module, network, channel)
-	def getSubOptions(self, list):
-		return self.theconfig.getsubopts(list)
 	def getNetworks(self):
 		return self.theconfig.getNetworks()
 	def getChannels(self,net):
