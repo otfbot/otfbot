@@ -58,7 +58,12 @@ class BotProtocol(basic.LineOnlyReceiver):
 		elif command == "debug":
 			self.state=self.DEBUG
 		elif data != "":
-			self._output(self.control.input(data))
+			output=self.control.input(data)
+			if type(output)==list:
+				for line in output:
+					self._output(line)
+			else:
+				self._output(output)
 		else:
 			self._output("")
 

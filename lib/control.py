@@ -18,6 +18,7 @@
 #
 
 from twisted.internet import reactor
+import logging, logging.handlers
 import yaml #needed for parsing dicts from set config
 
 class controlInterface:
@@ -33,10 +34,15 @@ class controlInterface:
 		self.subcmd=""
 		self.subcmdval=""
 	
-	def _output(self, string):
+	def _output(self, out):
 		""" helper function which set the encoding to utf8
 		"""
-		return unicode(string).encode("utf-8")
+		if type(out)==list:
+			for i in xrange(len(out)):
+				out[i]=unicode(out[i]).encode("UTF-8")
+			return out
+		else:
+			return unicode(out).encode("utf-8")
 	
 	def input(self, request):
 		""" Pass your command to this function and get the output
@@ -76,6 +82,28 @@ class controlInterface:
 			if c[:5] == "_cmd_":
 				commands.append(c[5:].replace("_"," "))
 		return "Available commands: "+", ".join(commands)
+
+	def _cmd_log_get(self, argument):
+		index=1
+		num=3
+		if len(argument):
+			args=argument.split(" ")
+			if len(args)==2:
+				try:
+					index=int(args[1])
+				except ValueError:
+					pass
+			try:
+				num=min(int(args[0]), 10)
+			except ValueError:
+				pass
+		for loghandler in logging.getLogger('').handlers:
+			if loghandler.__class__ == logging.handlers.MemoryHandler:
+				messages=[]
+				for entry in loghandler.buffer[-(index + num): -index]:
+					messages.append(loghandler.formatter.format(entry))
+				return messages
+
 	def _cmd_config(self,argument):
 		return "type \"config set\" or \"config get\" for usage information"
 
