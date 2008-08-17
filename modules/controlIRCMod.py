@@ -34,7 +34,12 @@ class chatMod(chatMod.chatMod):
 			self.control[user]=controlInterface(self.bot)
 			self.bot.sendmsg(nick,"Entered configuration modus. type 'endcontrol' to exit")
 		elif self.control.has_key(user):
-			self.bot.sendmsg(nick,self.control[user].input(msg))
+			output=self.control[user].input(msg)
+			if type(output) == list:
+				for line in output:
+					self.bot.sendmsg(nick, line)
+			else:
+				self.bot.sendmsg(nick, output)
 
 	def command(self, user, channel, command, options):
 		if self.bot.auth(user) > -1 and command == "reload": #TODO: make "!" configurable

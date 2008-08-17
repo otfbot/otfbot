@@ -310,11 +310,11 @@ class Bot(irc.IRCClient):
 		self._apirunner("left",{"channel":channel})
 		self.setConfig("enabled", "False", "main", self.network, channel) #disable the channel for the next start of the bot
 
-	def isupport(self, options):
+	#def isupport(self, options):
 		#self.logger.debug("isupport"+str(options))
-	def bounce(self, info):
+	#def bounce(self, info):
 		#self.logger.debug("bounce:"+str(info))
-	def myInfo(self, servername, version, umodes, cmodes):
+	#def myInfo(self, servername, version, umodes, cmodes):
 		#self.logger.debug("myinfo: servername="+str(servername)+" version="+str(version)+" umodes="+str(umodes)+" cmodes="+str(cmodes))
 	def command(self, user, channel, command, options):
 		"""callback for !commands
