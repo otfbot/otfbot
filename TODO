@@ -18,3 +18,4 @@ authMod:
 * bitmask for certain permissions
 * add password-auth (userdb, may be global)
 * replace all noncritical error-loggers with warning-loggers (see CODING)
+* feedMod remove feed for channel on part
