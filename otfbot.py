@@ -82,14 +82,17 @@ def main():
 
 	# logging to logfile
 	filelogger = logging.handlers.RotatingFileHandler(path_log,'a',1048576,5)
+	memorylogger = logging.handlers.MemoryHandler(1000)
 	errorlogger = logging.handlers.RotatingFileHandler(path_errorlog,'a',1048576,5)
 	errorlogger.setLevel(logging.ERROR)
 	logging.getLogger('').setLevel(logging.DEBUG)
 	formatter = logging.Formatter('%(asctime)s %(name)-18s %(module)-18s %(levelname)-8s %(message)s')
 	filelogger.setFormatter(formatter)
 	errorlogger.setFormatter(formatter)
+	memorylogger.setFormatter(formatter)
 	logging.getLogger('').addHandler(filelogger)
 	logging.getLogger('').addHandler(errorlogger)
+	logging.getLogger('').addHandler(memorylogger)
 	if options.debug > 0:
 		# logging to stdout
 		console = logging.StreamHandler()
