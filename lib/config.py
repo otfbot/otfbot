@@ -22,35 +22,6 @@
 import sys, os, logging
 
 class config:
-	#private
-	def getoptions(self, optionlist):
-		ret={}
-		for option in optionlist:
-			try:
-				ret[option.name]=option.value
-			except AttributeError:
-				self.logger.warning("Config Error: Option name or value missing")
-		return ret
-		
-	def getsuboptions(self, list):
-		ret={}
-		for item in list:
-			options=[]
-			try:
-				options=item.option
-			except AttributeError:
-				pass
-			tmp=self.getoptions(options)
-			try:
-				ret[item.name]=tmp
-			except AttributeError:
-				self.logger.warning("Config Error: network/channel has no name")
-		return ret
-
-	def sorted(self, list):
-		"""returns the sorted list"""
-		list.sort()
-		return list
 
 	#public
 	def __init__(self, filename=None):
