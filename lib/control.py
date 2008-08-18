@@ -139,7 +139,7 @@ class controlInterface:
 			except ValueError:
 				return "Error: your setting is not in the module.setting form"
 		else:
-			return "config set setting [network=networkname] [channel=#somechannel] value"
+			return "config set [network=networkname] [channel=#somechannel] setting value"
 
 	def _cmd_config_get(self, argument):
 		if len(argument)==0:
