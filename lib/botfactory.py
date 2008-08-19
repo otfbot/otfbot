@@ -24,11 +24,10 @@ from bot import Bot
 class BotFactory(protocol.ReconnectingClientFactory):
 	"""The Factory for the Bot"""
 
-	def __init__(self, network, ipc, theconfig, classes):
+	def __init__(self, network, ipc):
 		self.logger=logging.getLogger(network)
 		self.protocol=Bot
-		self.theconfig=theconfig
-		self.classes=classes
+		self.classes=ipc.otfbot.classes
 		self.network=network
 		self.ipc=ipc
 
@@ -44,7 +43,7 @@ class BotFactory(protocol.ReconnectingClientFactory):
 	
 	def buildProtocol(self,addr):
 		#proto=protocol.ReconnectingClientFactory.buildProtocol(self,addr)
-		proto=self.protocol(self.theconfig, self.classes, self.network)
+		proto=self.protocol(self.ipc.otfbot.config, self.classes, self.network)
 		proto.factory=self
 		proto.ipc=self.ipc
 		self.ipc.add(self.network,proto)
