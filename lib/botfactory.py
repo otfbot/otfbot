@@ -43,7 +43,7 @@ class BotFactory(protocol.ReconnectingClientFactory):
 	
 	def buildProtocol(self,addr):
 		#proto=protocol.ReconnectingClientFactory.buildProtocol(self,addr)
-		proto=self.protocol(self.ipc.otfbot.config, self.classes, self.network)
+		proto=self.protocol(self.ipc.config, self.classes, self.network)
 		proto.factory=self
 		proto.ipc=self.ipc
 		self.ipc.add(self.network,proto)
