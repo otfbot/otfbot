@@ -208,7 +208,7 @@ class config:
 	#some highlevel functions
 	def setConfig(self, option, value, module=None, network=None, channel=None):
 		self.set(option, value, module, network, channel)
-		self.writeConfig(self.filename)
+		self.writeConfig()
 			
 	def delConfig(self, option, module=None, network=None, channel=None):
 		delete(option, module, network, channel)
@@ -237,8 +237,10 @@ class config:
 		"""
 		return self.get(option, defaultvalue, module, network, channel) in ["True","true","On","on","1", True, 1]
 	
-	def writeConfig(self, configfile):
-		file=open(configfile, "w")
+	def writeConfig(self):
+		if not self.filename:
+			return False
+		file=open(self.filename, "w")
 		#still_default options
 		if not self.getBoolConfig("writeDefaultValues", False, "config"):
 			for option in self.generic_options_default.keys():
@@ -246,6 +248,7 @@ class config:
 					del(self.generic_options[option])
 		file.write(self.exportyaml())
 		file.close()
+		return True
 def loadConfig(myconfigfile, modulesconfigdir):
 	if os.path.exists(myconfigfile):
 		myconfig=config(myconfigfile)
@@ -276,7 +279,7 @@ fooMod.setting3: false""")
 			file.close()
 			c=config("testconfig.yaml")
 			#c.setConfig("writeDefaultValues", True, "config")
-			c.writeConfig("testconfig.yaml")
+			c.writeConfig()
 			self.config=loadConfig("testconfig.yaml", "test_configsnippets")
 		def tearDown(self):
 			os.remove("test_configsnippets/foomod.yaml")
@@ -289,7 +292,7 @@ fooMod.setting3: false""")
 			blub2=self.config.getConfig("setting4", "new_setting", "fooMod")
 			self.assertTrue(blub2=="new_setting", "blub2 is '%s' instead of 'new_setting'"%blub2)
 
-			self.config.writeConfig("testconfig.yaml")
+			self.config.writeConfig()
 			config2=loadConfig("testconfig.yaml", "test_configsnippets2")
 			self.assertTrue(config2.hasConfig("setting1", "fooMod")[0]==False)
 			self.assertTrue(config2.hasConfig("setting4", "fooMod")[0]==False)
@@ -301,7 +304,7 @@ fooMod.setting3: false""")
 			blub2=self.config.getConfig("setting4", "new_setting", "fooMod")
 			self.assertTrue(blub2=="new_setting", "blub2 is '%s' instead of 'new_setting'"%blub2)
 
-			self.config.writeConfig("testconfig.yaml")
+			self.config.writeConfig()
 			config2=loadConfig("testconfig.yaml", "test_configsnippets2")
 			self.assertTrue(config2.hasConfig("setting1", "fooMod")[0]==True)
 			self.assertTrue(config2.hasConfig("setting4", "fooMod")[0]==True)

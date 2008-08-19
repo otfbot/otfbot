@@ -61,7 +61,7 @@ def main():
 	theconfig=config.loadConfig(configfile, modulesconfigdir)
 	new_config=False
 	if not theconfig: #file could not be loaded, i.e at first start
-		theconfig=config.config()
+		theconfig=config.config(configfile)
 		theconfig.set('enabled', False, 'main', 'samplenetwork')
 		theconfig.set('server', 'localhost', 'main', 'samplenetwork')
 		theconfig.set('enabled', False, 'main', 'samplenetwork', '#example')
@@ -124,7 +124,7 @@ def main():
 	###############################################################################
 
 	createClassList(theconfig, classes) #auto create new classlist, if the classlist is removed by the user or on new config
-	theconfig.writeConfig(configfile) #mostly needed for new configs
+	theconfig.writeConfig() #mostly needed for new configs
 
 	if new_config:
 		#no logger here: the user needs to read this on console, not in logfile
@@ -153,7 +153,7 @@ def main():
 	###############################################################################
 	# registering the exithook function
 	reactor.addSystemEventTrigger('before','shutdown',disconnect, ipc, corelogger)
-	reactor.addSystemEventTrigger('during','shutdown',exithook, theconfig, pidfile, configfile, corelogger)
+	reactor.addSystemEventTrigger('during','shutdown',exithook, theconfig, pidfile, corelogger)
 
 
 	for network in theconfig.getNetworks():
@@ -162,11 +162,11 @@ def main():
 
 ###############################################################################
 
-def exithook(theconfig, pidfile, configfile, corelogger):
+def exithook(theconfig, pidfile, corelogger):
 	""" This function is called, when the program terminates. """
 	# remove Pidfile
 	os.remove(pidfile)
-	theconfig.writeConfig(configfile)
+	theconfig.writeConfig()
 	corelogger.info("Bot shutted down")
 	corelogger.info("-------------------------")
 
