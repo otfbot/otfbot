@@ -1,0 +1,12 @@
+Source: python-niall
+Priority: extra
+Maintainer: Alexander Schier <alexander_schier@yahoo.de>
+Standards-Version: 3.7.3
+Section: libs
+Build-Depends: debhelper (>= 7), cdbs
+Homepage: http://otfbot.berlios.de
+
+Package: python-niall
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: python-bindings for niall

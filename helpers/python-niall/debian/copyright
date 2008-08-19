@@ -1,0 +1,28 @@
+This package was debianized by Alexander Schier <alexander_schier@yahoo.de> on
+Tue, 19 Aug 2008 16:10:10 +0200.
+
+It was downloaded from http://otfbot.berlio.de
+
+Upstream Author(s):
+
+	Niall implementation:
+    Gary Benson <rat@spunge.org>
+	python-package:
+    Alexander Schier <alexander_schier@yahoo.de>
+
+Copyright:
+
+	Niall implementation:
+    Copyright 1999 Gary Benson <rat@spunge.org>
+	python-package:
+    Copyright 2008 Alexander Schier <alexander_schier@yahoo.de>
+
+License:
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+The Debian packaging is (C) 2008, Alexander Schier <alexander_schier@yahoo.de> and
+is licensed under the GPL, see `/usr/share/common-licenses/GPL'.
