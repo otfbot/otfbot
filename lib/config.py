@@ -16,7 +16,7 @@
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 # 
-# (c) 2005, 2006 by Alexander Schier
+# (c) 2005-2008 by Alexander Schier
 #
 
 import sys, os, logging
@@ -24,7 +24,7 @@ import sys, os, logging
 class config:
 
 	#public
-	def __init__(self, filename=None):
+	def __init__(self, filename=None, is_subconfig=False):
 		"""Initialize the config class and load a config"""
 		self.logger=logging.getLogger("config")
 		self.generic_options={}
@@ -40,7 +40,8 @@ class config:
 		try:
 			configs=yaml.load_all(open(filename, "r"))
 			self.generic_options=configs.next()
-			self.network_options=configs.next()
+			if not is_subconfig:
+				self.network_options=configs.next()
 			for option in self.generic_options.keys():
 				self.generic_options_default[option]=False
 		except IOError:
@@ -239,7 +240,7 @@ class config:
 	def writeConfig(self, configfile):
 		file=open(configfile, "w")
 		#still_default options
-		if not self.getBoolConfig("writeDefaultValues", False):
+		if not self.getBoolConfig("writeDefaultValues", False, "config"):
 			for option in self.generic_options_default.keys():
 				if option in self.generic_options.keys() and self.generic_options_default[option]:
 					del(self.generic_options[option])
@@ -249,16 +250,59 @@ def loadConfig(myconfigfile, modulesconfigdir):
 	if os.path.exists(myconfigfile):
 		myconfig=config(myconfigfile)
 		for file in os.listdir(modulesconfigdir):
-			if len(file)>=4 and file[-4:]==".yaml":
-				tmp=config(modulesconfigdir+"/"+file)
+			if len(file)>=4 and file[-5:]==".yaml":
+				tmp=config(modulesconfigdir+"/"+file, is_subconfig=True)
 				for option in tmp.generic_options.keys():
-					if not myconfig.has(option):
-						myconfig.set(tmp.get(option, ""), still_default=True)
+					if not myconfig.has(option)[0]:
+						myconfig.set(option, tmp.get(option, ""), still_default=True)
+				del(tmp)
 	
 		return myconfig
 	else:
 		return None
-	
+
 if __name__ == '__main__':
-	import doctest
+	import doctest, unittest
 	doctest.testmod()
+	
+	class configTest(unittest.TestCase):
+		def setUp(self):
+			os.mkdir("test_configsnippets")
+			os.mkdir("test_configsnippets2") #empty
+			file=open("test_configsnippets/foomod.yaml", "w")
+			file.write("""fooMod.setting1: 'blub'
+fooMod.setting2: true
+fooMod.setting3: false""")
+			file.close()
+			c=config("testconfig.yaml")
+			#c.setConfig("writeDefaultValues", True, "config")
+			c.writeConfig("testconfig.yaml")
+			self.config=loadConfig("testconfig.yaml", "test_configsnippets")
+		def tearDown(self):
+			os.remove("test_configsnippets/foomod.yaml")
+			os.rmdir("test_configsnippets")
+			os.rmdir("test_configsnippets2")
+			os.remove("testconfig.yaml")
+		def testDefaults(self):
+			blub=self.config.getConfig("setting1", "unset", "fooMod")
+			self.assertTrue(blub=="blub", "fooMod.setting1 is '%s' instead of 'blub'"%blub)
+			blub2=self.config.getConfig("setting4", "new_setting", "fooMod")
+			self.assertTrue(blub2=="new_setting", "blub2 is '%s' instead of 'new_setting'"%blub2)
+
+			self.config.writeConfig("testconfig.yaml")
+			config2=loadConfig("testconfig.yaml", "test_configsnippets2")
+			self.assertTrue(config2.hasConfig("setting1", "fooMod")[0]==False)
+			self.assertTrue(config2.hasConfig("setting4", "fooMod")[0]==False)
+		def testWriteDefaults(self):
+			self.config.setConfig("writeDefaultValues", True, "config")
+
+			blub=self.config.getConfig("setting1", "unset", "fooMod")
+			self.assertTrue(blub=="blub", "fooMod.setting1 is '%s' instead of 'blub'"%blub)
+			blub2=self.config.getConfig("setting4", "new_setting", "fooMod")
+			self.assertTrue(blub2=="new_setting", "blub2 is '%s' instead of 'new_setting'"%blub2)
+
+			self.config.writeConfig("testconfig.yaml")
+			config2=loadConfig("testconfig.yaml", "test_configsnippets2")
+			self.assertTrue(config2.hasConfig("setting1", "fooMod")[0]==True)
+			self.assertTrue(config2.hasConfig("setting4", "fooMod")[0]==True)
+	unittest.main()
