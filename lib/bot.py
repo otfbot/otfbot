@@ -115,8 +115,6 @@ class Bot(irc.IRCClient):
 		return self.theconfig.getChannels(net)
 	def loadConfig(self):
 		return self.theconfig.loadConfig(configfile, modulesconfigdir)
-	def writeConfig(self):
-		return self.theconfig.writeConfig()
 
 	def getUsers(self):
 		""" Get a list of users
