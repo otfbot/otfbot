@@ -39,17 +39,25 @@ class Bot(irc.IRCClient):
 		@ivar nickname: the nick of the bot
 	"""
 
-	def __init__(self, theconfig, classes, network):
+	def __init__(self, config, classes, network):
 		#list of mods, which the bot should use
 		#you may need to configure them first
+		self.config=config
+
+		self.delConfig=config.delConfig
+		self.getConfig=config.getConfig
+		self.hasConfig=config.hasConfig
+		self.getPathConfig=config.getPathConfig
+		self.setConfig=config.setConfig
+		self.getBoolConfig=config.getBoolConfig
+
 		self.classes = classes
 		self.channels=[]
 		self.network=network
-		self.theconfig=theconfig
-		self.realname=self.getConfig("realname", "A Bot", "main", self.network)
-		self.password=self.getConfig('password', None, 'main', network)
-		self.nickname=unicode(self.getConfig("nickname", "OtfBot", 'main', self.network)).encode("iso-8859-1")
-		tmp=self.getChannels(self.network)
+		self.realname=self.config.getConfig("realname", "A Bot", "main", self.network)
+		self.password=self.config.getConfig('password', None, 'main', network)
+		self.nickname=unicode(self.config.getConfig("nickname", "OtfBot", 'main', self.network)).encode("iso-8859-1")
+		tmp=self.config.getChannels(self.network)
 		if tmp:
 			self.channels=tmp
 		
@@ -80,41 +88,16 @@ class Bot(irc.IRCClient):
 			@param	args:	the arguments for the callback
 		"""
 		for mod in self.mods.values():
-			#if (args.has_key("channel") and args["channel"] in self.channels and mod.name in self.getConfig("modsEnabled",[],"main",self.network,args["channel"])) or not args.has_key("channel") or args["channel"] not in self.channels:
-
-			#blacklist active modules for certain networks/channels
 			#if a channel is present, check if the module is disabled for the channel.
-			if args.has_key("channel") and mod.name in self.getConfig("modsDisabled",[],"main",self.network,args["channel"], set_default=False):
+			if args.has_key("channel") and mod.name in self.config.getConfig("modsDisabled",[],"main",self.network,args["channel"], set_default=False):
 				return
-			if mod.name in self.getConfig("modsDisabled", [], "main", self.network):
+			if mod.name in self.config.getConfig("modsDisabled", [], "main", self.network):
 				return
 			try:
 				if hasattr(mod, apifunction):
 					getattr(mod,apifunction)(**args)
 			except Exception, e:
 				self.logerror(self.logger, mod.name, e)
-	
-	# public API
-
-	# configstuff, should maybe be moved to a config-instance at self.config
-	def delConfig(self, option, module=None, network=None, channel=None):
-		self.theconfig.delConfig(option, module, network, channel)
-	def setConfig(self, option, value, module=None, network=None, channel=None):
-		return self.theconfig.setConfig(option, value, module, network, channel)
-	def hasConfig(self, option, module=None):
-		return self.theconfig.hasConfig(option, module)
-	def getConfig(self, option, defaultvalue="", module=None, network=None, channel=None, set_default=True):
-		return self.theconfig.getConfig(option, defaultvalue, module, network, channel, set_default)
-	def getBoolConfig(self, option, defaultvalue="", module=None, network=None, channel=None):
-		return self.theconfig.getBoolConfig(option, defaultvalue, module, network, channel)
-	def getPathConfig(self, option, datadir, defaultvalue="", module=None, network=None, channel=None):
-		return self.theconfig.getPathConfig(option, datadir, defaultvalue, module, network, channel)
-	def getNetworks(self):
-		return self.theconfig.getNetworks()
-	def getChannels(self,net):
-		return self.theconfig.getChannels(net)
-	def loadConfig(self):
-		return self.theconfig.loadConfig(configfile, modulesconfigdir)
 
 	def getUsers(self):
 		""" Get a list of users
@@ -160,11 +143,11 @@ class Bot(irc.IRCClient):
 			@param	fallback:	try this one as encoding for C{msg}, if C{encoding} doesn't work
 		"""
 		try:
-			msg=unicode(msg, encoding).encode(self.getConfig("encoding", "UTF-8", "main"))
+			msg=unicode(msg, encoding).encode(self.config.getConfig("encoding", "UTF-8", "main"))
 		except UnicodeDecodeError:
 			#self.logger.debug("Unicode Decode Error with String:"+str(msg))
 			#Try with Fallback encoding
-			msg=unicode(msg, fallback).encode(self.getConfig("encoding", "UTF-8", "main"))
+			msg=unicode(msg, fallback).encode(self.config.getConfig("encoding", "UTF-8", "main"))
 		except UnicodeEncodeError:
 			pass
 			#self.logger.debug("Unicode Encode Error with String:"+str(msg))
@@ -184,7 +167,7 @@ class Bot(irc.IRCClient):
 			@type	encoding:	string
 			@param	encoding:	the encoding of C{msg}
 		"""
-		action=unicode(action, encoding).encode(self.getConfig("encoding", "UTF-8", "main"))
+		action=unicode(action, encoding).encode(self.config.getConfig("encoding", "UTF-8", "main"))
 			
 		self.me(channel, action)
 		self.action(self.nickname, channel, action)
@@ -233,8 +216,7 @@ class Bot(irc.IRCClient):
 			initializes all known modules
 		"""
 		for chatModule in self.classes:
-			#if self.getConfig("enabled","true",chatModule.__name__,self.network)
-			if chatModule.__name__ in self.getConfig("modsEnabled", [], "main", self.network):
+			if chatModule.__name__ in self.config.getConfig("modsEnabled", [], "main", self.network):
 				self.startMod(chatModule)
 	def startMod(self, moduleClass):
 			if hasattr(moduleClass, "chatMod"):
@@ -244,6 +226,7 @@ class Bot(irc.IRCClient):
 					self.mods[moduleClass.__name__]=mod
 					self.mods[moduleClass.__name__].setLogger(self.logger)
 					self.mods[moduleClass.__name__].name=moduleClass.__name__
+					self.mods[moduleClass.__name__].config=self.config
 					if hasattr(self, "network"): #needed for reload!
 						self.mods[moduleClass.__name__].network=self.network
 					if hasattr(self.mods[moduleClass.__name__], "start"):
@@ -278,8 +261,8 @@ class Bot(irc.IRCClient):
 		channelstojoin=self.channels
 		self.channels=[]
 		for channel in channelstojoin:
-			if(self.getBoolConfig("enabled", "false", "main", self.network, channel)):
-				pw = self.getConfig("password","", "main", self.network, channel)
+			if(self.config.getBoolConfig("enabled", "false", "main", self.network, channel)):
+				pw = self.config.getConfig("password","", "main", self.network, channel)
 				if (pw != ""):
 					self.join(unicode(channel).encode("iso-8859-1"),unicode(pw).encode("iso-8859-1"))
 				else:
@@ -295,7 +278,7 @@ class Bot(irc.IRCClient):
 		self.logger.info("joined "+channel)
 		self.channels.append(channel)
 		self._apirunner("joined",{"channel":channel})
-		self.setConfig("enabled", True, "main", self.network, channel)
+		self.config.setConfig("enabled", True, "main", self.network, channel)
 
 	def left(self, channel):
 		""" called by twisted,
@@ -306,7 +289,7 @@ class Bot(irc.IRCClient):
 		self.logger.info("left "+channel)
 		self.channels.remove(channel)
 		self._apirunner("left",{"channel":channel})
-		self.setConfig("enabled", "False", "main", self.network, channel) #disable the channel for the next start of the bot
+		self.config.setConfig("enabled", "False", "main", self.network, channel) #disable the channel for the next start of the bot
 
 	#def isupport(self, options):
 		#self.logger.debug("isupport"+str(options))
@@ -340,7 +323,7 @@ class Bot(irc.IRCClient):
 			char=msg[0].decode('UTF-8').encode('UTF-8')
 		except UnicodeDecodeError:
 			char=msg[0].decode('iso-8859-15').encode('UTF-8')
-		if char==self.getConfig("commandChar", "!", "main").encode("UTF-8"):
+		if char==self.config.getConfig("commandChar", "!", "main").encode("UTF-8"):
 			tmp=msg[1:].split(" ", 1)
 			command=tmp[0]
 			if len(tmp)==2:
