@@ -1,10 +1,11 @@
 How to write a module
 
 * inherit from chatMod.py
-* write your default options in chatMod.xml. Only generic options are supported, there is currently no way to add default options for known networks. Currently this is intended behaviour.
+* write your default options in chatMod.yaml. Only generic options are supported, there is currently no way to add default options for known networks. Currently this is intended behaviour.
+* add a class serverMod if you want to provide functions for the serverMod
 
-Ceveats:
-* self.network and self.nickname are available from connectionMade
+Caveats:
+* self.network and self.nickname are available from connectionMade or start
 * the global variable "datadir" says where to store the data. If not 
   using loadList or loadProperties you have to care yourself about 
   creating it.
