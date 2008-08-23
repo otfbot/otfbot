@@ -21,7 +21,7 @@ from twisted.words.protocols import irc
 from twisted.internet import reactor
 import logging
 import logging.handlers
-import sys, traceback, string
+import sys, traceback, string, time
 sys.path.insert(1,"lib")
 import scheduler
 class Bot(irc.IRCClient):
@@ -142,19 +142,23 @@ class Bot(irc.IRCClient):
 			@type	fallback:	string
 			@param	fallback:	try this one as encoding for C{msg}, if C{encoding} doesn't work
 		"""
-		try:
-			msg=unicode(msg, encoding).encode(self.config.getConfig("encoding", "UTF-8", "main"))
-		except UnicodeDecodeError:
-			#self.logger.debug("Unicode Decode Error with String:"+str(msg))
-			#Try with Fallback encoding
-			msg=unicode(msg, fallback).encode(self.config.getConfig("encoding", "UTF-8", "main"))
-		except UnicodeEncodeError:
-			pass
-			#self.logger.debug("Unicode Encode Error with String:"+str(msg))
-			#use msg as is
+		if not type(msg)==list:
+			msg=[msg]
+		for line in msg:
+			try:
+				line=unicode(line, encoding).encode(self.config.getConfig("encoding", "UTF-8", "main"))
+			except UnicodeDecodeError:
+				#self.logger.debug("Unicode Decode Error with String:"+str(msg))
+				#Try with Fallback encoding
+				msg=unicode(line, fallback).encode(self.config.getConfig("encoding", "UTF-8", "main"))
+			except UnicodeEncodeError:
+				pass
+				#self.logger.debug("Unicode Encode Error with String:"+str(msg))
+				#use msg as is
 			
-		self.msg(channel, msg)
-		self.privmsg(self.nickname, channel, msg)
+			self.msg(channel, line)
+			self.privmsg(self.nickname, channel, line)
+			time.sleep(0.5)
 		
 	def sendme(self, channel, action, encoding="iso-8859-15"):
 		"""
@@ -167,10 +171,14 @@ class Bot(irc.IRCClient):
 			@type	encoding:	string
 			@param	encoding:	the encoding of C{msg}
 		"""
-		action=unicode(action, encoding).encode(self.config.getConfig("encoding", "UTF-8", "main"))
+		if not type(action)==list:
+			action=[action]
+		for line in action:
+			line=unicode(line, encoding).encode(self.config.getConfig("encoding", "UTF-8", "main"))
 			
-		self.me(channel, action)
-		self.action(self.nickname, channel, action)
+			self.me(channel, line)
+			self.action(self.nickname, channel, line)
+			time.sleep(0.5)
 	
 	def reloadModuleClass(self, moduleClass):
 			self.logger.info("reloading class "+moduleClass.__name__)
