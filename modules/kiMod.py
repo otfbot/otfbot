@@ -82,6 +82,7 @@ class niallResponder(responder):
 			#pass
 		if msg:
 			niall.learn(str(msg))
+			niall.save_dictionary("niall.dict")
 	def reply(self, msg):
 		try:
 			msg=ascii_string(unicode(msg, "UTF-8").encode("iso-8859-15"))
