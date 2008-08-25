@@ -42,6 +42,8 @@ class config:
 			self.generic_options=configs.next()
 			if not is_subconfig:
 				self.network_options=configs.next()
+				if not self.network_options:
+					self.network_options={}
 			for option in self.generic_options.keys():
 				self.generic_options_default[option]=False
 		except IOError:
