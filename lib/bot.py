@@ -128,6 +128,15 @@ class Bot(irc.IRCClient):
 			except AttributeError:
 				pass
 		return level
+
+	class WontStart(Exception):
+		pass
+	class DependencyMissing(Exception):
+		pass
+	def depends(self, dependency):
+		"""raise an Exception, if the dependency is missing"""
+		if not self.mods.has_key(dependency):
+			raise self.DependencyMissing(dependency)
 	
 	def sendmsg(self, channel, msg, encoding="iso-8859-15", fallback="iso-8859-15"):
 		"""
@@ -476,6 +485,12 @@ class Bot(irc.IRCClient):
 			@param exception: the exception
 			@type exception: exception
 		"""
+		if type(exception) == self.DependencyMissing:
+			logger.error("Dependency Error in module %s: %s missing"%(module, str(exception)))
+			return
+		elif type(exception) == self.WontStart:
+			logger.info('Module "%s" will not start because "%s".'%(module, str(exception)))
+			return
 		logger.error("Exception in Module "+module+": "+str(exception))
 		tb_list = traceback.format_tb(sys.exc_info()[2])
 		for entry in tb_list:
