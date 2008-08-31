@@ -26,11 +26,11 @@ import logging, traceback, sys, time
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
+		if not self.bot.getBoolConfig("active", False, "serverMod"):
+			raise self.bot.WontStart("serverMod is disabled.")
 	def connectionMade(self):
 		self.start()
 	def start(self):
-		if not self.bot.getBoolConfig("active", False, "serverMod"):
-			return
 		if not hasattr(self.bot, "ipc"): #wait until we have ipc (connectionMade)
 			return
 		if not hasattr(self.bot.ipc, "servers"):
