@@ -109,7 +109,7 @@ class otfbot:
 				self.classes.append(__import__(file[:-3]))
 				self.classes[-1].datadir = self.path_data+"/"+self.classes[-1].__name__
 				self.corelogger.debug("Loading module "+self.classes[-1].__name__)
-	def checkUser(self):
+	def checkUser(self, options):
 		#check for root rights
 		if os.getuid()==0:
 			if options.userid and options.userid!=0 and options.groupid and options.groupid!=0:
@@ -136,7 +136,7 @@ class otfbot:
 		if options.foreground == False and not options.debug > 0:
 			self.detach()
 
-		self.checkUser()
+		self.checkUser(options)
 		# config
 		self.loadConfig(options.configfile)
 
