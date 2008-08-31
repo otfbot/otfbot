@@ -23,6 +23,8 @@ class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
 		self.bot.users={}
+		self.modchars={'a':'!','o':'@','h':'%','v':'+'}
+		self.modcharvals={'!':4,'@':3,'%':2,'+':1,' ':0}
 	def joined(self, channel):
 		self.bot.users[channel]={}		
 	def connectionMade(self):
