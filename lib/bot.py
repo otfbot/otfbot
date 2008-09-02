@@ -134,7 +134,7 @@ class Bot(irc.IRCClient):
 	class DependencyMissing(Exception):
 		pass
 	def depends(self, dependency):
-		"""raise an Exception, if the dependency is missing"""
+		"""raise an Exception, if the dependency is not active"""
 		if not self.mods.has_key(dependency):
 			raise self.DependencyMissing(dependency)
 	
@@ -486,7 +486,7 @@ class Bot(irc.IRCClient):
 			@type exception: exception
 		"""
 		if type(exception) == self.DependencyMissing:
-			logger.error("Dependency Error in module %s: %s missing"%(module, str(exception)))
+			logger.error("Dependency missing in module %s: %s is not active."%(module, str(exception)))
 			return
 		elif type(exception) == self.WontStart:
 			logger.info('Module "%s" will not start because "%s".'%(module, str(exception)))
