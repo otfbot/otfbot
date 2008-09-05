@@ -36,10 +36,3 @@ class chatMod(chatMod.chatMod):
 		elif self.control.has_key(user):
 			output=self.control[user].input(msg)
 			self.bot.sendmsg(nick, output) #sendmsg can handle lists
-
-	def command(self, user, channel, command, options):
-		if self.bot.auth(user) > -1 and command == "reload": #TODO: make "!" configurable
-			for chatMod in self.bot.mods:
-				if chatMod.name == options:
-					chatMod.reload()
-					self.logger.info("Reloading Settings of "+chatMod.name)
