@@ -17,6 +17,19 @@
 # (c) 2008 by Alexander Schier
 #
 import urllib2
+def get_headers(url):
+	request=urllib2.Request(url)
+	request.get_method=lambda: 'HEAD'
+	http=urllib2.urlopen(request)
+	return http.headers
+
+def is_html(url):
+	return get_headers(url)['content-type'].lower() == "text/html"
+
+def download_if_html(url):
+	if is_html(url):
+		return download(url)
+
 def download(url):
 	try:
 		urllib2.install_opener(urllib2.build_opener(urllib2.HTTPRedirectHandler()))
