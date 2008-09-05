@@ -29,6 +29,7 @@ def is_html(url):
 def download_if_html(url):
 	if is_html(url):
 		return download(url)
+	return ""
 
 def download(url):
 	try:
