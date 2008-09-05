@@ -32,23 +32,28 @@ class chatMod(chatMod.chatMod):
 		self.autoTiny=self.bot.getConfig("autotiny", False, "urlMod", self.bot.network)
 		self.autoTinyLength=int(self.bot.getConfig("autoLength", "50", "urlMod", self.bot.network))
 		self.autoPreview=self.bot.getConfig("autopreview", False, "urlMod", self.bot.network)
+		self.autoServerinfo=self.bot.getConfig("autoserverinfo", False, "urlMod", self.bot.network)
 
 	def command(self, user, channel, command, options):
 		response = ""
 		self.parser= titleExtractor()
-		if command == "preview" or command == "tinyurl+preview":
+		headers=urlutils.get_headers(options)
+		if "preview" in command:
 			try:
-				self.parser.feed(urlutils.download_if_html(options))
-				if self.parser.get_result() != "":
-					response += self.parser.get_result()
+				if headers['content-type'].lower()[:9] == "text/html":
+					self.parser.feed(urlutils.download(options))
+					if self.parser.get_result() != "":
+						response += self.parser.get_result()
 			except HTMLParseError, e:
 				self.logger.debug(e)
 				del self.parser
 				self.parser=titleExtractor()
 			self.parser.reset()
-		elif command == "tinyurl" or command == "tinyurl+preview":
+		if "tinyurl" in command:
 			response += " ("+urlutils.download("http://tinyurl.com/api-create.php?url="+options)+")"
-		elif command == "googlefight":
+		if "serverinfo" in command:
+			response += " (Server: %s)"%headers['server']
+		if command == "googlefight":
 			words=options.split(":")
 			if len(words) == 2:
 				data1=urlutils.download('http://www.google.de/search?hl=de&q="%s"'%words[0])
@@ -81,18 +86,14 @@ class chatMod(chatMod.chatMod):
 		if regex:
 			url=regex.group(1)
 			if string.lower(user.split("!")[0]) != string.lower(self.bot.nickname):
+				cmd=""
 				if not "tinyurl.com" in url and len(url) > self.autoTinyLength and self.autoTiny:
-					mask+=1
+					cmd+="+tinyurl"
 				if self.autoPreview:
-					mask+=2
-			if mask == 1:
-				self.command(user, channel, "tinyurl", url)
-			if mask == 2:
-				self.command(user, channel, "preview", url)
-			if mask == 3:
-				self.command(user, channel, "tinyurl+preview", url)
-			mask=0
-
+					cmd+="+preview"
+				if self.autoServerinfo:
+					cmd+="+serverinfo"
+				self.command(user, channel, cmd, url)
 
 			
 class titleExtractor(HTMLParser):
