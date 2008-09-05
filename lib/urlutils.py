@@ -24,7 +24,7 @@ def get_headers(url):
 	return http.headers
 
 def is_html(url):
-	return get_headers(url)['content-type'].lower() == "text/html"
+	return get_headers(url)['content-type'].lower()[:9] == "text/html"
 
 def download_if_html(url):
 	if is_html(url):
