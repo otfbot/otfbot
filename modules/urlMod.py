@@ -38,7 +38,7 @@ class chatMod(chatMod.chatMod):
 		self.parser= titleExtractor()
 		if command == "preview" or command == "tinyurl+preview":
 			try:
-				self.parser.feed(urlutils.download(options))
+				self.parser.feed(urlutils.download_if_html(options))
 				if self.parser.get_result() != "":
 					response += self.parser.get_result()
 			except HTMLParseError, e:
