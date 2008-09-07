@@ -37,7 +37,9 @@ class chatMod(chatMod.chatMod):
 		The user-file has to look like this:
 			"
 			networkname:
-			  username: password(md5-hash!),access-level
+			  username:
+			    password: passwort(md5!)
+			    access: access-level
 			"
 		You can specify as many networks and users as you want.
 		"""
@@ -50,12 +52,12 @@ class chatMod(chatMod.chatMod):
 				a = a + i
 			users = yaml.load(a)
 			users = users[self.network]
-			if users[msg.split(" ")[1].lower()].split(",")[0] == md5.md5(msg.split(" ",2)[2]).hexdigest():
+			if users[msg.split(" ")[1].lower()]['password'] == md5.md5(msg.split(" ",2)[2]).hexdigest():
 				self.bot.sendmsg(user.split("!")[0], "Password accepted")
 				self.logger.info("User "+str(user)+" successfully identified with password as user " + str(msg.split(" ")[1]))
-				self.users[user] = int(users[msg.split(" ")[1].lower()].split(",")[1])
-				self.bot.sendmsg(user.split("!")[0], "You has been identifyed as user " + str(msg.split(" ")[1]) + " with access level " + str(users[msg.split(" ")[1].lower()].split(",")[1]))
-				self.logger.info("User "+str(user)+" now has access level " + str(users[msg.split(" ")[1].lower()].split(",")[1]))
+				self.users[user] = int(users[msg.split(" ")[1].lower()]['access'])
+				self.bot.sendmsg(user.split("!")[0], "You has been identifyed as user " + str(msg.split(" ")[1]) + " with access level " + str(users[msg.split(" ")[1].lower()]['access']))
+				self.logger.info("User "+str(user)+" now has access level " + str(users[msg.split(" ")[1].lower()]['access']))
 
 	def auth(self, user):
 		#user=user.split("!")[0]
