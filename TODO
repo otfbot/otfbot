@@ -10,12 +10,12 @@ modules:
 * extent modules-api
 * let modules register their commands(?)
 * http://peak.telecommunity.com/DevCenter/PythonEggs
+* use access-levels given by authMod
 kiMod:
 * limit brainsize (maybe requires hacking the megahalpython-binding)
 * I18N
 authMod:
 * authMod should use network information for whitelist(!)
 * bitmask for certain permissions
-* add password-auth (userdb, may be global)
 * replace all noncritical error-loggers with warning-loggers (see CODING)
 * feedMod remove feed for channel on part
