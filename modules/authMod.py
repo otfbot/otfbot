@@ -51,13 +51,23 @@ class chatMod(chatMod.chatMod):
 			for i in yamlfile.readlines():
 				a = a + i
 			users = yaml.load(a)
-			users = users[self.network]
-			if users[msg.split(" ")[1].lower()]['password'] == md5.md5(msg.split(" ",2)[2]).hexdigest():
-				self.bot.sendmsg(user.split("!")[0], "Password accepted")
-				self.logger.info("User "+str(user)+" successfully identified with password as user " + str(msg.split(" ")[1]))
-				self.users[user] = int(users[msg.split(" ")[1].lower()]['access'])
-				self.bot.sendmsg(user.split("!")[0], "You has been identifyed as user " + str(msg.split(" ")[1]) + " with access level " + str(users[msg.split(" ")[1].lower()]['access']))
-				self.logger.info("User "+str(user)+" now has access level " + str(users[msg.split(" ")[1].lower()]['access']))
+			try:
+				users = users[self.network]
+			except:
+				self.logger.error("No Users specified for this network!")
+			try:
+				if users[msg.split(" ")[1].lower()]['password'] == md5.md5(msg.split(" ",2)[2]).hexdigest():
+					self.bot.sendmsg(user.split("!")[0], "Password accepted")
+					self.logger.info("User "+str(user)+" successfully identified with password as user " + str(msg.split(" ")[1]))
+					self.users[user] = int(users[msg.split(" ")[1].lower()]['access'])
+					self.bot.sendmsg(user.split("!")[0], "You has been identifyed as user " + str(msg.split(" ")[1]) + " with access level " + str(users[msg.split(" ")[1].lower()]['access']))
+					self.logger.info("User "+str(user)+" now has access level " + str(users[msg.split(" ")[1].lower()]['access']))
+				else:
+					self.bot.sendmsg(user.split("!")[0], "Wrong password!")
+					self.logger.info("User " + str(user) + " tryed to identify as " + str(msg.split(" ")[1]) + "; Wrong password")
+			except:
+				self.bot.sendmsg(user.split("!")[0], "User does not exist!")
+				self.logger.info("User " + str(user) + " tryed to identify as " + str(msg.split(" ")[1]) + "; User does not exist")
 
 	def auth(self, user):
 		#user=user.split("!")[0]
