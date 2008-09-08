@@ -17,12 +17,8 @@
 # (c) 2008 by Thomas Wiegart
 #
 
-import thread, pysvn
-from time import sleep
+import pysvn
 import chatMod
-
-##tmp
-import sys
 
 class chatMod(chatMod.chatMod):
 	def __init__(self,bot):
@@ -36,10 +32,10 @@ class chatMod(chatMod.chatMod):
 		       url: svn://url.to.your/svn
 		"""
 		self.bot = bot
+		self.callIds = {}
 		config = self.bot.getConfig("svnMod.svn","","",self.bot.network)
-		# {'samplesvn': {'url': 'svn://svn.berlios.de/otfbot/trunk', 'channels': None, 'checkinterval': 30}}
 		for i in config:
-			thread.start_new(self.svncheck,(config[i]['url'],config[i]['checkinterval'],config[i]['channels'],i))
+			self.bot.scheduler.callLater(60, self.svncheck, config[i]['url'],config[i]['checkinterval'],config[i]['channels'],i)
 		
 	def svncheck(self,url,interval,channels,name):
 		try:
@@ -47,17 +43,13 @@ class chatMod(chatMod.chatMod):
 		except:
 			channels = [channels]
 		lastrevision = 0
-		sleep(60)
-		while True:
-			data = pysvn.Client().log(url,limit=1)[0].data
-			rev = data['revision'].number
-			if rev != lastrevision:
-				lastrevision = rev
-				for channel in channels:
-					self.bot.msg(channel,chr(2) + "[" + name + "]" + chr(2) + " New SVN-Post at " + url + " by " + data['author'].encode() + ":")
-					for line in data['message'].encode().split("\n"):
-						if line.encode() != "":
-							self.bot.msg(channel,chr(2) + "[" + name + "]" + chr(2) + " " + line.encode())
-			sleep(interval*60)
-				
-			
+		data = pysvn.Client().log(url,limit=1)[0].data
+		rev = data['revision'].number
+		if rev != lastrevision:
+			lastrevision = rev
+			for channel in channels:
+				self.bot.msg(channel,chr(2) + "[" + name + "]" + chr(2) + " Revision " + str(rev) + " by " + data['author'].encode() + ": " + data['message'].encode().replace("\n","").replace("\r",""))
+				#for line in data['message'].encode().split("\n"):
+				#	if line.encode() != "":
+				#		self.bot.msg(channel,chr(2) + "[" + name + "]" + chr(2) + " " + line.encode())
+		self.bot.scheduler.callLater(int(interval)*60, self.svncheck, url,interval,channels,name)
