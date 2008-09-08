@@ -64,10 +64,9 @@ class Bot(irc.IRCClient):
 		self.mods = {}
 		self.numMods = 0
 		
-
 		self.versionName="OtfBot"
 		self.versionNum="svn "+"$Revision: 177 $".split(" ")[1]
-		self.lineRate = 1.0/float(self.config.getConfig("linesPerSecond","2","main"))
+		self.lineRate = 1.0/float(self.config.getConfig("linesPerSecond","2","main",self.network))
 		# some constants, can be retrieved from serveranswer while connecting.
 		self.modchars={'a':'!','o':'@','h':'%','v':'+'}
 		self.modcharvals={'!':4,'@':3,'%':2,'+':1,' ':0}
