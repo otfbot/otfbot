@@ -1,0 +1,6 @@
+samplenetwork:
+  svnMod.svn:
+    samplesvn:
+      channels:
+      checkinterval:
+      url:
