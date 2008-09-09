@@ -36,15 +36,18 @@ class chatMod(chatMod.chatMod):
 		       checkinterval: 30 (in Minutes!)
 		       url: svn://url.to.your/svn
 		"""
-		self.bot = bot
-		self.callIds = {}
-		config = self.bot.getConfig("svnMod.svn","","",self.bot.network)
-		for i in config:
-			self.bot.scheduler.callLater(60, self.svncheck, config[i]['url'],config[i]['checkinterval'],config[i]['channels'],i)
 		if not HAS_PYSVN:
 			self.bot.depends("pysvn python module")
+		self.bot = bot
+		self.callIds = {}
+
+	def connectionMade(self):
+		self.config = self.bot.getConfig("repositories",[] , "svnMod", self.bot.network)
+		for i in self.config:
+			#first call just after connect
+			self.callIds.append(self.bot.scheduler.callLater(1, i, self.svncheck, config[i]['url'],config[i]['checkinterval'],config[i]['channels'],i))
 		
-	def svncheck(self,url,interval,channels,name):
+	def svncheck(self, num, url, interval, channels, name):
 		try:
 			channels = channels.split(",")
 		except:
@@ -56,7 +59,9 @@ class chatMod(chatMod.chatMod):
 			lastrevision = rev
 			for channel in channels:
 				self.bot.msg(channel,chr(2) + "[" + name + "]" + chr(2) + " Revision " + str(rev) + " by " + data['author'].encode() + ": " + data['message'].encode().replace("\n","").replace("\r",""))
-				#for line in data['message'].encode().split("\n"):
-				#	if line.encode() != "":
-				#		self.bot.msg(channel,chr(2) + "[" + name + "]" + chr(2) + " " + line.encode())
-		self.bot.scheduler.callLater(int(interval)*60, self.svncheck, url,interval,channels,name)
+				
+				if self.config[i].has_key("full_message") and self.config[i]['full_message']==True:
+					for line in data['message'].encode().split("\n"):
+						if line.encode() != "":
+							self.bot.msg(channel,chr(2) + "[" + name + "]" + chr(2) + " " + line.encode())
+		self.bot.scheduler.callLater(int(interval)*60, self.svncheck, url, interval, channels, name)
