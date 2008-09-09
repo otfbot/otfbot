@@ -17,7 +17,12 @@
 # (c) 2008 by Thomas Wiegart
 #
 
-import pysvn
+HAS_PYSVN=True
+try:
+	import pysvn
+except ImportError:
+	HAS_PYSVN=False
+
 import chatMod
 
 class chatMod(chatMod.chatMod):
@@ -36,6 +41,8 @@ class chatMod(chatMod.chatMod):
 		config = self.bot.getConfig("svnMod.svn","","",self.bot.network)
 		for i in config:
 			self.bot.scheduler.callLater(60, self.svncheck, config[i]['url'],config[i]['checkinterval'],config[i]['channels'],i)
+		if not HAS_PYSVN:
+			self.bot.depends("pysvn python module")
 		
 	def svncheck(self,url,interval,channels,name):
 		try:
