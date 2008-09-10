@@ -29,39 +29,58 @@ class chatMod(chatMod.chatMod):
 	def __init__(self,bot):
 		"""
 		Config has to look like this:
+		svnMod.repositories:
+		  samplesvn:
+		     checkinterval: 30 (in Minutes!)
+		     url: svn://url.to.your/svn
+		
+		and then do this in your channel-config:
 		samplenetwork:
-		  svnMod.svn:
-		    samplesvn:
-		       channels: '#yourchann'
-		       checkinterval: 30 (in Minutes!)
-		       url: svn://url.to.your/svn
+		  '#samplechannel':
+		    svnMod.repros: samplesvn
+		
+		and the bot will post updates of samplesvn in your channel.
+		You can specify more repros just by appending them seperated with a comma.
 		"""
 		if not HAS_PYSVN:
 			self.bot.depends("pysvn python module")
 		self.bot = bot
 		self.callIds = {}
-
-	def connectionMade(self):
-		self.config = self.bot.getConfig("repositories",[] , "svnMod", self.bot.network)
-		for i in self.config:
-			#first call just after connect
-			self.callIds.append(self.bot.scheduler.callLater(1, i, self.svncheck, config[i]['url'],config[i]['checkinterval'],config[i]['channels'],i))
+		self.svnconfig = self.bot.getConfig("repositories",[] , "svnMod")
+	def joined(self,channel):
+		repros = self.bot.getConfig("repros","","svnMod",self.bot.network,channel)
+		if repros != "":
+			try:
+				repros = repros.split(",")
+			except:
+				repros = [repros,]
+			for i in repros:
+				try:
+					self.callIds[i + "-" + channel] = self.bot.scheduler.callLater(1, self.svncheck, self.svnconfig[i]['url'],self.svnconfig[i]['checkinterval'],channel,i)
+				except KeyError:
+					self.logger.error("Repository " + i + " doen't exist!")
 		
-	def svncheck(self, num, url, interval, channels, name):
-		try:
-			channels = channels.split(",")
-		except:
-			channels = [channels]
-		lastrevision = 0
+	def kickedFrom(self, channel, kicker, message):
+		self.left(channel)
+	def left(self, channel):
+		repros = self.bot.getConfig("repros","","svnMod",self.bot.network,channel)
+		if repros != "":
+			try:
+				repros = repros.split(",")
+			except:
+				repros = [repros,]
+			for i in repros:
+				self.callIds[i + "-" + channel].cancel()
+				self.logger.info("Canceled callLater '" + i + "-" + channel + "'")
+	def connectionLost(self,reason):
+		for i in self.callIds:
+			self.callIds[i].cancel()
+			self.logger.info("Canceled callLater '" + i + "'")
+	def svncheck(self, url, interval, channels, name, lastrevision=0):
 		data = pysvn.Client().log(url,limit=1)[0].data
 		rev = data['revision'].number
 		if rev != lastrevision:
 			lastrevision = rev
-			for channel in channels:
-				self.bot.msg(channel,chr(2) + "[" + name + "]" + chr(2) + " Revision " + str(rev) + " by " + data['author'].encode() + ": " + data['message'].encode().replace("\n","").replace("\r",""))
-				
-				if self.config[i].has_key("full_message") and self.config[i]['full_message']==True:
-					for line in data['message'].encode().split("\n"):
-						if line.encode() != "":
-							self.bot.msg(channel,chr(2) + "[" + name + "]" + chr(2) + " " + line.encode())
-		self.bot.scheduler.callLater(int(interval)*60, self.svncheck, url, interval, channels, name)
+			channel = channels
+			self.bot.msg(channel,chr(2) + "[" + str(name) + "]" + chr(2) + " Revision " + str(rev) + " by " + data['author'].encode() + ": " + data['message'].encode().replace("\n","").replace("\r",""))
+		self.callIds[name + "-" + channel] = self.bot.scheduler.callLater(int(interval)*60, self.svncheck, url, interval, channels, name, lastrevision)
