@@ -79,8 +79,8 @@ class chatMod(chatMod.chatMod):
 	def svncheck(self, url, interval, channels, name, lastrevision=0):
 		data = pysvn.Client().log(url,limit=1)[0].data
 		rev = data['revision'].number
+		channel = channels
 		if rev != lastrevision:
 			lastrevision = rev
-			channel = channels
 			self.bot.msg(channel,chr(2) + "[" + str(name) + "]" + chr(2) + " Revision " + str(rev) + " by " + data['author'].encode() + ": " + data['message'].encode().replace("\n","").replace("\r",""))
 		self.callIds[name + "-" + channel] = self.bot.scheduler.callLater(int(interval)*60, self.svncheck, url, interval, channels, name, lastrevision)
