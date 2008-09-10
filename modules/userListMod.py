@@ -51,7 +51,7 @@ class chatMod(chatMod.chatMod):
 	def kickedFrom(self, channel, kicker, message):
 		self.left(channel)
 	def userKicked(self, kickee, channel, kicker, message):
-		userLeft(kickee, channel)
+		self.userLeft(kickee, channel)
 	def userJoined(self, user, channel):
 		self.bot.users[channel][user.split("!")[0]]={'modchar':' '}		
 	def userLeft(self, user, channel):
