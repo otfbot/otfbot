@@ -37,8 +37,10 @@ class chatMod(chatMod.chatMod):
 	def command(self, user, channel, command, options):
 		response = ""
 		self.parser= titleExtractor()
-		headers=urlutils.get_headers(options)
+		headers=None
 		if "preview" in command:
+			if not headers:
+				headers=urlutils.get_headers(options)
 			try:
 				if headers['content-type'].lower()[:9] == "text/html":
 					self.parser.feed(urlutils.download(options))
@@ -52,6 +54,8 @@ class chatMod(chatMod.chatMod):
 		if "tinyurl" in command:
 			response += " ("+urlutils.download("http://tinyurl.com/api-create.php?url="+options)+")"
 		if "serverinfo" in command:
+			if not headers:
+				headers=urlutils.get_headers(options)
 			response += " (Server: %s)"%headers['server']
 		if command == "googlefight":
 			words=options.split(":")
