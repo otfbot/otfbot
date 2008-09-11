@@ -77,8 +77,12 @@ class chatMod(chatMod.chatMod):
 			self.callIds[i].cancel()
 			self.logger.info("Canceled callLater '" + i + "'")
 	def svncheck(self, url, interval, channels, name, lastrevision=0):
-		data = pysvn.Client().log(url,limit=1)[0].data
-		rev = data['revision'].number
+		try:
+			data = pysvn.Client().log(url,limit=1)[0].data
+			rev = data['revision'].number
+		except:
+			self.logger.error("Client Error. Ensure the url is right.")
+			rev = lastrevision
 		channel = channels
 		if rev != lastrevision:
 			lastrevision = rev
