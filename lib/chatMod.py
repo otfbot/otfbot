@@ -65,10 +65,10 @@ class chatMod:
 		pass
 	def kickedFrom(self, channel, kicker, message):
 		"""someone kicked the bot"""
-		pass
+		self.left(channel)
 	def userKicked(self, kickee, channel, kicker, message):
 		"""someone kicked someone else"""
-		pass
+		self.userLeft(kickee,channel)
 	def userJoined(self, user, channel):
 		"""a user joined the channel"""
 		pass

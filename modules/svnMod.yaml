@@ -1,6 +1,4 @@
-samplenetwork:
-  svnMod.svn:
-    samplesvn:
-      channels:
-      checkinterval:
-      url:
+svnMod.repositorys:
+  samplerepository:
+    url:
+    checkinterval:
