@@ -35,8 +35,8 @@ def download(url):
 	try:
 		urllib2.install_opener(urllib2.build_opener(urllib2.HTTPRedirectHandler()))
 		req = urllib2.Request(url)
-		svnrevision="$Revision: 187 $".split(" ")[1]
-		req.add_header("user-agent", "OTFBot (svn r%s; otfbot.berlios.de)"%(svnrevision))
+		svnrevision="0.9"
+		req.add_header("user-agent", "OTFBot (Version %s; otfbot.berlios.de)"%(svnrevision))
 		url=urllib2.urlopen(req)
 		data=url.read()
 		url.close()

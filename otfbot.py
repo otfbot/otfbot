@@ -91,8 +91,8 @@ class otfbot:
 		self.corelogger.info("| |_| || | |  _| | |_) | (_) | |_ ")
 		self.corelogger.info(" \___/ |_| |_|   |____/ \___/ \__|")
 		self.corelogger.info("")
-		self.svnrevision="$Revision$".split(" ")[1] #TODO: this is only updated, when otfbot.py is updated
-		self.corelogger.info("Starting OtfBot - Version svn "+self.svnrevision)
+		self.svnrevision="0.9" #TODO: this is only updated, when otfbot.py is updated
+		self.corelogger.info("Starting OtfBot - Version "+self.svnrevision)
 		# get messages from twisted as well
 		plo=otfbotlog.PythonLoggingObserver()
 		plo.start()
