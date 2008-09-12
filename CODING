@@ -1,4 +1,0 @@
-style
-=====
--use logger instead of print, productivity code should contain no prints (with very few exceptions)
--use logger.error and logger.crit only for messages which should be reported as bug.
