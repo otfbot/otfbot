@@ -103,7 +103,8 @@ class otfbot:
 		self.path_data=self.config.getConfig("datadir", "data", "main", set_default=False)
 	def loadModuleClasses(self):
 		sys.path.insert(1, self.path_mods)
-		for file in os.listdir(self.path_mods):
+		files = sorted(os.listdir(self.path_mods))
+		for file in files:
 			if len(file)>=3 and file[-3:]==".py":
 				#TODO: this in bot.startMod(s)?
 				self.classes.append(__import__(file[:-3]))

@@ -42,9 +42,9 @@ class chatMod(chatMod.chatMod):
 		and the bot will post updates of samplesvn in your channel.
 		You can specify more repros just by appending them seperated with a comma.
 		"""
+		self.bot = bot
 		if not HAS_PYSVN:
 			self.bot.depends("pysvn python module")
-		self.bot = bot
 		self.callIds = {}
 		self.svnconfig = self.bot.getConfig("repositories",[] , "svnMod")
 	def joined(self,channel):

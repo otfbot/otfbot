@@ -67,7 +67,9 @@ class Bot(irc.IRCClient):
 		self.versionName="OtfBot"
 		self.versionNum="svn "+"$Revision: 177 $".split(" ")[1]
 		self.lineRate = 1.0/float(self.config.getConfig("linesPerSecond","2","main",self.network))
-		# some constants, can be retrieved from serveranswer while connecting.
+
+		# usertracking
+		self.users={}
 		self.modchars={'a':'!','o':'@','h':'%','v':'+'}
 		self.modcharvals={'!':4,'@':3,'%':2,'+':1,' ':0}
 
@@ -89,6 +91,7 @@ class Bot(irc.IRCClient):
 			@param	args:	the arguments for the callback
 		"""
 		for mod in self.mods.values():
+			#self.logger.debug("running "+apifunction+" for module "+str(mod))
 			#if a channel is present, check if the module is disabled for the channel.
 			if args.has_key("channel") and mod.name in self.config.getConfig("modsDisabled",[],"main",self.network,args["channel"], set_default=False):
 				return
@@ -295,6 +298,7 @@ class Bot(irc.IRCClient):
 		"""
 		self.logger.info("joined "+channel)
 		self.channels.append(channel)
+		self.users[channel]={}
 		self._apirunner("joined",{"channel":channel})
 		self.config.setConfig("enabled", True, "main", self.network, channel)
 
@@ -305,8 +309,9 @@ class Bot(irc.IRCClient):
 			@type channel: string
 		"""
 		self.logger.info("left "+channel)
-		self.channels.remove(channel)
 		self._apirunner("left",{"channel":channel})
+		self.users.remove(channel)
+		self.channels.remove(channel)
 		self.config.setConfig("enabled", "False", "main", self.network, channel) #disable the channel for the next start of the bot
 
 	#def isupport(self, options):
@@ -396,24 +401,39 @@ class Bot(irc.IRCClient):
 		""" called by twisted
 			if a usermode was changed
 		"""
+		i=0
+		for arg in args:
+			if modes[i] in self.modchars.keys() and set == True:
+				if self.modcharvals[self.modchars[modes[i]]] > self.modcharvals[self.users[channel][arg]['modchar']]:
+					self.users[channel][arg]['modchar'] = self.modchars[modes[i]]
+			elif modes[i] in self.modchars.keys() and set == False:
+				#FIXME: ask for the real mode
+				self.users[channel][arg]['modchar'] = ' '
+			i=i+1
 		self._apirunner("modeChanged",{"user":user,"channel":channel,"set":set,"modes":modes,"args":args})
 
 	def kickedFrom(self, channel, kicker, message):
 		""" called by twisted,
 			if the bot was kicked
 		"""
+		self.logger.info("I was kicked from "+channel+" by "+kicker)
 		self._apirunner("kickedFrom",{"channel":channel,"kicker":kicker,"message":message})
+		self.channels.remove(channel)
+		self.config.setConfig("enabled", "False", "main", self.network, channel) #disable the channel for the next start of the bot
+		self.users.remove(channel)
 
 	def userKicked(self, kickee, channel, kicker, message):
 		""" called by twisted,
 			if a user was kicked
 		"""
 		self._apirunner("userKicked",{"kickee":kickee,"channel":channel,"kicker":kicker,"message":message})
+		del self.users[channel][user.split("!")[0]]		
 
 	def userJoined(self, user, channel):
 		""" called by twisted,
 			if a C{user} joined the C{channel}
 		"""
+		self.users[channel][user.split("!")[0]]={'modchar':' '}		
 		self._apirunner("userJoined",{"user":user,"channel":channel})
 
 	def userLeft(self, user, channel):
@@ -421,6 +441,7 @@ class Bot(irc.IRCClient):
 			if a C{user} left the C{channel}
 		"""
 		self._apirunner("userLeft",{"user":user,"channel":channel})
+		del self.users[channel][user.split("!")[0]]		
 
 	def userQuit(self, user, quitMessage):
 		""" called by twisted,
@@ -446,6 +467,10 @@ class Bot(irc.IRCClient):
 			if a user changed his nick
 		"""
 		self._apirunner("userRenamed",{"oldname":oldname,"newname":newname})
+		for chan in self.users:
+			if self.users[chan].has_key(oldname):
+				self.users[chan][newname]=self.users[chan][oldname]
+				del self.users[chan][oldname]		
 
 	def topicUpdated(self, user, channel, newTopic):
 		""" called by twisted
@@ -457,6 +482,13 @@ class Bot(irc.IRCClient):
 		self._apirunner("irc_RPL_ENDOFNAMES",{"prefix":prefix,"params":params})
 	def irc_RPL_NAMREPLY(self, prefix, params):
 		self._apirunner("irc_RPL_NAMREPLY",{"prefix":prefix,"params":params})
+		for nick in params[3].strip().split(" "):
+			if nick[0] in "@%+!":
+				s=nick[0]
+				nick=nick[1:]
+			else:
+				s=" "
+			self.users[params[2]][nick]={'modchar':s}		
 
 	def lineReceived(self, line):
 		""" called by twisted
