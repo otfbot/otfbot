@@ -27,11 +27,6 @@ class chatMod(chatMod.chatMod):
 		self.modcharvals={'!':4,'@':3,'%':2,'+':1,' ':0}
 	def joined(self, channel):
 		self.bot.users[channel]={}
-	def reload(self):
-		print "RELOADED"
-		print self.channels
-		for channel in self.channels:
-			self.joined(channel)		
 	def connectionMade(self):
 		"""made connection to server"""
 		pass
