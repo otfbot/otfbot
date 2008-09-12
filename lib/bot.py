@@ -65,7 +65,7 @@ class Bot(irc.IRCClient):
 		self.numMods = 0
 		
 		self.versionName="OtfBot"
-		self.versionNum="svn "+"$Revision: 177 $".split(" ")[1]
+		self.versionNum="0.9"
 		self.lineRate = 1.0/float(self.config.getConfig("linesPerSecond","2","main",self.network))
 
 		# usertracking
