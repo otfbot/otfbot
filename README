@@ -11,7 +11,7 @@ also need the pyopenssl-package, if you want to use the feedMod, you need
 the feedparser-package. 
 
 The following packages should satisfy this on Debian and Ubuntu:
- * python-twisted
- * python-yaml (not in etch, a package can be found on our ftp)
- * python-pyopenssl
- * python-feedparser
+  * python-twisted
+  * python-yaml (not in etch, a package can be found on our ftp at ftp://ftp.berlios.de/pub/otfbot/)
+  * python-pyopenssl
+  * python-feedparser
