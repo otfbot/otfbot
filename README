@@ -1,0 +1,17 @@
+ABOUT
+
+OtfBot is a modular IRC-Bot written around the Twisted-Framework. It aims to
+be a friendly and handy Service-Bot.
+
+REQUIREMENTS
+
+To run OtfBot you need at least version 2.4 of the Twisted-Framework and the
+yaml-bindings for python. If you want to connect via SSL to IRC-Servers you 
+also need the pyopenssl-package, if you want to use the feedMod, you need
+the feedparser-package. 
+
+The following packages should satisfy this on Debian and Ubuntu:
+ * python-twisted
+ * python-yaml (not in etch, a package can be found on our ftp)
+ * python-pyopenssl
+ * python-feedparser
