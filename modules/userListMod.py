@@ -26,7 +26,12 @@ class chatMod(chatMod.chatMod):
 		self.modchars={'a':'!','o':'@','h':'%','v':'+'}
 		self.modcharvals={'!':4,'@':3,'%':2,'+':1,' ':0}
 	def joined(self, channel):
-		self.bot.users[channel]={}		
+		self.bot.users[channel]={}
+	def reload(self):
+		print "RELOADED"
+		print self.channels
+		for channel in self.channels:
+			self.joined(channel)		
 	def connectionMade(self):
 		"""made connection to server"""
 		pass
@@ -57,6 +62,7 @@ class chatMod(chatMod.chatMod):
 	def userLeft(self, user, channel):
 		del self.bot.users[channel][user.split("!")[0]]		
 	def userQuit(self, user, quitMessage):
+		user = user.split("!")[0]
 		for chan in self.bot.users:
 			if self.bot.users[chan].has_key(user):
 				del self.bot.users[chan][user]
