@@ -427,7 +427,7 @@ class Bot(irc.IRCClient):
 			if a user was kicked
 		"""
 		self._apirunner("userKicked",{"kickee":kickee,"channel":channel,"kicker":kicker,"message":message})
-		del self.users[channel][user.split("!")[0]]		
+		del self.users[channel][kickee.split("!")[0]]		
 
 	def userJoined(self, user, channel):
 		""" called by twisted,
