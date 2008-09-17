@@ -21,7 +21,7 @@ from twisted.words.protocols import irc
 from twisted.internet import reactor
 import logging
 import logging.handlers
-import sys, traceback, string, time
+import sys, traceback, string, time, os
 sys.path.insert(1,"lib")
 import scheduler
 class Bot(irc.IRCClient):
@@ -39,7 +39,7 @@ class Bot(irc.IRCClient):
 		@ivar nickname: the nick of the bot
 	"""
 
-	def __init__(self, config, classes, network):
+	def __init__(self, config, network):
 		#list of mods, which the bot should use
 		#you may need to configure them first
 		self.config=config
@@ -51,7 +51,6 @@ class Bot(irc.IRCClient):
 		self.setConfig=config.setConfig
 		self.getBoolConfig=config.getBoolConfig
 
-		self.classes = classes
 		self.channels=[]
 		self.network=network
 		self.realname=self.config.getConfig("realname", "A Bot", "main", self.network)
@@ -67,6 +66,8 @@ class Bot(irc.IRCClient):
 		self.versionName="OtfBot"
 		self.versionNum="svn "+"$Revision: 177 $".split(" ")[1]
 		self.lineRate = 1.0/float(self.config.getConfig("linesPerSecond","2","main",self.network))
+
+		self.classes=[]
 
 		# usertracking
 		self.users={}
@@ -236,9 +237,18 @@ class Bot(irc.IRCClient):
 		"""
 			initializes all known modules
 		"""
+		files = sorted(os.listdir("/home/robert/frickelei/otfbot/Otfbot/modules")) #FIXME: config-option
+		sys.path.insert(1,"/home/robert/frickelei/otfbot/Otfbot/modules")
+		for file in files:
+			if len(file)>=3 and file[-3:]==".py":
+				#TODO: this in bot.startMod(s)?
+				self.classes.append(__import__(file[:-3]))
+				self.classes[-1].datadir = "/home/robert/frickelei/otfbot/Otfbot/"+self.classes[-1].__name__
+				self.logger.debug("Loading module "+self.classes[-1].__name__)		
 		for chatModule in self.classes:
 			if chatModule.__name__ in self.config.getConfig("modsEnabled", [], "main", self.network):
 				self.startMod(chatModule)
+
 	def startMod(self, moduleClass):
 			if hasattr(moduleClass, "chatMod"):
 				try:

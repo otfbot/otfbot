@@ -86,6 +86,16 @@ class BotProtocolFactory(protocol.ServerFactory):
 		self.proto.append(proto)
 		return proto
 
+class controlTCPService(service.MultiService):
+      
+    def startService(self):
+        self.config=self.parent.getServiceNamed("config")
+        f = BotProtocolFactory(self.config, network)
+        serv=internet.TCPServer(int(self.bot.getConfig("port", 5022, "controlTCPMod")),f, interface=self.bot.getConfig("interface", "127.0.0.1", "controlTCPMod"))
+        serv.setName(network)
+        self.addService(serv)
+        service.MultiService.startService(self)  
+
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot

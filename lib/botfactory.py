@@ -24,15 +24,13 @@ from bot import Bot
 class BotFactory(protocol.ReconnectingClientFactory):
 	"""The Factory for the Bot"""
 
-	def __init__(self, network, ipc):
+	def __init__(self, config, network):
 		self.logger=logging.getLogger(network)
 		self.protocol=Bot
-		self.classes=ipc.otfbot.classes
 		self.network=network
-		self.ipc=ipc
+		self.config=config
 
 	def clientConnectionLost(self, connector, reason):
-		self.ipc.rm(self.network)
 		if not reason.check(error.ConnectionDone):
 			self.logger.warn("Got disconnected from "+connector.host+": "+str(reason.getErrorMessage()))
 			protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
@@ -43,8 +41,6 @@ class BotFactory(protocol.ReconnectingClientFactory):
 	
 	def buildProtocol(self,addr):
 		#proto=protocol.ReconnectingClientFactory.buildProtocol(self,addr)
-		proto=self.protocol(self.ipc.config, self.classes, self.network)
+		proto=self.protocol(self.config, self.network)
 		proto.factory=self
-		proto.ipc=self.ipc
-		self.ipc.add(self.network,proto)
 		return proto
