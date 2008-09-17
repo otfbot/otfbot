@@ -23,35 +23,14 @@ from twisted.words.protocols import irc
 from twisted.words.service import IRCUser
 import logging, traceback, sys, time
 
-class chatMod(chatMod.chatMod):
-	def __init__(self, bot):
-		self.bot=bot
-		if not self.bot.getBoolConfig("active", False, "serverMod"):
-			raise self.bot.WontStart("serverMod is disabled.")
-	def connectionMade(self):
-		self.start()
-	def start(self):
-		if not hasattr(self.bot, "ipc"): #wait until we have ipc (connectionMade)
-			return
-		if not hasattr(self.bot.ipc, "servers"):
-			self.bot.ipc.servers=[]
-		if not hasattr(self.bot.ipc, "server") or self.bot.ipc.server==None:
-			self.createServer()
-		elif hasattr(self.bot.ipc.server, "called"):
-			if self.bot.ipc.server.called: #but it was already called, port is free now
-				self.createServer()
-			else: #not called, yet
-				if self.bot.ipc.server.callbacks==[]:
-					self.bot.ipc.server.addCallback(self.createServer) #restart server as soon as possible
-	def createServer(self, *args):
-		self.bot.ipc.server=reactor.listenTCP(int(self.bot.getConfig("port", "6667", "serverMod")), ircServerFactory(self.bot), interface=self.bot.getConfig("interface", "127.0.0.1", "serverMod"))
-	def stop(self):
-		if hasattr(self.bot.ipc, "servers"):
-			for server in self.bot.ipc.servers:
-				server.stop()
-			if hasattr(self.bot.ipc, "server") and hasattr(self.bot.ipc.server, "loseConnection"): #no Deferred object
-				self.bot.ipc.server=self.bot.ipc.server.loseConnection()
-		
+class ircClientService(service.MultiService):
+	def startService(self):
+		self.config=self.parent.getServiceNamed("config")
+        serv=internet.TCPServer(int(self.bot.getConfig("port", "6667", "serverMod")), 
+						   ircServerFactory(self.bot), 
+						   interface=self.bot.getConfig("interface", "127.0.0.1", "serverMod"))
+        self.addService(serv)
+        service.MultiService.startService(self)  
 
 class serverMod:
 	def __init__(self, server):
