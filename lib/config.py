@@ -30,6 +30,7 @@ class config:
 		self.generic_options={}
 		self.network_options={}
 		self.filename=filename
+		self.name="config"
 
 		#still the default value?
 		self.generic_options_default={}
