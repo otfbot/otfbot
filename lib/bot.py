@@ -420,7 +420,7 @@ class Bot(irc.IRCClient):
 		self._apirunner("kickedFrom",{"channel":channel,"kicker":kicker,"message":message})
 		self.channels.remove(channel)
 		self.config.setConfig("enabled", "False", "main", self.network, channel) #disable the channel for the next start of the bot
-		self.users.remove(channel)
+		del(self.users[channel])
 
 	def userKicked(self, kickee, channel, kicker, message):
 		""" called by twisted,
