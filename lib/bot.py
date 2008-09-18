@@ -233,7 +233,7 @@ class Bot(irc.IRCClient):
 		del(self.mods[moduleName])
 		del(chatMod)
 
-	def startMod(self, name):
+	def importMod(self, name):
 		for c in self.classes:
 			if c.__name__ == name:
 				return c
