@@ -233,23 +233,24 @@ class Bot(irc.IRCClient):
 		del(self.mods[moduleName])
 		del(chatMod)
 
+	def startMod(self, name):
+		for c in self.classes:
+			if c.__name__ == name:
+				return c
+		self.classes.append(__import__(name))
+		self.classes[-1].datadir = self.config.getConfig("datadir", "data", self.network)+"/"+self.classes[-1].__name__
+		self.logger.debug("Imported module "+self.classes[-1].__name__)		
+		return self.classes[-1]
 	def startMods(self):
 		"""
 			initializes all known modules
 		"""
-		files = sorted(os.listdir("/home/robert/frickelei/otfbot/Otfbot/modules")) #FIXME: config-option
-		sys.path.insert(1,"/home/robert/frickelei/otfbot/Otfbot/modules")
-		for file in files:
-			if len(file)>=3 and file[-3:]==".py":
-				#TODO: this in bot.startMod(s)?
-				self.classes.append(__import__(file[:-3]))
-				self.classes[-1].datadir = "/home/robert/frickelei/otfbot/Otfbot/"+self.classes[-1].__name__
-				self.logger.debug("Loading module "+self.classes[-1].__name__)		
 		for chatModule in self.classes:
 			if chatModule.__name__ in self.config.getConfig("modsEnabled", [], "main", self.network):
-				self.startMod(chatModule)
+				self.startMod(chatModuleName)
 
-	def startMod(self, moduleClass):
+	def startMod(self, moduleName):
+			moduleClass=self.importMod(moduleName)
 			if hasattr(moduleClass, "chatMod"):
 				try:
 					self.logger.info("starting %s for network %s"%(moduleClass.__name__, self.network))
