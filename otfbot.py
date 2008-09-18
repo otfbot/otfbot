@@ -39,6 +39,8 @@ class pythonToTwistedLoggingHandler(logging.Handler):
 		log.msg(record.getMessage())
 
 # Setup Logging
+#path_log="otfbot.log"
+#path_errorlog="otfbot.err"
 # logging to logfile
 #debuglevel=0
 #filelogger = logging.handlers.RotatingFileHandler(path_log,'a',1048576,5)
@@ -46,7 +48,7 @@ class pythonToTwistedLoggingHandler(logging.Handler):
 #errorlogger = logging.handlers.RotatingFileHandler(path_errorlog,'a',1048576,5)
 #errorlogger.setLevel(logging.ERROR)
 logging.getLogger('').setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s %(name)-18s %(module)-18s %(levelname)-8s %(message)s')
+#formatter = logging.Formatter('%(asctime)s %(name)-18s %(module)-18s %(levelname)-8s %(message)s')
 #filelogger.setFormatter(formatter)
 #errorlogger.setFormatter(formatter)
 #memorylogger.setFormatter(formatter)
@@ -57,17 +59,17 @@ logging.getLogger('').addHandler(pythonToTwistedLoggingHandler())
 
 #if debuglevel > 0:
 	# logging to stdout
-#	console = logging.StreamHandler()
-#	logging.getLogger('').setLevel(debuglevel)
-#	console.setFormatter(self.formatter)
-#	logging.getLogger('').addHandler(console)
-corelogger = logging.getLogger('core')
-corelogger.info("  ___ _____ _____ ____        _   ")
-corelogger.info(" / _ \_   _|  ___| __ )  ___ | |_ ")
-corelogger.info("| | | || | | |_  |  _ \ / _ \| __|")
-corelogger.info("| |_| || | |  _| | |_) | (_) | |_ ")
-corelogger.info(" \___/ |_| |_|   |____/ \___/ \__|")
-corelogger.info("")
+#console = logging.StreamHandler()
+#logging.getLogger('').setLevel(debuglevel)
+#console.setFormatter(formatter)
+#logging.getLogger('').addHandler(console)
+#corelogger = logging.getLogger('core')
+#corelogger.info("  ___ _____ _____ ____        _   ")
+#corelogger.info(" / _ \_   _|  ___| __ )  ___ | |_ ")
+#corelogger.info("| | | || | | |_  |  _ \ / _ \| __|")
+#corelogger.info("| |_| || | |  _| | |_) | (_) | |_ ")
+#corelogger.info(" \___/ |_| |_|   |____/ \___/ \__|")
+#corelogger.info("")
 #svnrevision="$Revision$".split(" ")[1] #TODO: this is only updated, when otfbot.py is updated
 # get messages from twisted as well
 #plo=otfbotlog.PythonLoggingObserver()
@@ -90,4 +92,10 @@ config['config']="otfbot.yaml"
 
 application=service.Application("otfbot")
 configService(config['config']).setServiceParent(application)
-ircClientService().setServiceParent(application)
+irc=ircClientService()
+irc.setServiceParent(application)
+
+from twisted.conch import manhole_tap
+manholeService=manhole_tap.makeService({'telnetPort':'7777','sshPort':None,'passwd':'/home/robert/frickelei/otfbot/Otfbot/passwd', 'namespace':{'app':irc}})
+manholeService.setName("manhole")
+manholeService.setServiceParent(application)

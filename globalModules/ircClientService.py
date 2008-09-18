@@ -25,20 +25,26 @@ from lib.bot import Bot
 import logging
 
 class ircClientService(service.MultiService):
-      
+    name="ircClient"
     def startService(self):
         self.config=self.parent.getServiceNamed("config")
         for network in self.config.getNetworks():
-            f = BotFactory(self.config, network)
-            servername=self.config.getConfig("server", "localhost", "main", network)
-            if (self.config.getBoolConfig('ssl','False','main', network)):
-                s = ssl.ClientContextFactory()
-                serv=internet.SSLClient(servername, int(self.config.getConfig('port','6697','main', network)), f,s)
-            else:
-                serv=internet.TCPClient(servername, int(self.config.getConfig('port','6667','main', network)), f)
-            serv.setName(network)
-            self.addService(serv)
-        service.MultiService.startService(self)  
+            self.connect(network)
+        service.MultiService.startService(self)
+        
+    def connect(self, network):
+        f = BotFactory(self.config, network)
+        servername=self.config.getConfig("server", "localhost", "main", network)
+        if (self.config.getBoolConfig('ssl','False','main', network)):
+            s = ssl.ClientContextFactory()
+            serv=internet.SSLClient(servername, int(self.config.getConfig('port','6697','main', network)), f,s)
+        else:
+            serv=internet.TCPClient(servername, int(self.config.getConfig('port','6667','main', network)), f)
+        f.service=serv
+        serv.setName(network)
+        serv.parent=self
+        self.addService(serv)
+
 
 class BotFactory(protocol.ReconnectingClientFactory):
     """The Factory for the Bot"""
@@ -50,6 +56,8 @@ class BotFactory(protocol.ReconnectingClientFactory):
         self.config=config
 
     def clientConnectionLost(self, connector, reason):
+        self.protocol=None
+        self.service.protocol=None
         if not reason.check(error.ConnectionDone):
             self.logger.warn("Got disconnected from "+connector.host+": "+str(reason.getErrorMessage()))
             protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
@@ -62,4 +70,7 @@ class BotFactory(protocol.ReconnectingClientFactory):
         #proto=protocol.ReconnectingClientFactory.buildProtocol(self,addr)
         proto=self.protocol(self.config, self.network)
         proto.factory=self
+        proto.service=self.service
+        self.service.protocol=proto
+        self.protocol=proto
         return proto
