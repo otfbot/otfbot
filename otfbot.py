@@ -84,6 +84,7 @@ class Options(usage.Options):
 #    print '%s: Try --help for usage details.' % (sys.argv[0])
 #    sys.exit(1)
 
+sys.path.insert(1,"globalModules/ircServerModules")
 config={}
 config['config']="otfbot.yaml"
 
