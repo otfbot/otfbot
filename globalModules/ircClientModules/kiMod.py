@@ -18,7 +18,8 @@
 # (c) 2005, 2006 by Alexander Schier
 #
 
-import string, re, random, time, atexit
+import string, re, random, time, atexit, os.path
+import urllib, urllib2
 import chatMod, functions
 
 MEGAHAL=1
@@ -66,6 +67,17 @@ def ascii_string(msg):
 	msg=re.sub("Ü", "Ue", msg)
 	msg=re.sub("Ä", "Ae", msg)
 	return re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@. ]", "", msg)
+
+class webResponder(responder):
+	def __init__(self, bot):
+		self.bot=bot
+	def learn(self, msg):
+		url=self.bot.getConfig("url", "", "kiMod", self.bot.network)
+		urllib2.urlopen(url+urllib.quote(msg)).read()
+	def reply(self, msg):	
+		url=self.bot.getConfig("url", "", "kiMod", self.bot.network)
+		return ascii_string(urllib2.urlopen(url+urllib.quote(msg)).read())
+
 class niallResponder(responder):
 	def __init__(self, bot):
 		niall.init()
@@ -97,7 +109,6 @@ class niallResponder(responder):
 			reply=""
 		if msg:
 			niall.learn(str(msg))
-			niall.save_dictionary("niall.dict")
 		return reply
 	def cleanup(self):
 		#niall.save_dictionary("niall.dict")
@@ -184,6 +195,8 @@ class chatMod(chatMod.chatMod):
 				if NIALL:
 					self.logger.warning("Trying niall instead.")
 					self.responder=niallResponder(self.bot)
+		elif module=="web":
+			self.responder=webResponder(self.bot)
 		atexit.register(self.responder.cleanup)
 
 	def joined(self, channel):
