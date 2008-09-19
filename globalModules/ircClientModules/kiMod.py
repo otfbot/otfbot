@@ -79,6 +79,7 @@ class udpResponder(responder):
 		self.socket.bind(("", self.localport))
 	def learn(self, msg):
 		self.socket.sendto(msg, (self.host, self.remoteport))
+		self.socket.recvfrom(8*1024)
 	def reply(self, msg):	
 		self.socket.sendto(msg, (self.host, self.remoteport))
 		return ascii_string(self.socket.recvfrom(8*1024)[0].strip())
