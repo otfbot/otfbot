@@ -19,7 +19,7 @@
 #
 
 import string, re, random, time, atexit, os.path
-import urllib, urllib2
+import urllib, urllib2, socket
 import chatMod, functions
 
 MEGAHAL=1
@@ -67,6 +67,21 @@ def ascii_string(msg):
 	msg=re.sub("Ü", "Ue", msg)
 	msg=re.sub("Ä", "Ae", msg)
 	return re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@. ]", "", msg)
+
+class udpResponder(responder):
+	def __init__(self, bot):
+		self.bot=bot
+		self.host=self.bot.getConfig("host", "", "kiMod", self.bot.network)
+		self.remoteport=int(self.bot.getConfig("remoteport", "", "kiMod", self.bot.network))
+		self.localport=int(self.bot.getConfig("localport", "", "kiMod", self.bot.network))
+		self.socket=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+		self.socket.bind(("", self.localport))
+	def learn(self, msg):
+		self.socket.sendto(msg, (self.host, self.remoteport))
+	def reply(self, msg):	
+		self.socket.sendto(msg, (self.host, self.remoteport))
+		return ascii_string(self.socket.recvfrom(8*1024)[0].strip())
 
 class webResponder(responder):
 	def __init__(self, bot):
@@ -197,6 +212,8 @@ class chatMod(chatMod.chatMod):
 					self.responder=niallResponder(self.bot)
 		elif module=="web":
 			self.responder=webResponder(self.bot)
+		elif module=="udp":
+			self.responder=udpResponder(self.bot)
 		atexit.register(self.responder.cleanup)
 
 	def joined(self, channel):
