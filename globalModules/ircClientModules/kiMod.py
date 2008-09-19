@@ -76,6 +76,7 @@ class udpResponder(responder):
 		self.localport=int(self.bot.getConfig("localport", "", "kiMod", self.bot.network))
 		self.socket=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+		self.socket.settimeout(10)
 		self.socket.bind(("", self.localport))
 	def learn(self, msg):
 		self.socket.sendto(msg, (self.host, self.remoteport))
