@@ -104,12 +104,15 @@ niall_correct_spelling(PyObject *self, PyObject *args){
 static PyObject *
 niall_learn(PyObject *self, PyObject *args){
 	char *string;
+	char *string2=malloc(1024*sizeof(char));
 
 	if(!PyArg_ParseTuple(args, "s", &string)){
 		PyErr_SetString(PyExc_TypeError, "learn needs a string as parameter!");
 		return NULL;
 	}
-	Niall_Learn(string);
+	strncpy(string2, string, 1024);
+	Niall_Learn(string2);
+	free(string2); //string(not 2) is freed by python(?)
 	Py_INCREF(Py_None);
 	return Py_None;
 }
@@ -126,7 +129,8 @@ niall_reply(PyObject *self, PyObject *args){
 
 	PyObject *answer=Py_BuildValue("s", buffer);
 	Py_XINCREF(answer);
-	//free(string);
+	//free(string); //python does this (?)
+	free(buffer);
 	return answer;
 }
 static PyObject *
