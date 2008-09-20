@@ -224,7 +224,7 @@ class chatMod(chatMod.chatMod):
 		user=user.split("!")[0]
 		if user[0:len(self.lnickname)]==self.lnickname:
 			return
-		if string.lower(user) in self.bot.getConfig("ignore", "", "kiMod", self.bot.network).split(","):
+		if user.lower()==self.bot.nickname.lower() or string.lower(user) in self.bot.getConfig("ignore", "", "kiMod", self.bot.network).split(","):
 			return
 		reply=self.responder.reply(msg)
 		if not reply:
