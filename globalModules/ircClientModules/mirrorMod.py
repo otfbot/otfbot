@@ -27,7 +27,10 @@ class chatMod(chatMod.chatMod):
 	def msg(self, user, channel, msg):
 		if (self.network, channel) in self.bot.hasConfig("mirrorto", "mirrorMod")[2]:
 			(target_network, target_channel)=self.bot.getConfig("mirrorto", "unset", "mirrorMod", self.network, channel).split("-", 1)
-			self.bot.ipc[target_network].sendmsg(target_channel, "< %s> %s"%(user.split("!")[0],msg))
+			nick=user.split("!")[0]
+			if nick.lower()==self.bot.nickname.lower():
+				nick="\x02%s\x0F"%nick
+			self.bot.ipc[target_network].sendmsg(target_channel, "< %s> %s"%(nick,msg))
 	def action(self, user, channel, message):
 		if (self.network, channel) in self.bot.hasConfig("mirrorto", "mirrorMod")[2]:
 			(target_network, target_channel)=self.bot.getConfig("mirrorto", "unset", "mirrorMod", self.network, channel).split("-", 1)
