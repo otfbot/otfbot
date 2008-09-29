@@ -96,6 +96,6 @@ irc=ircClientService()
 irc.setServiceParent(application)
 
 from twisted.conch import manhole_tap
-manholeService=manhole_tap.makeService({'telnetPort':'7777','sshPort':None,'passwd':'/home/robert/frickelei/otfbot/Otfbot/passwd', 'namespace':{'app':irc}})
+manholeService=manhole_tap.makeService({'telnetPort':'7777','sshPort':None,'passwd':'passwd', 'namespace':{'app':irc}})
 manholeService.setName("manhole")
 manholeService.setServiceParent(application)
