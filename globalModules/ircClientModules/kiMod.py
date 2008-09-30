@@ -39,6 +39,8 @@ class responder:
 	needed to extend it for a ai-responder"""
 	def __init__(self):
 		pass
+	def filtercolors(self,string):
+		return string.replace(chr(3) + "1","").replace(chr(3) + "2","").replace(chr(3) + "3","").replace(chr(3) + "4","").replace(chr(3) + "5","").replace(chr(3) + "6","").replace(chr(3) + "7","").replace(chr(3) + "8","").replace(chr(3) + "9","").replace(chr(3) + "10","").replace(chr(3) + "11","").replace(chr(3) + "12","").replace(chr(3) + "13","").replace(chr(3) + "14","").replace(chr(3) + "15","").replace(chr(3),"")
 	def learn(self, string):
 		"""learns a new string, without responding"""
 		pass
@@ -89,9 +91,11 @@ class webResponder(responder):
 	def __init__(self, bot):
 		self.bot=bot
 	def learn(self, msg):
+		msg = self.filtercolors(msg)	
 		url=self.bot.getConfig("url", "", "kiMod", self.bot.network)
 		urllib2.urlopen(url+urllib.quote(msg)).read()
-	def reply(self, msg):	
+	def reply(self, msg):
+		msg = self.filtercolors(msg)	
 		url=self.bot.getConfig("url", "", "kiMod", self.bot.network)
 		return ascii_string(urllib2.urlopen(url+urllib.quote(msg)).read())
 
@@ -101,6 +105,7 @@ class niallResponder(responder):
 		niall.set_callbacks(bot.logger.info, bot.logger.warning, bot.logger.error)
 		niall.load_dictionary("niall.dict")
 	def learn(self, msg):
+		msg = self.filtercolors(msg)
 		try:
 			msg=ascii_string(unicode(msg, "UTF-8").encode("iso-8859-15"))
 		except UnicodeEncodeError:
@@ -113,6 +118,7 @@ class niallResponder(responder):
 			niall.learn(str(msg))
 			niall.save_dictionary("niall.dict")
 	def reply(self, msg):
+		msg = self.filtercolors(msg)
 		try:
 			msg=ascii_string(unicode(msg, "UTF-8").encode("iso-8859-15"))
 		except UnicodeEncodeError:
@@ -144,6 +150,7 @@ class megahalResponder(responder):
 		@type	msg:	string
 		@param	msg:	the string to learn
 		"""
+		msg = self.filtercolors(msg)
 		try:
 			msg=unicode(msg, "UTF-8").encode("iso-8859-15")
 		except UnicodeEncodeError:
@@ -160,6 +167,7 @@ class megahalResponder(responder):
 		@rtype: string
 		@returns the answer of the megahal bot
 		"""
+		msg = self.filtercolors(msg)
 		try:
 			string=unicode(msg, "UTF-8").encode("iso-8859-15")
 		except UnicodeEncodeError:
@@ -181,7 +189,6 @@ class chatMod(chatMod.chatMod):
 		self.bot=bot
 		if hasattr(self.bot, "nickname"): #on reload, because "connectionMade" is not invoked for a reloaded kiMod
 			self.lnickname=string.lower(self.bot.nickname)
-
 	def start(self):
 		self.channels=[]
 		self.wordpairsFile=self.bot.getPathConfig("wordpairsFile", datadir, "wordpairs.txt")#XXX: this needs to be utf-8 encoded
