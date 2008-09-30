@@ -115,8 +115,8 @@ class niallResponder(responder):
 			niall.learn(str(msg))
 			niall.save_dictionary("niall.dict")
 	def reply(self, msg):
-		msg=ascii_string(unicode(msg, "UTF-8").encode("iso-8859-15"))
-		reply=unicode(niall.reply(str(msg)), "iso-8859-15").encode("UTF-8")
+		msg=ascii_string(msg)
+		reply=niall.reply(str(msg))
 		if reply==None:
 			reply=""
 		if msg:
