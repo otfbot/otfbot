@@ -110,26 +110,12 @@ class niallResponder(responder):
 		niall.set_callbacks(bot.logger.info, bot.logger.warning, bot.logger.error)
 		niall.load_dictionary("niall.dict")
 	def learn(self, msg):
-		try:
-			msg=ascii_string(unicode(msg, "UTF-8").encode("iso-8859-15"))
-		except UnicodeEncodeError:
-			return
-			#pass
-		except UnicodeDecodeError:
-			return
-			#pass
+		msg=ascii_string(msg)
 		if msg:
 			niall.learn(str(msg))
 			niall.save_dictionary("niall.dict")
 	def reply(self, msg):
-		try:
-			msg=ascii_string(unicode(msg, "UTF-8").encode("iso-8859-15"))
-		except UnicodeEncodeError:
-			return
-			#pass
-		except UnicodeDecodeError:
-			return
-			#pass
+		msg=ascii_string(unicode(msg, "UTF-8").encode("iso-8859-15"))
 		reply=unicode(niall.reply(str(msg)), "iso-8859-15").encode("UTF-8")
 		if reply==None:
 			reply=""
