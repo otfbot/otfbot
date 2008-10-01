@@ -321,7 +321,7 @@ class Bot(irc.IRCClient):
 		"""
 		self.logger.info("left "+channel)
 		self._apirunner("left",{"channel":channel})
-		self.users.remove(channel)
+		del self.users[channel]
 		self.channels.remove(channel)
 		self.config.setConfig("enabled", "False", "main", self.network, channel) #disable the channel for the next start of the bot
 
