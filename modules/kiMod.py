@@ -18,7 +18,8 @@
 # (c) 2005, 2006 by Alexander Schier
 #
 
-import string, re, random, time, atexit
+import string, re, random, time, atexit, os.path
+import urllib, urllib2, socket
 import chatMod, functions
 
 MEGAHAL=1
@@ -58,49 +59,71 @@ def ascii_string(msg):
 	>>> ascii_string("Umlaute: äöüÜÖÄß!")
 	'Umlaute aeoeueUeOeAess'
 	"""
-	msg=re.sub("ö", "oe", msg)
-	msg=re.sub("ü", "ue", msg)
-	msg=re.sub("ä", "ae", msg)
-	msg=re.sub("ß", "ss", msg)
-	msg=re.sub("Ö", "Oe", msg)
-	msg=re.sub("Ü", "Ue", msg)
-	msg=re.sub("Ä", "Ae", msg)
-	return re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@. ]", "", msg)
+	mapping={
+			"ö": "oe",
+			"ä": "ae",
+			"ü": "ue",
+			"Ü": "Ue",
+			"Ä": "Ae",
+			"Ö": "Oe",
+			"ß": "ss"}
+	for key in mapping.keys():
+		msg=re.sub(key, mapping[key], msg)
+		try:
+			msg=re.sub(key.decode("iso-8859-15").encode("utf-8"), mapping[key], msg)
+		except UnicodeDecodeError:
+			pass
+		except UnicodeEncodeError:
+			pass
+	return re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@.!?;: ]", "", msg)
+
+class udpResponder(responder):
+	def __init__(self, bot):
+		self.bot=bot
+		self.host=self.bot.getConfig("host", "", "kiMod", self.bot.network)
+		self.remoteport=int(self.bot.getConfig("remoteport", "", "kiMod", self.bot.network))
+		self.localport=int(self.bot.getConfig("localport", "", "kiMod", self.bot.network))
+		self.socket=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+		self.socket.settimeout(10)
+		self.socket.bind(("", self.localport))
+	def learn(self, msg):
+		self.socket.sendto(msg, (self.host, self.remoteport))
+		self.socket.recvfrom(8*1024)
+	def reply(self, msg):	
+		self.socket.sendto(msg, (self.host, self.remoteport))
+		return ascii_string(self.socket.recvfrom(8*1024)[0].strip())
+
+class webResponder(responder):
+	def __init__(self, bot):
+		self.bot=bot
+	def learn(self, msg):
+		url=self.bot.getConfig("url", "", "kiMod", self.bot.network)
+		urllib2.urlopen(url+urllib.quote(msg)).read()
+	def reply(self, msg):	
+		url=self.bot.getConfig("url", "", "kiMod", self.bot.network)
+		return ascii_string(urllib2.urlopen(url+urllib.quote(msg)).read())
+
 class niallResponder(responder):
 	def __init__(self, bot):
 		niall.init()
 		niall.set_callbacks(bot.logger.info, bot.logger.warning, bot.logger.error)
 		niall.load_dictionary("niall.dict")
 	def learn(self, msg):
-		try:
-			msg=ascii_string(unicode(msg, "UTF-8").encode("iso-8859-15"))
-		except UnicodeEncodeError:
-			return
-			#pass
-		except UnicodeDecodeError:
-			return
-			#pass
+		msg=ascii_string(msg)
 		if msg:
 			niall.learn(str(msg))
 			niall.save_dictionary("niall.dict")
 	def reply(self, msg):
-		try:
-			msg=ascii_string(unicode(msg, "UTF-8").encode("iso-8859-15"))
-		except UnicodeEncodeError:
-			return
-			#pass
-		except UnicodeDecodeError:
-			return
-			#pass
-		reply=unicode(niall.reply(str(msg)), "iso-8859-15").encode("UTF-8")
+		msg=ascii_string(msg)
+		reply=niall.reply(str(msg))
 		if reply==None:
 			reply=""
 		if msg:
 			niall.learn(str(msg))
-			niall.save_dictionary("niall.dict")
 		return reply
 	def cleanup(self):
-		#niall.save_dictionary("niall.dict")
+		niall.save_dictionary("niall.dict")
 		niall.free()
 
 class megahalResponder(responder):
@@ -184,6 +207,10 @@ class chatMod(chatMod.chatMod):
 				if NIALL:
 					self.logger.warning("Trying niall instead.")
 					self.responder=niallResponder(self.bot)
+		elif module=="web":
+			self.responder=webResponder(self.bot)
+		elif module=="udp":
+			self.responder=udpResponder(self.bot)
 		atexit.register(self.responder.cleanup)
 
 	def joined(self, channel):
@@ -192,7 +219,7 @@ class chatMod(chatMod.chatMod):
 		user=user.split("!")[0]
 		if user[0:len(self.lnickname)]==self.lnickname:
 			return
-		if string.lower(user) in self.bot.getConfig("ignore", "", "kiMod", self.bot.network).split(","):
+		if user.lower()==self.bot.nickname.lower() or string.lower(user) in self.bot.getConfig("ignore", "", "kiMod", self.bot.network).split(","):
 			return
 		reply=self.responder.reply(msg)
 		if not reply:
