@@ -55,6 +55,13 @@ class chatMod(chatMod.chatMod):
 				users = users[self.network]
 			except:
 				self.logger.error("No Users specified for this network!")
+			
+			## lowering usernames
+			newusers = {}
+			for i in users:
+				newusers[i.lower()] = users[i]
+			users = newusers
+			
 			try:
 				if users[msg.split(" ")[1].lower()]['password'] == md5.md5(msg.split(" ",2)[2]).hexdigest():
 					self.bot.sendmsg(user.split("!")[0], "Password accepted")
