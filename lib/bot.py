@@ -310,7 +310,7 @@ class Bot(irc.IRCClient):
 		"""
 		self.logger.info("left "+channel)
 		self._apirunner("left",{"channel":channel})
-		self.users.remove(channel)
+		del(self.users[channel])
 		self.channels.remove(channel)
 		self.config.setConfig("enabled", "False", "main", self.network, channel) #disable the channel for the next start of the bot
 
@@ -420,14 +420,14 @@ class Bot(irc.IRCClient):
 		self._apirunner("kickedFrom",{"channel":channel,"kicker":kicker,"message":message})
 		self.channels.remove(channel)
 		self.config.setConfig("enabled", "False", "main", self.network, channel) #disable the channel for the next start of the bot
-		self.users.remove(channel)
+		del self.users[channel]
 
 	def userKicked(self, kickee, channel, kicker, message):
 		""" called by twisted,
 			if a user was kicked
 		"""
 		self._apirunner("userKicked",{"kickee":kickee,"channel":channel,"kicker":kicker,"message":message})
-		del self.users[channel][user.split("!")[0]]		
+		del self.users[channel][kickee.split("!")[0]]		
 
 	def userJoined(self, user, channel):
 		""" called by twisted,

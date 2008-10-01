@@ -24,12 +24,12 @@ class chatMod(chatMod.chatMod):
 
 	def command(self, user, channel, command, options):
 		if command == "version":
-				self.bot.sendmsg(channel, "Version 0.9")
+				self.bot.sendmsg(channel, "r"+str("$Revision: 201 $".split(" ")[1]))
 	def ctcpQuery(self, user, channel, messages):
 		(query,t) = messages[0]
 		answer = None
 		if query == "VERSION":
-			answer = "OTFBot 0.9"
+			answer = "OTFBot"
 		if answer: 
 			self.bot.ctcpMakeReply(user.split("!")[0], [(query,answer)])
 			self.logger.info("Answered to CTCP "+query+" Request from "+user.split("!")[0])
