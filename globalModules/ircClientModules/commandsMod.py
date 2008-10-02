@@ -53,11 +53,11 @@ class chatMod(chatMod.chatMod):
 	def getCommand(self, channel, cmd):
 		if not self.commands.has_key(channel):
 			self.commands[channel]={}
-		if self.commands[channel].has_key(cmd):
+		if self.commands.has_key(channel) and self.commands[channel].has_key(cmd):
 			return self.commands[channel][cmd]
-		elif self.commands["network"].has_key(cmd):
+		elif self.commands.has_key("network") and self.commands["network"].has_key(cmd):
 			return self.commands["network"][cmd]
-		elif self.commands["general"].has_key(cmd):
+		elif self.commands.has_key("general") and self.commands["general"].has_key(cmd):
 			return self.commands["general"][cmd]
 		else:
 			return ""
