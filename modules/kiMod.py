@@ -134,7 +134,7 @@ class megahalResponder(responder):
 			mh_python.setnobanner()
 			mh_python.setdir(datadir)
 		except:
-			chatMod.logger.info("couldn't set datadir and nobanner for megahal.")
+			pass
 		mh_python.initbrain()
 		self.bot=bot
 	def learn(self, msg):
