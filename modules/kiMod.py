@@ -130,8 +130,11 @@ class megahalResponder(responder):
 	"""implements a responder based on the megahal ai-bot"""
 	def __init__(self, bot):
 		"""starts the megahal program"""
-		mh_python.setnobanner()
-		mh_python.setdir(datadir)
+		try:
+			mh_python.setnobanner()
+			mh_python.setdir(datadir)
+		except:
+			self.logger.info("couldn't set datadir and nobanner for megahal.")
 		mh_python.initbrain()
 		self.bot=bot
 	def learn(self, msg):
