@@ -60,8 +60,8 @@ class chatMod(chatMod.chatMod):
 		if command == "googlefight":
 			words=options.split(":")
 			if len(words) == 2:
-				data1=urlutils.download('http://www.google.de/search?hl=de&q="%s"'%words[0])
-				data2=urlutils.download('http://www.google.de/search?hl=de&q="%s"'%words[1])
+				data1=urlutils.download('http://www.google.de/search?hl=de&q="%s"'%words[0].replace(" ","+"))
+				data2=urlutils.download('http://www.google.de/search?hl=de&q="%s"'%words[1].replace(" ","+"))
 
 				count1="0"
 				count2="0"
