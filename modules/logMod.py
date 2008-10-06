@@ -78,7 +78,7 @@ class chatMod(chatMod.chatMod):
 		dic['c']=string.lower(user)
 		filename=Template(self.logpath).safe_substitute(dic)
 		if not os.path.exists(os.path.dirname(filename)):
-			os.mkdir(os.path.dirname(filename))	
+			os.makedirs(os.path.dirname(filename))	
 		file=open(filename, "a")
 		file.write(self.ts()+" "+mystring+"\n")
 		file.close()
@@ -89,7 +89,7 @@ class chatMod(chatMod.chatMod):
 		self.path[channel]=Template(self.logpath).safe_substitute({'c':channel.replace("/", "_").replace(":", "")}) #replace to handle psyc:// channels
 		file=Template(self.path[channel]).safe_substitute(self.timemap())
 		if not os.path.exists(os.path.dirname(file)):
-			os.mkdir(os.path.dirname(file))
+			os.makedirs(os.path.dirname(file))
 		self.files[string.lower(channel)]=open(file, "a")
 		self.log(channel, "--- Log opened "+self.ts("%a %b %d %H:%M:%S %Y"), False)
 		self.log(channel, "-!- "+self.bot.nickname+" ["+self.bot.nickname+"@hostmask] has joined "+channel) #TODO: real Hostmask
