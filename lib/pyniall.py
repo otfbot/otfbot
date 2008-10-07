@@ -115,8 +115,7 @@ class pyNiall:
 		"""
 		rank=0
 		length=len(word)
-		if word in self.words:
-			rank=self.rank[self.words.index(word)]
+		rank=self.rank[self.words.index(word)]
 		return rank+length*0.7
 
 	def _createRandomSentence(self, index, sentence, forward=True):
