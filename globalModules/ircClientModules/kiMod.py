@@ -52,12 +52,6 @@ class responder:
 def ascii_string(msg):
 	"""
 	make sure, the string uses only ascii chars
-	(at the moment it removes any char but a-ZA-Z@. and space)
-
-	Example:
-
-	>>> ascii_string("Umlaute: äöüÜÖÄß!")
-	'Umlaute aeoeueUeOeAess'
 	"""
 	mapping={
 			"ö": "oe",
@@ -81,7 +75,7 @@ def ascii_string(msg):
 			pass
 		except UnicodeEncodeError:
 			pass
-	return re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@.!?;: ]", "", msg)
+	return re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@1234567890.!?;: ]", "", msg)
 
 class udpResponder(responder):
 	def __init__(self, bot):
