@@ -160,7 +160,7 @@ class pyNiall:
 			index=self.words.index(bestword)
 			return self._createRandomSentence(index, "", False)+" "+self._createRandomSentence(index, "")
 		else:
-			return _createRandomSentence(0, "")
+			return self._createRandomSentence(0, "")
 
 
 	def learn(self, msg):
