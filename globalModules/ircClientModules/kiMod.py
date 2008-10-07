@@ -29,7 +29,7 @@ try:
 except ImportError:
 	MEGAHAL=0
 try:
-	import niall
+	import pyniall
 except ImportError:
 	NIALL=0
 
@@ -75,6 +75,12 @@ def ascii_string(msg):
 			pass
 		except UnicodeEncodeError:
 			pass
+		try:
+			msg=re.sub(key.decode("utf-8").encode("iso-8859-15"), mapping[key], msg)
+		except UnicodeDecodeError:
+			pass
+		except UnicodeEncodeError:
+			pass
 	return re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@.!?;: ]", "", msg)
 
 class udpResponder(responder):
@@ -105,26 +111,27 @@ class webResponder(responder):
 		return ascii_string(urllib2.urlopen(url+urllib.quote(msg)).read())
 
 class niallResponder(responder):
-	def __init__(self, bot):
-		niall.init()
-		niall.set_callbacks(bot.logger.info, bot.logger.warning, bot.logger.error)
-		niall.load_dictionary("niall.dict")
+	def __init__(self, bot, datadir):
+		self.niall=pyniall.pyNiall()
+		self.filename=datadir+"/%s.yaml"%bot.network
+		if os.path.exists(self.filename):
+			brain=open(self.filename, "r")
+			self.niall.import_brain(brain.read())
+			brain.close()
 	def learn(self, msg):
 		msg=ascii_string(msg)
 		if msg:
-			niall.learn(str(msg))
-			niall.save_dictionary("niall.dict")
+			self.niall.learn(msg)
 	def reply(self, msg):
 		msg=ascii_string(msg)
-		reply=niall.reply(str(msg))
+		reply=self.niall.reply(str(msg))
 		if reply==None:
 			reply=""
-		if msg:
-			niall.learn(str(msg))
 		return reply
 	def cleanup(self):
-		niall.save_dictionary("niall.dict")
-		niall.free()
+		brain=open(self.filename, "w")
+		brain.write(self.niall.export_brain())
+		brain.close()
 
 class megahalResponder(responder):
 	"""implements a responder based on the megahal ai-bot"""
@@ -190,7 +197,7 @@ class chatMod(chatMod.chatMod):
 		self.logger.debug("kiMod: using module "+module+",megahal="+str(MEGAHAL)+",niall="+str(NIALL))
 		if module=="niall":
 			if NIALL:
-				self.responder=niallResponder(self.bot)
+				self.responder=niallResponder(self.bot, datadir)
 				self.logger.info("kiMod: using niall module")
 			else:
 				self.logger.warning("Cannot use niall. Module niall not availible.")
@@ -209,7 +216,7 @@ class chatMod(chatMod.chatMod):
 				#Fallback
 				if NIALL:
 					self.logger.warning("Trying niall instead.")
-					self.responder=niallResponder(self.bot)
+					self.responder=niallResponder(self.bot, datadir)
 		elif module=="web":
 			self.responder=webResponder(self.bot)
 		elif module=="udp":
