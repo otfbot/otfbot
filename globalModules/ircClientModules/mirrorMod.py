@@ -23,13 +23,18 @@ import chatMod
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
+		#x034 (red) is the bot
+		self.colors=["\x032", "\x033", "\x035", "\x0311", "\x0310", "\x0312", "\x0315", "\x0314", "\x0316", "\x0313", "\x036"]
 
 	def msg(self, user, channel, msg):
 		if (self.network, channel) in self.bot.hasConfig("mirrorto", "mirrorMod")[2]:
 			(target_network, target_channel)=self.bot.getConfig("mirrorto", "unset", "mirrorMod", self.network, channel).split("-", 1)
 			nick=user.split("!")[0]
 			if nick.lower()==self.bot.nickname.lower():
-				nick="\x02%s\x0F"%nick
+				nick="\x034%s\x0F"%nick
+			else:
+				color=self.colors[hash(nick)%len(self.colors)]
+				nick="%s%s\x0F"%(color, nick)
 			self.bot.ipc[target_network].sendmsg(target_channel, "< %s> %s"%(nick,msg))
 	def action(self, user, channel, message):
 		if (self.network, channel) in self.bot.hasConfig("mirrorto", "mirrorMod")[2]:
