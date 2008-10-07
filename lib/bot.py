@@ -375,7 +375,6 @@ class Bot(irc.IRCClient):
 		""" called by twisted
 			for every line that has no own callback
 		"""
-		channel=channel.lower()
 		self._apirunner("irc_unknown",{"prefix":prefix,"command":command,"params":params})
 
 	def noticed(self, user, channel, msg):
