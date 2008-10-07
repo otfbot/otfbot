@@ -132,7 +132,7 @@ class pyNiall:
 
 
 	def learn(self, msg):
-		words=msg.lower().split(" ")
+		words=msg.split(" ")
 		oldword=">"
 		for word in words:
 			word=word.strip()
@@ -144,7 +144,7 @@ class pyNiall:
 
 	def reply(self, msg):
 		self.learn(msg)
-		return self._createReply(msg.lower()).strip()
+		return self._createReply(msg).strip()
 	def cleanup(self):
 		self.db.commit()
 		#self.db.close()
