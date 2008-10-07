@@ -307,6 +307,7 @@ class Bot(irc.IRCClient):
 			@param channel: the channel we joined
 			@type channel: string
 		"""
+		channel=channel.lower()
 		self.logger.info("joined "+channel)
 		self.channels.append(channel)
 		self.users[channel]={}
@@ -319,6 +320,7 @@ class Bot(irc.IRCClient):
 			@param channel: the channel we left
 			@type channel: string
 		"""
+		channel=channel.lower()
 		self.logger.info("left "+channel)
 		self._apirunner("left",{"channel":channel})
 		del self.users[channel]
@@ -341,6 +343,7 @@ class Bot(irc.IRCClient):
 		@type command: string
 		@param options: eventual options specified after !command (e.g. "!command foo")
 		@type options: string"""
+		channel=channel.lower()
 		self._apirunner("command",{"user":user,"channel":channel,"command":command, "options":options})
 
 	def privmsg(self, user, channel, msg):
@@ -353,6 +356,7 @@ class Bot(irc.IRCClient):
 			@param msg: the message
 			@type msg: string
 		"""
+		channel=channel.lower()
 		try:
 			char=msg[0].decode('UTF-8').encode('UTF-8')
 		except UnicodeDecodeError:
@@ -394,6 +398,7 @@ class Bot(irc.IRCClient):
 			@param msg: the message
 			@type msg: string
 		"""
+		channel=channel.lower()
 		self._apirunner("noticed",{"user":user,"channel":channel,"msg":msg})
 				
 	def action(self, user, channel, message):
@@ -406,12 +411,14 @@ class Bot(irc.IRCClient):
 			@param msg: the message
 			@type msg: string
 		"""		
+		channel=channel.lower()
 		self._apirunner("action",{"user":user,"channel":channel,"message":message})
 
 	def modeChanged(self, user, channel, set, modes, args):
 		""" called by twisted
 			if a usermode was changed
 		"""
+		channel=channel.lower()
 		i=0
 		for arg in args:
 			if modes[i] in self.modchars.keys() and set == True:
@@ -427,6 +434,7 @@ class Bot(irc.IRCClient):
 		""" called by twisted,
 			if the bot was kicked
 		"""
+		channel=channel.lower()
 		self.logger.info("I was kicked from "+channel+" by "+kicker)
 		self._apirunner("kickedFrom",{"channel":channel,"kicker":kicker,"message":message})
 		self.channels.remove(channel)
@@ -437,6 +445,7 @@ class Bot(irc.IRCClient):
 		""" called by twisted,
 			if a user was kicked
 		"""
+		channel=channel.lower()
 		self._apirunner("userKicked",{"kickee":kickee,"channel":channel,"kicker":kicker,"message":message})
 		del self.users[channel][kickee.split("!")[0]]		
 
@@ -444,6 +453,7 @@ class Bot(irc.IRCClient):
 		""" called by twisted,
 			if a C{user} joined the C{channel}
 		"""
+		channel=channel.lower()
 		self.users[channel][user.split("!")[0]]={'modchar':' '}		
 		self._apirunner("userJoined",{"user":user,"channel":channel})
 
@@ -451,6 +461,7 @@ class Bot(irc.IRCClient):
 		""" called by twisted,
 			if a C{user} left the C{channel}
 		"""
+		channel=channel.lower()
 		self._apirunner("userLeft",{"user":user,"channel":channel})
 		del self.users[channel][user.split("!")[0]]		
 
@@ -471,6 +482,7 @@ class Bot(irc.IRCClient):
 		""" called by twisted,
 			if a C{user} sent a ctcp query
 		"""
+		channel=channel.lower()
 		self._apirunner("ctcpQuery",{"user":user,"channel":channel,"messages":messages})
 		
 	def userRenamed(self, oldname, newname):
@@ -487,6 +499,7 @@ class Bot(irc.IRCClient):
 		""" called by twisted
 			if the topic was updated
 		"""
+		channel=channel.lower()
 		self._apirunner("topicUpdated",{"user":user,"channel":channel,"newTopic":newTopic})
 
 	def irc_RPL_ENDOFNAMES(self, prefix, params):
