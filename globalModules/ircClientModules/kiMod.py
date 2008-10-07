@@ -29,7 +29,7 @@ try:
 except ImportError:
 	MEGAHAL=0
 try:
-	import pyniall
+	import pyniall_sqlite
 except ImportError:
 	NIALL=0
 
@@ -52,6 +52,12 @@ class responder:
 def ascii_string(msg):
 	"""
 	make sure, the string uses only ascii chars
+	(at the moment it removes any char but a-ZA-Z@. and space)
+
+	Example:
+
+	>>> ascii_string("Umlaute: äöüÜÖÄß!")
+	'Umlaute aeoeueUeOeAess'
 	"""
 	mapping={
 			"ö": "oe",
@@ -75,7 +81,7 @@ def ascii_string(msg):
 			pass
 		except UnicodeEncodeError:
 			pass
-	return re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@1234567890.!?;: ]", "", msg)
+	return re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@.!?;: ]", "", msg)
 
 class udpResponder(responder):
 	def __init__(self, bot):
@@ -106,12 +112,7 @@ class webResponder(responder):
 
 class niallResponder(responder):
 	def __init__(self, bot, datadir):
-		self.niall=pyniall.pyNiall()
-		self.filename=datadir+"/%s.yaml"%bot.network
-		if os.path.exists(self.filename):
-			brain=open(self.filename, "r")
-			self.niall.import_brain(brain.read())
-			brain.close()
+		self.niall=pyniall_sqlite.pyNiall(datadir+"/%s.db"%bot.network)
 	def learn(self, msg):
 		msg=ascii_string(msg)
 		if msg:
@@ -123,9 +124,7 @@ class niallResponder(responder):
 			reply=""
 		return reply
 	def cleanup(self):
-		brain=open(self.filename, "w")
-		brain.write(self.niall.export_brain())
-		brain.close()
+		self.niall.cleanup()
 
 class megahalResponder(responder):
 	"""implements a responder based on the megahal ai-bot"""
