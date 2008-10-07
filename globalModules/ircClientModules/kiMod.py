@@ -33,6 +33,11 @@ try:
 except ImportError:
 	NIALL=0
 
+
+def filtercolors(string):
+	return string.replace(chr(3) + "1","").replace(chr(3) + "2","").replace(chr(3) + "3","").replace(chr(3) + "4","").replace(chr(3) + "5","").replace(chr(3) + "6","").replace(chr(3) + "7","").replace(chr(3) + "8","").replace(chr(3) + "9","").replace(chr(3) + "10","").replace(chr(3) + "11","").replace(chr(3) + "12","").replace(chr(3) + "13","").replace(chr(3) + "14","").replace(chr(3) + "15","").replace(chr(3),"")
+
+
 class responder:
 	"""a prototype of a artificial intelligence responder. 
 	It does nothing at all, but it contains all the methods
@@ -67,6 +72,7 @@ def ascii_string(msg):
 			"Ä": "Ae",
 			"Ö": "Oe",
 			"ß": "ss"}
+	msg=filtercolors(msg)
 	for key in mapping.keys():
 		msg=re.sub(key, mapping[key], msg)
 		try:
@@ -81,7 +87,7 @@ def ascii_string(msg):
 			pass
 		except UnicodeEncodeError:
 			pass
-	return re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@.!?;: ]", "", msg)
+	return re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890@.!?;: ]", "", msg)
 
 class udpResponder(responder):
 	def __init__(self, bot):
