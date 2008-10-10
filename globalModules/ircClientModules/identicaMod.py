@@ -36,7 +36,7 @@ class chatMod(chatMod.chatMod):
 		if not LIB:
 			return
 		if command in ["identica", "i", "identicawithnick", "iwn"]:
-			self.api=identi.IdentiCA(self.bot.getConfig("username", '', 'identicaMod', self.bot.network), self.bot.getConfig("username", '', 'identicaMod', self.bot.network))
+			self.api=identi.IdentiCA(self.bot.getConfig("username", '', 'identicaMod', self.bot.network, channel), self.bot.getConfig("username", '', 'identicaMod', self.bot.network, channel))
 			self.api.login()
 			if command=="iwn" or command=="identicawithnick":
 				options=user.split("!")[0]+": "+options
