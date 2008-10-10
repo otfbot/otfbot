@@ -364,7 +364,7 @@ class Bot(irc.IRCClient):
 		self._apirunner("privmsg",{"user":user,"channel":channel,"msg":msg})
 
 		#if channel.lower() == self.nickname.lower():
-		if channel.lower()[0] in "abcdefghijklmnopqrstuvwxyz":
+		if not channel.lower()[0] in "#&+!":
 			self._apirunner("query",{"user":user,"channel":channel,"msg":msg})
 			return
 		
