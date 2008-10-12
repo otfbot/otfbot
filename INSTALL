@@ -2,4 +2,7 @@ needed pythonmodules:
 * twisted
 * python-yaml
 * python-pyopenssl
+* python-crypto
+
+optional:
 * python-feedparser
