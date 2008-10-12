@@ -112,7 +112,7 @@ class otfbot:
 				self.corelogger.debug("Loading module "+self.classes[-1].__name__)
 	def checkUser(self, options):
 		#check for root rights
-		if os.getuid()==0:
+		if hasattr(os, "getuid") and os.getuid()==0:
 			if options.userid and options.userid!=0 and options.groupid and options.groupid!=0:
 				from twisted.python.util import switchUID
 				#os.chroot(".") #DOES NOT WORK. pwd.getpwuid fails in switchUID, when chrooted.
