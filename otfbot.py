@@ -25,6 +25,7 @@ from twisted.application import service
 from twisted.python import usage
 
 from globalModules.ircClientService import ircClientService
+from globalModules.ircServerService import ircServerService
 from configService import configService
 
 #logging
