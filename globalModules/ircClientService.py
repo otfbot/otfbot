@@ -35,11 +35,14 @@ class ircClientService(service.MultiService):
     def connect(self, network):
         f = BotFactory(self.config, network)
         servername=self.config.getConfig("server", "localhost", "main", network)
+        port = int(self.config.getConfig('port','6697','main', network))
         if (self.config.getBoolConfig('ssl','False','main', network)):
             s = ssl.ClientContextFactory()
-            serv=internet.SSLClient(servername, int(self.config.getConfig('port','6697','main', network)), f,s)
+            serv=internet.SSLClient(servername, port, f,s)
+            serv.__repr__=lambda: "<IRC Connection with SSL to %s:%s>"%(servername, port)
         else:
-            serv=internet.TCPClient(servername, int(self.config.getConfig('port','6667','main', network)), f)
+            serv=internet.TCPClient(servername, port, f)
+            serv.__repr__=lambda: "<IRC Connection to %s:%s>"%(servername, port)
         f.service=serv
         serv.setName(network)
         serv.parent=self
@@ -54,6 +57,8 @@ class BotFactory(protocol.ReconnectingClientFactory):
         self.protocol=Bot
         self.network=network
         self.config=config
+	def __repr__(self):
+		return "<BotFactory for network %s>"%self.network
 
     def clientConnectionLost(self, connector, reason):
         self.protocol=None
