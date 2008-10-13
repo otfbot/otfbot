@@ -18,17 +18,20 @@
 #
 import chatMod
 from twisted.internet import reactor, protocol
+from twisted.internet.tcp import Server
 from twisted.words.protocols.irc import IRC
 from twisted.words.protocols import irc
 from twisted.words.service import IRCUser
+from twisted.application import service
 import logging, traceback, sys, time
 
-class ircClientService(service.MultiService):
+class ircServerService(service.MultiService):
+	name="ircServer"
 	def startService(self):
 		self.config=self.parent.getServiceNamed("config")
-        serv=internet.TCPServer(int(self.bot.getConfig("port", "6667", "serverMod")), 
-						   ircServerFactory(self.bot), 
-						   interface=self.bot.getConfig("interface", "127.0.0.1", "serverMod"))
+        serv=Server(int(self.config.getConfig("port", "6667", "server")), 
+						   ircServerFactory(), 
+						   interface=self.config.getConfig("interface", "127.0.0.1", "server"))
         self.addService(serv)
         service.MultiService.startService(self)  
 
@@ -55,23 +58,23 @@ class serverMod:
 		self.server.connected=False
 
 class server(IRCUser):
-	def __init__(self, bot):
-		self.bot=bot
-		self.ipc=bot.ipc
+	def __init__(self):
+		#self.bot=bot
+		#self.ipc=bot.ipc
 		self.name="nickname"
 		self.user="user"
 		self.firstnick=True
 		self.mods={}
-		self.logger=logging.getLogger("serverMod")
-		for c in self.bot.classes:
-			if c.__name__ in self.bot.getConfig("modsEnabled", [], "main", self.bot.network):
-				try:
-					if hasattr(c, "serverMod"):
-						self.mods[c.__name__]=c.serverMod(self)
-						self.mods[c.__name__].name=c.__name__
-				except Exception, e:
-					self.logerror(self.logger, c.__name__, e)
-		self._apirunner("start")
+		self.logger=logging.getLogger("server")
+		#for c in self.bot.classes:
+		#	if c.__name__ in self.bot.getConfig("modsEnabled", [], "main", self.bot.network):
+		#		try:
+		#			if hasattr(c, "serverMod"):
+		#				self.mods[c.__name__]=c.serverMod(self)
+		#				self.mods[c.__name__].name=c.__name__
+		#		except Exception, e:
+		#			self.logerror(self.logger, c.__name__, e)
+		#self._apirunner("start")
 	def logerror(self, logger, module, exception):
 		""" format a exception nicely and pass it to the logger
 			@param logger: the logger instance to use
@@ -137,15 +140,16 @@ class server(IRCUser):
 		self.mods={}
 
 class ircServerFactory(protocol.ServerFactory):
-	def __init__(self, bot):
+	def __init__(self):
 		self.protocol=server
-		self.bot=bot
-		self.bot.ipc.servers=[]
+		#self.bot=bot
+		#self.bot.ipc.servers=[]
 	def buildProtocol(self, addr):
 		proto=self.protocol(self.bot)
 		proto.connected=True
 		proto.factory=self
-		self.bot.ipc.servers.append(proto)
+		#self.bot.ipc.servers.append(proto)
 		return proto
 	def stopFactory(self):
-		self.bot.ipc.server=None
+		pass
+		#self.bot.ipc.server=None
