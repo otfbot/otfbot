@@ -22,16 +22,16 @@ from twisted.internet.tcp import Server
 from twisted.words.protocols.irc import IRC
 from twisted.words.protocols import irc
 from twisted.words.service import IRCUser
-from twisted.application import service
+from twisted.application import service, internet
 import logging, traceback, sys, time
 
 class ircServerService(service.MultiService):
 	name="ircServer"
 	def startService(self):
 		self.config=self.parent.getServiceNamed("config")
-        serv=Server(int(self.config.getConfig("port", "6667", "server")), 
-						   ircServerFactory(), 
-						   interface=self.config.getConfig("interface", "127.0.0.1", "server"))
+		port=int(self.config.getConfig("port", "6667", "server"))
+		interface=interface=self.config.getConfig("interface", "127.0.0.1", "server")
+		serv=internet.TCPServer(port, ircServerFactory(), interface)
         self.addService(serv)
         service.MultiService.startService(self)  
 
