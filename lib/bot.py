@@ -115,6 +115,8 @@ class Bot(irc.IRCClient):
 			self.logger.error("the bot is banned from %s: %s"%(prefix, params))
 		elif command=='ERR_INVITEONLYCHAN':
 			self.logger.error("the channel %s is invite only"%(prefix))
+		irc.IRCClient.handleCommand(self, command, prefix, params)
+
 	def getUsers(self):
 		""" Get a list of users
 			@rtype: dict
