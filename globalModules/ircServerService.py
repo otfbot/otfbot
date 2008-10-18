@@ -32,8 +32,8 @@ class ircServerService(service.MultiService):
 		port=int(self.config.getConfig("port", "6667", "server"))
 		interface=interface=self.config.getConfig("interface", "127.0.0.1", "server")
 		serv=internet.TCPServer(port, ircServerFactory(), interface)
-        self.addService(serv)
-        service.MultiService.startService(self)  
+		self.addService(serv)
+		service.MultiService.startService(self)  
 
 class serverMod:
 	def __init__(self, server):
