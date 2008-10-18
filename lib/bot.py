@@ -103,6 +103,18 @@ class Bot(irc.IRCClient):
 			except Exception, e:
 				self.logerror(self.logger, mod.name, e)
 
+	def handleCommand(self, command, prefix, params):
+		"""handleCommand implementation with our _apirunner, see twisted.words.protocols.irc for original code"""
+		self._apirunner("irc_%s"%command, {'prefix': prefix, 'params': params})
+		#self.logger.info("%s, %s, %s"%(command,prefix,params))
+		if command=='ERR_NICKCOLLISION':
+			self.logger.error("nick collision in network %s with nick %s"%(self.network, self.nickname))
+		elif command=='ERR_YOURBANNEDCREEP':
+			self.logger.error("the bot is banned from %s: %s"%(prefix, params))
+		elif command=='ERR_BANNEDFROMCHAN':
+			self.logger.error("the bot is banned from %s: %s"%(prefix, params))
+		elif command=='ERR_INVITEONLYCHAN':
+			self.logger.error("the channel %s is invite only"%(prefix))
 	def getUsers(self):
 		""" Get a list of users
 			@rtype: dict
