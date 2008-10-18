@@ -29,9 +29,14 @@ try:
 except ImportError:
 	MEGAHAL=0
 try:
-	import niall
+	import pyniall_sqlite
 except ImportError:
 	NIALL=0
+
+
+def filtercolors(string):
+	return string.replace(chr(3) + "1","").replace(chr(3) + "2","").replace(chr(3) + "3","").replace(chr(3) + "4","").replace(chr(3) + "5","").replace(chr(3) + "6","").replace(chr(3) + "7","").replace(chr(3) + "8","").replace(chr(3) + "9","").replace(chr(3) + "10","").replace(chr(3) + "11","").replace(chr(3) + "12","").replace(chr(3) + "13","").replace(chr(3) + "14","").replace(chr(3) + "15","").replace(chr(3),"")
+
 
 class responder:
 	"""a prototype of a artificial intelligence responder. 
@@ -67,6 +72,7 @@ def ascii_string(msg):
 			"Ä": "Ae",
 			"Ö": "Oe",
 			"ß": "ss"}
+	msg=filtercolors(msg)
 	for key in mapping.keys():
 		msg=re.sub(key, mapping[key], msg)
 		try:
@@ -75,7 +81,13 @@ def ascii_string(msg):
 			pass
 		except UnicodeEncodeError:
 			pass
-	return re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@.!?;: ]", "", msg)
+		try:
+			msg=re.sub(key.decode("utf-8").encode("iso-8859-15"), mapping[key], msg)
+		except UnicodeDecodeError:
+			pass
+		except UnicodeEncodeError:
+			pass
+	return re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890@.!?;: ]", "", msg)
 
 class udpResponder(responder):
 	def __init__(self, bot):
@@ -105,26 +117,20 @@ class webResponder(responder):
 		return ascii_string(urllib2.urlopen(url+urllib.quote(msg)).read())
 
 class niallResponder(responder):
-	def __init__(self, bot):
-		niall.init()
-		niall.set_callbacks(bot.logger.info, bot.logger.warning, bot.logger.error)
-		niall.load_dictionary("niall.dict")
+	def __init__(self, bot, datadir):
+		self.niall=pyniall_sqlite.pyNiall(datadir+"/%s.db"%bot.network)
 	def learn(self, msg):
 		msg=ascii_string(msg)
 		if msg:
-			niall.learn(str(msg))
-			niall.save_dictionary("niall.dict")
+			self.niall.learn(msg)
 	def reply(self, msg):
 		msg=ascii_string(msg)
-		reply=niall.reply(str(msg))
+		reply=self.niall.reply(str(msg))
 		if reply==None:
 			reply=""
-		if msg:
-			niall.learn(str(msg))
 		return reply
 	def cleanup(self):
-		niall.save_dictionary("niall.dict")
-		niall.free()
+		self.niall.cleanup()
 
 class megahalResponder(responder):
 	"""implements a responder based on the megahal ai-bot"""
@@ -190,7 +196,7 @@ class chatMod(chatMod.chatMod):
 		self.logger.debug("kiMod: using module "+module+",megahal="+str(MEGAHAL)+",niall="+str(NIALL))
 		if module=="niall":
 			if NIALL:
-				self.responder=niallResponder(self.bot)
+				self.responder=niallResponder(self.bot, datadir)
 				self.logger.info("kiMod: using niall module")
 			else:
 				self.logger.warning("Cannot use niall. Module niall not availible.")
@@ -209,7 +215,7 @@ class chatMod(chatMod.chatMod):
 				#Fallback
 				if NIALL:
 					self.logger.warning("Trying niall instead.")
-					self.responder=niallResponder(self.bot)
+					self.responder=niallResponder(self.bot, datadir)
 		elif module=="web":
 			self.responder=webResponder(self.bot)
 		elif module=="udp":
