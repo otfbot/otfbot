@@ -22,24 +22,15 @@ from twisted.application import internet, service
 from lib.botfactory import BotFactory
 import lib.config as otfbotconfig
 
-class configService(service.Service):
+class configModule(service.Service):
     def __init__(self, filename):
         self.filename=filename
         self.config=None
         self.name="config"
+
     def startService(self):
         service.Service.startService(self)
         self.config=otfbotconfig.loadConfig(self.filename, "data")
-        #new_config=False
-        #if not config: #file could not be loaded, i.e at first start
-        #    config=otfbotconfig.config(configfile)
-        #    config.set('enabled', False, 'main', 'samplenetwork')
-        #    config.set('server', 'localhost', 'main', 'samplenetwork')
-        #    config.set('enabled', False, 'main', 'samplenetwork', '#example')
-        #    config.set('nickname', 'OtfBot', 'main')
-        #    config.set('encoding', 'UTF-8', 'main')
-        #    #self.config.set('pidfile','otfbot.pid','main')    
-        #    new_config=True
         self.delConfig=self.config.delConfig
         self.getConfig=self.config.getConfig
         self.hasConfig=self.config.hasConfig
