@@ -24,9 +24,7 @@
 from twisted.application import service
 from twisted.python import usage
 
-from globalModules.ircClientService import ircClientService
-from globalModules.ircServerService import ircServerService
-from configService import configService
+import ircClientModule, configModule #, controlTCPModule, ircServerModule
 
 #logging
 import logging, logging.handlers
@@ -92,8 +90,8 @@ config={}
 config['config']="otfbot.yaml"
 
 application=service.Application("otfbot")
-configService(config['config']).setServiceParent(application)
-irc=ircClientService()
+configModule.configModule(config['config']).setServiceParent(application)
+irc=ircClientModule.ircClientModule()
 irc.setServiceParent(application)
 
 from twisted.conch import manhole_tap
