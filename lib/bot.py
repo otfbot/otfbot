@@ -74,6 +74,7 @@ class Bot(irc.IRCClient):
 		for file in files:
 			name=file.split("modules/ircClient/")[1].split(".py")[0]
 			self.classes.append(__import__(name))
+		print self.classes
 
 
 		# usertracking
@@ -254,7 +255,7 @@ class Bot(irc.IRCClient):
 		"""
 		for chatModule in self.classes:
 			if chatModule.__name__ in self.config.getConfig("modsEnabled", [], "main", self.network):
-				self.startMod(chatModuleName)
+				self.startMod(chatModule.__name__)
 
 	def startMod(self, moduleName):
 			moduleClass=self.importMod(moduleName)
