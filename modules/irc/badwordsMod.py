@@ -18,7 +18,7 @@
 #
 
 import random, re
-import chatMod, functions
+from lib import chatMod, functions
 
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):

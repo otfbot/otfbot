@@ -17,7 +17,7 @@
 # (c) 2007 by Alexander Schier
 #
 
-import chatMod
+from lib import chatMod
 import pickle, os
 
 def sortedbyvalue(dict):
