@@ -81,9 +81,9 @@ class Bot(pluginSupport, irc.IRCClient):
 		files=glob.glob("plugins/ircClient/*.py")
 		sys.path.insert(1, "lib")
 		sys.path.insert(1, "plugins/ircClient")
-		for file in files:
-			name=file.split("plugins/ircClient/")[1].split(".py")[0]
-			self.importPlugin(name)
+		#for file in files:
+		#	name=file.split("plugins/ircClient/")[1].split(".py")[0]
+		#	self.classes.append(self.importPlugin(name))
 		self.startPlugins()
 	
 	def _apirunner(self,apifunction,args={}):

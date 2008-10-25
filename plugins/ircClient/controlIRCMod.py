@@ -21,7 +21,7 @@ import random, re, string
 from lib import chatMod
 from control import controlInterface
 
-class chatMod(chatMod.chatMod):
+class Plugin(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
 		self.control={}

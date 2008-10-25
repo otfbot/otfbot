@@ -24,7 +24,7 @@ try:
 except ImportError:
 	LIB=False
 
-class chatMod(chatMod.chatMod):
+class Plugin(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
 	def connectionMade(self):
