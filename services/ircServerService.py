@@ -34,32 +34,16 @@ class ircServerService(service.MultiService):
 		self.config=self.parent.getServiceNamed("config")
 		port=int(self.config.getConfig("port", "6667", "server"))
 		interface=interface=self.config.getConfig("interface", "127.0.0.1", "server")
-		serv=internet.TCPServer(port=port, factory=ircServerFactory(), interface=interface)
+		factory=ircServerFactory()
+		factory.config=self.config
+		serv=internet.TCPServer(port=port, factory=factory, interface=interface)
 		self.addService(serv)
 		service.MultiService.startService(self)  
 
-class serverMod:
-	def __init__(self, server):
-		self.server=server
-		self.first=True
-	#def irc_USER(self, prefix, params):
-	def irc_PING(self, prefix, params):
-		self.server.sendMessage("PONG", ":"+params[0])
-	def irc_USER(self, prefix, params):
-		self.server.user=params[0]
-		self.server.hostname=params[2]
-		self.server.realname=params[3]
-	def irc_NICK(self, prefix, params):
-		self.server.name=params[0]
-		if self.first:
-			self.server.sendMessage(irc.RPL_WELCOME, ":connected to OTFBot IRC", prefix="localhost")
-			self.server.sendMessage(irc.RPL_YOURHOST, ":Your host is %(serviceName)s, running version %(serviceVersion)s" % {"serviceName": self.server.transport.server.getHost(),"serviceVersion": "VERSION"},prefix="localhost")
-			self.server.sendMessage(irc.RPL_MOTD, ":Welcome to the Bot-Control-Server", prefix="localhost")
-			self.first=False
-	def irc_QUIT(self, prefix, params):
-		self.server.connected=False
 
-class server(IRCUser, pluginSupport):
+class Server(IRCUser, pluginSupport):
+	pluginSupportName="ircServer"
+	pluginSupportPath="plugins/ircServer"
 	def __init__(self):
 		self.name="nickname"
 		self.user="user"
@@ -67,12 +51,12 @@ class server(IRCUser, pluginSupport):
 		self.plugins={}
 		self.logger=logging.getLogger("server")
 		self.classes=[]
-		files=glob.glob("plugins/ircServer/*.py")
-		sys.path.insert(1, "plugins/ircServer")
-		for file in files:
-			name=file.split("plugins/ircServer/")[1].split(".py")[0]
-			self.importPlugin(name)
-		self.startPlugins(self)
+		#files=glob.glob("plugins/ircServer/*.py")
+		#sys.path.insert(1, "plugins/ircServer")
+		#for file in files:
+		#	name=file.split("plugins/ircServer/")[1].split(".py")[0]
+		#	self.importPlugin(name)
+		#self.startPlugins(self)
 
 
 	def logerror(self, logger, module, exception):
@@ -109,7 +93,7 @@ class server(IRCUser, pluginSupport):
 			@type	args:	dict
 			@param	args:	the arguments for the callback
 		"""
-		for mod in self.mods.values():
+		for mod in self.plugins.values():
 			#if (args.has_key("channel") and args["channel"] in self.channels and mod.name in self.getConfig("modsEnabled",[],"main",self.network,args["channel"])) or not args.has_key("channel") or args["channel"] not in self.channels:
 			try:
 				if hasattr(mod, apifunction):
@@ -132,6 +116,8 @@ class server(IRCUser, pluginSupport):
 		###we use _apirunner instead###
 		self._apirunner("irc_%s"%command, {'prefix': prefix, 'params': params})
 	def connectionMade(self):
+		self.config=self.factory.config #self.factory is not available in __init__
+		self.startPlugins()
 		self._apirunner("connectionMade")
 	def connectionLost(self, reason):
 		self.connected=False
@@ -142,13 +128,13 @@ class server(IRCUser, pluginSupport):
 			self.privmsg(user, channel, msg)
 	def stop(self):
 		self._apirunner("stop")
-		for mod in self.mods.keys():
-			del(self.mods[mod])
-		self.mods={}
+		for mod in self.plugins.keys():
+			del(self.plugins[mod])
+		self.plugins={}
 
 class ircServerFactory(protocol.ServerFactory):
 	def __init__(self):
-		self.protocol=server
+		self.protocol=Server
 	def buildProtocol(self, addr):
 		proto=self.protocol()
 		proto.connected=True
