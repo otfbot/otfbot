@@ -93,6 +93,7 @@ configService.configService(config['config']).setServiceParent(application)
 irc=ircClientService.ircClientService()
 irc.setServiceParent(application)
 server=ircServerService.ircServerService()
+server.setName("ircServer")
 server.setServiceParent(application)
 
 from twisted.conch import manhole_tap
