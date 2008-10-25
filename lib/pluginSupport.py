@@ -2,6 +2,8 @@ class pluginSupport:
 	#def __init__(self, *args, **kwargs):
 	#	pass
 	def importPlugin(self, name):
+		if not self.classes:
+			self.classes=[]
 		for c in self.classes:
 			if c.__name__ == name:
 				return c
@@ -13,16 +15,17 @@ class pluginSupport:
 		"""
 			initializes all known plugins
 		"""
-		for chatPlugin in self.classes:
-			if chatPlugin.__name__ in self.config.getConfig("pluginsEnabled", [], "main", self.network):
-				self.startPlugin(chatPlugin.__name__)
+		print self.config.getConfig("pluginsEnabled", [], "main", self.network)
+		for pluginName in self.config.getConfig("pluginsEnabled", [], "main", self.network):
+			print pluginName
+			self.startPlugin(pluginName)
 
 	def startPlugin(self, pluginName):
 			pluginClass=self.importPlugin(pluginName)
-			if hasattr(pluginClass, "chatPlugin"):
+			if hasattr(pluginClass, "Plugin"): #and hasattr(pluginClass.Plugin.ircClientPlugin) (?)
 				try:
 					self.logger.info("starting %s for network %s"%(pluginClass.__name__, self.network))
-					mod=pluginClass.chatPlugin(self)
+					mod=pluginClass.Plugin(self)
 					self.plugins[pluginClass.__name__]=mod
 					self.plugins[pluginClass.__name__].setLogger(self.logger)
 					self.plugins[pluginClass.__name__].name=pluginClass.__name__

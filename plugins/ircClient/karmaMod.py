@@ -26,7 +26,7 @@ def sortedbyvalue(dict):
 	items.reverse()
 	return items
 
-class chatMod(chatMod.chatMod):
+class Plugin(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
 		self.karmas={} #channel ->  (what -> karma-struct)

@@ -20,7 +20,7 @@
 import string, re, functions
 from lib import chatMod
 		
-class chatMod(chatMod.chatMod):
+class Plugin(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot = bot
 
