@@ -24,6 +24,9 @@ from twisted.words.protocols import irc
 from twisted.words.service import IRCUser
 from twisted.application import service, internet
 import logging, traceback, sys, time
+from lib import bot
+from lib.pluginSupport import pluginSupport
+import glob
 
 class ircServerService(service.MultiService):
 	name="ircServer"
@@ -56,13 +59,30 @@ class serverMod:
 	def irc_QUIT(self, prefix, params):
 		self.server.connected=False
 
-class server(IRCUser):
+class server(IRCUser, pluginSupport):
 	def __init__(self):
 		self.name="nickname"
 		self.user="user"
 		self.firstnick=True
-		self.mods={}
+		self.plugins={}
 		self.logger=logging.getLogger("server")
+		self.classes=[]
+		files=glob.glob("plugins/ircServer/*.py")
+		sys.path.insert(1, "plugins/ircServer")
+		for file in files:
+			name=file.split("plugins/ircServer/")[1].split(".py")[0]
+			self.importPlugin(name)
+		self.startPlugins(self)
+
+
+	def logerror(self, logger, module, exception):
+		""" format a exception nicely and pass it to the logger
+			@param logger: the logger instance to use
+			@param module: the module in which the exception occured
+			@type module: string
+			@param exception: the exception
+			@type exception: exception
+		"""
 		#for c in self.bot.classes:
 		#	if c.__name__ in self.bot.getConfig("modsEnabled", [], "main", self.bot.network):
 		#		try:
@@ -72,14 +92,6 @@ class server(IRCUser):
 		#		except Exception, e:
 		#			self.logerror(self.logger, c.__name__, e)
 		#self._apirunner("start")
-	def logerror(self, logger, module, exception):
-		""" format a exception nicely and pass it to the logger
-			@param logger: the logger instance to use
-			@param module: the module in which the exception occured
-			@type module: string
-			@param exception: the exception
-			@type exception: exception
-		"""
 		logger.error("Exception in Module "+module+": "+str(exception))
 		tb_list = traceback.format_tb(sys.exc_info()[2])
 		for entry in tb_list:
