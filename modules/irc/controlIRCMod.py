@@ -18,7 +18,7 @@
 #
 
 import random, re, string
-import chatMod
+from lib import chatMod
 from control import controlInterface
 
 class chatMod(chatMod.chatMod):

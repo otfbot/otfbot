@@ -17,6 +17,7 @@
 # (c) 2007 by Robert Weidlich
 # (c) 2008 by Alexander Schier
 #
+from lib import chatMod
 
 class chatMod(chatMod.chatMod):
     def __init__(self, bot):
