@@ -411,7 +411,7 @@ class Bot(pluginSupport, irc.IRCClient):
 			with information about the IRC-Server we are connected to
 		"""
 		self.logger.debug(str(info))
-		pass
+		self._apirunner("yourHost",{"info":info})
 	
 	def ctcpQuery(self, user, channel, messages):
 		""" called by twisted,
