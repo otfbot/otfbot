@@ -15,9 +15,7 @@ class pluginSupport:
 		"""
 			initializes all known plugins
 		"""
-		print self.config.getConfig("pluginsEnabled", [], "main", self.network)
 		for pluginName in self.config.getConfig("pluginsEnabled", [], "main", self.network, set_default=False):
-			print pluginName
 			self.startPlugin(pluginName)
 
 	def startPlugin(self, pluginName):
