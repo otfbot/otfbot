@@ -21,7 +21,7 @@ from twisted.words.protocols import irc
 from twisted.internet import reactor
 import logging
 import logging.handlers
-import sys, traceback, string, time, os
+import sys, traceback, string, time, os, glob
 sys.path.insert(1,"lib")
 import scheduler
 class Bot(irc.IRCClient):
@@ -68,6 +68,13 @@ class Bot(irc.IRCClient):
 		self.lineRate = 1.0/float(self.config.getConfig("linesPerSecond","2","main",self.network))
 
 		self.classes=[]
+		files=glob.glob("modules/irc/*.py")
+		sys.path.insert(1, "lib")
+		sys.path.insert(1, "modules/irc")
+		for file in files:
+			name=file.split("modules/irc/")[1].split(".py")[0]
+			self.classes.append(__import__(name))
+
 
 		# usertracking
 		self.users={}
