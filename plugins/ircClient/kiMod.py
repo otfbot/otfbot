@@ -180,7 +180,7 @@ class megahalResponder(responder):
 
 
 
-class chatMod(chatMod.chatMod):
+class Plugin(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
 		if hasattr(self.bot, "nickname"): #on reload, because "connectionMade" is not invoked for a reloaded kiMod

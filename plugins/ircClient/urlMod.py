@@ -25,7 +25,7 @@ import urlutils
 from HTMLParser import HTMLParser
 from HTMLParser import HTMLParseError
 
-class chatMod(chatMod.chatMod):
+class Plugin(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot = bot
 		self.parser = titleExtractor()

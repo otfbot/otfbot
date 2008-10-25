@@ -25,7 +25,7 @@ except ImportError:
 
 import chatMod
 
-class chatMod(chatMod.chatMod):
+class Plugin(chatMod.chatMod):
 	def __init__(self,bot):
 		"""
 		Config has to look like this:

@@ -160,7 +160,7 @@ def getDirection(deg):
 		i += 1
 		d += 22.5
 
-class chatMod(chatMod.chatMod):
+class Plugin(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot = bot
 		self.time=time.time()

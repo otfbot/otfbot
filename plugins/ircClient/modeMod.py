@@ -20,7 +20,7 @@
 import random, re
 import chatMod
 
-class chatMod(chatMod.chatMod):
+class Plugin(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
 		self.modes={}
