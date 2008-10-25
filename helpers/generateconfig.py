@@ -1,9 +1,13 @@
 from lib import config
-import sys
+import sys, glob
 
 config=config.config("otfbot.yaml")
 
-#TODO: generate list with all modules as modsEnabled
+files=glob.glob("modules/ircClient/*.py")
+modules=[]
+for file in files:
+	modules.append(file.split("modules/ircClient/")[1].split(".py")[0])
+config.set("modsEnabled", modules, 'main')
 sys.stdout.write("Network Name: ")
 name=raw_input().strip()
 config.set('enabled', True, 'main', name)
