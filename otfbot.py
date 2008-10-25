@@ -90,8 +90,8 @@ config={}
 config['config']="otfbot.yaml"
 
 application=service.Application("otfbot")
-application.getServices=lambda: application._adapterCache['twisted.application.service.IServiceCollection'].services
-application.getNamedServices=lambda: application._adapterCache['twisted.application.service.IServiceCollection'].namedServices
+application.getServices=lambda: service.IServiceCollection(application).services
+application.getNamedServices=lambda: service.IServiceCollection(application).namedServices
 
 configS=configService.configService(config['config'])
 configS.setName("config")
