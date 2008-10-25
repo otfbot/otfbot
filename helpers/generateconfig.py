@@ -7,7 +7,7 @@ files=glob.glob("plugins/ircClient/*.py")
 modules=[]
 for file in files:
 	modules.append(file.split("plugins/ircClient/")[1].split(".py")[0])
-config.set("pluginsEnabled", modules, 'main')
+config.set("ircClientPluginsEnabled", modules, 'main')
 sys.stdout.write("Network Name: ")
 name=raw_input().strip()
 config.set('enabled', True, 'main', name)

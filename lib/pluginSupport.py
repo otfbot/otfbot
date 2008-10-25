@@ -1,6 +1,10 @@
+import sys
+
 class pluginSupport:
 	#def __init__(self, *args, **kwargs):
 	#	pass
+	pluginSupportName="[UNSET]"
+	pluginSupportPath="[UNSET]"
 	def importPlugin(self, name):
 		if not self.classes:
 			self.classes=[]
@@ -15,7 +19,9 @@ class pluginSupport:
 		"""
 			initializes all known plugins
 		"""
-		for pluginName in self.config.getConfig("pluginsEnabled", [], "main", self.network, set_default=False):
+		if not self.pluginSupportPath in sys.path:
+			sys.path.insert(1, self.pluginSupportPath)
+		for pluginName in self.config.getConfig(self.pluginSupportName+"PluginsEnabled", [], "main", self.network, set_default=False):
 			self.startPlugin(pluginName)
 
 	def startPlugin(self, pluginName):

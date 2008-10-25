@@ -39,6 +39,8 @@ class Bot(pluginSupport, irc.IRCClient):
 		@ivar scheduler: a instance of the L{Scheduler}
 		@ivar nickname: the nick of the bot
 	"""
+	pluginSupportPath="plugins/ircClient" #path were the plugins are
+	pluginSupportName="ircClient" #prefix for config
 
 	def __init__(self, config, network):
 		#list of plugins, which the bot should use
@@ -78,12 +80,6 @@ class Bot(pluginSupport, irc.IRCClient):
 		self.scheduler = scheduler.Scheduler()
 
 		self.classes=[]
-		files=glob.glob("plugins/ircClient/*.py")
-		sys.path.insert(1, "lib")
-		sys.path.insert(1, "plugins/ircClient")
-		#for file in files:
-		#	name=file.split("plugins/ircClient/")[1].split(".py")[0]
-		#	self.classes.append(self.importPlugin(name))
 		self.startPlugins()
 	
 	def _apirunner(self,apifunction,args={}):
