@@ -84,18 +84,14 @@ class Options(usage.Options):
 #    print '%s: %s' % (sys.argv[0], errortext)
 #    print '%s: Try --help for usage details.' % (sys.argv[0])
 #    sys.exit(1)
-def __getattr__(self, name):
-	if name=='services':
-		return self._adapterCache['twisted.application.service.IServiceCollection'].services
-	elif name=='namedServices':
-		return self._adapterCache['twisted.application.service.IServiceCollection'].namedServices
-	return service.Application.__getattr__(self, name)
+#class myApp(service.Application):
 
 config={}
 config['config']="otfbot.yaml"
 
 application=service.Application("otfbot")
-application.__getattr__=__getattr__
+application.getServices=lambda: application._adapterCache['twisted.application.service.IServiceCollection'].services
+application.getNamedServices=lambda: application._adapterCache['twisted.application.service.IServiceCollection'].namedServices
 
 configS=configService.configService(config['config'])
 configS.setName("config")
