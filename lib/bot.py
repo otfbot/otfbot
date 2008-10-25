@@ -68,11 +68,11 @@ class Bot(irc.IRCClient):
 		self.lineRate = 1.0/float(self.config.getConfig("linesPerSecond","2","main",self.network))
 
 		self.classes=[]
-		files=glob.glob("modules/irc/*.py")
+		files=glob.glob("modules/ircClient/*.py")
 		sys.path.insert(1, "lib")
-		sys.path.insert(1, "modules/irc")
+		sys.path.insert(1, "modules/ircClient")
 		for file in files:
-			name=file.split("modules/irc/")[1].split(".py")[0]
+			name=file.split("modules/ircClient/")[1].split(".py")[0]
 			self.classes.append(__import__(name))
 
 
