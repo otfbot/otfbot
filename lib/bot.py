@@ -67,16 +67,6 @@ class Bot(irc.IRCClient):
 		self.versionNum="svn "+"$Revision: 177 $".split(" ")[1]
 		self.lineRate = 1.0/float(self.config.getConfig("linesPerSecond","2","main",self.network))
 
-		self.classes=[]
-		files=glob.glob("modules/ircClient/*.py")
-		sys.path.insert(1, "lib")
-		sys.path.insert(1, "modules/ircClient")
-		for file in files:
-			name=file.split("modules/ircClient/")[1].split(".py")[0]
-			self.classes.append(__import__(name))
-		print self.classes
-
-
 		# usertracking
 		self.users={}
 		self.modchars={'a':'!','o':'@','h':'%','v':'+'}
@@ -85,6 +75,14 @@ class Bot(irc.IRCClient):
 		self.logger = logging.getLogger(self.network)
 		self.logger.info("Starting new Botinstance")
 		self.scheduler = scheduler.Scheduler()
+
+		self.classes=[]
+		files=glob.glob("modules/ircClient/*.py")
+		sys.path.insert(1, "lib")
+		sys.path.insert(1, "modules/ircClient")
+		for file in files:
+			name=file.split("modules/ircClient/")[1].split(".py")[0]
+			self.importMod(name)
 		self.startMods()
 	
 	def _apirunner(self,apifunction,args={}):
