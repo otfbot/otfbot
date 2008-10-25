@@ -40,7 +40,7 @@ class Bot(irc.IRCClient):
 	"""
 
 	def __init__(self, config, network):
-		#list of mods, which the bot should use
+		#list of plugins, which the bot should use
 		#you may need to configure them first
 		self.config=config
 
@@ -60,7 +60,7 @@ class Bot(irc.IRCClient):
 		if tmp:
 			self.channels=tmp
 		
-		self.mods = {}
+		self.plugins= {}
 		self.numPlugins = 0
 		
 		self.versionName="OtfBot"
@@ -100,7 +100,7 @@ class Bot(irc.IRCClient):
 		for plugin in self.plugins.values():
 			#self.logger.debug("running "+apifunction+" for plugin "+str(mod))
 			#if a channel is present, check if the plugin is disabled for the channel.
-			if args.has_key("channel") and plugin.name in self.config.getConfig("modsDisabled",[],"main",self.network,args["channel"], set_default=False):
+			if args.has_key("channel") and plugin.name in self.config.getConfig("pluginsDisabled",[],"main",self.network,args["channel"], set_default=False):
 				return
 			if plugins.name in self.config.getConfig("pluginsDisabled", [], "main", self.network):
 				return
@@ -131,7 +131,7 @@ class Bot(irc.IRCClient):
 			@return: the level of access rights (0 = nothing, 10 = everything)
 		"""
 		level=0
-		for mod in self.mods.values():
+		for mod in self.plugins.values():
 			try:
 				retval=mod.auth(user)
 				if retval > level:
@@ -146,7 +146,7 @@ class Bot(irc.IRCClient):
 		pass
 	def depends(self, dependency):
 		"""raise an Exception, if the dependency is not active"""
-		if not self.mods.has_key(dependency):
+		if not self.plugins.has_key(dependency):
 			raise self.DependencyMissing(dependency)
 	
 	def sendmsg(self, channel, msg, encoding="iso-8859-15", fallback="iso-8859-15"):
@@ -204,7 +204,7 @@ class Bot(irc.IRCClient):
 			self.logger.info("reloading class "+pluginClass.__name__)
 			reload(pluginClass)
 	def restartPlugin(self, pluginName, network):
-		if network in self.ipc.getall() and pluginName in self.ipc[network].mods.keys():
+		if network in self.ipc.getall() and pluginName in self.ipc[network].plugins.keys():
 			self.ipc[network].stopPlugin(pluginName)
 			c=None
 			#this is not optimal, because each plugin needs to iterate over all classes
@@ -221,22 +221,22 @@ class Bot(irc.IRCClient):
 			self.reloadPluginClass(chatPlugin)
 		if all: #global
 			for network in self.ipc.getall().keys():
-				for mod in self.ipc[network].mods.keys():
-					self.restartPlugin(mod, network)
+				for plugin in self.ipc[network].plugins.keys():
+					self.restartPlugin(plugin, network)
 		else:
-			for chatPlugin in self.mods.values():
+			for chatPlugin in self.plugins.values():
 				self.restartPlugin(chatPlugin.name, self.network)
 	
 	def stopPlugin(self, pluginName):
-		if not pluginName in self.mods.keys():
+		if not pluginName in self.plugins.keys():
 			return
-		chatPlugin=self.mods[pluginName]
+		chatPlugin=self.plugins[pluginName]
 		self.logger.info("stopping %s for network %s"%(pluginName, self.network))
 		try:
 			chatPlugin.stop()
 		except Exception, e:
 			self.logerror(self.logger, chatPlugin.name, e)
-		del(self.mods[pluginName])
+		del(self.plugins[pluginName])
 		del(chatPlugin)
 
 	def importPlugin(self, name):
@@ -261,14 +261,14 @@ class Bot(irc.IRCClient):
 				try:
 					self.logger.info("starting %s for network %s"%(pluginClass.__name__, self.network))
 					mod=pluginClass.chatPlugin(self)
-					self.mods[pluginClass.__name__]=mod
-					self.mods[pluginClass.__name__].setLogger(self.logger)
-					self.mods[pluginClass.__name__].name=pluginClass.__name__
-					self.mods[pluginClass.__name__].config=self.config
+					self.plugins[pluginClass.__name__]=mod
+					self.plugins[pluginClass.__name__].setLogger(self.logger)
+					self.plugins[pluginClass.__name__].name=pluginClass.__name__
+					self.plugins[pluginClass.__name__].config=self.config
 					if hasattr(self, "network"): #needed for reload!
-						self.mods[pluginClass.__name__].network=self.network
-					if hasattr(self.mods[pluginClass.__name__], "start"):
-						self.mods[pluginClass.__name__].start()
+						self.plugins[pluginClass.__name__].network=self.network
+					if hasattr(self.plugins[pluginClass.__name__], "start"):
+						self.plugins[pluginClass.__name__].start()
 				except Exception, e:
 					self.logerror(self.logger, pluginClass.__name__, e)
 
