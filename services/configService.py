@@ -22,7 +22,7 @@ from twisted.application import internet, service
 from lib.botfactory import BotFactory
 import lib.config as otfbotconfig
 
-class configModule(service.Service):
+class configService(service.Service):
     def __init__(self, filename):
         self.filename=filename
         self.config=None
