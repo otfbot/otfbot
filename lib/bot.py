@@ -77,11 +77,11 @@ class Bot(irc.IRCClient):
 		self.scheduler = scheduler.Scheduler()
 
 		self.classes=[]
-		files=glob.glob("modules/ircClient/*.py")
+		files=glob.glob("plugins/ircClient/*.py")
 		sys.path.insert(1, "lib")
-		sys.path.insert(1, "modules/ircClient")
+		sys.path.insert(1, "plugins/ircClient")
 		for file in files:
-			name=file.split("modules/ircClient/")[1].split(".py")[0]
+			name=file.split("plugins/ircClient/")[1].split(".py")[0]
 			self.importMod(name)
 		self.startMods()
 	
