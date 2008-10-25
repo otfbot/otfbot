@@ -19,7 +19,7 @@
 # (c) 2005-2008 by Alexander Schier
 #
 
-import sys, os, logging
+import sys, os, logging, glob
 
 class config:
 
@@ -252,16 +252,16 @@ class config:
 		file.write(self.exportyaml())
 		file.close()
 		return True
-def loadConfig(myconfigfile, modulesconfigdir):
+def loadConfig(myconfigfile, modulesconfigdirglob):
 	if os.path.exists(myconfigfile):
 		myconfig=config(myconfigfile)
-		for file in os.listdir(modulesconfigdir):
-			if len(file)>=4 and file[-5:]==".yaml":
-				tmp=config(modulesconfigdir+"/"+file, is_subconfig=True)
-				for option in tmp.generic_options.keys():
-					if not myconfig.has(option)[0]:
-						myconfig.set(option, tmp.get(option, ""), still_default=True)
-				del(tmp)
+		#something like plugins/*/*.yaml
+		for file in glob.glob(modulesconfigdirglob):
+			tmp=config(file, is_subconfig=True)
+			for option in tmp.generic_options.keys():
+				if not myconfig.has(option)[0]:
+					myconfig.set(option, tmp.get(option, ""), still_default=True)
+			del(tmp)
 	
 		return myconfig
 	else:
