@@ -49,9 +49,8 @@ class serverMod:
 	def irc_NICK(self, prefix, params):
 		self.server.name=params[0]
 		if self.first:
-			#self.server.name=self.server.bot.nickname
 			self.server.sendMessage(irc.RPL_WELCOME, ":connected to OTFBot IRC", prefix="localhost")
-			self.server.sendMessage(irc.RPL_YOURHOST, ":Your host is %(serviceName)s, running version %(serviceVersion)s" % {"serviceName": self.server.transport.server.getHost(),"serviceVersion": self.server.bot.versionNum},prefix="localhost")
+			self.server.sendMessage(irc.RPL_YOURHOST, ":Your host is %(serviceName)s, running version %(serviceVersion)s" % {"serviceName": self.server.transport.server.getHost(),"serviceVersion": "VERSION"},prefix="localhost")
 			self.server.sendMessage(irc.RPL_MOTD, ":Welcome to the Bot-Control-Server", prefix="localhost")
 			self.first=False
 	def irc_QUIT(self, prefix, params):
@@ -59,8 +58,6 @@ class serverMod:
 
 class server(IRCUser):
 	def __init__(self):
-		#self.bot=bot
-		#self.ipc=bot.ipc
 		self.name="nickname"
 		self.user="user"
 		self.firstnick=True
@@ -126,8 +123,6 @@ class server(IRCUser):
 		self._apirunner("connectionMade")
 	def connectionLost(self, reason):
 		self.connected=False
-		if self in self.bot.ipc.servers:
-			self.bot.ipc.servers.remove(self)
 	def getHostmask(self):
 		return "%s!%s@%s"%(self.name, self.user, self.hostname)
 	def sendmsg(self, user, channel, msg):
@@ -142,14 +137,10 @@ class server(IRCUser):
 class ircServerFactory(protocol.ServerFactory):
 	def __init__(self):
 		self.protocol=server
-		#self.bot=bot
-		#self.bot.ipc.servers=[]
 	def buildProtocol(self, addr):
-		proto=self.protocol(self.bot)
+		proto=self.protocol()
 		proto.connected=True
 		proto.factory=self
-		#self.bot.ipc.servers.append(proto)
 		return proto
 	def stopFactory(self):
 		pass
-		#self.bot.ipc.server=None
