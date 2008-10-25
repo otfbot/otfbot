@@ -89,14 +89,28 @@ config={}
 config['config']="otfbot.yaml"
 
 application=service.Application("otfbot")
-configService.configService(config['config']).setServiceParent(application)
+application.services=[] #service emulation
+application.namedServices={}
+
+configS=configService.configService(config['config'])
+configS.setName("config")
+configS.setServiceParent(application)
+application.services.append(configS)
+application.namedServices['config']=configS
+
 irc=ircClientService.ircClientService()
+irc.setName("ircClient")
 irc.setServiceParent(application)
+application.services.append(irc)
+application.namedServices['ircClient']=irc
+
 server=ircServerService.ircServerService()
 server.setName("ircServer")
 server.setServiceParent(application)
+application.services.append(server)
+application.namedServices['ircServer']=server
 
 from twisted.conch import manhole_tap
-manholeService=manhole_tap.makeService({'telnetPort':'7777','sshPort':None,'passwd':'passwd', 'namespace':{'app':irc}})
+manholeService=manhole_tap.makeService({'telnetPort':'7777','sshPort':None,'passwd':'passwd', 'namespace':{'app':application}})
 manholeService.setName("manhole")
 manholeService.setServiceParent(application)
