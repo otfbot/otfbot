@@ -1,5 +1,7 @@
 import sys
 
+#TODO: we do not have ipc anymore, and self.network only applys to ircClientPlugins
+
 class pluginSupport:
 	#def __init__(self, *args, **kwargs):
 	#	pass
@@ -12,7 +14,8 @@ class pluginSupport:
 			if c.__name__ == name:
 				return c
 		self.classes.append(__import__(name))
-		self.classes[-1].datadir = self.config.getConfig("datadir", "data", self.network)+"/"+self.classes[-1].__name__
+		#self.classes[-1].datadir = self.config.getConfig("datadir", "data", self.network)+"/"+self.classes[-1].__name__
+		self.classes[-1].datadir = self.config.getConfig("datadir", "data")+"/"+self.classes[-1].__name__
 		self.logger.debug("Imported plugin "+self.classes[-1].__name__)		
 		return self.classes[-1]
 	def startPlugins(self):
@@ -21,14 +24,15 @@ class pluginSupport:
 		"""
 		if not self.pluginSupportPath in sys.path:
 			sys.path.insert(1, self.pluginSupportPath)
-		for pluginName in self.config.getConfig(self.pluginSupportName+"PluginsEnabled", [], "main", self.network, set_default=False):
+		for pluginName in self.config.getConfig(self.pluginSupportName+"PluginsEnabled", [], "main", set_default=False):
 			self.startPlugin(pluginName)
 
 	def startPlugin(self, pluginName):
 			pluginClass=self.importPlugin(pluginName)
 			if hasattr(pluginClass, "Plugin"): #and hasattr(pluginClass.Plugin.ircClientPlugin) (?)
 				try:
-					self.logger.info("starting %s for network %s"%(pluginClass.__name__, self.network))
+					#TODO: no network in this abstract class
+					#self.logger.info("starting %s for network %s"%(pluginClass.__name__, self.network))
 					mod=pluginClass.Plugin(self)
 					self.plugins[pluginClass.__name__]=mod
 					self.plugins[pluginClass.__name__].setLogger(self.logger)
