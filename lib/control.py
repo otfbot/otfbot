@@ -229,12 +229,12 @@ class controlInterface:
 	def _cmd_network_connect(self,argument):
 		args = argument.split(" ")
 		if len(args)==1:
-			self.bot.setConfig("enabled", "true", "main", args[0])
+			self.bot.setConfig("enabled", True, "main", args[0])
 			self.bot.ipc.connectNetwork(args[0])
 			return "Connecting to "+str(argument)
 		elif len(args)==2:
 			self.bot.setConfig("server", args[1], "main", args[0])
-			self.bot.setConfig("enabled", "true", "main", args[0])
+			self.bot.setConfig("enabled", True, "main", args[0])
 			self.bot.ipc.connectNetwork(words[1])
 			return "Connecting to "+str(args[0])
 		else:
