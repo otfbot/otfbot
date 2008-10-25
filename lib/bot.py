@@ -103,13 +103,13 @@ class Bot(pluginSupport, irc.IRCClient):
 			#if a channel is present, check if the plugin is disabled for the channel.
 			if args.has_key("channel") and plugin.name in self.config.getConfig("pluginsDisabled",[],"main",self.network,args["channel"], set_default=False):
 				return
-			if plugins.name in self.config.getConfig("pluginsDisabled", [], "main", self.network):
+			if plugin.name in self.config.getConfig("pluginsDisabled", [], "main", self.network):
 				return
 			try:
-				if hasattr(mod, apifunction):
-					getattr(mod,apifunction)(**args)
+				if hasattr(plugin, apifunction):
+					getattr(plugin, apifunction)(**args)
 			except Exception, e:
-				self.logerror(self.logger, mod.name, e)
+				self.logerror(self.logger, plugin.name, e)
 
 	def getUsers(self):
 		""" Get a list of users
@@ -132,9 +132,9 @@ class Bot(pluginSupport, irc.IRCClient):
 			@return: the level of access rights (0 = nothing, 10 = everything)
 		"""
 		level=0
-		for mod in self.plugins.values():
+		for plugin in self.plugins.values():
 			try:
-				retval=mod.auth(user)
+				retval=plugin.auth(user)
 				if retval > level:
 					level=retval
 			except AttributeError:
