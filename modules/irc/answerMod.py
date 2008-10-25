@@ -18,7 +18,7 @@
 #
 
 import string, re, functions
-import chatMod
+from lib import chatMod
 		
 class chatMod(chatMod.chatMod):
 	def __init__(self, bot):

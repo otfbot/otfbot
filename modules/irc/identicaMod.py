@@ -16,7 +16,7 @@
 # 
 # (c) 2008 by Alexander Schier
 
-import chatMod
+from lib import chatMod
 
 LIB=True
 try:
