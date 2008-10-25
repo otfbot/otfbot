@@ -13,7 +13,9 @@ class pluginSupport:
 		for c in self.classes:
 			if c.__name__ == name:
 				return c
+		sys.path.insert(1, self.pluginSupportPath)
 		self.classes.append(__import__(name))
+		sys.path.pop(1)
 		#self.classes[-1].datadir = self.config.getConfig("datadir", "data", self.network)+"/"+self.classes[-1].__name__
 		self.classes[-1].datadir = self.config.getConfig("datadir", "data")+"/"+self.classes[-1].__name__
 		self.logger.debug("Imported plugin "+self.classes[-1].__name__)		
@@ -22,8 +24,6 @@ class pluginSupport:
 		"""
 			initializes all known plugins
 		"""
-		if not self.pluginSupportPath in sys.path:
-			sys.path.insert(1, self.pluginSupportPath)
 		for pluginName in self.config.getConfig(self.pluginSupportName+"PluginsEnabled", [], "main", set_default=False):
 			self.startPlugin(pluginName)
 
