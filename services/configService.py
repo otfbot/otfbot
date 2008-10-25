@@ -30,7 +30,7 @@ class configService(service.Service):
 
     def startService(self):
         service.Service.startService(self)
-        self.config=otfbotconfig.loadConfig(self.filename, "data")
+        self.config=otfbotconfig.loadConfig(self.filename, "plugins/*/*.yaml")
         self.delConfig=self.config.delConfig
         self.getConfig=self.config.getConfig
         self.hasConfig=self.config.hasConfig
