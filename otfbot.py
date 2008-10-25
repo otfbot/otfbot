@@ -84,31 +84,30 @@ class Options(usage.Options):
 #    print '%s: %s' % (sys.argv[0], errortext)
 #    print '%s: Try --help for usage details.' % (sys.argv[0])
 #    sys.exit(1)
+def __getattr__(self, name):
+	if name=='services':
+		return self._adapterCache['twisted.application.service.IServiceCollection'].services
+	elif name=='namedServices':
+		return self._adapterCache['twisted.application.service.IServiceCollection'].namedServices
+	return service.Application.__getattr__(self, name)
 
 config={}
 config['config']="otfbot.yaml"
 
 application=service.Application("otfbot")
-application.services=[] #service emulation
-application.namedServices={}
+application.__getattr__=__getattr__
 
 configS=configService.configService(config['config'])
 configS.setName("config")
 configS.setServiceParent(application)
-application.services.append(configS)
-application.namedServices['config']=configS
 
 irc=ircClientService.ircClientService()
 irc.setName("ircClient")
 irc.setServiceParent(application)
-application.services.append(irc)
-application.namedServices['ircClient']=irc
 
 server=ircServerService.ircServerService()
 server.setName("ircServer")
 server.setServiceParent(application)
-application.services.append(server)
-application.namedServices['ircServer']=server
 
 from twisted.conch import manhole_tap
 manholeService=manhole_tap.makeService({'telnetPort':'7777','sshPort':None,'passwd':'passwd', 'namespace':{'app':application}})
