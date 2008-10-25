@@ -26,8 +26,8 @@ sys.path.insert(1,"lib")
 import scheduler
 class Bot(irc.IRCClient):
 	""" The Protocol of our IRC-Bot
-		@ivar mods: contains references to all modules, which are loaded
-		@type mods: list
+		@ivar plugins: contains references to all plugins, which are loaded
+		@type plugins: list
 		@ivar users: contains a dict of all users in the channels we are in
 		@type users: dict
 		@ivar channels: all channels we are currently in
@@ -61,7 +61,7 @@ class Bot(irc.IRCClient):
 			self.channels=tmp
 		
 		self.mods = {}
-		self.numMods = 0
+		self.numPlugins = 0
 		
 		self.versionName="OtfBot"
 		self.versionNum="svn "+"$Revision: 177 $".split(" ")[1]
@@ -82,12 +82,12 @@ class Bot(irc.IRCClient):
 		sys.path.insert(1, "plugins/ircClient")
 		for file in files:
 			name=file.split("plugins/ircClient/")[1].split(".py")[0]
-			self.importMod(name)
-		self.startMods()
+			self.importPlugin(name)
+		self.startPlugins()
 	
 	def _apirunner(self,apifunction,args={}):
 		"""
-			Pass all calls to modules callbacks through this method, they 
+			Pass all calls to plugin callbacks through this method, they 
 			are checked whether they should be executed or not.
 			
 			Example C{self._apirunner("privmsg",{"user":user,"channel":channel,"msg":msg})}
@@ -97,12 +97,12 @@ class Bot(irc.IRCClient):
 			@type	args:	dict
 			@param	args:	the arguments for the callback
 		"""
-		for mod in self.mods.values():
-			#self.logger.debug("running "+apifunction+" for module "+str(mod))
-			#if a channel is present, check if the module is disabled for the channel.
-			if args.has_key("channel") and mod.name in self.config.getConfig("modsDisabled",[],"main",self.network,args["channel"], set_default=False):
+		for plugin in self.plugins.values():
+			#self.logger.debug("running "+apifunction+" for plugin "+str(mod))
+			#if a channel is present, check if the plugin is disabled for the channel.
+			if args.has_key("channel") and plugin.name in self.config.getConfig("modsDisabled",[],"main",self.network,args["channel"], set_default=False):
 				return
-			if mod.name in self.config.getConfig("modsDisabled", [], "main", self.network):
+			if plugins.name in self.config.getConfig("pluginsDisabled", [], "main", self.network):
 				return
 			try:
 				if hasattr(mod, apifunction):
@@ -200,77 +200,77 @@ class Bot(irc.IRCClient):
 			self.action(self.nickname, channel, line)
 			time.sleep(0.5)
 	
-	def reloadModuleClass(self, moduleClass):
-			self.logger.info("reloading class "+moduleClass.__name__)
-			reload(moduleClass)
-	def restartModule(self, moduleName, network):
-		if network in self.ipc.getall() and moduleName in self.ipc[network].mods.keys():
-			self.ipc[network].stopMod(moduleName)
+	def reloadPluginClass(self, pluginClass):
+			self.logger.info("reloading class "+pluginClass.__name__)
+			reload(pluginClass)
+	def restartPlugin(self, pluginName, network):
+		if network in self.ipc.getall() and pluginName in self.ipc[network].mods.keys():
+			self.ipc[network].stopPlugin(pluginName)
 			c=None
-			#this is not optimal, because each module needs to iterate over all classes
+			#this is not optimal, because each plugin needs to iterate over all classes
 			for c in self.classes:
-				if c.__name__==moduleName:
+				if c.__name__==pluginName:
 					break
-			self.ipc[network].startMod(c)
+			self.ipc[network].startPlugin(c)
 
-	def reloadModules(self, all=True):
+	def reloadPlugins(self, all=True):
 		"""
-			call this to reload all modules
+			call this to reload all plugins
 		"""
-		for chatModule in self.classes:
-			self.reloadModuleClass(chatModule)
+		for chatPlugin in self.classes:
+			self.reloadPluginClass(chatPlugin)
 		if all: #global
 			for network in self.ipc.getall().keys():
 				for mod in self.ipc[network].mods.keys():
-					self.restartModule(mod, network)
+					self.restartPlugin(mod, network)
 		else:
-			for chatMod in self.mods.values():
-				self.restartModule(chatMod.name, self.network)
+			for chatPlugin in self.mods.values():
+				self.restartPlugin(chatPlugin.name, self.network)
 	
-	def stopMod(self, moduleName):
-		if not moduleName in self.mods.keys():
+	def stopPlugin(self, pluginName):
+		if not pluginName in self.mods.keys():
 			return
-		chatMod=self.mods[moduleName]
-		self.logger.info("stopping %s for network %s"%(moduleName, self.network))
+		chatPlugin=self.mods[pluginName]
+		self.logger.info("stopping %s for network %s"%(pluginName, self.network))
 		try:
-			chatMod.stop()
+			chatPlugin.stop()
 		except Exception, e:
-			self.logerror(self.logger, chatMod.name, e)
-		del(self.mods[moduleName])
-		del(chatMod)
+			self.logerror(self.logger, chatPlugin.name, e)
+		del(self.mods[pluginName])
+		del(chatPlugin)
 
-	def importMod(self, name):
+	def importPlugin(self, name):
 		for c in self.classes:
 			if c.__name__ == name:
 				return c
 		self.classes.append(__import__(name))
 		self.classes[-1].datadir = self.config.getConfig("datadir", "data", self.network)+"/"+self.classes[-1].__name__
-		self.logger.debug("Imported module "+self.classes[-1].__name__)		
+		self.logger.debug("Imported plugin "+self.classes[-1].__name__)		
 		return self.classes[-1]
-	def startMods(self):
+	def startPlugins(self):
 		"""
-			initializes all known modules
+			initializes all known plugins
 		"""
-		for chatModule in self.classes:
-			if chatModule.__name__ in self.config.getConfig("modsEnabled", [], "main", self.network):
-				self.startMod(chatModule.__name__)
+		for chatPlugin in self.classes:
+			if chatPlugin.__name__ in self.config.getConfig("pluginsEnabled", [], "main", self.network):
+				self.startPlugin(chatPlugin.__name__)
 
-	def startMod(self, moduleName):
-			moduleClass=self.importMod(moduleName)
-			if hasattr(moduleClass, "chatMod"):
+	def startPlugin(self, pluginName):
+			pluginClass=self.importPlugin(pluginName)
+			if hasattr(pluginClass, "chatPlugin"):
 				try:
-					self.logger.info("starting %s for network %s"%(moduleClass.__name__, self.network))
-					mod=moduleClass.chatMod(self)
-					self.mods[moduleClass.__name__]=mod
-					self.mods[moduleClass.__name__].setLogger(self.logger)
-					self.mods[moduleClass.__name__].name=moduleClass.__name__
-					self.mods[moduleClass.__name__].config=self.config
+					self.logger.info("starting %s for network %s"%(pluginClass.__name__, self.network))
+					mod=pluginClass.chatPlugin(self)
+					self.mods[pluginClass.__name__]=mod
+					self.mods[pluginClass.__name__].setLogger(self.logger)
+					self.mods[pluginClass.__name__].name=pluginClass.__name__
+					self.mods[pluginClass.__name__].config=self.config
 					if hasattr(self, "network"): #needed for reload!
-						self.mods[moduleClass.__name__].network=self.network
-					if hasattr(self.mods[moduleClass.__name__], "start"):
-						self.mods[moduleClass.__name__].start()
+						self.mods[pluginClass.__name__].network=self.network
+					if hasattr(self.mods[pluginClass.__name__], "start"):
+						self.mods[pluginClass.__name__].start()
 				except Exception, e:
-					self.logerror(self.logger, moduleClass.__name__, e)
+					self.logerror(self.logger, pluginClass.__name__, e)
 
 	# Callbacks
 	def connectionMade(self):
@@ -540,21 +540,21 @@ class Bot(irc.IRCClient):
 	def sendLine(self, line):
 		self._apirunner("sendLine",{"line":line})
 		irc.IRCClient.sendLine(self, line)
-	def logerror(self, logger, module, exception):
+	def logerror(self, logger, plugin, exception):
 		""" format a exception nicely and pass it to the logger
 			@param logger: the logger instance to use
-			@param module: the module in which the exception occured
-			@type module: string
+			@param plugin: the plugin in which the exception occured
+			@type plugin: string
 			@param exception: the exception
 			@type exception: exception
 		"""
 		if type(exception) == self.DependencyMissing:
-			logger.error("Dependency missing in module %s: %s is not active."%(module, str(exception)))
+			logger.error("Dependency missing in plugin %s: %s is not active."%(plugin, str(exception)))
 			return
 		elif type(exception) == self.WontStart:
-			logger.info('Module "%s" will not start because "%s".'%(module, str(exception)))
+			logger.info('Plugin "%s" will not start because "%s".'%(plugin, str(exception)))
 			return
-		logger.error("Exception in Module "+module+": "+str(exception))
+		logger.error("Exception in Plugin "+plugin+": "+str(exception))
 		tb_list = traceback.format_tb(sys.exc_info()[2])
 		for entry in tb_list:
 			for line in entry.strip().split("\n"):
