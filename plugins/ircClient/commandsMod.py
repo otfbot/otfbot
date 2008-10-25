@@ -20,7 +20,7 @@
 import string, re
 from lib import chatMod, functions
 
-class chatMod(chatMod.chatMod):
+class Plugin(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot = bot
 		self.channels=[]

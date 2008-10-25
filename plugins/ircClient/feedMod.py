@@ -26,7 +26,7 @@ try:
 except ImportError:
 	feedparser_available=False
 
-class chatMod(chatMod.chatMod):
+class Plugin(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot = bot
 		self.end = False
