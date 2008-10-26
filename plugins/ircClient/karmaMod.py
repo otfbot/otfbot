@@ -31,8 +31,8 @@ class Plugin(chatMod.chatMod):
 		self.bot=bot
 		self.karmas={} #channel ->  (what -> karma-struct)
 		self.karmapaths={} #path -> (what -> channel) (pointer!)
-		self.verbose=self.bot.getBoolConfig("karmaMod.verbose", True)
-		self.freestyle=self.bot.getBoolConfig("karmaMod.freestyle", True)
+		self.verbose=self.bot.config.getBool("karmaMod.verbose", True)
+		self.freestyle=self.bot.config.getBool("karmaMod.freestyle", True)
 
 	def loadKarma(self, channel):
 		if not os.path.exists(datadir):

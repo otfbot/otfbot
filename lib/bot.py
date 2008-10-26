@@ -55,7 +55,6 @@ class Bot(pluginSupport, irc.IRCClient):
 		self.getConfig=lambda *args, **kwargs: self.warn_and_execute(config.getConfig, *args, **kwargs)
 		self.hasConfig=lambda *args, **kwargs: self.warn_and_execute(config.hasConfig, *args, **kwargs)
 		self.setConfig=lambda *args, **kwargs: self.warn_and_execute(config.setConfig, *args, **kwargs)
-		self.getBoolConfig=lambda *args, **kwargs: self.warn_and_execute(config.getBoolConfig, *args, **kwargs)
 
 		self.channels=[]
 		self.realname=self.config.get("realname", "A Bot", "main", self.network)
@@ -225,7 +224,7 @@ class Bot(pluginSupport, irc.IRCClient):
 		channelstojoin=self.channels
 		self.channels=[]
 		for channel in channelstojoin:
-			if(self.config.getBoolConfig("enabled", "false", "main", self.network, channel)):
+			if(self.config.getBool("enabled", "false", "main", self.network, channel)):
 				pw = self.config.get("password","", "main", self.network, channel)
 				if (pw != ""):
 					self.join(unicode(channel).encode("iso-8859-1"),unicode(pw).encode("iso-8859-1"))

@@ -37,7 +37,7 @@ class Plugin(chatMod.chatMod):
 			self.logger.info("identifying to nickserv")
 			self.bot.sendmsg("nickserv", "identify "+self.password)
 			self.sent_identification=True
-		if self.bot.getBoolConfig("setBotFlag", True, "identifyMod", self.bot.network):
+		if self.bot.config.getBool("setBotFlag", True, "identifyMod", self.bot.network):
 			self.logger.info("setting usermode +b")
 			self.bot.mode(self.bot.nickname, 1, "B")
 			
