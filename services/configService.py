@@ -56,7 +56,7 @@ class configService(service.Service):
 			@param set_default if True, the default will be set in the config, if its used.
 			if False, the default will be returned, but the config will not be changed.
 
-			>>> c=config()
+			>>> c=configService()
 			>>> c.get("option", "default")
 			'default'
 			>>> c.get("option", "unset?")
@@ -108,7 +108,7 @@ class configService(service.Service):
 		test, in which networks/channels a option is set. 
 		Returns a tuple: (general_bool, network_list, (network, channel) list)
 
-		>>> c=config()
+		>>> c=configService()
 		>>> c.has("testkey")
 		(False, [], [])
 		>>> c.set("testkey", "testvalue")
@@ -156,11 +156,11 @@ class configService(service.Service):
 		else:
 			self.generic_options[option]=value
 			self.generic_options_default[option]=still_default
-		self.writeConfig() #to be safe
+		#self.writeConfig() #TODO: this is good here, if writeconfig does not destroy generic_options, as the current version does
 
 	def delete(self, option, module=None, network=None, channel=None):
 		"""
-		>>> c=config()
+		>>> c=configService()
 		>>> c.set("key", "value")
 		>>> c.get("key", "unset")
 		'value'
@@ -231,7 +231,7 @@ class configService(service.Service):
 			return datadir+"/"+value
 	def getBool(self, option, defaultvalue="", module=None, network=None, channel=None):
 		"""
-		>>> c=config()
+		>>> c=configService()
 		>>> c.set("key", "1")
 		>>> c.set("key2", "on")
 		>>> c.set("key3", "True")
@@ -256,17 +256,24 @@ class configService(service.Service):
 		file.write(self.exportyaml())
 		file.close()
 		return True
+	def startService(self):
+		service.Service.startService(self)
+		loadConfig(self.filename, "plugins/*/*.yaml")
+
+	def stopService(self):
+		self.writeConfig()
+		service.Service.stopService(self)
+
 def loadConfig(myconfigfile, modulesconfigdirglob):
 	if os.path.exists(myconfigfile):
-		myconfig=config(myconfigfile)
+		myconfig=configService(myconfigfile)
 		#something like plugins/*/*.yaml
 		for file in glob.glob(modulesconfigdirglob):
-			tmp=config(file, is_subconfig=True)
+			tmp=configService(file, is_subconfig=True)
 			for option in tmp.generic_options.keys():
 				if not myconfig.has(option)[0]:
 					myconfig.set(option, tmp.get(option, ""), still_default=True)
 			del(tmp)
-	
 		return myconfig
 	else:
 		return None
@@ -284,7 +291,7 @@ if __name__ == '__main__':
 fooMod.setting2: true
 fooMod.setting3: false""")
 			file.close()
-			c=config("testconfig.yaml")
+			c=configService("testconfig.yaml")
 			#c.setConfig("writeDefaultValues", True, "config")
 			c.writeConfig()
 			self.config=loadConfig("testconfig.yaml", "test_configsnippets/*.yaml")
@@ -304,7 +311,7 @@ fooMod.setting3: false""")
 			self.assertTrue(config2.hasConfig("setting1", "fooMod")[0]==False)
 			self.assertTrue(config2.hasConfig("setting4", "fooMod")[0]==False)
 		def testWriteDefaults(self):
-			self.config.config.set("writeDefaultValues", True, "config")
+			self.config.set("writeDefaultValues", True, "config")
 
 			blub=self.config.get("setting1", "unset", "fooMod")
 			self.assertTrue(blub=="blub", "fooMod.setting1 is '%s' instead of 'blub'"%blub)
@@ -317,10 +324,3 @@ fooMod.setting3: false""")
 			self.assertTrue(config2.hasConfig("setting4", "fooMod")[0]==True)
 	unittest.main()
 
-	def startService(self):
-		service.Service.startService(self)
-		self.loadConfig(self.filename, "plugins/*/*.yaml")
-
-	def stopService(self):
-		self.writeConfig()
-		service.Service.stopService(self)
