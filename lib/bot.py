@@ -54,14 +54,13 @@ class Bot(pluginSupport, irc.IRCClient):
 		self.delConfig=lambda *args, **kwargs: self.warn_and_execute(config.delConfig, *args, **kwargs)
 		self.getConfig=lambda *args, **kwargs: self.warn_and_execute(config.getConfig, *args, **kwargs)
 		self.hasConfig=lambda *args, **kwargs: self.warn_and_execute(config.hasConfig, *args, **kwargs)
-		self.getPathConfig=lambda *args, **kwargs: self.warn_and_execute(config.getPathConfig, *args, **kwargs)
 		self.setConfig=lambda *args, **kwargs: self.warn_and_execute(config.setConfig, *args, **kwargs)
 		self.getBoolConfig=lambda *args, **kwargs: self.warn_and_execute(config.getBoolConfig, *args, **kwargs)
 
 		self.channels=[]
-		self.realname=self.config.getConfig("realname", "A Bot", "main", self.network)
-		self.password=self.config.getConfig('password', None, 'main', network)
-		self.nickname=unicode(self.config.getConfig("nickname", "OtfBot", 'main', self.network)).encode("iso-8859-1")
+		self.realname=self.config.get("realname", "A Bot", "main", self.network)
+		self.password=self.config.get('password', None, 'main', network)
+		self.nickname=unicode(self.config.get("nickname", "OtfBot", 'main', self.network)).encode("iso-8859-1")
 		tmp=self.config.getChannels(self.network)
 		if tmp:
 			self.channels=tmp
@@ -71,7 +70,7 @@ class Bot(pluginSupport, irc.IRCClient):
 		
 		self.versionName="OtfBot"
 		self.versionNum="svn "+"$Revision: 177 $".split(" ")[1]
-		self.lineRate = 1.0/float(self.config.getConfig("linesPerSecond","2","main",self.network))
+		self.lineRate = 1.0/float(self.config.get("linesPerSecond","2","main",self.network))
 
 		# usertracking
 		self.users={}
@@ -99,9 +98,9 @@ class Bot(pluginSupport, irc.IRCClient):
 		for plugin in self.plugins.values():
 			#self.logger.debug("running "+apifunction+" for plugin "+str(mod))
 			#if a channel is present, check if the plugin is disabled for the channel.
-			if args.has_key("channel") and plugin.name in self.config.getConfig("pluginsDisabled",[],"main",self.network,args["channel"], set_default=False):
+			if args.has_key("channel") and plugin.name in self.config.get("pluginsDisabled",[],"main",self.network,args["channel"], set_default=False):
 				return
-			if plugin.name in self.config.getConfig("pluginsDisabled", [], "main", self.network):
+			if plugin.name in self.config.get("pluginsDisabled", [], "main", self.network):
 				return
 			try:
 				if hasattr(plugin, apifunction):
@@ -165,11 +164,11 @@ class Bot(pluginSupport, irc.IRCClient):
 			msg=[msg]
 		for line in msg:
 			try:
-				line=unicode(line, encoding).encode(self.config.getConfig("encoding", "UTF-8", "main"))
+				line=unicode(line, encoding).encode(self.config.get("encoding", "UTF-8", "main"))
 			except UnicodeDecodeError:
 				#self.logger.debug("Unicode Decode Error with String:"+str(msg))
 				#Try with Fallback encoding
-				msg=unicode(line, fallback).encode(self.config.getConfig("encoding", "UTF-8", "main"))
+				msg=unicode(line, fallback).encode(self.config.get("encoding", "UTF-8", "main"))
 			except UnicodeEncodeError:
 				pass
 				#self.logger.debug("Unicode Encode Error with String:"+str(msg))
@@ -193,7 +192,7 @@ class Bot(pluginSupport, irc.IRCClient):
 		if not type(action)==list:
 			action=[action]
 		for line in action:
-			line=unicode(line, encoding).encode(self.config.getConfig("encoding", "UTF-8", "main"))
+			line=unicode(line, encoding).encode(self.config.get("encoding", "UTF-8", "main"))
 			
 			self.me(channel, line)
 			self.action(self.nickname, channel, line)
@@ -227,7 +226,7 @@ class Bot(pluginSupport, irc.IRCClient):
 		self.channels=[]
 		for channel in channelstojoin:
 			if(self.config.getBoolConfig("enabled", "false", "main", self.network, channel)):
-				pw = self.config.getConfig("password","", "main", self.network, channel)
+				pw = self.config.get("password","", "main", self.network, channel)
 				if (pw != ""):
 					self.join(unicode(channel).encode("iso-8859-1"),unicode(pw).encode("iso-8859-1"))
 				else:
@@ -294,7 +293,7 @@ class Bot(pluginSupport, irc.IRCClient):
 			char=msg[0].decode('UTF-8').encode('UTF-8')
 		except UnicodeDecodeError:
 			char=msg[0].decode('iso-8859-15').encode('UTF-8')
-		if char==self.config.getConfig("commandChar", "!", "main").encode("UTF-8"):
+		if char==self.config.get("commandChar", "!", "main").encode("UTF-8"):
 			tmp=msg[1:].split(" ", 1)
 			command=tmp[0]
 			if len(tmp)==2:

@@ -46,9 +46,9 @@ class Plugin(chatMod.chatMod):
 		if not HAS_PYSVN:
 			self.bot.depends("pysvn python module")
 		self.callIds = {}
-		self.svnconfig = self.bot.getConfig("repositories",[] , "svnMod")
+		self.svnconfig = self.bot.config.get("repositories",[] , "svnMod")
 	def joined(self,channel):
-		repros = self.bot.getConfig("repros","","svnMod",self.bot.network,channel)
+		repros = self.bot.config.get("repros","","svnMod",self.bot.network,channel)
 		if repros != "":
 			try:
 				repros = repros.split(",")
@@ -63,7 +63,7 @@ class Plugin(chatMod.chatMod):
 	def kickedFrom(self, channel, kicker, message):
 		self.left(channel)
 	def left(self, channel):
-		repros = self.bot.getConfig("repros","","svnMod",self.bot.network,channel)
+		repros = self.bot.config.get("repros","","svnMod",self.bot.network,channel)
 		if repros != "":
 			try:
 				repros = repros.split(",")

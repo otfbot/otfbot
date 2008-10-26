@@ -29,21 +29,21 @@ class Plugin(chatMod.chatMod):
 		self.reload()
 		
 	def joined(self, channel):
-		self.commands[channel]=functions.loadProperties(self.bot.getPathConfig("file", datadir, "commands.txt", "commandsMod", self.bot.network, channel))
+		self.commands[channel]=functions.loadProperties(self.bot.config.getPath("file", datadir, "commands.txt", "commandsMod", self.bot.network, channel))
 	
 	def command(self, user, channel, command, options):
 		user = user.split("!")[0] #only nick
 		answer=self.respond(channel, user, command, options)
 		if answer != "":
 			if answer[0] == ":":
-				self.bot.sendmsg(channel, answer[1:], self.bot.getConfig("commandsMod.fileencoding", "iso-8859-15"))
+				self.bot.sendmsg(channel, answer[1:], self.bot.config.get("commandsMod.fileencoding", "iso-8859-15"))
 			else:
-				self.bot.sendme(channel, answer, self.bot.getConfig("commandsMod.fileencoding", "iso-8859-15"))
+				self.bot.sendme(channel, answer, self.bot.config.get("commandsMod.fileencoding", "iso-8859-15"))
 
 	def start(self):
 		self.commands={}
-		self.commands["general"]=functions.loadProperties(self.bot.getPathConfig("file", datadir, "commands.txt","commandsMod"))
-		self.commands["network"]=functions.loadProperties(self.bot.getPathConfig("file", datadir, "commands.txt","commandsMod", self.bot.network))
+		self.commands["general"]=functions.loadProperties(self.bot.config.getPath("file", datadir, "commands.txt","commandsMod"))
+		self.commands["network"]=functions.loadProperties(self.bot.config.getPath("file", datadir, "commands.txt","commandsMod", self.bot.network))
 		for chan in self.bot.channels:
 			self.joined(chan)
 

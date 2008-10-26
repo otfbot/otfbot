@@ -23,7 +23,7 @@ class Plugin(chatMod.chatMod):
     def __init__(self, bot):
         self.bot=bot
         #self.bot.depends("serverMod")
-        self.enabled=self.bot.getBoolConfig("active", False, "humanMod") and self.bot.getConfig("active", False, "serverMod")
+        self.enabled=self.bot.getBoolConfig("active", False, "humanMod") and self.bot.config.get("active", False, "serverMod")
         if not self.enabled:
             raise self.bot.WontStart("humanMod is disabled.")
         

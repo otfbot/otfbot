@@ -23,7 +23,7 @@ from lib import chatMod, functions
 class Plugin(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
-		self.badwordsFile=bot.getPathConfig("file", datadir, "badwords.txt","badwordsMod")
+		self.badwordsFile=bot.config.getPath("file", datadir, "badwords.txt","badwordsMod")
 		self.badwords=functions.loadList(self.badwordsFile)
 
 	def reload(self):
