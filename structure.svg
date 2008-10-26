@@ -36,11 +36,11 @@
      objecttolerance="10"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.7"
-     inkscape:cx="713.07233"
-     inkscape:cy="628.59189"
+     inkscape:zoom="0.49497475"
+     inkscape:cx="906.97281"
+     inkscape:cy="600.50744"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="layer2"
      showgrid="false"
      inkscape:window-width="1592"
      inkscape:window-height="1146"
@@ -62,7 +62,50 @@
      id="layer2"
      inkscape:label="bg"
      style="display:inline"
-     transform="translate(538.2143,-65.714286)" />
+     transform="translate(538.2143,-65.714286)">
+    <g
+       id="g3336">
+      <rect
+         y="274.24936"
+         x="-608.92499"
+         height="123.23861"
+         width="1814.234"
+         id="rect2527"
+         style="fill:#00acff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.25;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;display:inline" />
+      <text
+         id="text3308"
+         y="353.34131"
+         x="926.07153"
+         style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-size:48px"
+           y="353.34131"
+           x="926.07153"
+           id="tspan3310"
+           sodipodi:role="line">MODULE</tspan></text>
+    </g>
+    <g
+       id="g3341">
+      <rect
+         y="840.94501"
+         x="-608.92499"
+         height="101.01525"
+         width="1814.234"
+         id="rect3324"
+         style="fill:#00acff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.25;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;display:inline" />
+      <text
+         id="text3326"
+         y="908.92529"
+         x="926.07153"
+         style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-size:48px"
+           y="908.92529"
+           x="926.07153"
+           id="tspan3328"
+           sodipodi:role="line">PLUGINS</tspan></text>
+    </g>
+  </g>
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
@@ -264,7 +307,7 @@
          y="142.87642" /></text>
     <g
        id="g3303"
-       transform="translate(131.43208,78.754763)">
+       transform="translate(60.003509,518.75476)">
       <g
          transform="translate(-303.33544,-67.586782)"
          id="g3305">
@@ -293,7 +336,7 @@
     </g>
     <g
        id="g3325"
-       transform="translate(317.00573,78.754763)">
+       transform="translate(245.57716,518.75476)">
       <g
          transform="translate(-303.33544,-67.586782)"
          id="g3327">
@@ -322,7 +365,7 @@
     </g>
     <g
        id="g4974"
-       transform="translate(-8.5714286,120)">
+       transform="translate(-80.571429,120)">
       <rect
          transform="translate(-353.10528,87.161423)"
          y="318.07727"
@@ -538,7 +581,7 @@
     <g
        style="display:inline"
        id="g5016"
-       transform="translate(512.85712,120)">
+       transform="translate(440.85712,120)">
       <rect
          transform="translate(-353.10528,87.161423)"
          y="318.07727"
@@ -753,28 +796,32 @@
     </g>
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;display:inline"
-       d="M -51.785728,352.84786 L 246.07141,436.41929"
+       d="M -51.785728,352.84786 L 173.21427,437.84786"
        id="path5102"
        transform="translate(-353.10528,87.161423)"
-       inkscape:connector-type="polyline" />
+       inkscape:connector-type="polyline"
+       sodipodi:nodetypes="cc" />
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;display:inline"
-       d="M -278.57143,436.77643 L -122.50001,353.56214"
+       d="M -348.57143,438.205 L -122.50001,353.56214"
        id="path5104"
        transform="translate(-353.10528,87.161423)"
-       inkscape:connector-type="polyline" />
+       inkscape:connector-type="polyline"
+       sodipodi:nodetypes="cc" />
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;display:inline"
-       d="M 553.92856,352.13357 L 601.07141,447.84786"
+       d="M 553.92856,352.13357 L 525.35712,889.27643"
        id="path5116"
        transform="translate(-353.10528,87.161423)"
-       inkscape:connector-type="polyline" />
+       inkscape:connector-type="polyline"
+       sodipodi:nodetypes="cc" />
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;display:inline"
-       d="M 571.07141,353.56214 L 786.7857,449.27643"
+       d="M 571.07141,353.56214 L 716.7857,889.27643"
        id="path5118"
        transform="translate(-353.10528,87.161423)"
-       inkscape:connector-type="polyline" />
+       inkscape:connector-type="polyline"
+       sodipodi:nodetypes="cc" />
     <g
        id="g5141"
        transform="translate(-381.42857,128.57143)">
@@ -845,5 +892,15 @@
        transform="translate(-891.31958,152.87571)"
        inkscape:connector-type="polyline"
        inkscape:connection-end="#g3570" />
-  </g>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3300"
+       style="fill:black;stroke:none;stroke-opacity:1;stroke-width:1px;stroke-linejoin:miter;stroke-linecap:butt;fill-opacity:1;font-family:Bitstream Vera Sans;font-style:normal;font-weight:normal;font-size:12px"><flowRegion
+         id="flowRegion3302"><rect
+           id="rect3304"
+           width="272.74118"
+           height="65.659912"
+           x="1432.3964"
+           y="239.84987" /></flowRegion><flowPara
+         id="flowPara3306"></flowPara></flowRoot>  </g>
 </svg>
