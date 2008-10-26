@@ -29,7 +29,7 @@ def sendNames(server, network, channel):
 		names=[server.bot.ipc[network].users[channel][nickname]['modchar'].strip()+nickname for nickname in server.bot.ipc[network].users[channel].keys()]
 		server.names(server.name, "#"+network+"-"+channel, names)
 
-class serverMod:
+class Plugin(chatMod.chatMod):
 	def __init__(self, server):
 		self.server=server
 		self.mychannels=[]
