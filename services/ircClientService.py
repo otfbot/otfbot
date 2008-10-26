@@ -26,8 +26,11 @@ import logging
 
 class ircClientService(service.MultiService):
     name="ircClient"
+    def __init__(self, root):
+        self.root=root
+		self.config=self.root.getServiceNamed("config").config
+        service.MultiService.__init__(self)
     def startService(self):
-        self.config=self.parent.getServiceNamed("config").config
         for network in self.config.getNetworks():
             self.connect(network)
         service.MultiService.startService(self)
