@@ -91,7 +91,7 @@ class controlTCPService(service.MultiService):
     def startService(self):
         self.config=self.parent.getServiceNamed("config")
         f = BotProtocolFactory(self.config, network)
-        serv=internet.TCPServer(int(self.bot.getConfig("port", 5022, "controlTCPMod")),f, interface=self.bot.getConfig("interface", "127.0.0.1", "controlTCPMod"))
+        serv=internet.TCPServer(int(self.bot.config.get("port", 5022, "controlTCPMod")),f, interface=self.bot.config.get("interface", "127.0.0.1", "controlTCPMod"))
         serv.setName(network)
         self.addService(serv)
         service.MultiService.startService(self)  
@@ -102,7 +102,7 @@ class chatMod(chatMod.chatMod):
 	def start(self):
 		self.f=BotProtocolFactory(self.bot)
 		try:
-			reactor.listenTCP(int(self.bot.getConfig("port", 5022, "controlTCPMod")), self.f, interface=self.bot.getConfig("interface", "127.0.0.1", "controlTCPMod"))
+			reactor.listenTCP(int(self.bot.config.get("port", 5022, "controlTCPMod")), self.f, interface=self.bot.config.get("interface", "127.0.0.1", "controlTCPMod"))
 		except (error.CannotListenError):
 			pass
 		
