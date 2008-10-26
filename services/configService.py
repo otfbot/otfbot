@@ -19,7 +19,6 @@
 # 
 
 from twisted.application import internet, service
-from lib.botfactory import BotFactory
 import lib.config as otfbotconfig
 
 class configService(service.Service):
@@ -31,13 +30,6 @@ class configService(service.Service):
     def startService(self):
         service.Service.startService(self)
         self.config=otfbotconfig.loadConfig(self.filename, "plugins/*/*.yaml")
-        #self.delConfig=self.config.delConfig
-        #self.getConfig=self.config.getConfig
-        #self.hasConfig=self.config.hasConfig
-        #self.setConfig=self.config.setConfig
-        #self.getBoolConfig=self.config.getBoolConfig        
-        #self.getNetworks=self.config.getNetworks
-        #self.getChannels=self.config.getChannels
 
     def stopService(self):
         self.config.writeConfig()

@@ -120,21 +120,21 @@ class controlInterface:
 		if len(args)>=4 and len(args[0])>=8 and len(args[1])>=8 and args[0][:8]=="network=" and args[1][:8]=="channel=":
 			try:
 				(module, setting)=args[2].split(".", 1)
-				self.bot.setConfig(setting, yaml.load(" ".join(args[3:])), module, args[0][8:], args[1][8:])
+				self.bot.config.set(setting, yaml.load(" ".join(args[3:])), module, args[0][8:], args[1][8:])
 				return self.bot.config.get(setting, "[unset]", module, args[0][8:], args[1][8:])
 			except ValueError:
 				return "Error: your setting is not in the module.setting form"
 		elif len(args)>=3 and len(args[0])>=8 and args[0][:8]=="network=":
 			try:
 				(module, setting)=args[1].split(".", 1)
-				self.bot.setConfig(setting, yaml.load(" ".join(args[2:])), module, args[0][8:])
+				self.bot.config.set(setting, yaml.load(" ".join(args[2:])), module, args[0][8:])
 				return self.bot.config.get(setting, "[unset]", module, args[0][8:])
 			except ValueError:
 				return "Error: your setting is not in the module.setting form"
 		elif len(argument):
 			try:
 				(module, setting)=args[0].split(".", 1)
-				self.bot.setConfig(args[0], yaml.load(" ".join(args[1:])), module)
+				self.bot.config.set(args[0], yaml.load(" ".join(args[1:])), module)
 				return self.bot.config.get(setting, "[unset]", module)
 			except ValueError:
 				return "Error: your setting is not in the module.setting form"
@@ -229,12 +229,12 @@ class controlInterface:
 	def _cmd_network_connect(self,argument):
 		args = argument.split(" ")
 		if len(args)==1:
-			self.bot.setConfig("enabled", True, "main", args[0])
+			self.bot.config.set("enabled", True, "main", args[0])
 			self.bot.ipc.connectNetwork(args[0])
 			return "Connecting to "+str(argument)
 		elif len(args)==2:
-			self.bot.setConfig("server", args[1], "main", args[0])
-			self.bot.setConfig("enabled", True, "main", args[0])
+			self.bot.config.set("server", args[1], "main", args[0])
+			self.bot.config.set("enabled", True, "main", args[0])
 			self.bot.ipc.connectNetwork(words[1])
 			return "Connecting to "+str(args[0])
 		else:

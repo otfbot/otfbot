@@ -215,7 +215,7 @@ class Bot(pluginSupport, irc.IRCClient):
 		self.channels.append(channel)
 		self.users[channel]={}
 		self._apirunner("joined",{"channel":channel})
-		self.config.setConfig("enabled", True, "main", self.network, channel)
+		self.config.set("enabled", True, "main", self.network, channel)
 
 	def left(self, channel):
 		""" called by twisted,
@@ -228,7 +228,7 @@ class Bot(pluginSupport, irc.IRCClient):
 		self._apirunner("left",{"channel":channel})
 		del self.users[channel]
 		self.channels.remove(channel)
-		self.config.setConfig("enabled", "False", "main", self.network, channel) #disable the channel for the next start of the bot
+		self.config.set("enabled", "False", "main", self.network, channel) #disable the channel for the next start of the bot
 
 	#def isupport(self, options):
 		#self.logger.debug("isupport"+str(options))
@@ -341,7 +341,7 @@ class Bot(pluginSupport, irc.IRCClient):
 		self.logger.info("I was kicked from "+channel+" by "+kicker)
 		self._apirunner("kickedFrom",{"channel":channel,"kicker":kicker,"message":message})
 		self.channels.remove(channel)
-		self.config.setConfig("enabled", "False", "main", self.network, channel) #disable the channel for the next start of the bot
+		self.config.set("enabled", "False", "main", self.network, channel) #disable the channel for the next start of the bot
 		del(self.users[channel])
 
 	def userKicked(self, kickee, channel, kicker, message):
