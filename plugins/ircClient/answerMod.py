@@ -25,7 +25,7 @@ class Plugin(chatMod.chatMod):
 		self.bot = bot
 
 	def start(self):
-		self.answersFile=self.bot.getPathConfig("file", datadir, "answers.txt", "answerMod")
+		self.answersFile=self.bot.config.getPath("file", datadir, "answers.txt", "answerMod")
 		self.answers = functions.loadProperties(self.answersFile)
 
 	def msg(self, user, channel, msg):
@@ -33,7 +33,7 @@ class Plugin(chatMod.chatMod):
 		if channel in self.bot.channels: #Do not respond to server messages
 			answer = self.respond(user, msg)
 			if answer != "":
-				self.bot.sendmsg(channel, answer, self.bot.getConfig("fileencoding", "iso-8859-15","answerMod"))
+				self.bot.sendmsg(channel, answer, self.bot.config.get("fileencoding", "iso-8859-15","answerMod"))
 
 	def reload(self):
 		self.answers = functions.loadProperties(self.answersFile)
