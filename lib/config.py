@@ -90,14 +90,14 @@ class config:
 				self.network_options[network][option]=default
 			else:
 				#config.writeDefaultValues is a global setting, 
-				#which decides if the getConfig default-values are written to config,
+				#which decides if the get default-values are written to config,
 				#if they are in no defaultconfig-snippets present
 				#set_default is a local setting, which decides the same,
 				#so modules can decide, if they want to write the default value to the config.
 				#if the global setting is false, its never written to config.
 
 				#write this config.writeDefaultValues option as defaultvalue, even if the default is not to write default values.
-				if option=="config.writeDefaultValues" or (self.has("config.writeDefaultValues") and self.getBoolConfig("config.writeDefaultValues", False) and set_default):
+				if option=="config.writeDefaultValues" or (self.has("config.writeDefaultValues") and self.getBool("config.writeDefaultValues", False) and set_default):
 					self.set(option, default, still_default=False) #this will write the default value to the config
 				else:
 					self.set(option, default, still_default=True) #this will avoid a config with a lot of default options.
@@ -234,11 +234,11 @@ class config:
 		>>> c.set("key", "1")
 		>>> c.set("key2", "on")
 		>>> c.set("key3", "True")
-		>>> c.getBoolConfig("key") and c.getBoolConfig("key2") and c.getBoolConfig("key3")
+		>>> c.getBool("key") and c.getBool("key2") and c.getBool("key3")
 		True
 		>>> c.set("key", "False")
 		>>> c.set("key2", "any string which is not in [True, true, on, On, 1]")
-		>>> c.getBoolConfig("key") or c.getBoolConfig("key2")
+		>>> c.getBool("key") or c.getBool("key2")
 		False
 		"""
 		return self.get(option, defaultvalue, module, network, channel) in ["True","true","On","on","1", True, 1]
@@ -248,7 +248,7 @@ class config:
 			return False
 		file=open(self.filename, "w")
 		#still_default options
-		if not self.getBoolConfig("writeDefaultValues", False, "config"):
+		if not self.getBool("writeDefaultValues", False, "config"):
 			for option in self.generic_options_default.keys():
 				if option in self.generic_options.keys() and self.generic_options_default[option]:
 					del(self.generic_options[option])
@@ -293,9 +293,9 @@ fooMod.setting3: false""")
 			os.rmdir("test_configsnippets2")
 			os.remove("testconfig.yaml")
 		def testDefaults(self):
-			blub=self.config.getConfig("setting1", "unset", "fooMod")
+			blub=self.config.get("setting1", "unset", "fooMod")
 			self.assertTrue(blub=="blub", "fooMod.setting1 is '%s' instead of 'blub'"%blub)
-			blub2=self.config.getConfig("setting4", "new_setting", "fooMod")
+			blub2=self.config.get("setting4", "new_setting", "fooMod")
 			self.assertTrue(blub2=="new_setting", "blub2 is '%s' instead of 'new_setting'"%blub2)
 
 			self.config.writeConfig()
@@ -305,9 +305,9 @@ fooMod.setting3: false""")
 		def testWriteDefaults(self):
 			self.config.setConfig("writeDefaultValues", True, "config")
 
-			blub=self.config.getConfig("setting1", "unset", "fooMod")
+			blub=self.config.get("setting1", "unset", "fooMod")
 			self.assertTrue(blub=="blub", "fooMod.setting1 is '%s' instead of 'blub'"%blub)
-			blub2=self.config.getConfig("setting4", "new_setting", "fooMod")
+			blub2=self.config.get("setting4", "new_setting", "fooMod")
 			self.assertTrue(blub2=="new_setting", "blub2 is '%s' instead of 'new_setting'"%blub2)
 
 			self.config.writeConfig()

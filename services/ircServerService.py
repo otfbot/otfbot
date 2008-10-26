@@ -31,9 +31,9 @@ import glob
 class ircServerService(service.MultiService):
 	name="ircServer"
 	def startService(self):
-		self.config=self.parent.getServiceNamed("config")
-		port=int(self.config.getConfig("port", "6667", "server"))
-		interface=interface=self.config.getConfig("interface", "127.0.0.1", "server")
+		self.config=self.parent.getServiceNamed("config").config
+		port=int(self.config.get("port", "6667", "server"))
+		interface=interface=self.config.get("interface", "127.0.0.1", "server")
 		factory=ircServerFactory(self.config)
 		serv=internet.TCPServer(port=port, factory=factory, interface=interface)
 		self.addService(serv)

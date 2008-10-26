@@ -27,16 +27,16 @@ import logging
 class ircClientService(service.MultiService):
     name="ircClient"
     def startService(self):
-        self.config=self.parent.getServiceNamed("config")
+        self.config=self.parent.getServiceNamed("config").config
         for network in self.config.getNetworks():
             self.connect(network)
         service.MultiService.startService(self)
         
     def connect(self, network):
         f = BotFactory(self.config, network)
-        servername=self.config.getConfig("server", "localhost", "main", network)
-        port = int(self.config.getConfig('port','6697','main', network))
-        if (self.config.getBoolConfig('ssl','False','main', network)):
+        servername=self.config.get("server", "localhost", "main", network)
+        port = int(self.config.get('port','6697','main', network))
+        if (self.config.getBool('ssl','False','main', network)):
             s = ssl.ClientContextFactory()
             serv=internet.SSLClient(servername, port, f,s)
             serv.__repr__=lambda: "<IRC Connection with SSL to %s:%s>"%(servername, port)
