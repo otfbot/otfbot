@@ -64,7 +64,7 @@ class Plugin(chatMod.chatMod):
 			(network, channel)=params[0][1:].split("-", 1) #[1:] and (a,b) can raise ValueErrors
 			if network in self.server.bot.ipc.getall():
 				if len(params)>=2: #password given
-					self.server.bot.setConfig("password",params[1], "main", network, channel)
+					self.server.bot.config.set("password",params[1], "main", network, channel)
 					self.server.bot.ipc[network].join(channel, params[1])
 				else:
 					self.server.bot.ipc[network].join(channel)

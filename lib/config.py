@@ -156,6 +156,7 @@ class config:
 		else:
 			self.generic_options[option]=value
 			self.generic_options_default[option]=still_default
+		self.writeConfig() #to be safe
 
 	def delete(self, option, module=None, network=None, channel=None):
 		"""
@@ -210,8 +211,8 @@ class config:
 ################################################################################
 	#some highlevel functions
 	def setConfig(self, option, value, module=None, network=None, channel=None):
+		self.logger.debug("deprecated call to setConfig for option %s"%option)
 		self.set(option, value, module, network, channel)
-		self.writeConfig()
 			
 	def delConfig(self, option, module=None, network=None, channel=None):
 		self.logger.debug("deprecated call to delConfig for option %s"%option)
@@ -303,7 +304,7 @@ fooMod.setting3: false""")
 			self.assertTrue(config2.hasConfig("setting1", "fooMod")[0]==False)
 			self.assertTrue(config2.hasConfig("setting4", "fooMod")[0]==False)
 		def testWriteDefaults(self):
-			self.config.setConfig("writeDefaultValues", True, "config")
+			self.config.config.set("writeDefaultValues", True, "config")
 
 			blub=self.config.get("setting1", "unset", "fooMod")
 			self.assertTrue(blub=="blub", "fooMod.setting1 is '%s' instead of 'blub'"%blub)
