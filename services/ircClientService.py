@@ -30,7 +30,7 @@ class ircClientService(service.MultiService):
         self.root=root
         service.MultiService.__init__(self)
     def startService(self):
-        self.config=self.root.getNamedServices()['config'].config
+        self.config=self.root.getNamedServices()['config']
         for network in self.config.getNetworks():
             self.connect(network)
         service.MultiService.startService(self)
