@@ -42,20 +42,23 @@ class Bot(pluginSupport, irc.IRCClient):
 	pluginSupportPath="plugins/ircClient" #path were the plugins are
 	pluginSupportName="ircClient" #prefix for config
 
+	def warn_and_execute(self, method, *args, **kwargs):
+		self.logger.debug("deprecated call to %s with args %s"%(str(method), str(args)))
+		#XXX: use bot.config.method instead
+		return method(*args, **kwargs)
 	def __init__(self, config, network):
-		#list of plugins, which the bot should use
-		#you may need to configure them first
 		self.config=config
+		self.network=network
+		self.logger = logging.getLogger(self.network)
 
-		self.delConfig=config.delConfig
-		self.getConfig=config.getConfig
-		self.hasConfig=config.hasConfig
-		self.getPathConfig=config.getPathConfig
-		self.setConfig=config.setConfig
-		self.getBoolConfig=config.getBoolConfig
+		self.delConfig=lambda *args, **kwargs: self.warn_and_execute(config.delConfig, *args, **kwargs)
+		self.getConfig=lambda *args, **kwargs: self.warn_and_execute(config.getConfig, *args, **kwargs)
+		self.hasConfig=lambda *args, **kwargs: self.warn_and_execute(config.hasConfig, *args, **kwargs)
+		self.getPathConfig=lambda *args, **kwargs: self.warn_and_execute(config.getPathConfig, *args, **kwargs)
+		self.setConfig=lambda *args, **kwargs: self.warn_and_execute(config.setConfig, *args, **kwargs)
+		self.getBoolConfig=lambda *args, **kwargs: self.warn_and_execute(config.getBoolConfig, *args, **kwargs)
 
 		self.channels=[]
-		self.network=network
 		self.realname=self.config.getConfig("realname", "A Bot", "main", self.network)
 		self.password=self.config.getConfig('password', None, 'main', network)
 		self.nickname=unicode(self.config.getConfig("nickname", "OtfBot", 'main', self.network)).encode("iso-8859-1")
@@ -75,7 +78,6 @@ class Bot(pluginSupport, irc.IRCClient):
 		self.modchars={'a':'!','o':'@','h':'%','v':'+'}
 		self.modcharvals={'!':4,'@':3,'%':2,'+':1,' ':0}
 
-		self.logger = logging.getLogger(self.network)
 		self.logger.info("Starting new Botinstance")
 		self.scheduler = scheduler.Scheduler()
 
