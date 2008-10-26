@@ -97,9 +97,9 @@ configS=configService.configService(config['config'])
 configS.setName("config")
 configS.setServiceParent(application)
 
-irc=ircClientService.ircClientService()
+irc=ircClientService.ircClientService(application)
 irc.setName("ircClient")
-irc.setServiceParent(application)
+#irc.setServiceParent(application)
 
 server=ircServerService.ircServerService()
 server.setName("ircServer")
