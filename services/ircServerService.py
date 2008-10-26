@@ -34,8 +34,7 @@ class ircServerService(service.MultiService):
 		self.config=self.parent.getServiceNamed("config")
 		port=int(self.config.getConfig("port", "6667", "server"))
 		interface=interface=self.config.getConfig("interface", "127.0.0.1", "server")
-		factory=ircServerFactory()
-		factory.config=self.config
+		factory=ircServerFactory(self.config)
 		serv=internet.TCPServer(port=port, factory=factory, interface=interface)
 		self.addService(serv)
 		service.MultiService.startService(self)  
@@ -44,19 +43,21 @@ class ircServerService(service.MultiService):
 class Server(IRCUser, pluginSupport):
 	pluginSupportName="ircServer"
 	pluginSupportPath="plugins/ircServer"
-	def __init__(self):
+	def __init__(self, config):
 		self.name="nickname"
 		self.user="user"
 		self.firstnick=True
 		self.plugins={}
 		self.logger=logging.getLogger("server")
 		self.classes=[]
+		self.config=config
 		#files=glob.glob("plugins/ircServer/*.py")
 		#sys.path.insert(1, "plugins/ircServer")
 		#for file in files:
 		#	name=file.split("plugins/ircServer/")[1].split(".py")[0]
 		#	self.importPlugin(name)
-		#self.startPlugins(self)
+		print "blub"
+		self.startPlugins()
 
 
 	def logerror(self, logger, module, exception):
@@ -116,8 +117,6 @@ class Server(IRCUser, pluginSupport):
 		###we use _apirunner instead###
 		self._apirunner("irc_%s"%command, {'prefix': prefix, 'params': params})
 	def connectionMade(self):
-		self.config=self.factory.config #self.factory is not available in __init__
-		self.startPlugins()
 		self._apirunner("connectionMade")
 	def connectionLost(self, reason):
 		self.connected=False
@@ -133,10 +132,11 @@ class Server(IRCUser, pluginSupport):
 		self.plugins={}
 
 class ircServerFactory(protocol.ServerFactory):
-	def __init__(self):
+	def __init__(self, config):
 		self.protocol=Server
+		self.config=config
 	def buildProtocol(self, addr):
-		proto=self.protocol()
+		proto=self.protocol(self.config)
 		proto.connected=True
 		proto.factory=self
 		return proto
