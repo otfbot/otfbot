@@ -3,8 +3,6 @@ import sys
 #TODO: we do not have ipc anymore, and self.network only applys to ircClientPlugins
 
 class pluginSupport:
-	#def __init__(self, *args, **kwargs):
-	#	pass
 	pluginSupportName="[UNSET]"
 	pluginSupportPath="[UNSET]"
 	def importPlugin(self, name):
@@ -13,18 +11,15 @@ class pluginSupport:
 		for c in self.classes:
 			if c.__name__ == name:
 				return c
-		#sys.path.insert(1, self.pluginSupportPath)
 		self.classes.append(__import__(self.pluginSupportPath.replace("/", ".")+"."+name, fromlist=['*']))
-		#sys.path.pop(1)
-		#self.classes[-1].datadir = self.config.getConfig("datadir", "data", self.network)+"/"+self.classes[-1].__name__
-		self.classes[-1].datadir = self.config.getConfig("datadir", "data")+"/"+self.classes[-1].__name__
+		self.classes[-1].datadir = self.config.get("datadir", "data")+"/"+self.classes[-1].__name__
 		self.logger.debug("Imported plugin "+self.classes[-1].__name__)		
 		return self.classes[-1]
 	def startPlugins(self):
 		"""
 			initializes all known plugins
 		"""
-		for pluginName in self.config.getConfig(self.pluginSupportName+"PluginsEnabled", [], "main", set_default=False):
+		for pluginName in self.config.get(self.pluginSupportName+"PluginsEnabled", [], "main", set_default=False):
 			self.startPlugin(pluginName)
 
 	def startPlugin(self, pluginName):
@@ -83,3 +78,53 @@ class pluginSupport:
 			self.logerror(self.logger, chatPlugin.name, e)
 		del(self.plugins[pluginName])
 		del(chatPlugin)
+	class WontStart(Exception):
+		pass
+	class DependencyMissing(Exception):
+		pass
+	def logerror(self, logger, plugin, exception):
+		""" format a exception nicely and pass it to the logger
+			@param logger: the logger instance to use
+			@param plugin: the plugin in which the exception occured
+			@type plugin: string
+			@param exception: the exception
+			@type exception: exception
+		"""
+		if type(exception) == self.DependencyMissing:
+			logger.error("Dependency missing in plugin %s: %s is not active."%(plugin, str(exception)))
+			return
+		elif type(exception) == self.WontStart:
+			logger.info('Plugin "%s" will not start because "%s".'%(plugin, str(exception)))
+			return
+		logger.error("Exception in Plugin "+plugin+": "+str(exception))
+		tb_list = traceback.format_tb(sys.exc_info()[2])
+		for entry in tb_list:
+			for line in entry.strip().split("\n"):
+				logger.error(line)
+	def _apirunner(self,apifunction,args={}):
+		"""
+			Pass all calls to plugin callbacks through this method, they 
+			are checked whether they should be executed or not.
+			
+			Example C{self._apirunner("privmsg",{"user":user,"channel":channel,"msg":msg})}
+			
+			@type	apifunction: string
+			@param	apifunction: the name of the callback function
+			@type	args:	dict
+			@param	args:	the arguments for the callback
+		"""
+		for plugin in self.plugins.values():
+			#self.logger.debug("running "+apifunction+" for plugin "+str(mod))
+			#if a channel is present, check if the plugin is disabled for the channel.
+			if hasattr(self, "network"):
+				if args.has_key("channel"):
+					args['channel']=args['channel'].lower()
+					if plugin.name in self.config.get("pluginsDisabled",[],"main",self.network,args["channel"], set_default=False):
+						return
+				if plugin.name in self.config.get("pluginsDisabled", [], "main", self.network):
+					return
+			try:
+				if hasattr(plugin, apifunction):
+					getattr(plugin, apifunction)(**args)
+			except Exception, e:
+				self.logerror(self.logger, plugin.name, e)

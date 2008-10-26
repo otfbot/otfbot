@@ -121,21 +121,21 @@ class controlInterface:
 			try:
 				(module, setting)=args[2].split(".", 1)
 				self.bot.setConfig(setting, yaml.load(" ".join(args[3:])), module, args[0][8:], args[1][8:])
-				return self.bot.getConfig(setting, "[unset]", module, args[0][8:], args[1][8:])
+				return self.bot.config.get(setting, "[unset]", module, args[0][8:], args[1][8:])
 			except ValueError:
 				return "Error: your setting is not in the module.setting form"
 		elif len(args)>=3 and len(args[0])>=8 and args[0][:8]=="network=":
 			try:
 				(module, setting)=args[1].split(".", 1)
 				self.bot.setConfig(setting, yaml.load(" ".join(args[2:])), module, args[0][8:])
-				return self.bot.getConfig(setting, "[unset]", module, args[0][8:])
+				return self.bot.config.get(setting, "[unset]", module, args[0][8:])
 			except ValueError:
 				return "Error: your setting is not in the module.setting form"
 		elif len(argument):
 			try:
 				(module, setting)=args[0].split(".", 1)
 				self.bot.setConfig(args[0], yaml.load(" ".join(args[1:])), module)
-				return self.bot.getConfig(setting, "[unset]", module)
+				return self.bot.config.get(setting, "[unset]", module)
 			except ValueError:
 				return "Error: your setting is not in the module.setting form"
 		else:
@@ -148,11 +148,11 @@ class controlInterface:
 		try:
 			(module, setting)=args[0].split(".", 1)
 			if len(args)==1:
-				return self.bot.getConfig(setting, "[unset]", module, set_default=False)
+				return self.bot.config.get(setting, "[unset]", module, set_default=False)
 			elif len(args)==2:
-				return self.bot.getConfig(setting, "[unset]", module, args[1], set_default=False)
+				return self.bot.config.get(setting, "[unset]", module, args[1], set_default=False)
 			elif len(args)==3:
-				return self.bot.getConfig(setting, "[unset]", module, args[1], args[2], set_default=False)
+				return self.bot.config.get(setting, "[unset]", module, args[1], args[2], set_default=False)
 		except ValueError:
 			return "Error: your setting is not in the module.setting form"
 	
