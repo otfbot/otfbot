@@ -60,47 +60,6 @@ class Server(IRCUser, pluginSupport):
 		self.startPlugins()
 
 
-	def logerror(self, logger, module, exception):
-		""" format a exception nicely and pass it to the logger
-			@param logger: the logger instance to use
-			@param module: the module in which the exception occured
-			@type module: string
-			@param exception: the exception
-			@type exception: exception
-		"""
-		#for c in self.bot.classes:
-		#	if c.__name__ in self.bot.getConfig("modsEnabled", [], "main", self.bot.network):
-		#		try:
-		#			if hasattr(c, "serverMod"):
-		#				self.mods[c.__name__]=c.serverMod(self)
-		#				self.mods[c.__name__].name=c.__name__
-		#		except Exception, e:
-		#			self.logerror(self.logger, c.__name__, e)
-		#self._apirunner("start")
-		logger.error("Exception in Module "+module+": "+str(exception))
-		tb_list = traceback.format_tb(sys.exc_info()[2])
-		for entry in tb_list:
-			for line in entry.strip().split("\n"):
-				logger.error(line)
-	def _apirunner(self,apifunction,args={}):
-		"""
-			Pass all calls to modules callbacks through this method, they 
-			are checked whether they should be executed or not.
-			
-			Example C{self._apirunner("privmsg",{"user":user,"channel":channel,"msg":msg})}
-			
-			@type	apifunction: string
-			@param	apifunction: the name of the callback function
-			@type	args:	dict
-			@param	args:	the arguments for the callback
-		"""
-		for mod in self.plugins.values():
-			#if (args.has_key("channel") and args["channel"] in self.channels and mod.name in self.getConfig("modsEnabled",[],"main",self.network,args["channel"])) or not args.has_key("channel") or args["channel"] not in self.channels:
-			try:
-				if hasattr(mod, apifunction):
-					getattr(mod, apifunction)(**args)
-			except Exception, e:
-				self.logerror(self.logger, mod.name, e)
 	def handleCommand(self, command, prefix, params):
 		"""Determine the function to call for the given command and call
         it with the given arguments.
