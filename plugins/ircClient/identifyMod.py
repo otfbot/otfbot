@@ -27,7 +27,7 @@ class Plugin(chatMod.chatMod):
 		self.sent_identification=False
 
 	def connectionMade(self):
-		self.password = str(self.bot.getConfig("password", "", "identifyMod", self.bot.network))
+		self.password = str(self.bot.config.get("password", "", "identifyMod", self.bot.network))
 	
 	def signedOn(self):
 		self.identify()

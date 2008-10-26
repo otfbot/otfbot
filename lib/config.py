@@ -214,18 +214,21 @@ class config:
 		self.writeConfig()
 			
 	def delConfig(self, option, module=None, network=None, channel=None):
+		self.logger.debug("deprecated call to delConfig for option %s"%option)
 		delete(option, module, network, channel)
 	def hasConfig(self, option, module=None):
+		self.logger.debug("deprecated call to hasConfig for option %s"%option)
 		return self.has(option, module)
 	def getConfig(self, option, defaultvalue="", module=None, network=None, channel=None, set_default=True):
+		self.logger.debug("deprecated call to getConfig for option %s"%option)
 		return self.get(option, defaultvalue, module, network, channel, set_default)
-	def getPathConfig(self, option, datadir, defaultvalue="", module=None, network=None, channel=None):
+	def getPath(self, option, datadir, defaultvalue="", module=None, network=None, channel=None):
 		value=self.get(option, defaultvalue, module, network, channel)
 		if value[0]=="/":
 			return value
 		else:
 			return datadir+"/"+value
-	def getBoolConfig(self, option, defaultvalue="", module=None, network=None, channel=None):
+	def getBool(self, option, defaultvalue="", module=None, network=None, channel=None):
 		"""
 		>>> c=config()
 		>>> c.set("key", "1")
