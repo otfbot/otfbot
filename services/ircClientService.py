@@ -25,60 +25,60 @@ from lib.bot import Bot
 import logging
 
 class ircClientService(service.MultiService):
-    name="ircClient"
-    def __init__(self, root):
-        self.root=root
-        service.MultiService.__init__(self)
-    def startService(self):
-        self.config=self.root.getNamedServices()['config']
-        for network in self.config.getNetworks():
-            self.connect(network)
-        service.MultiService.startService(self)
-        
-    def connect(self, network):
-        f = BotFactory(self.config, network)
-        servername=self.config.get("server", "localhost", "main", network)
-        port = int(self.config.get('port','6667','main', network))
-        if (self.config.getBool('ssl','False','main', network)):
-            s = ssl.ClientContextFactory()
-            serv=internet.SSLClient(servername, port, f,s)
-            serv.__repr__=lambda: "<IRC Connection with SSL to %s:%s>"%(servername, port)
-        else:
-            serv=internet.TCPClient(servername, port, f)
-            serv.__repr__=lambda: "<IRC Connection to %s:%s>"%(servername, port)
-        f.service=serv
-        serv.setName(network)
-        serv.parent=self
-        self.addService(serv)
+	name="ircClient"
+	def __init__(self, root, parent):
+		self.root=root
+		self.parent=parent
+		service.MultiService.__init__(self)
+	def startService(self):
+		self.config=self.root.getNamedServices()['config']
+		for network in self.config.getNetworks():
+			self.connect(network)
+		service.MultiService.startService(self)
+
+	def connect(self, network):
+		f = BotFactory(self.root, self, network)
+		servername=self.config.get("server", "localhost", "main", network)
+		port = int(self.config.get('port','6667','main', network))
+		if (self.config.getBool('ssl','False','main', network)):
+			s = ssl.ClientContextFactory()
+			serv=internet.SSLClient(servername, port, f,s)
+			serv.__repr__=lambda: "<IRC Connection with SSL to %s:%s>"%(servername, port)
+		else:
+			serv=internet.TCPClient(servername, port, f)
+			serv.__repr__=lambda: "<IRC Connection to %s:%s>"%(servername, port)
+		f.service=serv
+		serv.setName(network)
+		serv.parent=self
+		self.addService(serv)
 
 
 class BotFactory(protocol.ReconnectingClientFactory):
-    """The Factory for the Bot"""
+	"""The Factory for the Bot"""
 
-    def __init__(self, config, network):
-        self.logger=logging.getLogger(network)
-        self.protocol=Bot
-        self.network=network
-        self.config=config
+	def __init__(self, root, parent, network):
+		self.root=root
+		self.parent=parent
+		self.logger=logging.getLogger(network)
+
+		self.protocol=Bot
+		self.network=network
+		self.config=root.getNamedServices()['config']
 	def __repr__(self):
 		return "<BotFactory for network %s>"%self.network
 
-    def clientConnectionLost(self, connector, reason):
-        self.protocol=None
-        self.service.protocol=None
-        if not reason.check(error.ConnectionDone):
-            self.logger.warn("Got disconnected from "+connector.host+": "+str(reason.getErrorMessage()))
-            protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
-        
-    def clientConnectionFailed(self, connector, reason):
-        self.logger.warn("Connection to "+connector.host+" failed: "+str(reason.getErrorMessage()))
-        #protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
-    
-    def buildProtocol(self,addr):
-        #proto=protocol.ReconnectingClientFactory.buildProtocol(self,addr)
-        proto=self.protocol(self.config, self.network)
-        proto.factory=self
-        proto.service=self.service
-        self.service.protocol=proto
-        self.protocol=proto
-        return proto
+	def clientConnectionLost(self, connector, reason):
+		self.protocol=None
+		self.service.protocol=None
+		if not reason.check(error.ConnectionDone):
+			self.logger.warn("Got disconnected from "+connector.host+": "+str(reason.getErrorMessage()))
+			protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
+		
+	def clientConnectionFailed(self, connector, reason):
+		self.logger.warn("Connection to "+connector.host+" failed: "+str(reason.getErrorMessage()))
+		#protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
+	
+	def buildProtocol(self,addr):
+		proto=self.protocol(self.root, self)
+		self.protocol=proto
+		return proto

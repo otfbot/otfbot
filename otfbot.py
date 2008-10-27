@@ -96,11 +96,11 @@ configS=configService.loadConfig(configfilename, "plugins/*/*.yaml")
 configS.setName("config")
 configS.setServiceParent(application)
 
-irc=ircClientService.ircClientService(application)
+irc=ircClientService.ircClientService(application, application)
 irc.setName("ircClient")
 irc.setServiceParent(application)
 
-server=ircServerService.ircServerService()
+server=ircServerService.ircServerService(application, application)
 server.setName("ircServer")
 server.setServiceParent(application)
 
