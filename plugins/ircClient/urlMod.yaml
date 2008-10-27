@@ -1,4 +1,4 @@
-urlMod.autoTiny: false
-urlMod.autoPreview: false
-urlMod.autoServerinfo: false
-urlMod.autoLength: 35
+urlMod.autotiny: false
+urlMod.autopreview: false
+urlMod.autoserverinfo: false
+urlMod.autolength: 35
