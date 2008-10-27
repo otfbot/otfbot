@@ -38,7 +38,7 @@ class ircClientService(service.MultiService):
     def connect(self, network):
         f = BotFactory(self.config, network)
         servername=self.config.get("server", "localhost", "main", network)
-        port = int(self.config.get('port','6697','main', network))
+        port = int(self.config.get('port','6667','main', network))
         if (self.config.getBool('ssl','False','main', network)):
             s = ssl.ClientContextFactory()
             serv=internet.SSLClient(servername, port, f,s)

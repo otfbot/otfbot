@@ -86,14 +86,13 @@ class Options(usage.Options):
 #    sys.exit(1)
 #class myApp(service.Application):
 
-config={}
-config['config']="otfbot.yaml"
+configfilename="otfbot.yaml"
 
 application=service.Application("otfbot")
 application.getServices=lambda: service.IServiceCollection(application).services
 application.getNamedServices=lambda: service.IServiceCollection(application).namedServices
 
-configS=configService.configService(config['config'])
+configS=configService.loadConfig(configfilename, "plugins/*/*.yaml")
 configS.setName("config")
 configS.setServiceParent(application)
 
