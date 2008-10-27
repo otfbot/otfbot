@@ -1,7 +1,9 @@
 import sys, glob
-from lib import config
+sys.path.insert(1, "services")
+sys.path.insert(1, "../services")
+import configService
 
-config=config.config("otfbot.yaml")
+config=configService.configService("otfbot.yaml")
 
 files=glob.glob("plugins/ircClient/*.py")
 modules=[]

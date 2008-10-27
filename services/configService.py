@@ -21,6 +21,7 @@
 
 import sys, os, logging, glob
 from twisted.application import internet, service
+import yaml
 
 class configService(service.Service):
 	def __init__(self, filename=None, is_subconfig=False):
@@ -37,7 +38,6 @@ class configService(service.Service):
 		if not filename:
 			return
 		
-		import yaml
 		try:
 			configs=yaml.load_all(open(filename, "r"))
 			self.generic_options=configs.next()
@@ -202,12 +202,6 @@ class configService(service.Service):
 			except AttributeError:
 				return []
 
-	def exportyaml(self):
-		try:
-			import yaml
-		except ImportError:
-			return ""
-		return yaml.dump_all([self.generic_options,self.network_options], default_flow_style=False)
 ################################################################################
 	#some highlevel functions
 	def setConfig(self, option, value, module=None, network=None, channel=None):
@@ -253,7 +247,7 @@ class configService(service.Service):
 			for option in self.generic_options_default.keys():
 				if option in self.generic_options.keys() and self.generic_options_default[option]:
 					del(self.generic_options[option])
-		file.write(self.exportyaml())
+		file.write(yaml.dump_all([self.generic_options,self.network_options], default_flow_style=False))
 		file.close()
 		return True
 	def startService(self):
