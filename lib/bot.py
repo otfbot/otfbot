@@ -58,9 +58,8 @@ class Bot(pluginSupport, irc.IRCClient):
 		#XXX: use bot.config.method instead
 		return method(*args, **kwargs)
 	def __init__(self, root, parent):
+		pluginSupport.__init__(self, root, parent)
 		self.config=root.getNamedServices()['config']
-		self.root=root
-		self.parent=parent
 		self.network=self.parent.network
 		self.logger = logging.getLogger(self.network)
 		self.ipc=legacyIPC(self.root)

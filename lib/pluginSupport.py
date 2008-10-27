@@ -5,6 +5,13 @@ import sys, traceback
 class pluginSupport:
 	pluginSupportName="[UNSET]"
 	pluginSupportPath="[UNSET]"
+	def __init__(self, root, parent):
+		self.root=root
+		self.parent=parent
+		self.getClient=lambda network: root.getNamedServices()['ircClient'].namedServices[network].args[2].protocol
+		self.getClients=lambda : [connection.name for connection in root.getNamedServices()['ircClient'].services]
+		self.getServer=lambda network: root.getNamedServices()['ircServer'].namedServices[network].args[2].protocol
+		self.getServers=lambda : [connection.name for connection in root.getNamedServices()['ircServer'].services]
 	def importPlugin(self, name):
 		if not self.classes:
 			self.classes=[]
