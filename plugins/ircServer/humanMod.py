@@ -38,7 +38,7 @@ class Plugin(chatMod.chatMod):
 		if not self.first:
 			return
 		self.first=False
-		for network in self.server.getClients():
+		for network in self.server.getClientNames():
 			bot=self.server.getClient(network)
 			for channel in bot.channels:
 				self.server.join(self.server.getHostmask(), "#"+network+"-"+channel)
@@ -56,7 +56,7 @@ class Plugin(chatMod.chatMod):
 	def irc_JOIN(self, prefix, params):
 		try:
 			(network, channel)=params[0][1:].split("-", 1) #[1:] and (a,b) can raise ValueErrors
-			if network in self.server.getClients():
+			if network in self.server.getClientNames():
 				if len(params)>=2: #password given
 					self.server.root.getNamedServices()['config'].set("password",params[1], "main", network, channel)
 					self.server.getClient(network).join(channel, params[1])
@@ -73,7 +73,7 @@ class Plugin(chatMod.chatMod):
 	def irc_PART(self, prefix, params):
 		try:
 			(network, channel)=params[0][1:].split("-", 1) #[1:] and (a,b) can raise ValueErrors
-			if network in self.server.getClients():
+			if network in self.server.getClientNames():
 				self.server.getClient(network).part(channel)
 				self.server.part(self.server.getHostmask(), "#%s-%s"%(network, channel))
 				self.mychannels.remove("#%s-%s"%(network, channel))
