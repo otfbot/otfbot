@@ -252,7 +252,6 @@ class configService(service.Service):
 		return True
 	def startService(self):
 		service.Service.startService(self)
-		loadConfig(self.filename, "plugins/*/*.yaml")
 
 	def stopService(self):
 		self.writeConfig()
