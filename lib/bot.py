@@ -25,6 +25,17 @@ import sys, traceback, string, time, os, glob
 sys.path.insert(1,"lib")
 import scheduler
 from lib.pluginSupport import pluginSupport
+
+class legacyIPC:
+	def __init__(self, root):
+		self.root=root
+	def __getitem__(self, item):
+		return self.root.getNamedServices()['ircClient'].namedServices[item].args[2].protocol
+	def get(self, item):
+		return self.__getitem__(item)
+	def getall(self):
+		return self.root.getNamedServices()['ircClient'].namedServices.keys()
+
 class Bot(pluginSupport, irc.IRCClient):
 	""" The Protocol of our IRC-Bot
 		@ivar plugins: contains references to all plugins, which are loaded
@@ -46,10 +57,13 @@ class Bot(pluginSupport, irc.IRCClient):
 		self.logger.debug("deprecated call to %s with args %s"%(str(method), str(args)))
 		#XXX: use bot.config.method instead
 		return method(*args, **kwargs)
-	def __init__(self, config, network):
-		self.config=config
-		self.network=network
+	def __init__(self, root, parent):
+		self.config=root.getNamedServices()['config']
+		self.root=root
+		self.parent=parent
+		self.network=self.parent.network
 		self.logger = logging.getLogger(self.network)
+		self.ipc=legacyIPC(self.root)
 
 		self.delConfig=lambda *args, **kwargs: self.warn_and_execute(config.delConfig, *args, **kwargs)
 		self.getConfig=lambda *args, **kwargs: self.warn_and_execute(config.getConfig, *args, **kwargs)
@@ -58,7 +72,7 @@ class Bot(pluginSupport, irc.IRCClient):
 
 		self.channels=[]
 		self.realname=self.config.get("realname", "A Bot", "main", self.network)
-		self.password=self.config.get('password', None, 'main', network)
+		self.password=self.config.get('password', None, 'main', self.network)
 		self.nickname=unicode(self.config.get("nickname", "OtfBot", 'main', self.network)).encode("iso-8859-1")
 		tmp=self.config.getChannels(self.network)
 		if tmp:

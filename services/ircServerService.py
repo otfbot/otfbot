@@ -30,11 +30,15 @@ import glob
 
 class ircServerService(service.MultiService):
 	name="ircServer"
+	def __init__(self, root, parent):
+		self.root=root
+		self.parent=parent
+		service.MultiService.__init__(self)
 	def startService(self):
-		self.config=self.parent.getServiceNamed("config")
+		self.config=self.root.getNamedServices()['config']
 		port=int(self.config.get("port", "6667", "server"))
 		interface=interface=self.config.get("interface", "127.0.0.1", "server")
-		factory=ircServerFactory(self.config)
+		factory=ircServerFactory(self.root, self)
 		serv=internet.TCPServer(port=port, factory=factory, interface=interface)
 		self.addService(serv)
 		service.MultiService.startService(self)  
@@ -43,20 +47,18 @@ class ircServerService(service.MultiService):
 class Server(IRCUser, pluginSupport):
 	pluginSupportName="ircServer"
 	pluginSupportPath="plugins/ircServer"
-	def __init__(self, config):
+	def __init__(self, root, parent):
+		self.root=root
+		self.parent=parent
+
 		self.name="nickname"
 		self.user="user"
 		self.firstnick=True
 		self.plugins={}
 		self.logger=logging.getLogger("server")
 		self.classes=[]
-		self.config=config
-		#files=glob.glob("plugins/ircServer/*.py")
-		#sys.path.insert(1, "plugins/ircServer")
-		#for file in files:
-		#	name=file.split("plugins/ircServer/")[1].split(".py")[0]
-		#	self.importPlugin(name)
-		print "blub"
+		self.config=root.getNamedServices()['config']
+
 		self.startPlugins()
 
 
@@ -91,11 +93,14 @@ class Server(IRCUser, pluginSupport):
 		self.plugins={}
 
 class ircServerFactory(protocol.ServerFactory):
-	def __init__(self, config):
+	def __init__(self, root, parent):
+		self.root=root
+		self.parent=parent
+		self.config=root.getNamedServices()['config']
+
 		self.protocol=Server
-		self.config=config
 	def buildProtocol(self, addr):
-		proto=self.protocol(self.config)
+		proto=self.protocol(self.root, self)
 		proto.connected=True
 		proto.factory=self
 		return proto

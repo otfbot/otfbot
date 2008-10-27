@@ -1,4 +1,4 @@
-import sys
+import sys, traceback
 
 #TODO: we do not have ipc anymore, and self.network only applys to ircClientPlugins
 
