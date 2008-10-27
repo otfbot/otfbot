@@ -48,8 +48,7 @@ class Server(IRCUser, pluginSupport):
 	pluginSupportName="ircServer"
 	pluginSupportPath="plugins/ircServer"
 	def __init__(self, root, parent):
-		self.root=root
-		self.parent=parent
+		pluginSupport.__init__(self, root, parent)
 
 		self.name="nickname"
 		self.user="user"
