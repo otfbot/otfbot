@@ -33,12 +33,13 @@ class chatMod(chatMod.chatMod):
 	
 	def command(self, user, channel, command, options):
 		user = user.split("!")[0] #only nick
-		answer=self.respond(channel, user, command, options)
-		if answer != "":
-			if answer[0] == ":":
-				self.bot.sendmsg(channel, answer[1:], self.bot.getConfig("commandsMod.fileencoding", "iso-8859-15"))
-			else:
-				self.bot.sendme(channel, answer, self.bot.getConfig("commandsMod.fileencoding", "iso-8859-15"))
+		if user != self.bot.nick:
+			answer=self.respond(channel, user, command, options)
+			if answer != "":
+				if answer[0] == ":":
+					self.bot.sendmsg(channel, answer[1:], self.bot.getConfig("commandsMod.fileencoding", "iso-8859-15"))
+				else:
+					self.bot.sendme(channel, answer, self.bot.getConfig("commandsMod.fileencoding", "iso-8859-15"))
 
 	def start(self):
 		self.commands={}
