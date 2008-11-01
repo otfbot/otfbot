@@ -19,5 +19,7 @@ authMod:
 * bitmask for certain permissions
 * replace all noncritical error-loggers with warning-loggers (see CODING)
 * feedMod remove feed for channel on part
+* fix exceptions of mirrormod, if the mirrorTo channel is not available
 
 Many Exceptions on servers which send the channelname not lowercase, when the config is lowercase
+
