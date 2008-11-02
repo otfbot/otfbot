@@ -102,6 +102,7 @@ class ircServerFactory(protocol.ServerFactory):
 		proto=self.protocol(self.root, self)
 		proto.connected=True
 		proto.factory=self
+		self.protocol=proto
 		return proto
 	def stopFactory(self):
 		pass
