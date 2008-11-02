@@ -49,7 +49,7 @@ class Plugin(chatMod.chatMod):
 			server=server.kwargs['factory'].protocol
 			if not server.connected:
 				return
-			if string.lower(user) == string.lower(self.bot.nickname):
+			if user.lower() == self.bot.nickname.lower():
 				server.sendmsg(self.network+"-"+channel, server.name, "< %s> "%self.bot.nickname+msg)
 			else:
 				#server.sendmsg(self.network+"-"+user, self.bot.server.name, msg)
