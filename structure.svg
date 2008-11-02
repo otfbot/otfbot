@@ -36,15 +36,15 @@
      objecttolerance="10"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.5"
-     inkscape:cx="654.46317"
-     inkscape:cy="406.41088"
+     inkscape:zoom="1"
+     inkscape:cx="923.2849"
+     inkscape:cy="622.32441"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="g4974"
      showgrid="false"
      inkscape:window-width="1206"
      inkscape:window-height="881"
-     inkscape:window-x="117"
+     inkscape:window-x="65"
      inkscape:window-y="64"
      showguides="true"
      inkscape:guide-bbox="true" />
@@ -387,7 +387,7 @@
              sodipodi:role="line"
              id="tspan3281"
              x="59.175232"
-             y="433.44998">args[2]</tspan><tspan
+             y="433.44998">kwargs['factory']</tspan><tspan
              id="tspan3283"
              sodipodi:role="line"
              x="59.175232"
@@ -896,19 +896,16 @@
        inkscape:connector-type="polyline"
        inkscape:connection-start="#g2619" />
     <g
-       style="display:inline"
-       id="g2678"
-       transform="translate(449.78568,120.64286)">
+       id="g2622">
       <rect
-         transform="translate(-353.10528,87.161423)"
-         y="318.07727"
-         x="-527.27057"
+         y="525.88153"
+         x="-430.59018"
          height="504.54117"
          width="494.54117"
          id="rect2680"
          style="fill:none;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:4.7446003;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline" />
       <g
-         transform="translate(-729.77255,396.21523)"
+         transform="translate(-279.98687,516.85809)"
          id="g2682">
         <g
            id="g2684"
@@ -937,7 +934,7 @@
         </g>
       </g>
       <g
-         transform="translate(-157.3126,52.857144)"
+         transform="translate(292.47308,173.5)"
          id="g2694">
         <rect
            style="fill:#000078;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -962,7 +959,7 @@
              y="395.24072">(anonymer IService)</tspan></text>
       </g>
       <g
-         transform="translate(-52.362915,-13.713826)"
+         transform="translate(397.42277,106.92903)"
          id="g2704">
         <rect
            style="fill:#000078;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -987,7 +984,7 @@
              y="569.99713">(twisted.internet.tcp.Connector)</tspan></text>
       </g>
       <g
-         transform="translate(-534.93804,161.92605)"
+         transform="translate(-85.15236,282.56891)"
          id="g2714">
         <rect
            style="fill:#008602;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -1005,14 +1002,14 @@
              sodipodi:role="line"
              id="tspan2720"
              x="59.175232"
-             y="433.44998">args[2]</tspan><tspan
+             y="433.44998">kwargs['factory']</tspan><tspan
              id="tspan2722"
              sodipodi:role="line"
              x="59.175232"
              y="448.44998">(BotFactory)</tspan></text>
       </g>
       <g
-         transform="translate(-40,-88.365961)"
+         transform="translate(409.78568,32.276899)"
          id="g2724">
         <rect
            style="fill:#000078;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -1037,7 +1034,7 @@
              y="752.83472">(twisted.internet.tcp.Client)</tspan></text>
       </g>
       <g
-         transform="translate(93.013637,-98.368378)"
+         transform="translate(542.79932,22.274482)"
          id="g2734">
         <rect
            style="fill:#008602;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -1063,52 +1060,44 @@
       </g>
       <path
          inkscape:connector-type="polyline"
-         transform="translate(-353.10528,87.161423)"
          id="path2744"
-         d="M -283.92857,657.49071 L -408.92857,583.56214"
+         d="M -187.24817,865.29499 L -312.24817,791.36642"
          style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;display:inline" />
       <path
          inkscape:connector-type="polyline"
-         transform="translate(-353.10528,87.161423)"
          id="path2746"
-         d="M -242.5,657.49071 L -115.71429,529.27643"
+         d="M -145.8196,865.29499 L -19.03389,737.08071"
          style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;display:inline" />
       <path
          inkscape:connector-type="polyline"
-         transform="translate(-353.10528,87.161423)"
          id="path2748"
-         d="M -411.78571,548.91929 L -412.14286,474.99071"
+         d="M -315.10531,756.72357 L -315.46246,682.79499"
          style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;display:inline" />
       <path
          inkscape:connector-type="polyline"
-         transform="translate(-353.10528,87.161423)"
          id="path2750"
-         d="M -407.5,441.41929 L -290.35714,367.13357"
+         d="M -310.8196,649.22357 L -193.67674,574.93785"
          style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;display:inline" />
       <path
          inkscape:connection-end="#g3274"
          inkscape:connector-type="polyline"
-         transform="translate(-353.10528,87.161423)"
          id="path2752"
-         d="M -240.35714,367.13357 L -104.74157,495.23145"
+         d="M -143.67674,574.93785 L -506.83839,702.39288"
          style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;display:inline" />
       <path
          inkscape:connector-type="polyline"
-         transform="translate(-353.10528,87.161423)"
          id="path2754"
-         d="M -197.85714,513.91929 L -307.14286,458.205"
+         d="M -101.17674,721.72357 L -210.46246,666.00928"
          style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;display:inline" />
       <path
          inkscape:connector-type="polyline"
-         transform="translate(-353.10528,87.161423)"
          id="path2756"
-         d="M -266.42857,366.77643 L -267.14286,656.77643"
+         d="M -169.74817,574.58071 L -170.46246,864.58071"
          style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;display:inline" />
       <path
          inkscape:connector-type="polyline"
-         transform="translate(-353.10528,87.161423)"
          id="path2758"
-         d="M -264.65997,690.21809 L -264.40743,767.24222"
+         d="M -167.97957,898.02237 L -167.72703,975.0465"
          style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;display:inline" />
     </g>
     <path
