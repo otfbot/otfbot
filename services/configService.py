@@ -50,6 +50,27 @@ class configService(service.Service):
 		except IOError:
 			pass #does not exist
 	
+	def _create_preceding(self, network, channel=None):
+		"""
+		create preceding dictionary entries for network/channel options
+
+		>>> c=configService()
+		>>> c.network_options
+		{}
+		>>> c._create_preceding("samplenetwork", "#samplechannel")
+		>>> c.network_options
+		{'samplenetwork': {'#samplechannel': {}}}
+		>>> c._create_preceding("othernetwork")
+		>>> c.network_options
+		{'othernetwork': {}, 'samplenetwork': {'#samplechannel': {}}}
+		"""
+		if network:
+			if not self.network_options.has_key(network):
+				self.network_options[network]={} #empty network option/channel-list
+			if channel:
+				if not self.network_options[network].has_key(channel):
+					self.network_options[network][channel]={} #emtpy option-list for the given channel
+
 	def get(self, option, default, module=None, network=None, channel=None, set_default=True):
 			"""
 			get an option and set the default value, if the option is unset.
@@ -65,29 +86,29 @@ class configService(service.Service):
 			if module:
 				option=module+"."+option
 
-			try:
-				return self.network_options[network][channel][option]
-			except KeyError:
-				pass
-			try:
-				return self.network_options[network][option];
-			except KeyError:
-				pass
-			try:
-				return self.generic_options[option];
-			except KeyError:
-				pass
-			#set default in config, and return it
-			if network and channel:
-				if not network in self.network_options.keys():
-					self.network_options[network]={}
-				if not channel in self.network_options[network].keys():
-					self.network_options[network][channel]={}
-				self.network_options[network][channel][option]=default
-			elif network:
-				if not network in self.network_options.keys():
-					self.network_options[network]={}
-				self.network_options[network][option]=default
+			#This part tries to get the config value for an option only
+			if self.network_options.has_key(network):
+				if self.network_options[network].has_key(channel):
+					if self.network_options[network][channel].has_key(option):
+						#1) choice: channel specific
+						return self.network_options[network][channel][option]
+				if self.network_options[channel].has_key(option):
+					#2) choice: network specific
+					return self.network_options[network][option];
+			if self.generic_options.has_key(option):
+				#3) choice: general key
+				return self.generic_options[option]
+
+			#if we did not return above, we need to check if the default should be written to config
+			#and return the default
+
+			if network:
+				if channel:
+					self._create_preceding(network, channel)
+					self.network_options[network][channel][option]=default #set the default
+				else:
+					self._create_preceding(network)
+					self.network_options[network][option]=default #set the default
 			else:
 				#config.writeDefaultValues is a global setting, 
 				#which decides if the get default-values are written to config,
@@ -142,20 +163,17 @@ class configService(service.Service):
 	def set(self, option, value, module=None, network=None, channel=None, still_default=False):
 		if module:
 				option=module+"."+option
-
-		if network and channel:
-			if not network in self.network_options.keys():
-				self.network_options[network]={}
-			if not channel in self.network_options[network].keys():
-				self.network_options[network][channel]={}
-			self.network_options[network][channel][option]=value
-		elif network:
-			if not network in self.network_options.keys():
-				self.network_options[network]={}
-			self.network_options[network][option]=value
+		if network:
+			if channel:
+				self._create_preceding(network, channel)
+				self.network_options[network][channel][option]=value
+			else:
+				self._create_preceding(network)
+				self.network_options[network][option]=value
 		else:
 			self.generic_options[option]=value
 			self.generic_options_default[option]=still_default
+
 		#self.writeConfig() #TODO: this is good here, if writeconfig does not destroy generic_options, as the current version does
 
 	def delete(self, option, module=None, network=None, channel=None):
@@ -170,19 +188,23 @@ class configService(service.Service):
 		"""
 		if module:
 			option=module+"."+option
-		if network and channel:
-			try:
-				del self.network_options[network][channel][option]
-			except IndexError:
-				pass #does not exist anyway
-		elif network:
-			try:
-				#this can be used to delete a channel definition
-				del self.network_options[network][option]
-			except IndexError:
-				pass #does not exist anyway
+		if network:
+			if channel:
+				try:
+					del self.network_options[network][channel][option]
+				except IndexError:
+					pass #does not exist anyway
+			else:
+				try:
+					#this can be used to delete a channel definition
+					del self.network_options[network][option]
+				except IndexError:
+					pass #does not exist anyway
 		else:
-			del self.generic_options[option]
+			try:
+				del self.generic_options[option]
+			except IndexError:
+				pass #does not exist anyway
 
 	def getNetworks(self):
 		ret=[]
