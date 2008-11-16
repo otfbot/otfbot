@@ -1,0 +1,25 @@
+- am: are
+  are: am
+  i: you
+  i'd: you would
+  i'll: you will
+  i've: you have
+  me: you
+  my: your
+  was: were
+  you: me
+  you'll: I will
+  you've: I have
+  your: my
+  yours: mine
+- hi$:
+  - hi!
+  - hello!
+  i am (.*):
+  - I am %s, too!
+  - I really like people, which are %s!
+  - I wish i were %s.
+  (.*):
+  - I do not know how to answer to this
+  - I do not understand
+  - what do you mean with that?

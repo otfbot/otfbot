@@ -21,6 +21,8 @@
 import string, re, random, time, atexit, os.path
 import urllib, urllib2, socket
 import chatMod, functions
+from eliza import eliza
+import yaml
 
 MEGAHAL=1
 NIALL=1
@@ -132,6 +134,19 @@ class niallResponder(responder):
 	def cleanup(self):
 		self.niall.cleanup()
 
+class elizaResponder(responder):
+	def __init__(self, bot, datadir):
+		self.eliza=eliza()
+		if os.path.exists(datadir+"/eliza.yaml"):
+			file=open(datadir+"/eliza.yaml")
+			data=file.read()
+			file.close()
+			tmp=yaml.load(data)
+			self.eliza.setReflections(tmp[0])
+			self.eliza.setPatterns(tmp[1])
+	def reply(self, msg):
+		return self.eliza.reply(msg)
+
 class megahalResponder(responder):
 	"""implements a responder based on the megahal ai-bot"""
 	def __init__(self, bot):
@@ -220,6 +235,8 @@ class Plugin(chatMod.chatMod):
 			self.responder=webResponder(self.bot)
 		elif module=="udp":
 			self.responder=udpResponder(self.bot)
+		elif module=="eliza":
+			self.responder=elizaResponder(self.bot, datadir)
 		atexit.register(self.responder.cleanup)
 
 	def joined(self, channel):
