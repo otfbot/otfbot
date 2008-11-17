@@ -1,4 +1,5 @@
 This is an extended version of the pythonbindings for megahal. To compile yourself it should be sufficient to get the megahal sourcecode and replace the python-interface.c with the one provided here and then do a "make pythonmodule". You'll find the module in build/lib.*/.
+You also need the python-dev package.
 
 Available methods:
 
