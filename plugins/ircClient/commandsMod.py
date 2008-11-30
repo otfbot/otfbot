@@ -34,6 +34,9 @@ class Plugin(chatMod.chatMod):
 	def command(self, user, channel, command, options):
 		user = user.split("!")[0] #only nick
 		if user != self.bot.nickname:
+			if command == "reload-command":
+				self.reload()
+				return
 			answer=self.respond(channel, user, command, options)
 			if answer != "":
 				if answer[0] == ":":
