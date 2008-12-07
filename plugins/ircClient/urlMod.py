@@ -42,9 +42,9 @@ class Plugin(chatMod.chatMod):
 			if not headers:
 				headers=urlutils.get_headers(options)
 			try:
-				if headers['content-type'].lower()[:9] == "text/html":
+				if urlutils.is_html(headers):
 					self.parser.feed(urlutils.download(options))
-					if self.parser.get_result() != "":
+					if self.parser.get_result() != '':
 						response += self.parser.get_result()
 			except HTMLParseError, e:
 				self.logger.debug(e)
