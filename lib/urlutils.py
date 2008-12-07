@@ -23,11 +23,18 @@ def get_headers(url):
 	http=urllib2.urlopen(request)
 	return http.headers
 
-def is_html(url):
-	return get_headers(url)['content-type'].lower()[:9] == "text/html"
+def is_html(headers):
+	return headers['content-type'].lower()[:9] == "text/html"
+
+def download_headers_and_content_if_html(url):
+	headers=get_headers()
+	content=''
+	if is_html(headers):
+		content=download(url)
+	return (headers, content)
 
 def download_if_html(url):
-	if is_html(url):
+	if is_html(get_headers(url)):
 		return download(url)
 	return ""
 
