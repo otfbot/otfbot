@@ -24,11 +24,13 @@
 from twisted.application import service
 from twisted.python import usage
 
-from services import ircClientService, configService, ircServerService #, controlTCPModule, ircServerModule
+from services import *
+#import ircClientService, configService, ircServerService #, controlTCPModule, ircServerModule
+#import services
 
 #logging
 import logging, logging.handlers
-import log as otfbotlog
+import lib.log as otfbotlog
 from twisted.python import log
 import logging, sys
 
@@ -103,6 +105,9 @@ irc.setServiceParent(application)
 server=ircServerService.ircServerService(application, application)
 server.setName("ircServer")
 server.setServiceParent(application)
+
+control=controlService.controlService()
+control.setServiceParent(application)
 
 from twisted.conch import manhole_tap
 manholeService=manhole_tap.makeService({'telnetPort':'7777','sshPort':None,'passwd':'passwd', 'namespace':{'app':application}})

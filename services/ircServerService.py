@@ -16,7 +16,7 @@
 # 
 # (c) 2008 by Alexander Schier
 #
-import chatMod
+
 from twisted.internet import reactor, protocol
 from twisted.internet.tcp import Server
 from twisted.words.protocols.irc import IRC
@@ -24,7 +24,7 @@ from twisted.words.protocols import irc
 from twisted.words.service import IRCUser
 from twisted.application import service, internet
 import logging, traceback, sys, time
-from lib import bot
+from lib import bot, chatMod
 from lib.pluginSupport import pluginSupport
 import glob
 
