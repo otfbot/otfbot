@@ -18,8 +18,7 @@
 #
 
 import random, re, string
-from lib import chatMod
-from control import controlInterface
+from lib import chatMod, controlInterface
 
 class Plugin(chatMod.chatMod):
 	def __init__(self, bot):
@@ -30,8 +29,8 @@ class Plugin(chatMod.chatMod):
 		nick=user.split("!")[0]
 		if self.control.has_key(user) and msg == "endcontrol":
 			del self.control[user]
-		if msg == "control" and self.bot.auth(user) > 7:
-			self.control[user]=controlInterface(self.bot)
+		if msg == "control": # and self.bot.auth(user) > 0:
+			self.control[user]=controlInterface.controlInterface(self.bot.root.getNamedServices()["control"])
 			self.bot.sendmsg(nick,"Entered configuration modus. type 'endcontrol' to exit")
 		elif self.control.has_key(user):
 			output=self.control[user].input(msg)
