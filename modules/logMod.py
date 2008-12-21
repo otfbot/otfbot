@@ -34,7 +34,11 @@ class chatMod(chatMod.chatMod):
 		self.logpath=self.datadir+"/"+bot.getConfig("path", "$n-$c/$y-$m-$d.log", "logMod")
 		if not os.path.isdir(self.datadir):
 			os.makedirs(self.datadir)
-		locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
+		try:
+			locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
+		except:
+			self.logger.error("Couldn't set locale 'de_DE.UTF-8'. Using system-default")
+			locale.setlocale(locale.LC_ALL, "")
 		self.day=self.ts("%d") #saves the hour, to detect daychanges
 		for c in self.bot.channels:
 			self.setNetwork()
