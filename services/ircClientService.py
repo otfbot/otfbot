@@ -60,7 +60,6 @@ class BotFactory(protocol.ReconnectingClientFactory):
 		self.root=root
 		self.parent=parent
 		self.logger=logging.getLogger(network)
-
 		self.protocol=Bot
 		self.network=network
 		self.config=root.getNamedServices()['config']
@@ -81,4 +80,5 @@ class BotFactory(protocol.ReconnectingClientFactory):
 	def buildProtocol(self,addr):
 		proto=self.protocol(self.root, self)
 		self.protocol=proto
+		self.parent.getServiceNamed(self.network).protocol=proto
 		return proto
