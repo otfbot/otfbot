@@ -24,9 +24,9 @@ from twisted.application import internet, service
 import yaml
 
 class configService(service.Service):
+	name="config"
 	def __init__(self, filename=None, is_subconfig=False):
 		"""Initialize the config class and load a config"""
-		self.name="config"
 		self.logger=logging.getLogger("config")
 		self.generic_options={}
 		self.network_options={}
