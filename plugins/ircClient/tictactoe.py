@@ -56,13 +56,19 @@ class Game:
 			9: [8,6]
 		}[pos]
 	def winningField(self, stone, stone2, fields):
-		difference=max(stone, stone2) - min(stone, stone2)
-		if min(stone, stone2) - difference in fields:
-			return min(stone, stone2) - difference
-		elif max(stone, stone2) + difference in fields:
-			return max(stone, stone2) + difference
-		elif min(stone, stone2) + difference/2 in fields:
-			return min(stone, stone2) + difference/2
+		print stone, stone2, fields
+		for field in fields:
+			stoneset=set([stone, stone2, field])
+			for i in [1,4,7]:
+				if stoneset == set(range(i, i+3)):
+					return field
+			for i in [1,2,3]:
+				if stoneset == set(range(i, 10, 3)):
+					return field
+			if stoneset == set([1,5,9]):
+				return field
+			if stoneset == set([3,5,7]):
+				return field
 		return None
 	def kiMove(self):
 		stones=[1,2,3,4,5,6,7,8,9]
@@ -70,6 +76,15 @@ class Game:
 			stones.remove(s)
 		for s in self.yourStones:
 			stones.remove(s)
+		#offensive, find wins
+		for stone in self.myStones:
+			for stone2 in self.myStones:
+				if stone2 != stone:
+					winning=self.winningField(stone, stone2, stones)
+					if winning:
+						self.myStones+=[winning]
+						print "set stone %s, because it finishes a line"%winning
+						return winning
 		#defensive
 		for stone in self.yourStones:
 			for stone2 in self.neighbours(stone):
@@ -77,14 +92,7 @@ class Game:
 					winning=self.winningField(stone, stone2, stones)
 					if winning:
 						self.myStones+=[winning]
-						return winning
-		#offensive, find wins
-		for stone in self.myStones:
-			for stone2 in self.neighbours(stone):
-				if stone2 in self.myStones:
-					winning=self.winningField(stone, stone2, stones)
-					if winning:
-						self.myStones+=[winning]
+						print "set stone %s, because it stops the human from finishing a line with %s,%s,%s"%(winning, stone, stone2, winning)
 						return winning
 		#offensive, find good combinations
 		for stone in self.myStones:
@@ -99,10 +107,12 @@ class Game:
 				stones3.remove(stone2)
 				if self.winningField(stone, stone2, stones3): #if we set stone2, we could get a winning move
 					self.myStones+=[stone2]
+					print "set stone %s, because it could lead to a win"%stone2
 					return stone2
 		#just random
 		stone=random.choice(stones)
 		self.myStones+=[stone]
+		print "set stone %s, because i have not other idea what to do"%stone
 		return stone
 	HUMAN_WIN=1
 	COMPUTER_WIN=2
