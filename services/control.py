@@ -28,6 +28,9 @@ class controlService(service.Service):
 		this class only does the work, you need another class, most suitable is a bot-module, to have a userinterface
 	"""
 	name="control"
+	def __init__(self, root, parent):
+		self.root=root
+		self.parent=parent
 	def _cmd_help(self,argument):
 		commands = []
 		for c in dir(self):

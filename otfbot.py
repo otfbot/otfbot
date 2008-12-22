@@ -109,8 +109,8 @@ server=ircServerService.ircServerService(application, application)
 server.setName("ircServer")
 server.setServiceParent(application)
 
-control=controlService.controlService()
-control.setServiceParent(application)
+control=controlService.controlService(application, application)
+#control.setServiceParent(application)
 
 
 from twisted.conch import manhole_tap
