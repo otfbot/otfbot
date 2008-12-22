@@ -1,7 +1,7 @@
 import sys, glob
 sys.path.insert(1, "services")
 sys.path.insert(1, "../services")
-import configService
+import config as configService
 
 config=configService.configService("otfbot.yaml")
 
