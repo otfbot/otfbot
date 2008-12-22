@@ -17,7 +17,7 @@
 # (c) 2008 by Alexander Schier
 #
 
-from jc import Game
+from jcgame import Game
 import chatMod
 
 class Plugin(chatMod.chatMod):
