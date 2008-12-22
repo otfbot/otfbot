@@ -24,7 +24,10 @@
 from twisted.application import service
 from twisted.python import usage
 
-from services import *
+from services import config as configService
+from services import control as controlService
+from services import ircClient as ircClientService
+from services import ircServer as ircServerService
 #import ircClientService, configService, ircServerService #, controlTCPModule, ircServerModule
 #import services
 
@@ -108,6 +111,7 @@ server.setServiceParent(application)
 
 control=controlService.controlService()
 control.setServiceParent(application)
+
 
 from twisted.conch import manhole_tap
 manholeService=manhole_tap.makeService({'telnetPort':'7777','sshPort':None,'passwd':'passwd', 'namespace':{'app':application}})
