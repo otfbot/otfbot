@@ -70,7 +70,7 @@ class Plugin(chatMod.chatMod):
 						self.bot.sendmsg(channel,"corrupted time!")
 						return 0
 					programm = self.tv.get_programm_at_time(o1 + "00")
-					programm = self.parse_programm(programm)
+					#programm = self.parse_programm(programm)
 					filterstandard = 1
 				except:
 					if not self.tv.get_station(o1) and o1 != "help":
@@ -107,24 +107,30 @@ class Plugin(chatMod.chatMod):
 					if not public:
 						self.bot.sendmsg(user,unicode(str(chr(2)) + i['station'][0] + str(chr(2)) + " (" + str(i['start'][8:10]) + ":" + str(i['start'][10:12]) + "-" + str(i['stop'][8:10]) + ":" + str(i['stop'][10:12]) + "): " + i['title'] + " (" + i['language'] + ")").encode("utf8"))
 					else:
-						self.bot.sendmsg(channel,unicode(str(chr(2)) + i['station'][0] + str(chr(2)) + " (" + str(i['start'][8:10]) + ":" + str(i['start'][10:12]) + "-" + str(i['stop'][8:10]) + ":" + str(i['stop'][10:12]) + "): " + i['title'] + " (" + i['language'] + ")").encode("utf8"))
+						#+ str(i['start'][6:8]) + "." + str(i['start'][4:6]) + "., "
+						self.bot.sendmsg(channel,unicode(str(chr(2)) + i['station'][0] + str(chr(2)) + " ("  + str(i['start'][8:10]) + ":" + str(i['start'][10:12]) + "-" + str(i['stop'][8:10]) + ":" + str(i['stop'][10:12]) + "): " + i['title'] + " (" + i['language'] + ")").encode("utf8"))
 		elif command.lower() == "tvsearch":
 			result = self.tv.search(options)
 			result = self.parse_programm(result)
 			for i in result[:3]:
-				self.bot.sendmsg(channel,unicode(str(chr(2)) + i['station'][0] + str(chr(2)) + " (" + str(i['start'][8:10]) + ":" + str(i['start'][10:12]) + "-" + str(i['stop'][8:10]) + ":" + str(i['stop'][10:12]) + "): " + i['title'] + " (" + i['language'] + ")").encode("utf8"))
+				self.bot.sendmsg(channel,unicode(str(chr(2)) + i['station'][0] + str(chr(2)) + " (" + str(i['start'][6:8]) + "." + str(i['start'][4:6]) + "., " + str(i['start'][8:10]) + ":" + str(i['start'][10:12]) + "-" + str(i['stop'][8:10]) + ":" + str(i['stop'][10:12]) + "): " + i['title'] + " (" + i['language'] + ")").encode("utf8"))
 			if result == []:
 				self.bot.sendmsg(channel,"keine passende Sendung gefunden!")
 			
 	def parse_programm(self,programm):
 		output = []
 		for i in programm:
-			start = i['start']
-			stop = i['stop']
-			titel = i['title'][0][0]
-			language = i['title'][0][1]
-			station = self.tv.get_station_name(i['channel'])
-			output.append({'start':start,'stop':stop,'title':titel,'language':language,'station':station})
+			try:
+				print i
+				if i['title'][0] != "D":
+					start = i['start']
+					stop = i['stop']
+					titel = i['title'][0][0]
+					language = i['title'][0][1]
+					station = self.tv.get_station_name(i['channel'])
+					output.append({'start':start,'stop':stop,'title':titel,'language':language,'station':station})
+			except:
+				self.logger.info(sys.exc_info())
 		return output
 	
 class tv():
