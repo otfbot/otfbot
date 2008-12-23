@@ -23,16 +23,19 @@ except ImportError:
 	HAS_PYXMLTV=False
 
 import chatMod
-import time,sys
+import time,sys,urllib2
 
 class Plugin(chatMod.chatMod):
 	def __init__(self,bot):
 		self.bot = bot
 		if not HAS_PYXMLTV:
 			self.bot.depends("xmltv python module")
-		xmltvfile = datadir + "/" + self.bot.getConfig("xmltvfile","","tvMod")
-		self.tv = tv(xmltvfile)
+		self.xmltvfile = datadir + "/" + self.bot.getConfig("xmltvfile","","tvMod")
+		#self.tv = tv(self.xmltvfile) ## This is done by self.update_data()
+		self.tv = None
 		standardsender = self.bot.getConfig("standardsender","ard,zdf,rtl,sat.1,n24,pro7,vox","tvMod")
+		dataurl = "http://static.xmltv.info/tv.xml.txt"
+		self.bot.scheduler.callLater(1, self.update_data, dataurl)
 		self.standardsender = []
 		for i in standardsender.split(","):
 			self.standardsender.append(i.lower().replace(" ",""))
@@ -121,7 +124,6 @@ class Plugin(chatMod.chatMod):
 		output = []
 		for i in programm:
 			try:
-				print i
 				if i['title'][0] != "D":
 					start = i['start']
 					stop = i['stop']
@@ -132,6 +134,15 @@ class Plugin(chatMod.chatMod):
 			except:
 				self.logger.info(sys.exc_info())
 		return output
+	
+	def update_data(self,dataurl):
+		data = urllib2.urlopen(dataurl).readlines()
+		datei = open(self.xmltvfile,"w")
+		datei.writelines(data)
+		datei.close()
+		del self.tv
+		self.tv = tv(self.xmltvfile)
+		self.bot.scheduler.callLater(86400, self.update_data, dataurl)
 	
 class tv():
 	def __init__(self,xmltvfile):
