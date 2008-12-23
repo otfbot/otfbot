@@ -55,6 +55,33 @@ class User:
 			return self.nick==other
 		return self.nick == other.nick
 
+class userTestCase(unittest.TestCase):
+	def testGive(self):
+		self.user=User("user")
+		self.user.giveCards({'1': 1, 'Z': 2})
+		self.assertEquals(self.user.cards['1'], 3)
+		self.assertEquals(self.user.cards['Z'], 0)
+	def testGiveDoesNotHave(self):
+		raised_exception=False
+		self.user=User("user")
+		try:
+			self.user.giveCards({'Z': 3, '1': 1})
+		except DoesNotHaveException, e:
+			self.assertEquals(e.message, 'Z')
+			raised_exception=True
+		self.assertTrue(raised_exception)
+	def testGetCards(self):
+		self.user=User("user")
+		self.user.getCards({'1': 5})
+		self.assertEquals(self.user.cards['1'], 9)
+		raised_exception=False
+		try:
+			self.user.giveCards({'1': 7})
+		except DoesNotHaveException, e:
+			raised_exception=True
+		self.assertTrue(not raised_exception)
+
+
 def string2cards(input):
 	cards={}
 	cards['Z']=input.count('Z')
@@ -80,6 +107,14 @@ def char2word(char):
 		return "5000er"
 	elif char=="Z":
 		return "Zero Mille"
+
+class helpersTestCase(unittest.TestCase):
+	def testString2Worth(self):
+		self.assertEquals(string2worth("1Z5Z2"),8)
+	def testString2Cards(self):
+		self.assertEquals(string2cards("1Z5Z2"), {'1': 1, '2': 1, '5': 1, 'Z': 2})
+	def testString2Worth(self):
+		self.assertEquals(string2worth("1Z5Z2"), 8)
 
 class State:
 	def __init__(self, game):
@@ -228,6 +263,7 @@ class WaitingForPlayersState(State):
 				return self.game.messages.get(Messages.GAME_STARTED)
 			else:
 				return self.game.messages.get(Messages.CANNOT_START)
+
 class PregameState(State):
 	def input(self, user, command, options):
 		if command=="newgame":
@@ -303,8 +339,6 @@ class gameTestCase(unittest.TestCase):
 				]
 		)
 		self.assertEquals(self.game.state.__class__, NeedToPayState)
-	def testString2Worth(self):
-		self.assertEquals(string2worth("1Z5Z2"),8)
 	def testPayment(self):
 		self.testStart()
 		self.assertEquals(self.game.input(self.nick2, "zahl", "55555"),
