@@ -154,8 +154,8 @@ class PaybackState(State):
 class LostState(State):
 	def __init__(self, game, player, last_cards_to):
 		self.game=game
-		self.player=player
-		self.last_cards_to=last_cards_to
+		self.player=self.game.userlist[self.game.userlist.index(player)]
+		self.last_cards_to=self.game.userlist[self.game.userlist.index(last_cards_to)]
 	def input(self, user, command, options):
 		self.last_cards_to.getCards(self.player.cards) #give the remaining cards to the victim
 		self.game.remove(self.player)
@@ -168,6 +168,51 @@ class LostState(State):
 			self.game.setState(SelectPlayerState(self.game))
 			self.game.execute_next=True
 		return ret
+
+class LostTestCase(unittest.TestCase):
+	def testLastPlayerLose(self):
+		self.game=Game()
+		self.game.current_user=3 #user4
+		self.game.userlist.append(User("user1"))
+		self.game.userlist.append(User("user2"))
+		self.game.userlist.append(User("user3"))
+		self.game.userlist.append(User("user4"))
+		self.game.setState(LostState(self.game, "user4", "user1"))
+		self.assertEquals(self.game.state.last_cards_to.__class__, User)
+		output=self.game.state.input("", "", "")
+		self.assertEquals(output, [(self.game.messages.get(Messages.LOSE)%"user4", True)])
+		self.assertEquals(self.game.userlist[0].cards['1'], 8) #user1 gets the cards
+		self.assertEquals(self.game.current_user, 0) #next user, index 0
+	def testFirstPlayerLose(self):
+		self.game=Game()
+		self.game.current_user=0 #user1
+		self.game.userlist.append(User("user1"))
+		self.game.userlist.append(User("user2"))
+		self.game.userlist.append(User("user3"))
+		self.game.userlist.append(User("user4"))
+		self.game.setState(LostState(self.game, "user1", "user4"))
+		self.assertEquals(self.game.state.last_cards_to.__class__, User)
+		output=self.game.state.input("", "", "")
+		self.assertEquals(output, [(self.game.messages.get(Messages.LOSE)%"user1", True)])
+		self.assertEquals(len(self.game.userlist), 3)
+		self.assertEquals([str(user) for user in self.game.userlist], ["user2", "user3", "user4"])
+		self.assertEquals(self.game.userlist[2].cards['1'], 8) #user4 at index 3 gets the cards
+		self.assertEquals(self.game.current_user, 0) #next user, now the index 0
+	def testMiddlePlayerLose(self):
+		self.game=Game()
+		self.game.current_user=2 #user3 at index 2
+		self.game.userlist.append(User("user1"))
+		self.game.userlist.append(User("user2"))
+		self.game.userlist.append(User("user3"))
+		self.game.userlist.append(User("user4"))
+		self.game.setState(LostState(self.game, "user2", "user4"))
+		self.assertEquals(self.game.state.last_cards_to.__class__, User)
+		output=self.game.state.input("", "", "")
+		self.assertEquals(output, [(self.game.messages.get(Messages.LOSE)%"user2", True)])
+		self.assertEquals(len(self.game.userlist), 3)
+		self.assertEquals([str(user) for user in self.game.userlist], ["user1", "user3", "user4"])
+		self.assertEquals(self.game.userlist[2].cards['1'], 8) #user4 at index 3 gets the cards
+		self.assertEquals(self.game.current_user, 1) #user3 now at index 1
 
 class PayedState(State):
 	def __init__(self, game, cards):
@@ -291,6 +336,8 @@ class Game:
 		else:
 			return message
 	def remove(self, user):
+		if self.userlist.index(user) < self.current_user:
+			self.current_user-=1 #the index shrinks by one, if the removed user was over the current user
 		self.userlist.remove(user)
 		self.current_user=self.current_user%len(self.userlist)
 
