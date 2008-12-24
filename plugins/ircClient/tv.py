@@ -16,6 +16,12 @@
 # 
 # (c) 2008 by Thomas Wiegart
 #
+
+## Python-xmltv can be found there: http://www.funktronics.ca/python-xmltv/
+##
+## or, if this site is down, a (maybe old) version can be found
+## at our ftp: ftp://ftp.berlios.de/pub/otfbot/packages/
+
 HAS_PYXMLTV=True
 try:
 	import xmltv
@@ -30,10 +36,12 @@ class Plugin(chatMod.chatMod):
 		self.bot = bot
 		if not HAS_PYXMLTV:
 			self.bot.depends("xmltv python module")
-		self.xmltvfile = datadir + "/" + self.bot.getConfig("xmltvfile","","tvMod")
+		#self.xmltvfile = datadir + "/" + self.bot.getConfig("xmltvfile","","tvMod")
+		self.xmltvfile = datadir + "/" + self.bot.config.get("xmltvfile","tv.xml.txt","tvMod")
 		#self.tv = tv(self.xmltvfile) ## This is done by self.update_data()
 		self.tv = None
-		standardsender = self.bot.getConfig("standardsender","ard,zdf,rtl,sat.1,n24,pro7,vox","tvMod")
+		#standardsender = self.bot.getConfig("standardsender","ard,zdf,rtl,sat.1,n24,pro7,vox","tvMod")
+		standardsender = self.bot.config.get("standardsender","ard,zdf,rtl,sat.1,n24,pro7,vox","tvMod")
 		dataurl = "http://static.xmltv.info/tv.xml.txt"
 		self.bot.scheduler.callLater(1, self.update_data, dataurl)
 		self.standardsender = []
@@ -114,7 +122,20 @@ class Plugin(chatMod.chatMod):
 						self.bot.sendmsg(channel,unicode(str(chr(2)) + i['station'][0] + str(chr(2)) + " ("  + str(i['start'][8:10]) + ":" + str(i['start'][10:12]) + "-" + str(i['stop'][8:10]) + ":" + str(i['stop'][10:12]) + "): " + i['title'] + " (" + i['language'] + ")").encode("utf8"))
 		elif command.lower() == "tvsearch":
 			result = self.tv.search(options)
-			result = self.parse_programm(result)
+			t_result = self.parse_programm(result)
+			result = []
+			ltime = time.localtime()
+			for i in t_result:
+				if len(str(ltime[3])) == 1:
+					h = "0" + str(ltime[3])
+				else:
+					h = str(ltime[3])
+				if len(str(ltime[4])) == 1:
+					m = "0" + str(ltime[4])
+				else:
+					m = str(ltime[4])
+				if int(i['stop'][4:12]) > int(str(ltime[1]) + str(ltime[2]) + h + m):
+					result.append(i)
 			for i in result[:3]:
 				self.bot.sendmsg(channel,unicode(str(chr(2)) + i['station'][0] + str(chr(2)) + " (" + str(i['start'][6:8]) + "." + str(i['start'][4:6]) + "., " + str(i['start'][8:10]) + ":" + str(i['start'][10:12]) + "-" + str(i['stop'][8:10]) + ":" + str(i['stop'][10:12]) + "): " + i['title'] + " (" + i['language'] + ")").encode("utf8"))
 			if result == []:
@@ -137,6 +158,7 @@ class Plugin(chatMod.chatMod):
 	
 	def update_data(self,dataurl):
 		data = urllib2.urlopen(dataurl).readlines()
+		# TODO: Create datadir if it doesn't exist
 		datei = open(self.xmltvfile,"w")
 		datei.writelines(data)
 		datei.close()
