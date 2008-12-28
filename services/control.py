@@ -20,9 +20,10 @@
 from twisted.internet import reactor
 import logging, logging.handlers
 import yaml #needed for parsing dicts from set config
+import time
 from twisted.application import internet, service
 
-class botService(service.Service):
+class botService(service.MultiService):
 	""" allows to control the behaviour of the bot during runtime
 	
 		this class only does the work, you need another class, most suitable is a bot-module, to have a userinterface
@@ -31,8 +32,7 @@ class botService(service.Service):
 	def __init__(self, root, parent):
 		self.root=root
 		self.parent=parent
-	def setServiceParent(self, parent):
-		self.parent=parent
+		service.MultiService.__init__(self)
 
 	def _cmd_help(self,argument):
 		commands = []
