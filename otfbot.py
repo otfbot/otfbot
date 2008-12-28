@@ -100,13 +100,13 @@ application.getNamedServices=lambda: service.IServiceCollection(application).nam
 configS=configService.loadConfig(configfilename, "plugins/*/*.yaml")
 configS.setServiceParent(application)
 
-irc=ircClientService.ircClientService(application, application)
+irc=ircClientService.botService(application, application)
 irc.setServiceParent(application)
 
-server=ircServerService.ircServerService(application, application)
+server=ircServerService.botService(application, application)
 server.setServiceParent(application)
 
-control=controlService.controlService(application, application)
+control=controlService.botService(application, application)
 #control.setServiceParent(application)
 
 

@@ -28,7 +28,7 @@ from lib import bot, chatMod
 from lib.pluginSupport import pluginSupport
 import glob
 
-class ircServerService(service.MultiService):
+class botService(service.MultiService):
 	name="ircServer"
 	def __init__(self, root, parent):
 		self.root=root
