@@ -25,8 +25,10 @@ from twisted.words import service
 from twisted.protocols import basic
 
 def sendNames(server, network, channel):
+	getClient=lambda network: server.root.getNamedServices()['ircClient'].namedServices[network].kwargs['factory'].protocol
+
 	if network in server.root.getNamedServices()['ircClient'].namedServices.keys():
-		names=[server.root.getNamedServices()['ircClient'].namedServices[network].kwargs['factory'].protocol.users[channel][nickname]['modchar'].strip()+nickname for nickname in server.getClient(network).users[channel].keys()]
+		names=[server.root.getNamedServices()['ircClient'].namedServices[network].kwargs['factory'].protocol.users[channel][nickname]['modchar'].strip()+nickname for nickname in getClient(network).users[channel].keys()]
 		server.names(server.name, "#"+network+"-"+channel, names)
 
 class Plugin(chatMod.chatMod):
@@ -34,12 +36,14 @@ class Plugin(chatMod.chatMod):
 		self.server=server
 		self.mychannels=[]
 		self.first=True
+		self.getClient=lambda network: server.root.getNamedServices()['ircClient'].namedServices[network].kwargs['factory'].protocol
+		self.getClientNames=lambda : [connection.name for connection in root.getNamedServices()['ircClient'].services]
 	def irc_USER(self, prefix, params):
 		if not self.first:
 			return
 		self.first=False
-		for network in self.server.getClientNames():
-			bot=self.server.getClient(network)
+		for network in self.getClientNames():
+			bot=self.getClient(network)
 			for channel in bot.channels:
 				self.server.join(self.server.getHostmask(), "#"+network+"-"+channel)
 				if channel in bot.users.keys():
@@ -49,21 +53,21 @@ class Plugin(chatMod.chatMod):
 		if params[0][0]=="#":
 			if params[0] in self.mychannels:
 				(network, channel)=params[0][1:].split("-",1)
-				self.server.getClient(network).sendmsg(channel, params[1])
+				self.getClient(network).sendmsg(channel, params[1])
 		elif "-" in params[0]:
 			(network, nick)=params[0].split("-", 1)
-			self.server.getClient(network).sendmsg(nick, params[1])
+			self.getClient(network).sendmsg(nick, params[1])
 	def irc_JOIN(self, prefix, params):
 		try:
 			(network, channel)=params[0][1:].split("-", 1) #[1:] and (a,b) can raise ValueErrors
-			if network in self.server.getClientNames():
+			if network in self.getClientNames():
 				if len(params)>=2: #password given
 					self.server.root.getNamedServices()['config'].set("password",params[1], "main", network, channel)
-					self.server.getClient(network).join(channel, params[1])
+					self.getClient(network).join(channel, params[1])
 				else:
-					self.server.getClient(network).join(channel)
+					self.getClient(network).join(channel)
 				self.server.join(self.server.getHostmask(), "#%s-%s"%(network, channel))
-				if channel in self.server.getClient(network).users.keys():
+				if channel in self.getClient(network).users.keys():
 					sendNames(self.server, network, channel)
 				#else: #should not be needed, every join produces a names list, which is maintained over /nick /part, etc.
 				#	self.server.bot.ipc[network].names(channel) #invoke now, names will be in callback on chatMod
@@ -73,8 +77,8 @@ class Plugin(chatMod.chatMod):
 	def irc_PART(self, prefix, params):
 		try:
 			(network, channel)=params[0][1:].split("-", 1) #[1:] and (a,b) can raise ValueErrors
-			if network in self.server.getClientNames():
-				self.server.getClient(network).part(channel)
+			if network in self.getClientNames():
+				self.getClient(network).part(channel)
 				self.server.part(self.server.getHostmask(), "#%s-%s"%(network, channel))
 				self.mychannels.remove("#%s-%s"%(network, channel))
 		except ValueError:

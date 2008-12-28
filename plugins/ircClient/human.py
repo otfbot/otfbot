@@ -21,8 +21,10 @@ from lib import chatMod
 
 #same as in serverpart!
 def sendNames(server, network, channel):
+	getClient=lambda network: server.root.getNamedServices()['ircClient'].namedServices[network].kwargs['factory'].protocol
+
 	if network in server.root.getNamedServices()['ircClient'].namedServices.keys():
-		names=[server.root.getNamedServices()['ircClient'].namedServices[network].kwargs['factory'].protocol.users[channel][nickname]['modchar'].strip()+nickname for nickname in server.getClient(network).users[channel].keys()]
+		names=[server.root.getNamedServices()['ircClient'].namedServices[network].kwargs['factory'].protocol.users[channel][nickname]['modchar'].strip()+nickname for nickname in getClient(network).users[channel].keys()]
 		server.names(server.name, "#"+network+"-"+channel, names)
 
 class Plugin(chatMod.chatMod):
