@@ -22,7 +22,8 @@ import chatMod
 class Plugin(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
+		self.getServers=lambda : [connection for connection in bot.root.getNamedServices()['ircServer'].services]
 	def irc_unknown(self, prefix, command, params):
 		if command=="PONG":
-				for server in self.bot.getServers():
+				for server in self.getServers():
 					server.sendmsg(self.bot.nickname+"!bot@localhost", "#control", "%f sec. to %s."%(round(time.time()-float(params[1]), 3), params[0]))
