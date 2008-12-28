@@ -23,7 +23,7 @@ import chatMod
 class Plugin(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
-		self.getbot=bot.getClient
+		self.getbot=lambda network: bot.root.getNamedServices()['ircClient'].namedServices[network].kwargs['factory'].protocol
 		#x034 (red) is the bot
 		self.colors=["\x032", "\x033", "\x035", "\x0311", "\x0310", "\x0312", "\x0315", "\x0314", "\x0316", "\x0313", "\x036"]
 
