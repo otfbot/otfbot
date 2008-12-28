@@ -38,6 +38,11 @@ class Plugin(chatMod.chatMod):
 		self.first=True
 		self.getClient=lambda network: server.root.getNamedServices()['ircClient'].namedServices[network].kwargs['factory'].protocol
 		self.getClientNames=lambda : [connection.name for connection in self.server.root.getNamedServices()['ircClient'].services]
+
+		self.server.registerCallback(self, "irc_NICK")
+		self.server.registerCallback(self, "irc_PRIVMSG")
+		self.server.registerCallback(self, "irc_JOIN")
+		self.server.registerCallback(self, "irc_PART")
 	def irc_NICK(self, prefix, params):
 		if not self.first:
 			return
