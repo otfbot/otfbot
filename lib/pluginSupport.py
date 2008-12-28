@@ -12,6 +12,11 @@ class pluginSupport:
 		self.getClientNames=lambda : [connection.name for connection in root.getNamedServices()['ircClient'].services]
 		self.getServer=lambda network: root.getNamedServices()['ircServer'].namedServices[network].kwargs['factory'].protocol
 		self.getServers=lambda : [connection for connection in root.getNamedServices()['ircServer'].services]
+	def depends(self, dependency):
+		"""raise an Exception, if the dependency is not active"""
+		if not self.plugins.has_key(dependency):
+			raise self.DependencyMissing(dependency)
+	
 	def importPlugin(self, name):
 		if not self.classes:
 			self.classes=[]
