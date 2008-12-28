@@ -95,6 +95,12 @@ class Bot(pluginSupport, irc.IRCClient):
 		self.classes=[]
 		self.startPlugins()
 	
+	def startPlugin(self, pluginName):
+		plugin=pluginSupport.startPlugin(self, pluginName)
+		#TODO: this is only a workaround until the plugins register their callbacks
+		if plugin:
+			for callback in dir(plugin):
+				self.registerCallback(plugin, callback)
 
 	def getUsers(self):
 		""" Get a list of users

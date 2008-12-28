@@ -60,6 +60,13 @@ class Server(IRCUser, pluginSupport):
 
 		self.startPlugins()
 
+	#same as in lib/bot.py. support for legacy-plugins
+	def startPlugin(self, pluginName):
+		plugin=pluginSupport.startPlugin(self, pluginName)
+		#TODO: this is only a workaround until the plugins register their callbacks
+		if plugin:
+			for callback in dir(plugin):
+				self.registerCallback(plugin, callback)
 
 	def handleCommand(self, command, prefix, params):
 		"""Determine the function to call for the given command and call
