@@ -106,10 +106,9 @@ class ircServerFactory(protocol.ServerFactory):
 
 		self.protocol=Server
 	def buildProtocol(self, addr):
-		proto=self.protocol(self.root, self)
-		proto.connected=True
-		proto.factory=self
-		self.protocol=proto
-		return proto
+		self.p=self.protocol(self.root, self)
+		self.p.connected=True
+		self.p.factory=self
+		return self.p
 	def stopFactory(self):
 		pass

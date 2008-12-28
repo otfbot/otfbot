@@ -37,7 +37,7 @@ class Plugin(chatMod.chatMod):
 		self.mychannels=[]
 		self.first=True
 		self.getClient=lambda network: server.root.getNamedServices()['ircClient'].namedServices[network].kwargs['factory'].protocol
-		self.getClientNames=lambda : [connection.name for connection in root.getNamedServices()['ircClient'].services]
+		self.getClientNames=lambda : [connection.name for connection in self.server.root.getNamedServices()['ircClient'].services]
 	def irc_USER(self, prefix, params):
 		if not self.first:
 			return

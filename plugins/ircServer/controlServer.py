@@ -20,13 +20,13 @@
 import chatMod
 import time
 from twisted.internet import reactor
-from control import controlInterface
+from lib import controlInterface
 
 class Plugin(chatMod.chatMod):
 	def __init__(self, server):
 		self.server=server
 		self.first=True
-		self.control=controlInterface(self.server.bot)
+		self.control=controlInterface.controlInterface(self.server.root.getNamedServices()["control"])
 	def irc_NICK(self, prefix, params):
 		if self.first:
 			self.server.join(self.server.getHostmask(), "#control")
