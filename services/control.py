@@ -31,6 +31,9 @@ class botService(service.Service):
 	def __init__(self, root, parent):
 		self.root=root
 		self.parent=parent
+	def setServiceParent(self, parent):
+		self.parent=parent
+
 	def _cmd_help(self,argument):
 		commands = []
 		for c in dir(self):
