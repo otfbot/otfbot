@@ -24,7 +24,7 @@ from twisted.internet import protocol, reactor, error
 from lib.bot import Bot
 import logging
 
-class ircClientService(service.MultiService):
+class botService(service.MultiService):
 	name="ircClient"
 	def __init__(self, root, parent):
 		self.root=root

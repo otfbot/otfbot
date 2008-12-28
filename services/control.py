@@ -22,7 +22,7 @@ import logging, logging.handlers
 import yaml #needed for parsing dicts from set config
 from twisted.application import internet, service
 
-class controlService(service.Service):
+class botService(service.Service):
 	""" allows to control the behaviour of the bot during runtime
 	
 		this class only does the work, you need another class, most suitable is a bot-module, to have a userinterface
