@@ -21,6 +21,14 @@ for file in files:
 		modules.append(plugin)
 config.set("ircServerPlugins", modules, 'main')
 
+files=glob.glob("services/*.py")
+modules=[]
+for file in files:
+	plugin=file.split("services/")[1].split(".py")[0]
+	if not plugin=="__init__" and not plugin=="config":
+		modules.append(plugin)
+config.set("services", modules, 'main')
+
 sys.stdout.write("Network Name: ")
 name=raw_input().strip()
 config.set('enabled', True, 'main', name)
