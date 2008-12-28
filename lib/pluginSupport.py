@@ -38,7 +38,7 @@ class pluginSupport:
 		#if the module has already registered for the callback, do not reregister
 		if not self.callbackRegistered(module, callbackname):
 			self.callbacks[callbackname].append((module, priority))
-			self.callbacks[callbackname].sort(cmp=lambda a, b: a[1]>b[1])
+			self.callbacks[callbackname].sort(cmp=lambda a, b: b[1]-a[1])
 	def unregisterCallback(self, module, callbackname):
 		if not self.callbacks.has_key(callbackname):
 			return
@@ -148,8 +148,8 @@ class pluginSupport:
 		"""
 		if not self.callbacks.has_key(apifunction):
 			return
-		for plugin in self.callbacks[apifunction]:
-			plugin=plugin[0] #(module, priority)
+		for plugin_and_priority in self.callbacks[apifunction]:
+			plugin=plugin_and_priority[0] #(module, priority)
 			#self.logger.debug("running "+apifunction+" for plugin "+str(mod))
 			#if a channel is present, check if the plugin is disabled for the channel.
 			if hasattr(self, "network"):
