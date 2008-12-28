@@ -8,6 +8,7 @@ class pluginSupport:
 	def __init__(self, root, parent):
 		self.root=root
 		self.parent=parent
+		self.callbacks={}
 	def depends(self, dependency):
 		"""raise an Exception, if the dependency is not active"""
 		if not self.plugins.has_key(dependency):
@@ -23,6 +24,28 @@ class pluginSupport:
 		self.classes[-1].datadir = self.config.get("datadir", "data")+"/"+self.classes[-1].__name__
 		self.logger.debug("Imported plugin "+self.classes[-1].__name__)		
 		return self.classes[-1]
+
+	def callbackRegistered(self, module, callbackname):
+		if not self.callbacks.has_key(callbackname):
+			return False
+		for item in self.callbacks[callbackname]:
+			if item[0]==module:
+				return True
+		return False
+	def registerCallback(self, module, callbackname, priority=10):
+		if not self.callbacks.has_key(callbackname):
+			self.callbacks[callbackname]=[]
+		#if the module has already registered for the callback, do not reregister
+		if not self.callbackRegistered(module, callbackname):
+			self.callbacks[callbackname].append((module, priority))
+			self.callbacks[callbackname].sort(cmp=lambda a, b: a[1]>b[1])
+	def unregisterCallback(self, module, callbackname):
+		if not self.callbacks.has_key(callbackname):
+			return
+		for index in len(self.callbacks[callbackname]):
+			if self.callbacks[callbackname][0]==module:
+				self.callbacks[callbackdname].remove(self.callbacks[callbackname][index])
+		
 	def startPlugins(self):
 		"""
 			initializes all known plugins
@@ -47,6 +70,8 @@ class pluginSupport:
 						self.plugins[pluginClass.__name__].start()
 				except Exception, e:
 					self.logerror(self.logger, pluginClass.__name__, e)
+					return None #exception occured (e.g. dependency missing, or initialization error)
+			return self.plugins[pluginClass.__name__]
 
 	def reloadPluginClass(self, pluginClass):
 			self.logger.info("reloading class "+pluginClass.__name__)
@@ -121,7 +146,10 @@ class pluginSupport:
 			@type	args:	dict
 			@param	args:	the arguments for the callback
 		"""
-		for plugin in self.plugins.values():
+		if not self.callbacks.has_key(apifunction):
+			return
+		for plugin in self.callbacks[apifunction]:
+			plugin=plugin[0] #(module, priority)
 			#self.logger.debug("running "+apifunction+" for plugin "+str(mod))
 			#if a channel is present, check if the plugin is disabled for the channel.
 			if hasattr(self, "network"):
@@ -132,7 +160,6 @@ class pluginSupport:
 				if plugin.name in self.config.get("pluginsDisabled", [], "main", self.network):
 					return
 			try:
-				if hasattr(plugin, apifunction):
-					getattr(plugin, apifunction)(**args)
+				getattr(plugin, apifunction)(**args)
 			except Exception, e:
 				self.logerror(self.logger, plugin.name, e)
