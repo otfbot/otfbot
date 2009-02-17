@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import sys, glob
 sys.path.insert(1, "services")
 sys.path.insert(1, "../services")
