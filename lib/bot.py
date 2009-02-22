@@ -90,9 +90,10 @@ class Bot(pluginSupport, irc.IRCClient):
 		# usertracking, channel=>{User => level}
 		self.users       = {}
 		self.modchars        = {16: 'a', 8: 'o', 4: 'h', 2: 'v', 0: ' '}
-		self.rev_modchars    = {'a': 16, 'o': 8, 'h': 4, 'v': 2, ' ': 0}
+		self.rev_modchars    = dict([(v, k) for (k, v) in modchars.iteritems()])
 		self.modcharvals     = {16: '!', 8: '@', 4: '%', 2: '+', 0: ' '}
 		self.rev_modcharvals = {'!': 16, '@': 8, '%': 4, '+': 2, ' ': 0}
+		self.rev_modcharvals = dict([(v, k) for (k, v) in modcharvals.iteritems()])
 		
 		
 		self.logger.info("Starting new Botinstance")
