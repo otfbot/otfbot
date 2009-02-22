@@ -39,50 +39,31 @@ class Plugin(chatMod.chatMod):
 		self.parser= titleExtractor()
 		headers=None
 		if "preview" in command:
-			if not headers:
-				headers=urlutils.get_headers(options)
-			try:
-				if urlutils.is_html(headers):
-					self.parser.feed(urlutils.download(options))
-					if self.parser.get_result() != '':
-						response += self.parser.get_result()
-			except HTMLParseError, e:
-				self.logger.debug(e)
-				del self.parser
-				self.parser=titleExtractor()
-			self.parser.reset()
+			d=urlutils.download(options, headers={'Accept':'text/html'})
+			d.addCallback(self.processPreview, channel)
+			d.addErrback(self.error, channel)
 		if "tinyurl" in command:
-			response += " ("+urlutils.download("http://tinyurl.com/api-create.php?url="+options)+")"
-		if "serverinfo" in command:
-			if not headers:
-				headers=urlutils.get_headers(options)
-			response += " (Server: %s)"%headers['server']
-		if command == "googlefight":
-			words=options.split(":")
-			if len(words) == 2:
-				data1=urlutils.download('http://www.google.de/search?hl=de&q="%s"'%words[0].replace(" ","+"))
-				data2=urlutils.download('http://www.google.de/search?hl=de&q="%s"'%words[1].replace(" ","+"))
+			d=urlutils.download("http://tinyurl.com/api-create.php?url="+options)
+			d.addCallback(self.processTiny, channel)
+			d.addErrback(self.error, channel)
 
-				count1="0"
-				count2="0"
-				match=re.match(".*<b>1</b> - <b>10</b>.*?<b>([0-9\.]*)</b>.*", data1, re.S)
-				if match:
-					count1=match.group(1)
-				else:
-					print data1
-				match=re.match(".*<b>1</b> - <b>10</b>.*?<b>([0-9\.]*)</b>.*", data2, re.S)
-				if match:
-					count2=match.group(1)
+	def error(self, failure, channel):
+		self.bot.sendmsg(channel, "Error while retrieving informations: "+failure.getErrorMessage())
 
-				if(int(re.sub("\.", "", count1))>int(re.sub("\.", "", count2))):
-					self.bot.sendmsg(channel, "Google Fight!: %s siegt ueber %s (%s zu %s Treffer)"%(words[0], words[1], str(count1), count2))
-				else:
-					self.bot.sendmsg(channel, "Google Fight!: %s siegt ueber %s (%s zu %s Treffer)"%(words[1], words[0], str(count2), count1))
-			else:
-				self.bot.sendmsg(channel, "!googlefight wort1:wort2")
-		if response != "":
-			self.bot.sendmsg(channel, "[Link Info] "+response)
+	def processTiny(self, data, channel):
+		self.bot.sendmsg(channel, "[Link Info] "+data)
 
+	def processPreview(self, data, channel):
+		try:
+			self.parser.feed(data)
+			if self.parser.get_result() != '':
+				self.bot.sendmsg(channel, "[Link Info] " + self.parser.get_result())
+		except HTMLParseError, e:
+			self.logger.debug(e)
+			del self.parser
+			self.parser=titleExtractor()
+		self.parser.reset()
+	
 	def msg(self, user, channel, msg):
 		mask=0		
 		# http://www.truerwords.net/2539

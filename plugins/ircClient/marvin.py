@@ -24,7 +24,6 @@ import chatMod, functions
 class Plugin(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
-		self.start()
 
 	def msg(self, user, channel, msg):
 		#if channel == self.bot.nickname:

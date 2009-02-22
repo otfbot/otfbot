@@ -90,10 +90,10 @@ class Bot(pluginSupport, irc.IRCClient):
 		# usertracking, channel=>{User => level}
 		self.users       = {}
 		self.modchars        = {16: 'a', 8: 'o', 4: 'h', 2: 'v', 0: ' '}
-		self.rev_modchars    = dict([(v, k) for (k, v) in modchars.iteritems()])
+		self.rev_modchars    = dict([(v, k) for (k, v) in self.modchars.iteritems()])
 		self.modcharvals     = {16: '!', 8: '@', 4: '%', 2: '+', 0: ' '}
 		self.rev_modcharvals = {'!': 16, '@': 8, '%': 4, '+': 2, ' ': 0}
-		self.rev_modcharvals = dict([(v, k) for (k, v) in modcharvals.iteritems()])
+		self.rev_modcharvals = dict([(v, k) for (k, v) in self.modcharvals.iteritems()])
 		
 		
 		self.logger.info("Starting new Botinstance")
@@ -421,7 +421,7 @@ class Bot(pluginSupport, irc.IRCClient):
 		""" called by twisted
 			with information about the IRC-Server we are connected to
 		"""
-		self.logger.debug(str(info))
+		#self.logger.debug(str(info))
 		self._apirunner("yourHost",{"info":info})
 	
 	def ctcpQuery(self, user, channel, messages):

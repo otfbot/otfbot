@@ -14,7 +14,7 @@
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 # 
-# (c) 2007 Robert Weidlich
+# (c) 2009 Robert Weidlich
 #
 
 from twisted.internet import protocol, error, reactor
@@ -95,12 +95,16 @@ class remoteCLI(pluginSupport, recvline.RecvLine):
         self.terminal.write("Hallo")
         self.terminal.nextLine()
         self.drawInputLine()
+        #servProt = insults.ServerProtocol(manhole.ColoredManhole, {'app':self.user.service})
+        #self.terminal.makeConnection(session.wrapProtocol(servProt))
+
 
     def connectionMade(self):
         """ check the auth of the user and present a list of plugins """
         #recvline.RecvLine.connectionMade(self)
         self.terminal.write("Welcome to the command-line interface to OtfBot")
         self.terminal.nextLine()
+        # TODO
         #mh = manhole.ColoredManhole({'app':self.user.service})
         #self.makeConnection(session.wrapProtocol(mh))
         
@@ -116,7 +120,8 @@ class SSHAvatar(avatar.ConchUser):
         self.channelLookup.update({'session':session.SSHSession})
 
     def openShell(self, protocol):
-        serverProtocol = insults.ServerProtocol(remoteCLI, self)
+        #serverProtocol = insults.ServerProtocol(remoteCLI, self)
+        serverProtocol = insults.ServerProtocol(manhole.ColoredManhole, {'app':self.service.root})
         serverProtocol.makeConnection(protocol)
         protocol.makeConnection(session.wrapProtocol(serverProtocol))
 
