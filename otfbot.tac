@@ -95,15 +95,6 @@ application.getNamedServices=lambda: service.IServiceCollection(application).nam
 configS=configService.loadConfig(configfilename, "plugins/*/*.yaml")
 configS.setServiceParent(application)
 
-#irc=ircClientService.botService(application, application)
-#irc.setServiceParent(application)
-
-#server=ircServerService.botService(application, application)
-#server.setServiceParent(application)
-
-#control=controlService.botService(application, application)
-#control.setServiceParent(application)
-
 service_names=configS.get("services", [], "main")
 service_classes=[]
 service_instances=[]
@@ -112,8 +103,3 @@ for service_name in service_names:
 	print service_classes[-1]
 	service_instances.append(service_classes[-1].botService(application, application))
 	service_instances[-1].setServiceParent(application)
-
-from twisted.conch import manhole_tap
-manholeService=manhole_tap.makeService({'telnetPort':'7777','sshPort':None,'passwd':'passwd', 'namespace':{'app':application}})
-manholeService.setName("manhole")
-manholeService.setServiceParent(application)

@@ -26,7 +26,7 @@ class Plugin(chatMod.chatMod):
 		self.channels=[]
 
 	def connectionMade(self):
-		self.reload()
+		self.start()
 		
 	def joined(self, channel):
 		self.commands[channel]=functions.loadProperties(self.bot.config.getPath("file", datadir, "commands.txt", "commandsMod", self.bot.network, channel))
@@ -34,9 +34,6 @@ class Plugin(chatMod.chatMod):
 	def command(self, user, channel, command, options):
 		user = user.split("!")[0] #only nick
 		if user != self.bot.nickname:
-			if command == "reload-command":
-				self.reload()
-				return
 			answer=self.respond(channel, user, command, options)
 			if answer != "":
 				if answer[0] == ":":
@@ -83,6 +80,7 @@ class Plugin(chatMod.chatMod):
 		"""
 		answer = ""
 		if len(options) >1:
+			options = options.rstrip()
 			answer=self.getCommand(channel, command+"_")
 			answer = re.sub("OTHER", options, answer)
 		else:

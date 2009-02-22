@@ -111,11 +111,15 @@ class Plugin(chatMod.chatMod):
 	def loadNews(self, url):
 		self.feedLastLoaded[url]=int(time.time()) #to be removed, too?
 		self.logger.debug("loading new Headlines")
-		#parsed=feedparser.parse(url) #direct
-		parsed=feedparser.parse(urlutils.download(url)) #with OtfBot Useragent
+		urlutils.download(url).addCallback(parseNews)
+			
+	def parseNews(self, feedcontent):
+		#TODO: also a blocking call?
+		parsed=feedparser.parse(feedcontent)
 		self.feedHeadlines[url]=[]
 		for entry in parsed['entries']:
 			self.feedHeadlines[url].append((entry['link'], entry['title']))
+
 	def postNews(self, channel, url, feedPostMax):
 		had_new=False #new urls? needed for wait-time modification
 		numPostUrls=feedPostMax
@@ -145,10 +149,6 @@ class Plugin(chatMod.chatMod):
 
 	def stop(self):
 		self.end=1
-
-	def connectionMade(self):
-		"""made connection to server"""
-		bot=self.bot
 
 	def command(self, user, channel, command, options):
 		if not feedparser_available:

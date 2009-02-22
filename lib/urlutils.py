@@ -17,6 +17,10 @@
 # (c) 2008 by Alexander Schier
 #
 import urllib2
+from twisted.web.client import getPage, downloadPage
+
+svnrevision="$Revision: 187 $".split(" ")[1]
+
 def get_headers(url):
 	request=urllib2.Request(url)
 	request.get_method=lambda: 'HEAD'
@@ -38,17 +42,16 @@ def download_if_html(url):
 		return download(url)
 	return ""
 
-def download(url):
-	try:
-		urllib2.install_opener(urllib2.build_opener(urllib2.HTTPRedirectHandler()))
-		req = urllib2.Request(url)
-		svnrevision="$Revision: 187 $".split(" ")[1]
-		req.add_header("user-agent", "OTFBot (svn r%s; otfbot.berlios.de)"%(svnrevision))
-		url=urllib2.urlopen(req)
-		data=url.read()
-		url.close()
-		return data
-	except urllib2.HTTPError, e:
-		return str(e)
-	except urllib2.URLError, e:
-		return req.get_host()+": "+str(e.reason[1])
+def download(url, file=None, **kwargs):
+	""" 
+	Uses twisted.web.client.getPage() to fetch a Page via HTTP
+	
+	@return: A Defered which will call a Callback with the content as argument
+	
+	"""
+	if not kwargs.has_key("agent"):
+		kwargs['agent'] = "OTFBot (svn r%s; otfbot.berlios.de)"%(svnrevision)
+	if file:
+		return downloadPage(url, file, **kwargs)
+	else:
+		return getPage(url, **kwargs)

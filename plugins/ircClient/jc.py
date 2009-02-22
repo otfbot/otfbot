@@ -23,12 +23,15 @@ import chatMod
 class Plugin(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
+	
+	def start(self):
 		self.game=Game()
 		self.gamechannel=""
 
 	def query(self, user, channel, msg):
 		(command, options)=msg.split(" ", 1)
 		self.command(user, self.gamechannel, command, options)
+
 	def command(self, user, channel, command, options):
 		user=user.split("!")[0]
 		if command=="newgame":

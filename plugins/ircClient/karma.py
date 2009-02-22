@@ -40,6 +40,7 @@ class Plugin(chatMod.chatMod):
 		karmapath=self.bot.config.getPath("file", datadir, "karma.dat", "karmaMod", self.bot.network, channel)
 		if not karmapath in self.karmapaths.keys():
 			if os.path.exists(karmapath):
+				#TODO: blocking
 				karmafile=open(karmapath, "r")
 				self.karmas[channel]=pickle.load(karmafile)
 				self.karmapaths[karmapath]=channel
@@ -51,6 +52,7 @@ class Plugin(chatMod.chatMod):
 
 	def saveKarma(self, channel):
 		#Attention: we write the files from karmapaths(which are unique), not from the channels array!
+		#TODO: blocking
 		karmapath=self.bot.config.getPath("file", datadir, "karma.dat", "karmaMod", self.bot.network, channel)
 		karmafile=open(karmapath, "w")
 		pickle.dump(self.karmas[channel], karmafile)
@@ -58,6 +60,7 @@ class Plugin(chatMod.chatMod):
 
 	def joined(self, channel):
 		self.loadKarma(channel)
+
 	def left(self, channel):
 		self.saveKarma(channel)
 
@@ -153,11 +156,13 @@ class Plugin(chatMod.chatMod):
 					self.tell_karma(what, channel)
 
 	def tell_karma(self, what, channel):
-		self.bot.sendmsg(channel, "Karma: "+what+": "+str(self.get_karma(channel, what))) 
+		self.bot.sendmsg(channel, "Karma: "+what+": "+str(self.get_karma(channel, what)))
+
 	def get_karma(self, channel, what):
 		if not what in self.karmas[channel].keys():
 			self.karmas[channel][what]=[0,{},{},[],[]] #same as below!
 		return self.karmas[channel][what][0]
+
 	def do_karma(self, channel, what, up, reason, user):
 		user=user.split("!")[0]
 		karma=self.karmas[channel]
@@ -179,6 +184,7 @@ class Plugin(chatMod.chatMod):
 				karma[what][2][user]+=1
 			if reason:
 				karma[what][4].append(str(reason))
+
 	def connectionLost(self, reason):
 		for karmapath in self.karmapaths.keys():
 			self.saveKarma(self.karmapaths[karmapath])
