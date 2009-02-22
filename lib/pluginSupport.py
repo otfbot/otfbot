@@ -160,6 +160,19 @@ class pluginSupport:
 				if plugin.name in self.config.get("pluginsDisabled", [], "main", self.network):
 					return
 			try:
-				getattr(plugin, apifunction)(**args)
+				result=getattr(plugin, apifunction)(**args)
+				#TODO: this should be extended something like this:
+				#a function can return None (further processing) or
+				#(result, statuscode), where statuscode is a constant:
+				# - NO_FURTHER_PROCESSING (return result)
+				# - FURTHER_PROCESSING_THIS_RESULT (returns result, after invocing all other plugins)
+				# - FURTHER_PROCESSING (invoce all other plugins, return the result from the last plugin,
+				#   which returned something
+				#TODO: there may be conflicting statuscodes, so we need priorities in statuscodes and maybe
+				#      detection of such problems on registerCallback
+
+				#and this is the very simple form, just for now:
+				if result: #stop further execution on first plugin which returns something
+					return result
 			except Exception, e:
 				self.logerror(self.logger, plugin.name, e)
