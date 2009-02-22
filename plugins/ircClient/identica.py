@@ -36,9 +36,12 @@ class Plugin(chatMod.chatMod):
 		if not LIB:
 			return
 		if command in ["identica", "i", "identicawithnick", "iwn"]:
+			#TODO: blocking			
 			self.api=identi.IdentiCA(self.bot.config.get("username", '', 'identicaMod', self.bot.network, channel), self.bot.config.get("username", '', 'identicaMod', self.bot.network, channel))
+			#TODO: blocking
 			self.api.login()
 			if command=="iwn" or command=="identicawithnick":
 				options=user.split("!")[0]+": "+options
 			options=options[:140]
+			#TODO: blocking			
 			self.api.put_message(options)

@@ -23,11 +23,13 @@ from lib import chatMod, functions
 class Plugin(chatMod.chatMod):
 	def __init__(self, bot):
 		self.bot=bot
-		self.badwordsFile=bot.config.getPath("file", datadir, "badwords.txt","badwordsMod")
+
+	def start(self):
+		self.badwordsFile=self.bot.config.getPath("file", datadir, "badwords.txt","badwordsMod")
 		self.badwords=functions.loadList(self.badwordsFile)
 
 	def reload(self):
-		self.badwords=functions.loadList(self.badwordsFile)
+		self.start()
 
 	def msg(self, user, channel, msg):
 		for word in self.badwords:

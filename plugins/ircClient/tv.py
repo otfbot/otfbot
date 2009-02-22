@@ -157,16 +157,14 @@ class Plugin(chatMod.chatMod):
 		return output
 	
 	def update_data(self,dataurl):
-		data = urllib2.urlopen(dataurl).readlines()
-		# TODO: Create datadir if it doesn't exist
-		datei = open(self.xmltvfile,"w")
-		datei.writelines(data)
-		datei.close()
+		urlutils.download(dataurl, self.xmltvfile).addCallback(self.processUpdatedData,dataurl)
+	
+	def processUpdatedData(self, dataurl):
 		del self.tv
 		self.tv = tv(self.xmltvfile)
 		self.bot.scheduler.callLater(86400, self.update_data, dataurl)
 	
-class tv():
+class tv:
 	def __init__(self,xmltvfile):
 		self.stations = xmltv.read_channels(xmltvfile)
 		self.programm = xmltv.read_programmes(xmltvfile)
