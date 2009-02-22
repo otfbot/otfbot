@@ -25,6 +25,7 @@ import sys, traceback, string, time, os, glob
 sys.path.insert(1,"lib")
 import scheduler
 from lib.pluginSupport import pluginSupport
+from lib.User import IrcUser
 
 class legacyIPC:
 	def __init__(self, root):
@@ -84,11 +85,16 @@ class Bot(pluginSupport, irc.IRCClient):
 		self.versionNum="svn "+"$Revision: 177 $".split(" ")[1]
 		self.lineRate = 1.0/float(self.config.get("linesPerSecond","2","main",self.network))
 
-		# usertracking
-		self.users={}
-		self.modchars={'a':'!','o':'@','h':'%','v':'+'}
-		self.modcharvals={'!':4,'@':3,'%':2,'+':1,' ':0}
-
+		# all users known to the bot, Hostmask => IrcUser
+		self.userlist    = {}
+		# usertracking, channel=>{User => level}
+		self.users       = {}
+		self.modchars        = {16: 'a', 8: 'o', 4: 'h', 2: 'v', 0: ' '}
+		self.rev_modchars    = {'a': 16, 'o': 8, 'h': 4, 'v': 2, ' ': 0}
+		self.modcharvals     = {16: '!', 8: '@', 4: '%', 2: '+', 0: ' '}
+		self.rev_modcharvals = {'!': 16, '@': 8, '%': 4, '+': 2, ' ': 0}
+		
+		
 		self.logger.info("Starting new Botinstance")
 		self.scheduler = scheduler.Scheduler()
 
@@ -233,6 +239,7 @@ class Bot(pluginSupport, irc.IRCClient):
 		self.logger.info("joined "+channel)
 		self.channels.append(channel)
 		self.users[channel]={}
+		#self.sendLine("WHO")
 		self._apirunner("joined",{"channel":channel})
 		self.config.set("enabled", True, "main", self.network, channel)
 
@@ -308,6 +315,7 @@ class Bot(pluginSupport, irc.IRCClient):
 		""" called by twisted
 			for every line that has no own callback
 		"""
+		#print command
 		self._apirunner("irc_unknown",{"prefix":prefix,"command":command,"params":params})
 
 	def noticed(self, user, channel, msg):
@@ -341,15 +349,18 @@ class Bot(pluginSupport, irc.IRCClient):
 			if a usermode was changed
 		"""
 		channel=channel.lower()
-		i=0
-		for arg in args:
-			if modes[i] in self.modchars.keys() and set == True:
-				if self.modcharvals[self.modchars[modes[i]]] > self.modcharvals[self.users[channel][arg]['modchar']]:
-					self.users[channel][arg]['modchar'] = self.modchars[modes[i]]
-			elif modes[i] in self.modchars.keys() and set == False:
-				#FIXME: ask for the real mode
-				self.users[channel][arg]['modchar'] = ' '
-			i=i+1
+		for i in range(0, len(args)):
+			if modes[0] in ("+","-"):
+				m=modes[0]
+				modes=modes[1:]
+			if (m and m == "+") or set:
+				self.users[channel][args[i]] += self.rev_modchars[modes[0]]
+			elif (m and m == "-") or not set:
+				self.users[channel][args[i]] -= self.rev_modchars[modes[0]]
+			else:
+				self.logger.error("Internal error during modeChange: "+set+" "+modes+" "+str(args))
+			modes=modes[1:]
+			m=False
 		self._apirunner("modeChanged",{"user":user,"channel":channel,"set":set,"modes":modes,"args":args})
 
 	def kickedFrom(self, channel, kicker, message):
@@ -369,14 +380,20 @@ class Bot(pluginSupport, irc.IRCClient):
 		"""
 		channel=channel.lower()
 		self._apirunner("userKicked",{"kickee":kickee,"channel":channel,"kicker":kicker,"message":message})
-		del self.users[channel][kickee.split("!")[0]]		
+		del self.users[channel][self.userlist[kickee]]
 
 	def userJoined(self, user, channel):
 		""" called by twisted,
 			if a C{user} joined the C{channel}
 		"""
 		channel=channel.lower()
-		self.users[channel][user.split("!")[0]]={'modchar':' '}		
+		nick = user.split("!")[0]
+		if self.userlist.has_key(nick):
+			u = self.userlist[nick]
+		else:
+			u = IrcUser(user)
+			self.userlist[nick] = u
+		self.users[channel][u] = 0
 		self._apirunner("userJoined",{"user":user,"channel":channel})
 
 	def userLeft(self, user, channel):
@@ -384,14 +401,20 @@ class Bot(pluginSupport, irc.IRCClient):
 			if a C{user} left the C{channel}
 		"""
 		channel=channel.lower()
+		nick = user.split("!")[0]		
 		self._apirunner("userLeft",{"user":user,"channel":channel})
-		del self.users[channel][user.split("!")[0]]		
+		del self.users[channel][self.userlist[nick]]
 
 	def userQuit(self, user, quitMessage):
 		""" called by twisted,
 			of a C{user} quits
 		"""
 		self._apirunner("userQuit",{"user":user,"quitMessage":quitMessage})
+		nick = user.split("!")[0]
+		for c in self.users:
+			if self.users[c].has_key(self.userlist[nick]):
+				del self.users[c][self.userlist[nick]]
+		del self.userlist[nick]
 
 	def yourHost(self, info):
 		""" called by twisted
@@ -415,7 +438,10 @@ class Bot(pluginSupport, irc.IRCClient):
 		for chan in self.users:
 			if self.users[chan].has_key(oldname):
 				self.users[chan][newname]=self.users[chan][oldname]
-				del self.users[chan][oldname]		
+				del self.users[chan][oldname]
+		if self.userlist.has_key(oldname):
+			 self.userlist[newname] = self.userlist[oldname]
+			 del self.userlist[oldname]
 
 	def topicUpdated(self, user, channel, newTopic):
 		""" called by twisted
@@ -426,6 +452,7 @@ class Bot(pluginSupport, irc.IRCClient):
 
 	def irc_RPL_ENDOFNAMES(self, prefix, params):
 		self._apirunner("irc_RPL_ENDOFNAMES",{"prefix":prefix,"params":params})
+
 	def irc_RPL_NAMREPLY(self, prefix, params):
 		self._apirunner("irc_RPL_NAMREPLY",{"prefix":prefix,"params":params})
 		for nick in params[3].strip().split(" "):
@@ -434,7 +461,12 @@ class Bot(pluginSupport, irc.IRCClient):
 				nick=nick[1:]
 			else:
 				s=" "
-			self.users[params[2]][nick]={'modchar':s}		
+			if self.userlist.has_key(nick):
+				u = self.userlist[nick]
+			else:
+				u = IrcUser(nick+"!user@host")
+				self.userlist[nick] = u
+			self.users[params[2]][u] = self.rev_modcharvals[s]
 
 	def lineReceived(self, line):
 		""" called by twisted
@@ -456,6 +488,7 @@ class Bot(pluginSupport, irc.IRCClient):
 	def sendLine(self, line):
 		self._apirunner("sendLine",{"line":line})
 		irc.IRCClient.sendLine(self, line)
+
 	def disconnect(self):
 		"""disconnects cleanly from the current network"""
 		self._apirunner("stop")

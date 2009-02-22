@@ -1,4 +1,0 @@
-main.datadir: data
-main.errorlog: error.log
-main.logfile: otfbot.log
-main.pidfile: otfbot.pid
