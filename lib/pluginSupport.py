@@ -9,6 +9,10 @@ class pluginSupport:
 		self.root=root
 		self.parent=parent
 		self.callbacks={}
+		self.classes=[]
+		self.plugins={}
+		#XXX: the dependency should be more explicit?
+		self.config = root.getNamedServices()['config']
 	def depends(self, dependency):
 		"""raise an Exception, if the dependency is not active"""
 		if not self.plugins.has_key(dependency):
