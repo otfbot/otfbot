@@ -99,7 +99,6 @@ class Bot(pluginSupport, irc.IRCClient):
 		self.logger.info("Starting new Botinstance")
 		self.scheduler = scheduler.Scheduler()
 
-		self.classes=[]
 		self.startPlugins()
 	
 	def startPlugin(self, pluginName):
