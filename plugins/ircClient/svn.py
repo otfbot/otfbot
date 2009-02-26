@@ -56,6 +56,10 @@ class Plugin(chatMod.chatMod):
 				repros = [repros,]
 			for i in repros:
 				try:
+					lastrev = int(open(datadir + "/revision_" + channel + "_" + i).readlines()[0].replace("\n","").replace("\r",""))
+				except:
+					lastrev = 0
+				try:
 					self.callIds[i + "-" + channel] = self.bot.scheduler.callLater(1, self.svncheck, self.svnconfig[i]['url'],self.svnconfig[i]['checkinterval'],channel,i)
 				except KeyError:
 					self.logger.error("Repository " + i + " doen't exist!")
@@ -87,4 +91,5 @@ class Plugin(chatMod.chatMod):
 		if rev != lastrevision:
 			lastrevision = rev
 			self.bot.msg(channel,chr(2) + "[" + str(name) + "]" + chr(2) + " Revision " + str(rev) + " by " + data['author'].encode() + ": " + data['message'].encode().replace("\n","").replace("\r",""))
+			open(datadir + "/revision_" + channel + "_" + name,"w").writelines(str(lastrevision))
 		self.callIds[name + "-" + channel] = self.bot.scheduler.callLater(int(interval)*60, self.svncheck, url, interval, channels, name, lastrevision)

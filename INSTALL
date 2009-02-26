@@ -1,8 +1,11 @@
 needed pythonmodules:
 * twisted
+* python-twisted-words
 * python-yaml
 * python-pyopenssl
 * python-crypto
 
 optional:
 * python-feedparser
+* python-svn
+
