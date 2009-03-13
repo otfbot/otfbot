@@ -17,7 +17,7 @@
 # (c) 2005, 2006, 2007 by Alexander Schier
 #
 
-import string, re
+import string, re, random
 from lib import chatMod, functions
 
 class Plugin(chatMod.chatMod):
@@ -29,7 +29,7 @@ class Plugin(chatMod.chatMod):
 		self.start()
 		
 	def joined(self, channel):
-		self.commands[channel]=functions.loadProperties(self.bot.config.getPath("file", datadir, "commands.txt", "commandsMod", self.bot.network, channel))
+		self.commands[channel]=functions.loadProperties(self.bot.config.getPath("file", datadir, "commands.txt", "commandsMod", self.bot.network, channel), True)
 	
 	def command(self, user, channel, command, options):
 		user = user.split("!")[0] #only nick
@@ -43,8 +43,8 @@ class Plugin(chatMod.chatMod):
 
 	def start(self):
 		self.commands={}
-		self.commands["general"]=functions.loadProperties(self.bot.config.getPath("file", datadir, "commands.txt","commandsMod"))
-		self.commands["network"]=functions.loadProperties(self.bot.config.getPath("file", datadir, "commands.txt","commandsMod", self.bot.network))
+		self.commands["general"]=functions.loadProperties(self.bot.config.getPath("file", datadir, "commands.txt","commandsMod"), True)
+		self.commands["network"]=functions.loadProperties(self.bot.config.getPath("file", datadir, "commands.txt","commandsMod", self.bot.network), True)
 		for chan in self.bot.channels:
 			self.joined(chan)
 
@@ -81,10 +81,10 @@ class Plugin(chatMod.chatMod):
 		answer = ""
 		if len(options) >1:
 			options = options.rstrip()
-			answer=self.getCommand(channel, command+"_")
+			answer=random.choice(self.getCommand(channel, command+"_"))
 			answer = re.sub("OTHER", options, answer)
 		else:
-			answer=self.getCommand(channel, command)
+			answer=random.choice(self.getCommand(channel, command))
 		answer = re.sub("USER", user, answer)
 				
 		if len(answer)>0 and answer[-1] == "\n":
