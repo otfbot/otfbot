@@ -22,7 +22,7 @@
 
 import os
 
-def loadProperties(propertiesFile):
+def loadProperties(propertiesFile, ambiguous=False):
 	""" Loads data from a file into a dict
 		
 		The data in the file should have the format::
@@ -43,7 +43,12 @@ def loadProperties(propertiesFile):
 			if len(line) >1 and line[0] != "#":
 				pair = line.split("=", 1)
 				if len(pair)==2:
-					properties[pair[0]] = pair[1]
+					if ambiguous:
+						if not properties.has_key(pair[0]):
+							properties[pair[0]] = []
+						properties[pair[0]].append(pair[1])
+					else:
+						properties[pair[0]] = pair[1]
 	except IOError:
 		#print "loadProperties: Creating", propertiesFile
 		if (not os.path.isdir(os.path.dirname(propertiesFile))):
