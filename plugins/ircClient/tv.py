@@ -29,7 +29,7 @@ except ImportError:
 	HAS_PYXMLTV=False
 
 import chatMod
-import time,sys,urllib2
+import time,sys,urlutils
 
 class Plugin(chatMod.chatMod):
 	def __init__(self,bot):
@@ -43,7 +43,7 @@ class Plugin(chatMod.chatMod):
 		#standardsender = self.bot.getConfig("standardsender","ard,zdf,rtl,sat.1,n24,pro7,vox","tvMod")
 		standardsender = self.bot.config.get("standardsender","ard,zdf,rtl,sat.1,n24,pro7,vox","tvMod")
 		dataurl = "http://static.xmltv.info/tv.xml.txt"
-		self.bot.scheduler.callLater(1, self.update_data, dataurl)
+		self.bot.scheduler.callLater(1, self.processUpdatedData, dataurl)
 		self.standardsender = []
 		for i in standardsender.split(","):
 			self.standardsender.append(i.lower().replace(" ",""))
@@ -188,7 +188,7 @@ class tv:
 	def get_programm_at_time(self,zeit,datum="today"):
 		if datum == "today":
 			ltime = time.localtime()
-			datum = str(ltime[0]) + str(ltime[1]) + str(ltime[2])
+			datum = str(ltime[0]) + "0"*((len(str(ltime[1]))-2)*(-1)) + str(ltime[1]) + "0"*((len(str(ltime[2]))-2)*(-1)) + str(ltime[2])
 			del ltime
 		sendungen = []
 		for i in self.programm:
