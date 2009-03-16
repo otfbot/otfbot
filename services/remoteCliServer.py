@@ -19,7 +19,6 @@
 
 from twisted.internet import protocol, error, reactor
 from twisted.protocols import basic
-import chatMod
 from lib.controlInterface import controlInterface
 from lib.pluginSupport import pluginSupport
 from twisted.application import service, internet
