@@ -157,11 +157,19 @@ class Plugin(chatMod.chatMod):
 		return output
 	
 	def update_data(self,dataurl):
-		urlutils.download(dataurl, self.xmltvfile).addCallback(self.processUpdatedData,dataurl)
+		urlutils.download(dataurl, self.xmltvfile)
+		self.bot.scheduler.callLater(10,self.processUpdatedData,dataurl)
 	
 	def processUpdatedData(self, dataurl):
 		del self.tv
-		self.tv = tv(self.xmltvfile)
+		done = 0
+		while done == 0:
+			try:
+				self.tv = tv(self.xmltvfile)
+				done = 1
+			except:
+				self.logger.info("xmltv-file is not loaded completely yet. TV-Plugin will be aviable as it's loading is done.")
+			time.sleep(30)
 		self.bot.scheduler.callLater(86400, self.update_data, dataurl)
 	
 class tv:
