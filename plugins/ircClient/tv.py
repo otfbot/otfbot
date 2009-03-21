@@ -43,7 +43,7 @@ class Plugin(chatMod.chatMod):
 		#standardsender = self.bot.getConfig("standardsender","ard,zdf,rtl,sat.1,n24,pro7,vox","tvMod")
 		standardsender = self.bot.config.get("standardsender","ard,zdf,rtl,sat.1,n24,pro7,vox","tvMod")
 		dataurl = "http://static.xmltv.info/tv.xml.txt"
-		self.bot.scheduler.callLater(1, self.processUpdatedData, dataurl)
+		self.bot.scheduler.callLater(1, self.update_data, dataurl)
 		self.standardsender = []
 		for i in standardsender.split(","):
 			self.standardsender.append(i.lower().replace(" ",""))
