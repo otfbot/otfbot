@@ -64,6 +64,10 @@ class Bot(pluginSupport, irc.IRCClient):
 		self.network=self.parent.network
 		self.logger = logging.getLogger(self.network)
 		self.ipc=legacyIPC(self.root)
+		if self.config.getBool('answerToCTCPVersion', True, 'main', self.network):
+			self.versionName="OTFBot"
+			self.versionNum="svn "+"$Revision: 177 $".split(" ")[1]
+			self.versionEnv=''
 
 		self.delConfig=lambda *args, **kwargs: self.warn_and_execute(config.delConfig, *args, **kwargs)
 		self.getConfig=lambda *args, **kwargs: self.warn_and_execute(config.getConfig, *args, **kwargs)
@@ -81,8 +85,6 @@ class Bot(pluginSupport, irc.IRCClient):
 		self.plugins= {}
 		self.numPlugins = 0
 		
-		self.versionName="OtfBot"
-		self.versionNum="svn "+"$Revision: 177 $".split(" ")[1]
 		self.lineRate = 1.0/float(self.config.get("linesPerSecond","2","main",self.network))
 
 		# all users known to the bot, Hostmask => IrcUser
@@ -423,7 +425,7 @@ class Bot(pluginSupport, irc.IRCClient):
 		#self.logger.debug(str(info))
 		self._apirunner("yourHost",{"info":info})
 	
-	def ctcpQuery(self, user, channel, messages):
+	def ctcpUnknownQuery(self, user, channel, messages):
 		""" called by twisted,
 			if a C{user} sent a ctcp query
 		"""
