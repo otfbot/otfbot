@@ -351,6 +351,7 @@ class Bot(pluginSupport, irc.IRCClient):
 			if a usermode was changed
 		"""
 		channel=channel.lower()
+		m=None
 		for i in range(0, len(args)):
 			if modes[0] in ("+","-"):
 				m=modes[0]
