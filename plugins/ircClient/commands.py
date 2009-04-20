@@ -82,11 +82,13 @@ class Plugin(chatMod.chatMod):
 		if len(options) >1:
 			options = options.rstrip()
 			answers=self.getCommand(channel, command+"_")
-			if answers:
+			if len(answers):
 				answer=random.choice()
 				answer = re.sub("OTHER", options, answer)
 		else:
-			answer=random.choice(self.getCommand(channel, command))
+			answers=self.getCommand(channel, command)
+			if len(answers):
+				answer=random.choice(answers)
 		answer = re.sub("USER", user, answer)
 				
 		if len(answer)>0 and answer[-1] == "\n":
