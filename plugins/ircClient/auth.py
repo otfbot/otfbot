@@ -54,12 +54,12 @@ class Plugin(chatMod.chatMod):
 			d.addErrback(lambda failure: self.bot.sendmsg(nick, "Login failed: "+str(failure.getErrorMessage())))
 			
 	def auth(self, user):
-		#user=user.split("!")[0]
+		user=user.split("!")[0]
 		"""
 		Returns the access-level of the given user.
 		"""
 		try:
-			if hasattr(self.bot.userlist[user], avatar):
+			if hasattr(self.bot.userlist[user], 'avatar'):
 				return 10
 		except:
 			return 0
