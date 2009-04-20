@@ -93,6 +93,9 @@ application.getServices=lambda: service.IServiceCollection(application).services
 application.getNamedServices=lambda: service.IServiceCollection(application).namedServices
 
 configS=configService.loadConfig(configfilename, "plugins/*/*.yaml")
+if not configS:
+	print "please run helpers/generateconfig.py"
+	sys.exit(1)
 configS.setServiceParent(application)
 
 service_names=configS.get("services", [], "main")
