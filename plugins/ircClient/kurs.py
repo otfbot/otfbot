@@ -17,10 +17,9 @@
 # (c) 2006, 2007 by Robert Weidlich
 #
 
-import string, re, functions
+import string, re
 import urllib, time
-import chatMod
-from lib import urlutils
+from lib import chatMod, functions, urlutils
 
 class Plugin(chatMod.chatMod):
 	def __init__(self, bot):

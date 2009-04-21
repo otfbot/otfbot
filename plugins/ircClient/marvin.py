@@ -18,7 +18,7 @@
 #
 
 import random
-import chatMod, functions
+from lib import chatMod, functions
 
 
 class Plugin(chatMod.chatMod):

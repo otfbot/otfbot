@@ -17,9 +17,9 @@
 # (c) 2005-2007 by Alexander Schier
 #
 
-from lib import chatMod
+from lib import chatMod, urlutils
 import time
-import urlutils, logging
+import logging
 feedparser_available=True
 try:
 	import feedparser

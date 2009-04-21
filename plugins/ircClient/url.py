@@ -20,8 +20,8 @@
 #
 
 import urllib2, re, string
-import chatMod
-import urlutils
+from lib import chatMod
+from lib import urlutils
 from HTMLParser import HTMLParser
 from HTMLParser import HTMLParseError
 
@@ -51,7 +51,7 @@ class Plugin(chatMod.chatMod):
 		self.bot.sendmsg(channel, "Error while retrieving informations: "+failure.getErrorMessage())
 
 	def processTiny(self, data, channel):
-		self.bot.sendmsg(channel, "[Link Info] "+data)
+		self.bot.sendmsg(channel, "[Link Info] "+data )
 
 	def processPreview(self, data, channel):
 		try:
