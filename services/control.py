@@ -29,11 +29,28 @@ class botService(service.MultiService):
 		this class only does the work, you need another class, most suitable is a bot-module, to have a userinterface
 	"""
 	name="control"
+	commandTree={}
 	def __init__(self, root, parent):
 		self.root=root
 		self.parent=parent
 		service.MultiService.__init__(self)
+		self.logger=logging.getLogger("control")
 
+	def register_command(self, f, namespace=None):
+		if not namespace:
+			if not f.__name__ in self.commandTree:
+			     self.commandTree[f.__name__] = f
+			else:
+				self.logger("Not overwriting existing Handler for "+f.__name__)
+		else:
+			if namespace in self.commandTree:
+				if hasattr(self.commandTree[namespace],'__getitem__'):
+					self.commandTree[namespace][f.__name__] = f
+
+	def register_namespace(self, name):
+		if not name in self.commandTree:
+			self.commandTree[name] = {}
+	
 	def _cmd_help(self,argument):
 		commands = []
 		for c in dir(self):
