@@ -103,6 +103,5 @@ service_classes=[]
 service_instances=[]
 for service_name in service_names:
     service_classes.append(__import__("services."+service_name, fromlist=['botService']))
-    print service_classes[-1]
     service_instances.append(service_classes[-1].botService(application, application))
     service_instances[-1].setServiceParent(application)
