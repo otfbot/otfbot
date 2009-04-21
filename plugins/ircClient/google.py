@@ -26,7 +26,6 @@ class Plugin(chatMod.chatMod):
 
     def command(self, user, channel, command, options):
         response = ""
-        self.parser= titleExtractor()
         headers=None
         if command == "googlefight":
             words=options.split(":")

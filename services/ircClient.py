@@ -20,7 +20,7 @@
 # 
 
 from twisted.application import internet, service
-from twisted.internet import protocol, reactor, error
+from twisted.internet import protocol, reactor, error, ssl
 from twisted.words.protocols import irc
 
 import logging
@@ -144,10 +144,11 @@ class Bot(pluginSupport, irc.IRCClient):
         self.userlist    = {}
         # usertracking, channel=>{User => level}
         self.users       = {}
+
         self.modchars        = {16: 'a', 8: 'o', 4: 'h', 2: 'v', 0: ' '}
         self.rev_modchars    = dict([(v, k) for (k, v) in self.modchars.iteritems()])
+
         self.modcharvals     = {16: '!', 8: '@', 4: '%', 2: '+', 0: ' '}
-        self.rev_modcharvals = {'!': 16, '@': 8, '%': 4, '+': 2, ' ': 0}
         self.rev_modcharvals = dict([(v, k) for (k, v) in self.modcharvals.iteritems()])
         
         self.logger.info("Starting new Botinstance")
@@ -403,20 +404,22 @@ class Bot(pluginSupport, irc.IRCClient):
             if a usermode was changed
         """
         channel=channel.lower()
-        print "user: "+user+", channel: "+channel+", args="+str(args)
+        # track usermodes
         for i in range(0, len(args)):
-            m=None
+            m=False
             if modes[0] in ("+","-"):
                 m=modes[0]
                 modes=modes[1:]
-            if (m and m == "+") or set:
-                self.users[channel][self.userlist[args[i]]] += self.rev_modchars[modes[0]]
-            elif (m and m == "-") or not set:
-                self.users[channel][self.userlist[args[i]]] -= self.rev_modchars[modes[0]]
+            if modes[0] in self.rev_modchars:
+                if (m and m == "+") or set:
+                    self.users[channel][self.userlist[args[i]]] += self.rev_modchars[modes[0]]
+                elif (m and m == "-") or not set:
+                    self.users[channel][self.userlist[args[i]]] -= self.rev_modchars[modes[0]]
+                else:
+                    self.logger.error("Internal error during modeChange: "+set+" "+modes+" "+str(args))
             else:
-                self.logger.error("Internal error during modeChange: "+set+" "+modes+" "+str(args))
+                self.logger.info("Change of channel mode "+modes[0]+" not tracked")
             modes=modes[1:]
-            m=False
         self._apirunner("modeChanged",{"user":user,"channel":channel,"set":set,"modes":modes,"args":args})
 
     def kickedFrom(self, channel, kicker, message):
