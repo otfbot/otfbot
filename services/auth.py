@@ -20,9 +20,47 @@
 from twisted.application import internet, service
 from twisted.internet import protocol, reactor, error
 from twisted.cred import portal, checkers
-from twisted.words.service import InMemoryWordsRealm
+from twisted.words.service import WordsRealm, InMemoryWordsRealm
+
 from lib.bot import Bot
-import logging
+from lib.User import IrcUser
+
+import logging, yaml
+
+
+class YamlWordsRealm(InMemoryWordsRealm):
+    def __init__(self, name, file):
+        super(YamlWordsRealm, self).__init__(name)
+        self.file=file
+        reactor.callInThread(self.load)
+            
+    def userFactory(self, name):
+        return IrcUser(name+"!user@host")
+
+    def addUser(self, user):
+        print "adding user"
+        super(YamlWordsRealm, self).addUser(user)
+        reactor.callInThread(self.save)
+   
+    def addGroup(self, group):
+        super(YamlWordsRealm, self).addGroup(user)
+        reactor.callInThread(self.save)        
+
+    def save(self):
+        file=open(self.file, "w")
+        file.write(yaml.dump_all([self.users,self.groups], default_flow_style=False))
+        file.close()
+        
+    def load(self):
+        try:
+            f=open(self.file, "r")
+            file_h=yaml.load_all(f)
+            self.users=file_h.next()
+            self.groups=file_h.next()
+            f.close()
+        except IOError:
+            self.users={}
+            self.groups={}
 
 class botService(service.MultiService, portal.Portal):
     name="auth"
@@ -30,13 +68,15 @@ class botService(service.MultiService, portal.Portal):
         self.root=root
         self.parent=parent
         service.MultiService.__init__(self)
-        # TODO: write a custom Realm
-        portal.Portal.__init__(self, InMemoryWordsRealm("blub"))
+        # TODO: write a custom Realm        
+
     def startService(self):
         self.config=self.root.getNamedServices()['config']
+        portal.Portal.__init__(self, YamlWordsRealm("userdb",self.config.get("datadir","data")+"/userdb.yaml"))        
         # checker hinzufuegen
         pwdb = checkers.FilePasswordDB(self.config.get("datadir","data")+"/passwd.txt",cache=True)
         self.registerChecker(pwdb,*pwdb.credentialInterfaces)
         service.Service.startService(self)
+
     def getCheckers(self):
-        return self.checkers;
+        return self.checkers
