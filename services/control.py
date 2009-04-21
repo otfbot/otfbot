@@ -17,11 +17,13 @@
 # (c) 2007 Robert Weidlich
 #
 
-from twisted.internet import reactor
-import logging, logging.handlers
-import yaml #needed for parsing dicts from set config
-import time
+
+import logging, logging.handlers, time, inspect
+
 from twisted.application import internet, service
+from twisted.internet import reactor
+
+import yaml #needed for parsing dicts from set config
 
 class botService(service.MultiService):
     """ allows to control the behaviour of the bot during runtime
@@ -35,13 +37,14 @@ class botService(service.MultiService):
         self.parent=parent
         service.MultiService.__init__(self)
         self.logger=logging.getLogger("control")
+        self.register_command(self.help)
 
     def register_command(self, f, namespace=None):
         if not namespace:
             if not f.__name__ in self.commandTree:
                  self.commandTree[f.__name__] = f
             else:
-                self.logger("Not overwriting existing Handler for "+f.__name__)
+                self.logger.info("Not overwriting existing Handler for "+f.__name__)
         else:
             if namespace in self.commandTree:
                 if hasattr(self.commandTree[namespace],'__getitem__'):
@@ -51,11 +54,41 @@ class botService(service.MultiService):
         if not name in self.commandTree:
             self.commandTree[name] = {}
     
-    def _cmd_help(self,argument):
+    def handle_command(self, string):
+        s=string.split(" ")
+        if s[0] in self.commandTree:
+            if len(s) > 1 and hasattr(self.commandTree[s[0]],'__getitem__'):
+                if s[1] in self.commandTree[s[0]]:
+                    f=self.commandTree[s[0]][s[1]]
+                    if len(s) > 2:
+                        args=s[2:]
+                    else:
+                        args=[]
+                    space=s[0]
+                else:
+                    return "no such command "+s[1]+" in namespace "+s[0]
+            else:
+                f=self.commandTree[s[0]]
+                args=s[1:]
+                space=""
+            try:
+                return f(*args)
+            except TypeError:
+                #TODO: eliminate first arg when a bound method
+                return "Usage: "+space+" "+f.__name__+ " "+" ".join(inspect.getargspec(f)[0])
+        else:
+            return "no such command: "+s[0]
+    
+    def help(self):
         commands = []
-        for c in dir(self):
-            if c[:5] == "_cmd_":
-                commands.append(c[5:].replace("_"," "))
+        for c in self.commandTree:
+            if not hasattr(self.commandTree[c], '__getitem__'):
+                commands.append(self.commandTree[c].__name__)
+            else:                
+                subcmds=[]
+                for sc in self.commandTree[c]:
+                    subcmds.append(c+" "+self.commandTree[c][sc].__name__)
+                commands.append(", ".join(subcmds))
         return "Available commands: "+", ".join(commands)
 
     def _cmd_log_get(self, argument):
@@ -134,27 +167,6 @@ class botService(service.MultiService):
     def _cmd_stop(self,argument):
         reactor.stop()
         return "Disconnecting from all networks und exiting ..."
-
-    def _cmd_network_disconnect(self,argument):
-        args = argument.split(" ")
-        if len(args)==1:
-            if argument in self.parent.getServiceNamed("ircClient").namedServices:
-                self.parent.getServiceNamed("ircClient").removeService(
-                    self.parent.getServiceNamed("ircClient").getServiceNamed(argument)
-                )
-                return "Disconnecting from %s." % argument
-            else:
-                return "Not connected to %s." % argument
-        else:
-            return "Usage: disconnect <network>"
-
-    def _cmd_network_connect(self,argument):
-        args = argument.split(" ")
-        if len(args)==1:
-            self.parent.getServiceNamed("ircClient").connect(args[0])
-            return "Connecting to "+str(argument)
-        else:
-            return "Usage: connect <network>"
 
     def _cmd_network_ping(self, argument):
         args=argument.split(" ")
