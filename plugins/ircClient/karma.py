@@ -21,171 +21,171 @@ from lib import chatMod
 import pickle, os
 
 def sortedbyvalue(dict):
-	"""Helper function to return a [(value, key)] list from a dict"""
-	items=[(k,v) for (v,k) in dict.items()]
-	items.reverse()
-	return items
+    """Helper function to return a [(value, key)] list from a dict"""
+    items=[(k,v) for (v,k) in dict.items()]
+    items.reverse()
+    return items
 
 class Plugin(chatMod.chatMod):
-	def __init__(self, bot):
-		self.bot=bot
-		self.karmas={} #channel ->  (what -> karma-struct)
-		self.karmapaths={} #path -> (what -> channel) (pointer!)
-		self.verbose=self.bot.config.getBool("karmaMod.verbose", True)
-		self.freestyle=self.bot.config.getBool("karmaMod.freestyle", True)
+    def __init__(self, bot):
+        self.bot=bot
+        self.karmas={} #channel ->  (what -> karma-struct)
+        self.karmapaths={} #path -> (what -> channel) (pointer!)
+        self.verbose=self.bot.config.getBool("karmaMod.verbose", True)
+        self.freestyle=self.bot.config.getBool("karmaMod.freestyle", True)
 
-	def loadKarma(self, channel):
-		if not os.path.exists(datadir):
-			os.makedirs(datadir)
-		karmapath=self.bot.config.getPath("file", datadir, "karma.dat", "karmaMod", self.bot.network, channel)
-		if not karmapath in self.karmapaths.keys():
-			if os.path.exists(karmapath):
-				#TODO: blocking
-				karmafile=open(karmapath, "r")
-				self.karmas[channel]=pickle.load(karmafile)
-				self.karmapaths[karmapath]=channel
-				karmafile.close()
-			else:
-				self.karmas[channel]={} #what -> karma-struct
-		else:
-			self.karmas[channel]=self.karmas[self.karmapaths[karmapath]] #pointer(!) to shared karma
+    def loadKarma(self, channel):
+        if not os.path.exists(datadir):
+            os.makedirs(datadir)
+        karmapath=self.bot.config.getPath("file", datadir, "karma.dat", "karmaMod", self.bot.network, channel)
+        if not karmapath in self.karmapaths.keys():
+            if os.path.exists(karmapath):
+                #TODO: blocking
+                karmafile=open(karmapath, "r")
+                self.karmas[channel]=pickle.load(karmafile)
+                self.karmapaths[karmapath]=channel
+                karmafile.close()
+            else:
+                self.karmas[channel]={} #what -> karma-struct
+        else:
+            self.karmas[channel]=self.karmas[self.karmapaths[karmapath]] #pointer(!) to shared karma
 
-	def saveKarma(self, channel):
-		#Attention: we write the files from karmapaths(which are unique), not from the channels array!
-		#TODO: blocking
-		karmapath=self.bot.config.getPath("file", datadir, "karma.dat", "karmaMod", self.bot.network, channel)
-		karmafile=open(karmapath, "w")
-		pickle.dump(self.karmas[channel], karmafile)
-		karmafile.close()
+    def saveKarma(self, channel):
+        #Attention: we write the files from karmapaths(which are unique), not from the channels array!
+        #TODO: blocking
+        karmapath=self.bot.config.getPath("file", datadir, "karma.dat", "karmaMod", self.bot.network, channel)
+        karmafile=open(karmapath, "w")
+        pickle.dump(self.karmas[channel], karmafile)
+        karmafile.close()
 
-	def joined(self, channel):
-		self.loadKarma(channel)
+    def joined(self, channel):
+        self.loadKarma(channel)
 
-	def left(self, channel):
-		self.saveKarma(channel)
+    def left(self, channel):
+        self.saveKarma(channel)
 
-	def command(self, user, channel, command, options):
-		up=False
-		what=None
-		reason=None
+    def command(self, user, channel, command, options):
+        up=False
+        what=None
+        reason=None
 
-		#return on why/who karma up/down
-		num_reasons=5
-		num_user=5
+        #return on why/who karma up/down
+        num_reasons=5
+        num_user=5
 
-		tmp=options.split("#",1)
-		options=tmp[0].strip()
-		if len(tmp)==2:
-			reason=tmp[1]
+        tmp=options.split("#",1)
+        options=tmp[0].strip()
+        if len(tmp)==2:
+            reason=tmp[1]
 
-		if command == "karma":
-			if options == "":
-				self.bot.sendmsg(channel, "Nutzen: !karma name++ oder !karma name--")
-				return
-			else:
-				if options[-2:]=="++":
-					up=True
-					what=options[:-2]
-				elif options[-2:]=="--":
-					up=False
-					what=options[:-2]
-				else:
-					self.tell_karma(options, channel)
-					return
-			self.do_karma(channel, what, up, reason, user)
-			if self.verbose:
-				self.tell_karma(what, channel)
-		elif command == "why-karmaup" or command == "wku":
-			options.strip()
-			reasons=""
-			if options in self.karma.keys():
-				num=min(num_reasons, len(self.karma[options][3]))
-				while num > 0:
-					num-=1
-					reasons+=" .. "+self.karma[options][3][-num]
-				reasons=reasons[4:]
-				self.bot.sendmsg(channel, reasons)
-		elif command == "why-karmadown" or command == "wkd":
-			options.strip()
-			reasons=""
-			if options in self.karma.keys():
-				num=min(num_reasons, len(self.karma[options][4]))
-				while num > 0:
-					num-=1
-					reasons+=" .. "+self.karma[options][4][-num]
-				reasons=reasons[4:]
-				self.bot.sendmsg(channel, reasons)
-		elif command == "who-karmaup":
-			options.strip()
-			people=""
-			if options in self.karma.keys():
-				items=sortedbyvalue(self.karma[options][1])
-				num=min(num_user, len(items))
-				while num > 0:
-					num-=1
-					people+=" .. "+items[-num][1]+"="+str(items[-num][0])
-				people=people[4:]
-				self.bot.sendmsg(channel, people)
-		elif command == "who-karmadown":
-			options.strip()
-			people=""
-			if options in self.karma.keys():
-				items=sortedbyvalue(self.karma[options][2])
-				num=min(num_user, len(items))
-				while num > 0:
-					num-=1
-					people+=" .. "+items[-num][1]+"="+str(items[-num][0])
-				people=people[4:]
-				self.bot.sendmsg(channel, people)
-		elif self.freestyle:
-			if options[-2:]=="++":
-				up=True
-				what=command+" "+options[:-2]
-			elif options[-2:]=="--":
-				up=False
-				what=command+" "+options[:-2]
-			elif command[-2:]=="++":
-				up=True
-				what=command[:-2]
-			elif command[-2:]=="--":
-				up=False
-				what=command[:-2]
-			if what:
-				self.do_karma(channel, what, up, reason, user)
-				if self.verbose:
-					self.tell_karma(what, channel)
+        if command == "karma":
+            if options == "":
+                self.bot.sendmsg(channel, "Nutzen: !karma name++ oder !karma name--")
+                return
+            else:
+                if options[-2:]=="++":
+                    up=True
+                    what=options[:-2]
+                elif options[-2:]=="--":
+                    up=False
+                    what=options[:-2]
+                else:
+                    self.tell_karma(options, channel)
+                    return
+            self.do_karma(channel, what, up, reason, user)
+            if self.verbose:
+                self.tell_karma(what, channel)
+        elif command == "why-karmaup" or command == "wku":
+            options.strip()
+            reasons=""
+            if options in self.karma.keys():
+                num=min(num_reasons, len(self.karma[options][3]))
+                while num > 0:
+                    num-=1
+                    reasons+=" .. "+self.karma[options][3][-num]
+                reasons=reasons[4:]
+                self.bot.sendmsg(channel, reasons)
+        elif command == "why-karmadown" or command == "wkd":
+            options.strip()
+            reasons=""
+            if options in self.karma.keys():
+                num=min(num_reasons, len(self.karma[options][4]))
+                while num > 0:
+                    num-=1
+                    reasons+=" .. "+self.karma[options][4][-num]
+                reasons=reasons[4:]
+                self.bot.sendmsg(channel, reasons)
+        elif command == "who-karmaup":
+            options.strip()
+            people=""
+            if options in self.karma.keys():
+                items=sortedbyvalue(self.karma[options][1])
+                num=min(num_user, len(items))
+                while num > 0:
+                    num-=1
+                    people+=" .. "+items[-num][1]+"="+str(items[-num][0])
+                people=people[4:]
+                self.bot.sendmsg(channel, people)
+        elif command == "who-karmadown":
+            options.strip()
+            people=""
+            if options in self.karma.keys():
+                items=sortedbyvalue(self.karma[options][2])
+                num=min(num_user, len(items))
+                while num > 0:
+                    num-=1
+                    people+=" .. "+items[-num][1]+"="+str(items[-num][0])
+                people=people[4:]
+                self.bot.sendmsg(channel, people)
+        elif self.freestyle:
+            if options[-2:]=="++":
+                up=True
+                what=command+" "+options[:-2]
+            elif options[-2:]=="--":
+                up=False
+                what=command+" "+options[:-2]
+            elif command[-2:]=="++":
+                up=True
+                what=command[:-2]
+            elif command[-2:]=="--":
+                up=False
+                what=command[:-2]
+            if what:
+                self.do_karma(channel, what, up, reason, user)
+                if self.verbose:
+                    self.tell_karma(what, channel)
 
-	def tell_karma(self, what, channel):
-		self.bot.sendmsg(channel, "Karma: "+what+": "+str(self.get_karma(channel, what)))
+    def tell_karma(self, what, channel):
+        self.bot.sendmsg(channel, "Karma: "+what+": "+str(self.get_karma(channel, what)))
 
-	def get_karma(self, channel, what):
-		if not what in self.karmas[channel].keys():
-			self.karmas[channel][what]=[0,{},{},[],[]] #same as below!
-		return self.karmas[channel][what][0]
+    def get_karma(self, channel, what):
+        if not what in self.karmas[channel].keys():
+            self.karmas[channel][what]=[0,{},{},[],[]] #same as below!
+        return self.karmas[channel][what][0]
 
-	def do_karma(self, channel, what, up, reason, user):
-		user=user.split("!")[0]
-		karma=self.karmas[channel]
-		if not what in karma.keys():
-			karma[what]=[0,{},{},[],[]] #score, who-up, who-down, why-up, why-down
-		if up:
-			karma[what][0]=int(karma[what][0])+1
-			if not user in karma[what][1].keys():
-				karma[what][1][user]=1
-			else:
-				karma[what][1][user]+=1
-			if reason:
-				karma[what][3].append(str(reason))
-		else:
-			karma[what][0]=int(karma[what][0])-1
-			if not user in karma[what][2].keys():
-				karma[what][2][user]=1
-			else:
-				karma[what][2][user]+=1
-			if reason:
-				karma[what][4].append(str(reason))
+    def do_karma(self, channel, what, up, reason, user):
+        user=user.split("!")[0]
+        karma=self.karmas[channel]
+        if not what in karma.keys():
+            karma[what]=[0,{},{},[],[]] #score, who-up, who-down, why-up, why-down
+        if up:
+            karma[what][0]=int(karma[what][0])+1
+            if not user in karma[what][1].keys():
+                karma[what][1][user]=1
+            else:
+                karma[what][1][user]+=1
+            if reason:
+                karma[what][3].append(str(reason))
+        else:
+            karma[what][0]=int(karma[what][0])-1
+            if not user in karma[what][2].keys():
+                karma[what][2][user]=1
+            else:
+                karma[what][2][user]+=1
+            if reason:
+                karma[what][4].append(str(reason))
 
-	def connectionLost(self, reason):
-		for karmapath in self.karmapaths.keys():
-			self.saveKarma(self.karmapaths[karmapath])
+    def connectionLost(self, reason):
+        for karmapath in self.karmapaths.keys():
+            self.saveKarma(self.karmapaths[karmapath])
 

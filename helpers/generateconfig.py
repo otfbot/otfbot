@@ -9,25 +9,25 @@ config=configService.configService(base+"otfbot.yaml")
 files=glob.glob(base+"plugins/ircClient/*.py")
 modules=[]
 for file in files:
-	plugin=file.split(base+"plugins/ircClient/")[1].split(".py")[0]
-	if not plugin=="__init__":
-		modules.append(plugin)
+    plugin=file.split(base+"plugins/ircClient/")[1].split(".py")[0]
+    if not plugin=="__init__":
+        modules.append(plugin)
 config.set("ircClientPlugins", modules, 'main')
 
 files=glob.glob(base+"plugins/ircServer/*.py")
 modules=[]
 for file in files:
-	plugin=file.split(base+"plugins/ircServer/")[1].split(".py")[0]
-	if not plugin=="__init__":
-		modules.append(plugin)
+    plugin=file.split(base+"plugins/ircServer/")[1].split(".py")[0]
+    if not plugin=="__init__":
+        modules.append(plugin)
 config.set("ircServerPlugins", modules, 'main')
 
 files=glob.glob(base+"services/*.py")
 modules=[]
 for file in files:
-	plugin=file.split(base+"services/")[1].split(".py")[0]
-	if not plugin=="__init__" and not plugin=="config":
-		modules.append(plugin)
+    plugin=file.split(base+"services/")[1].split(".py")[0]
+    if not plugin=="__init__" and not plugin=="config":
+        modules.append(plugin)
 config.set("services", modules, 'main')
 
 sys.stdout.write("Network Name: ")

@@ -22,36 +22,36 @@ from twisted.web.client import getPage, downloadPage
 svnrevision="$Revision: 187 $".split(" ")[1]
 
 def get_headers(url):
-	request=urllib2.Request(url)
-	request.get_method=lambda: 'HEAD'
-	http=urllib2.urlopen(request)
-	return http.headers
+    request=urllib2.Request(url)
+    request.get_method=lambda: 'HEAD'
+    http=urllib2.urlopen(request)
+    return http.headers
 
 def is_html(headers):
-	return headers['content-type'].lower()[:9] == "text/html"
+    return headers['content-type'].lower()[:9] == "text/html"
 
 def download_headers_and_content_if_html(url):
-	headers=get_headers()
-	content=''
-	if is_html(headers):
-		content=download(url)
-	return (headers, content)
+    headers=get_headers()
+    content=''
+    if is_html(headers):
+        content=download(url)
+    return (headers, content)
 
 def download_if_html(url):
-	if is_html(get_headers(url)):
-		return download(url)
-	return ""
+    if is_html(get_headers(url)):
+        return download(url)
+    return ""
 
 def download(url, file=None, **kwargs):
-	""" 
-	Uses twisted.web.client.getPage() to fetch a Page via HTTP
-	
-	@return: A Defered which will call a Callback with the content as argument
-	
-	"""
-	if not kwargs.has_key("agent"):
-		kwargs['agent'] = "OTFBot (svn r%s; otfbot.berlios.de)"%(svnrevision)
-	if file:
-		return downloadPage(url, file, **kwargs)
-	else:
-		return getPage(url, **kwargs)
+    """ 
+    Uses twisted.web.client.getPage() to fetch a Page via HTTP
+    
+    @return: A Defered which will call a Callback with the content as argument
+    
+    """
+    if not kwargs.has_key("agent"):
+        kwargs['agent'] = "OTFBot (svn r%s; otfbot.berlios.de)"%(svnrevision)
+    if file:
+        return downloadPage(url, file, **kwargs)
+    else:
+        return getPage(url, **kwargs)

@@ -22,20 +22,20 @@ from lib import chatMod, functions
 
 
 class Plugin(chatMod.chatMod):
-	def __init__(self, bot):
-		self.bot=bot
+    def __init__(self, bot):
+        self.bot=bot
 
-	def msg(self, user, channel, msg):
-		#if channel == self.bot.nickname:
-		#if msg[0]=="!" or msg[:len(self.bot.nickname)]==self.bot.nickname:
-		if (msg[0]=="!" or self.bot.nickname in msg) and len(self.marvin):
-			number=random.randint(0,100)
-			chance=int(self.bot.config.get("percent", "1", "marvinMod"))
-			if number <chance:
-				self.bot.sendmsg(channel, random.choice(self.marvin), self.bot.config.get("fileencoding", "iso-8859-15", "marvinMod"))
+    def msg(self, user, channel, msg):
+        #if channel == self.bot.nickname:
+        #if msg[0]=="!" or msg[:len(self.bot.nickname)]==self.bot.nickname:
+        if (msg[0]=="!" or self.bot.nickname in msg) and len(self.marvin):
+            number=random.randint(0,100)
+            chance=int(self.bot.config.get("percent", "1", "marvinMod"))
+            if number <chance:
+                self.bot.sendmsg(channel, random.choice(self.marvin), self.bot.config.get("fileencoding", "iso-8859-15", "marvinMod"))
 
-	def start(self):
-		self.marvin=functions.loadList(self.bot.config.getPath("file", datadir, "marvin.txt", "marvinMod"))
+    def start(self):
+        self.marvin=functions.loadList(self.bot.config.getPath("file", datadir, "marvin.txt", "marvinMod"))
 
-	def reload(self):
-		self.start()
+    def reload(self):
+        self.start()
