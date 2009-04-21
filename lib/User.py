@@ -27,3 +27,6 @@ class IrcUser(service.User):
     
     def getHostMask(self):
         return self.nick+"!"+self.user+"@"+self.host
+    
+    def __repr__(self):
+        return "<IrcUser %s>" % self.getHostMask()
