@@ -24,6 +24,8 @@
 import xml.sax
 import xml.sax.handler
 import urllib
+import string, re, time
+from lib import chatMod, functions
 
 class weatherParserOne(xml.sax.handler.ContentHandler):
 	"""Parses the answer of the CityCode Search"""
@@ -131,9 +133,6 @@ def getWeather(location):
 		return []
 
 ### otfBot-Modulecode ####
-
-import string, re, functions, time
-import chatMod
 
 weathercodes = { 0: "Tornado", 1: "Tropensturm", 2: "Hurrikan", 3: "ernsthafte Gewitter", 
 	4: "Gewitter", 5: "Regen und Schnee", 6: "Regen und Graupelschauer", 

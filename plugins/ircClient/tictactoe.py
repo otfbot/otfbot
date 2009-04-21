@@ -19,7 +19,7 @@
 #
 
 import random
-import chatMod
+from lib import chatMod
 
 class Game:
 	def __init__(self):
