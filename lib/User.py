@@ -20,13 +20,13 @@ from twisted.words import service
 
 class IrcUser(service.User):
     def __init__(self, hostmask):
-        self.nick = hostmask.split("!",1)[0]
+        self.name = hostmask.split("!",1)[0]
         self.user = hostmask.split("!",1)[1].split("@",1)[0]
         self.host = hostmask.split("!",1)[1].split("@",1)[1]
-        service.User(self.nick)
+        super(IrcUser,self).__init__(self.name)
     
     def getHostMask(self):
-        return self.nick+"!"+self.user+"@"+self.host
+        return self.name+"!"+self.user+"@"+self.host
     
     def __repr__(self):
         return "<IrcUser %s>" % self.getHostMask()
