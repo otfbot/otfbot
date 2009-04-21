@@ -23,7 +23,7 @@ try:
 except ImportError:
 	HAS_PYSVN=False
 
-import chatMod
+from lib import chatMod
 
 class Plugin(chatMod.chatMod):
 	def __init__(self,bot):

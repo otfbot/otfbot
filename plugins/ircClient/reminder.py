@@ -18,7 +18,7 @@
 #
 
 import time
-import chatMod
+from lib import chatMod
 
 
 class Plugin(chatMod.chatMod):

@@ -16,7 +16,7 @@
 # 
 # (c) 2009 by Alexander Schier
 
-import chatMod
+from lib import chatMod
 
 class Plugin(chatMod.chatMod):
 	def __init__(self, bot):

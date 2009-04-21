@@ -17,8 +17,8 @@
 # (c) 2005, 2006 by Alexander Schier
 #
 
-import string, re, functions
-from lib import chatMod
+import string, re
+from lib import chatMod, functions
 		
 class Plugin(chatMod.chatMod):
 	def __init__(self, bot):

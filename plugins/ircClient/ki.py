@@ -20,8 +20,8 @@
 
 import string, re, random, time, atexit, os.path
 import urllib, urllib2, socket
-import chatMod, functions
-from eliza import eliza
+from lib import chatMod, functions
+from lib.eliza import eliza
 import yaml
 
 MEGAHAL=1

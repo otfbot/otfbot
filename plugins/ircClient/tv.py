@@ -28,8 +28,8 @@ try:
 except ImportError:
 	HAS_PYXMLTV=False
 
-import chatMod
-import time,sys,urlutils
+from lib import chatMod, urlutils
+import time, sys
 
 class Plugin(chatMod.chatMod):
 	def __init__(self,bot):

@@ -17,8 +17,8 @@
 # (c) 2008 by Alexander Schier
 #
 
-from jcgame import Game
-import chatMod
+from lib.jcgame import Game
+from lib import chatMod
 
 class Plugin(chatMod.chatMod):
 	def __init__(self, bot):

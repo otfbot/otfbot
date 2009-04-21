@@ -19,7 +19,7 @@
 #
 
 import random, re
-import chatMod
+from lib import chatMod
 from twisted.cred.credentials import UsernamePassword
 from twisted.words.iwords import IUser
 

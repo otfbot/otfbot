@@ -20,7 +20,7 @@
 
 import time, string, locale, os
 from string import Template
-import chatMod
+from lib import chatMod
 
 
 class Plugin(chatMod.chatMod):
