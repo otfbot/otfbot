@@ -20,28 +20,28 @@ from lib import chatMod
 
 LIB=True
 try:
-	import identi
+    import identi
 except ImportError:
-	LIB=False
+    LIB=False
 
 class Plugin(chatMod.chatMod):
-	def __init__(self, bot):
-		self.bot=bot
-	def connectionMade(self):
-		if not LIB:
-			self.logger.info("please download http://media.commandline.org.uk/code/identi.txt to lib/identi.py to use identicaMod")
-			return
+    def __init__(self, bot):
+        self.bot=bot
+    def connectionMade(self):
+        if not LIB:
+            self.logger.info("please download http://media.commandline.org.uk/code/identi.txt to lib/identi.py to use identicaMod")
+            return
 
-	def command(self, user, channel, command, options):
-		if not LIB:
-			return
-		if command in ["identica", "i", "identicawithnick", "iwn"]:
-			#TODO: blocking			
-			self.api=identi.IdentiCA(self.bot.config.get("username", '', 'identicaMod', self.bot.network, channel), self.bot.config.get("username", '', 'identicaMod', self.bot.network, channel))
-			#TODO: blocking
-			self.api.login()
-			if command=="iwn" or command=="identicawithnick":
-				options=user.split("!")[0]+": "+options
-			options=options[:140]
-			#TODO: blocking			
-			self.api.put_message(options)
+    def command(self, user, channel, command, options):
+        if not LIB:
+            return
+        if command in ["identica", "i", "identicawithnick", "iwn"]:
+            #TODO: blocking            
+            self.api=identi.IdentiCA(self.bot.config.get("username", '', 'identicaMod', self.bot.network, channel), self.bot.config.get("username", '', 'identicaMod', self.bot.network, channel))
+            #TODO: blocking
+            self.api.login()
+            if command=="iwn" or command=="identicawithnick":
+                options=user.split("!")[0]+": "+options
+            options=options[:140]
+            #TODO: blocking            
+            self.api.put_message(options)

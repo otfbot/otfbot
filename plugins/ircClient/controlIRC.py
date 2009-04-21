@@ -21,25 +21,25 @@ import random, re, string
 from lib import chatMod, controlInterface
 
 class Plugin(chatMod.chatMod):
-	def __init__(self, bot):
-		self.bot=bot
-		self.control={}
-	
-	def query(self, user, channel, msg):
-		nick=user.split("!")[0]
-		if self.control.has_key(user) and msg == "endcontrol":
-			del self.control[user]
-		if msg == "control" and self.bot.auth(user) > 0:
-			self.control[user]=controlInterface.controlInterface(self.bot.root.getNamedServices()["control"])
-			self.bot.sendmsg(nick,"Entered configuration modus. type 'endcontrol' to exit")
-		elif self.control.has_key(user):
-			output=self.control[user].input(msg)
-			self.bot.sendmsg(nick, output) #sendmsg can handle lists
-	
-	def command(self, user, channel, command, options):
-		if command == "reload" and len(options) > 0:
-			try:
-				self.bot.plugins['plugins.ircClient.'+options].reload()
-				self.bot.sendmsg(channel, "Reloaded "+options)
-			except KeyError:
-				self.bot.sendmsg(channel, "Could not reload "+options.strip()+": No such Plugin")
+    def __init__(self, bot):
+        self.bot=bot
+        self.control={}
+    
+    def query(self, user, channel, msg):
+        nick=user.split("!")[0]
+        if self.control.has_key(user) and msg == "endcontrol":
+            del self.control[user]
+        if msg == "control" and self.bot.auth(user) > 0:
+            self.control[user]=controlInterface.controlInterface(self.bot.root.getNamedServices()["control"])
+            self.bot.sendmsg(nick,"Entered configuration modus. type 'endcontrol' to exit")
+        elif self.control.has_key(user):
+            output=self.control[user].input(msg)
+            self.bot.sendmsg(nick, output) #sendmsg can handle lists
+    
+    def command(self, user, channel, command, options):
+        if command == "reload" and len(options) > 0:
+            try:
+                self.bot.plugins['plugins.ircClient.'+options].reload()
+                self.bot.sendmsg(channel, "Reloaded "+options)
+            except KeyError:
+                self.bot.sendmsg(channel, "Could not reload "+options.strip()+": No such Plugin")

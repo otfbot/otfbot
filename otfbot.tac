@@ -34,8 +34,8 @@ import logging, sys
 
 
 class pythonToTwistedLoggingHandler(logging.Handler):
-	def emit(self, record):
-		log.msg(record.getMessage())
+    def emit(self, record):
+        log.msg(record.getMessage())
 
 # Setup Logging
 #path_log="otfbot.log"
@@ -57,7 +57,7 @@ logging.getLogger('').setLevel(logging.DEBUG)
 logging.getLogger('').addHandler(pythonToTwistedLoggingHandler())
 
 #if debuglevel > 0:
-	# logging to stdout
+    # logging to stdout
 #console = logging.StreamHandler()
 #logging.getLogger('').setLevel(debuglevel)
 #console.setFormatter(formatter)
@@ -75,7 +75,7 @@ logging.getLogger('').addHandler(pythonToTwistedLoggingHandler())
 #plo.start()
 
 class Options(usage.Options):
-	    optParameters = [["config","c","otfbot.yaml","Location of configfile"]]
+        optParameters = [["config","c","otfbot.yaml","Location of configfile"]]
 
 #config = Options()
 #try:
@@ -94,15 +94,15 @@ application.getNamedServices=lambda: service.IServiceCollection(application).nam
 
 configS=configService.loadConfig(configfilename, "plugins/*/*.yaml")
 if not configS:
-	print "please run helpers/generateconfig.py"
-	sys.exit(1)
+    print "please run helpers/generateconfig.py"
+    sys.exit(1)
 configS.setServiceParent(application)
 
 service_names=configS.get("services", [], "main")
 service_classes=[]
 service_instances=[]
 for service_name in service_names:
-	service_classes.append(__import__("services."+service_name, fromlist=['botService']))
-	print service_classes[-1]
-	service_instances.append(service_classes[-1].botService(application, application))
-	service_instances[-1].setServiceParent(application)
+    service_classes.append(__import__("services."+service_name, fromlist=['botService']))
+    print service_classes[-1]
+    service_instances.append(service_classes[-1].botService(application, application))
+    service_instances[-1].setServiceParent(application)

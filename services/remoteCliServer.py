@@ -137,8 +137,8 @@ class SSHRealm:
     implements(portal.IRealm)
 
     def __init__(self, service):
-    	self.service=service
-    	
+        self.service=service
+        
     def requestAvatar(self, avatarId, mind, *interfaces):
         if conchinterfaces.IConchUser in interfaces:
             return conchinterfaces.IConchUser, SSHAvatar(avatarId, self.service), lambda: None

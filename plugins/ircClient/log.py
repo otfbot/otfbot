@@ -24,158 +24,158 @@ from lib import chatMod
 
 
 class Plugin(chatMod.chatMod):
-	def __init__(self, bot):
-		self.bot=bot
-		self.channels={}
-		self.files={}
-		self.path={}
-		#this has no usable defaultconfig string, because datadir is only known at runtime
-		self.datadir=bot.config.getPath("logdir", datadir, ".", "logMod") 
-		self.logpath=self.datadir+"/"+bot.config.get("path", "$n-$c/$y-$m-$d.log", "logMod")
-		if not os.path.isdir(self.datadir):
-			os.makedirs(self.datadir)
-		try:
-			locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
-		except:
-			#self.logger.error("Couldn't set locale 'de_DE.UTF-8'. Using system-default")
-			locale.setlocale(locale.LC_ALL, "")
-		self.day=self.ts("%d") #saves the hour, to detect daychanges
-		for c in self.bot.channels:
-			self.setNetwork()
-			self.joined(c)
-	
-	def timemap(self):
-		return {'y':self.ts("%Y"), 'm':self.ts("%m"), 'd':self.ts("%d")}
+    def __init__(self, bot):
+        self.bot=bot
+        self.channels={}
+        self.files={}
+        self.path={}
+        #this has no usable defaultconfig string, because datadir is only known at runtime
+        self.datadir=bot.config.getPath("logdir", datadir, ".", "logMod") 
+        self.logpath=self.datadir+"/"+bot.config.get("path", "$n-$c/$y-$m-$d.log", "logMod")
+        if not os.path.isdir(self.datadir):
+            os.makedirs(self.datadir)
+        try:
+            locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
+        except:
+            #self.logger.error("Couldn't set locale 'de_DE.UTF-8'. Using system-default")
+            locale.setlocale(locale.LC_ALL, "")
+        self.day=self.ts("%d") #saves the hour, to detect daychanges
+        for c in self.bot.channels:
+            self.setNetwork()
+            self.joined(c)
+    
+    def timemap(self):
+        return {'y':self.ts("%Y"), 'm':self.ts("%m"), 'd':self.ts("%d")}
 
-	def ts(self, format="%H:%M"):
-		"""timestamp"""
-		return time.strftime(format, time.localtime(time.time()))
-		
-	def secsUntilDayChange(self):
-		"""calculate the Seconds to midnight"""
-		tmp=time.localtime(time.time())
-		wait=(24-tmp[3] -1)*60*60
-		wait+=(60-tmp[4] -1)*60
-		wait+=60-tmp[5]
-		return wait
+    def ts(self, format="%H:%M"):
+        """timestamp"""
+        return time.strftime(format, time.localtime(time.time()))
+        
+    def secsUntilDayChange(self):
+        """calculate the Seconds to midnight"""
+        tmp=time.localtime(time.time())
+        wait=(24-tmp[3] -1)*60*60
+        wait+=(60-tmp[4] -1)*60
+        wait+=60-tmp[5]
+        return wait
 
-	def dayChange(self):
-		self.day=self.ts("%d")
-		self.stop()
-		for channel in self.channels:
-			self.joined(channel)
-			#self.log(channel, "--- Day changed "+self.ts("%a %b %d %Y"))
-		
-		
-	def log(self, channel, string, timestamp=True):
-		if self.day != self.ts("%d"):
-			self.dayChange()
-		if channel in self.channels:
-			logmsg=string+"\n"
-			if timestamp:
-				logmsg=self.ts()+" "+logmsg
-			self.files[channel].write(logmsg)
-			self.files[channel].flush()
+    def dayChange(self):
+        self.day=self.ts("%d")
+        self.stop()
+        for channel in self.channels:
+            self.joined(channel)
+            #self.log(channel, "--- Day changed "+self.ts("%a %b %d %Y"))
+        
+        
+    def log(self, channel, string, timestamp=True):
+        if self.day != self.ts("%d"):
+            self.dayChange()
+        if channel in self.channels:
+            logmsg=string+"\n"
+            if timestamp:
+                logmsg=self.ts()+" "+logmsg
+            self.files[channel].write(logmsg)
+            self.files[channel].flush()
 
-	def logPrivate(self, user, mystring):
-		dic=self.timemap()
-		dic['c']=string.lower(user)
-		filename=Template(self.logpath).safe_substitute(dic)
-		if not os.path.exists(os.path.dirname(filename)):
-			os.makedirs(os.path.dirname(filename))	
-		file=open(filename, "a")
-		file.write(self.ts()+" "+mystring+"\n")
-		file.close()
+    def logPrivate(self, user, mystring):
+        dic=self.timemap()
+        dic['c']=string.lower(user)
+        filename=Template(self.logpath).safe_substitute(dic)
+        if not os.path.exists(os.path.dirname(filename)):
+            os.makedirs(os.path.dirname(filename))    
+        file=open(filename, "a")
+        file.write(self.ts()+" "+mystring+"\n")
+        file.close()
 
-	def joined(self, channel):
-		self.channels[string.lower(channel)]=1
-		#self.files[string.lower(channel)]=open(string.lower(channel)+".log", "a")
-		self.path[channel]=Template(self.logpath).safe_substitute({'c':channel.replace("/", "_").replace(":", "")}) #replace to handle psyc:// channels
-		file=Template(self.path[channel]).safe_substitute(self.timemap())
-		if not os.path.exists(os.path.dirname(file)):
-			os.makedirs(os.path.dirname(file))
-		self.files[string.lower(channel)]=open(file, "a")
-		self.log(channel, "--- Log opened "+self.ts("%a %b %d %H:%M:%S %Y"), False)
-		self.log(channel, "-!- "+self.bot.nickname+" ["+self.bot.nickname+"@hostmask] has joined "+channel) #TODO: real Hostmask
-		
-	def left(self, channel):
-		self.log(channel, "-!- "+self.bot.nickname+"["+self.bot.nickname+"@hostmask] has left "+channel)
-		del self.channels[string.lower(channel)]
-		self.files[string.lower(channel)].close()
-	def msg(self, user, channel, msg):
-		user=user.split("!")[0]
-		modesign=" " #self.bot.users[channel][user]['modchar']
-		if string.lower(channel)==string.lower(self.bot.nickname):
-			self.logPrivate(user, "<"+modesign+user+"> "+msg)
-		elif len(channel)>0 and channel[0]=="#":
-			#modesign=self.bot.users[channel][user]['modchar']
-			self.log(channel, "<"+modesign+user+"> "+msg)
+    def joined(self, channel):
+        self.channels[string.lower(channel)]=1
+        #self.files[string.lower(channel)]=open(string.lower(channel)+".log", "a")
+        self.path[channel]=Template(self.logpath).safe_substitute({'c':channel.replace("/", "_").replace(":", "")}) #replace to handle psyc:// channels
+        file=Template(self.path[channel]).safe_substitute(self.timemap())
+        if not os.path.exists(os.path.dirname(file)):
+            os.makedirs(os.path.dirname(file))
+        self.files[string.lower(channel)]=open(file, "a")
+        self.log(channel, "--- Log opened "+self.ts("%a %b %d %H:%M:%S %Y"), False)
+        self.log(channel, "-!- "+self.bot.nickname+" ["+self.bot.nickname+"@hostmask] has joined "+channel) #TODO: real Hostmask
+        
+    def left(self, channel):
+        self.log(channel, "-!- "+self.bot.nickname+"["+self.bot.nickname+"@hostmask] has left "+channel)
+        del self.channels[string.lower(channel)]
+        self.files[string.lower(channel)].close()
+    def msg(self, user, channel, msg):
+        user=user.split("!")[0]
+        modesign=" " #self.bot.users[channel][user]['modchar']
+        if string.lower(channel)==string.lower(self.bot.nickname):
+            self.logPrivate(user, "<"+modesign+user+"> "+msg)
+        elif len(channel)>0 and channel[0]=="#":
+            #modesign=self.bot.users[channel][user]['modchar']
+            self.log(channel, "<"+modesign+user+"> "+msg)
 
-	def query(self, user, channel, msg):
-		user=user.split("!")[0]
-		if user==self.bot.nickname:
-			self.logPrivate(channel, "<"+user+"> "+msg)
-		else:
-			self.logPrivate(user, "<"+user+"> "+msg)
-	
-	def noticed(self, user, channel, msg):
-		if user != "":
-			#self.logger.info(str(user+" : "+channel+" : "+msg))
-			self.logPrivate(user.split("!")[0], "< "+user.split("!")[0]+"> "+msg)
+    def query(self, user, channel, msg):
+        user=user.split("!")[0]
+        if user==self.bot.nickname:
+            self.logPrivate(channel, "<"+user+"> "+msg)
+        else:
+            self.logPrivate(user, "<"+user+"> "+msg)
+    
+    def noticed(self, user, channel, msg):
+        if user != "":
+            #self.logger.info(str(user+" : "+channel+" : "+msg))
+            self.logPrivate(user.split("!")[0], "< "+user.split("!")[0]+"> "+msg)
 
-	def action(self, user, channel, message):
-		#self.logger.debug(user+channel+message)
-		user=user.split("!")[0]
-		self.log(channel, " * "+user+" "+message)
-		
-	def modeChanged(self, user, channel, set, modes, args):
-		user=user.split("!")[0]
-		sign="+"
-		if not set:
-			sign="-"
-		self.log(channel, "-!- mode/"+channel+" ["+sign+modes+" "+string.join(args, " ")+"] by "+user)
-		
-	def userKicked(self, kickee, channel, kicker, message):
-		self.log(channel, "-!- "+kickee+" was kicked from "+channel+" by "+kicker+" ["+message+"]")
+    def action(self, user, channel, message):
+        #self.logger.debug(user+channel+message)
+        user=user.split("!")[0]
+        self.log(channel, " * "+user+" "+message)
+        
+    def modeChanged(self, user, channel, set, modes, args):
+        user=user.split("!")[0]
+        sign="+"
+        if not set:
+            sign="-"
+        self.log(channel, "-!- mode/"+channel+" ["+sign+modes+" "+string.join(args, " ")+"] by "+user)
+        
+    def userKicked(self, kickee, channel, kicker, message):
+        self.log(channel, "-!- "+kickee+" was kicked from "+channel+" by "+kicker+" ["+message+"]")
 
-	def userJoined(self, user, channel):
-		self.log(channel, "-!- "+user.split("!")[0]+" ["+user.split("!")[1]+"] has joined "+channel)#TODO: real Hostmask
+    def userJoined(self, user, channel):
+        self.log(channel, "-!- "+user.split("!")[0]+" ["+user.split("!")[1]+"] has joined "+channel)#TODO: real Hostmask
 
-	def userLeft(self, user, channel):
-		self.log(channel, "-!- "+user.split("!")[0]+" ["+user.split("!")[1]+"] has left "+channel)#TODO: real Hostmask
-	
-	def userQuit(self, user, quitMessage):
-		users = self.bot.getUsers()
-		for channel in users:
-			if users[channel].has_key(user.split("!")[0]):
-				self.log(channel, "-!- "+user.split("!")[0]+" ["+user.split("!")[1]+"] has quit ["+quitMessage+"]")
-		
-	def topicUpdated(self, user, channel, newTopic):
-		#TODO: first invoced on join. This should not be logged
-		self.log(channel, "-!- "+user+" changed the topic of "+channel+" to: "+newTopic)
+    def userLeft(self, user, channel):
+        self.log(channel, "-!- "+user.split("!")[0]+" ["+user.split("!")[1]+"] has left "+channel)#TODO: real Hostmask
+    
+    def userQuit(self, user, quitMessage):
+        users = self.bot.getUsers()
+        for channel in users:
+            if users[channel].has_key(user.split("!")[0]):
+                self.log(channel, "-!- "+user.split("!")[0]+" ["+user.split("!")[1]+"] has quit ["+quitMessage+"]")
+        
+    def topicUpdated(self, user, channel, newTopic):
+        #TODO: first invoced on join. This should not be logged
+        self.log(channel, "-!- "+user+" changed the topic of "+channel+" to: "+newTopic)
 
-	def userRenamed(self, oldname, newname):
-		#TODO: This can not handle different channels right
-		user = self.bot.getUsers()
-		for channel in user:
-			if user[channel].has_key(newname):
-				self.log(channel, "-!- "+oldname+" is now known as "+newname)
-		
-	def stop(self):
-		for channel in self.channels:
-			self.log(channel, "--- Log closed "+self.ts("%a %b %d %H:%M:%S %Y"), False)
-			self.files[channel].close()
-		#self.timer.cancel()
+    def userRenamed(self, oldname, newname):
+        #TODO: This can not handle different channels right
+        user = self.bot.getUsers()
+        for channel in user:
+            if user[channel].has_key(newname):
+                self.log(channel, "-!- "+oldname+" is now known as "+newname)
+        
+    def stop(self):
+        for channel in self.channels:
+            self.log(channel, "--- Log closed "+self.ts("%a %b %d %H:%M:%S %Y"), False)
+            self.files[channel].close()
+        #self.timer.cancel()
 
-	def connectionMade(self):
-		self.setNetwork()
-		
-	def setNetwork(self):
-		if len(self.bot.network.split(".")) < 3:
-			net=self.bot.network
-		else:
-			net=self.bot.network.split(".")[-2]
-		self.logpath=Template(self.logpath).safe_substitute({'n':net})
+    def connectionMade(self):
+        self.setNetwork()
+        
+    def setNetwork(self):
+        if len(self.bot.network.split(".")) < 3:
+            net=self.bot.network
+        else:
+            net=self.bot.network.split(".")[-2]
+        self.logpath=Template(self.logpath).safe_substitute({'n':net})
 
-#	def connectionLost(self, reason):
-#		self.stop()
+#    def connectionLost(self, reason):
+#        self.stop()

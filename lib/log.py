@@ -28,7 +28,7 @@ class PythonLoggingObserver(object):
         @type loggerName: C{str}
         """
         self.logger = logging.getLogger(loggerName)
-	self.logger.info("added twisted-logger")
+        self.logger.info("added twisted-logger")
 
     def emit(self, eventDict):
         """
@@ -63,33 +63,33 @@ class PythonLoggingObserver(object):
         """
         log.removeObserver(self.emit)
     def textFromEventDict(self,eventDict):
-    	"""
-    	Extract text from an event dict passed to a log observer. If it cannot
-    	handle the dict, it returns None.
-	
-    	The possible keys of eventDict are:
-     	- C{message}: by default, it holds the final text. It's required, but can
-       	be empty if either C{isError} or C{format} is provided (the first
-       	having the priority).
-     	- C{isError}: boolean indicating the nature of the event.
-     	- C{failure}: L{failure.Failure} instance, required if the event is an
-       	error.
-     	- C{why}: if defined, used as header of the traceback in case of errors.
-     	- C{format}: string format used in place of C{message} to customize
-       	the event. It uses all keys present in C{eventDict} to format
-       	the text.
-    	Other keys will be used when applying the C{format}, or ignored.
-    	"""
-    	edm = eventDict['message']
-    	if not edm:
-	        if eventDict['isError'] and 'failure' in eventDict:
-            		text = ((eventDict.get('why') or 'Unhandled Error')
-                    	+ '\n' + eventDict['failure'].getTraceback())
-        	elif 'format' in eventDict:
-	            	text = _safeFormat(eventDict['format'], eventDict)
-        	else:
-        	    	# we don't know how to log this
-            		return
-    	else:
-        	text = ' '.join(map(reflect.safe_str, edm))
-    	return text
+        """
+        Extract text from an event dict passed to a log observer. If it cannot
+        handle the dict, it returns None.
+    
+        The possible keys of eventDict are:
+         - C{message}: by default, it holds the final text. It's required, but can
+           be empty if either C{isError} or C{format} is provided (the first
+           having the priority).
+         - C{isError}: boolean indicating the nature of the event.
+         - C{failure}: L{failure.Failure} instance, required if the event is an
+           error.
+         - C{why}: if defined, used as header of the traceback in case of errors.
+         - C{format}: string format used in place of C{message} to customize
+           the event. It uses all keys present in C{eventDict} to format
+           the text.
+        Other keys will be used when applying the C{format}, or ignored.
+        """
+        edm = eventDict['message']
+        if not edm:
+            if eventDict['isError'] and 'failure' in eventDict:
+                    text = ((eventDict.get('why') or 'Unhandled Error')
+                        + '\n' + eventDict['failure'].getTraceback())
+            elif 'format' in eventDict:
+                    text = _safeFormat(eventDict['format'], eventDict)
+            else:
+                    # we don't know how to log this
+                    return
+        else:
+            text = ' '.join(map(reflect.safe_str, edm))
+        return text

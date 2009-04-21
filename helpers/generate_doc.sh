@@ -6,18 +6,25 @@
 #           - unpack, sudo python setup.py install
 # Just upload the whole directory "apidocs" (which this script creates) to /home/groups/otfbot/htdocs/pages
 
+additional_init="."
 curdir=`pwd`
 dir=`dirname $0`
 cd $dir/..
-touch __init__.py
-touch modules/__init__.py
+for i in $additional_init; do
+	if [ ! -e $i/__init__.py ]; then
+		touch $i/__init__.py
+		init="$init $i"
+	fi;
+done
 OTFBOTDIR=`pwd`
 cd ..
-pydoctor 	--add-package=otfbot \
+pydoctor 	--add-package=`basename $OTFBOTDIR` \
 		--project-name="OtfBot" \
 		--project-url="http://otfbot.berlios.de/" \
-		--html-output=$OTFBOTDIR/apidocs \
+		--html-output=$OTFBOTDIR/doc/apidocs \
 		--make-html
 cd $OTFBOTDIR
-rm __init__.py modules/__init__.py
+for i in $init; do
+	rm $i/__init__.py
+done
 cd $curdir

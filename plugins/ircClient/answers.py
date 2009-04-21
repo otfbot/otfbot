@@ -19,33 +19,33 @@
 
 import string, re
 from lib import chatMod, functions
-		
+        
 class Plugin(chatMod.chatMod):
-	def __init__(self, bot):
-		self.bot = bot
+    def __init__(self, bot):
+        self.bot = bot
 
-	def start(self):
-		self.answersFile=self.bot.config.getPath("file", datadir, "answers.txt", "answerMod")
-		self.answers = functions.loadProperties(self.answersFile)
+    def start(self):
+        self.answersFile=self.bot.config.getPath("file", datadir, "answers.txt", "answerMod")
+        self.answers = functions.loadProperties(self.answersFile)
 
-	def msg(self, user, channel, msg):
-		user = user.split("!")[0] #only nick
-		if channel in self.bot.channels: #Do not respond to server messages
-			answer = self.respond(user, msg)
-			if answer != "":
-				self.bot.sendmsg(channel, answer, self.bot.config.get("fileencoding", "iso-8859-15","answerMod"))
+    def msg(self, user, channel, msg):
+        user = user.split("!")[0] #only nick
+        if channel in self.bot.channels: #Do not respond to server messages
+            answer = self.respond(user, msg)
+            if answer != "":
+                self.bot.sendmsg(channel, answer, self.bot.config.get("fileencoding", "iso-8859-15","answerMod"))
 
-	def reload(self):
-		self.answers = functions.loadProperties(self.answersFile)
+    def reload(self):
+        self.answers = functions.loadProperties(self.answersFile)
 
-	def respond(self, user, msg):
-		answer = ""
-		for key in self.answers.keys():
-			if re.search(key, msg, re.I):
-				answer = self.answers[key]
-				answer = re.sub("USER", user, answer)
-				answer = re.sub("MESSAGE", msg, answer)
-		if len(answer)>0 and answer[-1] == "\n":
-			return answer[0:-1]
-		else:
-			return answer
+    def respond(self, user, msg):
+        answer = ""
+        for key in self.answers.keys():
+            if re.search(key, msg, re.I):
+                answer = self.answers[key]
+                answer = re.sub("USER", user, answer)
+                answer = re.sub("MESSAGE", msg, answer)
+        if len(answer)>0 and answer[-1] == "\n":
+            return answer[0:-1]
+        else:
+            return answer

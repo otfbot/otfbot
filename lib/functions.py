@@ -23,64 +23,64 @@
 import os
 
 def loadProperties(propertiesFile, ambiguous=False):
-	""" Loads data from a file into a dict
-		
-		The data in the file should have the format::
-			key=value
-		If the file doesn't exist, it will be created. If no filename is given an empty dict is returned
-		@param propertiesFile: The file to deal with
-		@type propertiesFile: string
-		@rtype: dict
-	"""
-	properties={}
-	if propertiesFile=="":
-		return {}
-	try:
-		propFile = open(propertiesFile, "r")
-		content = propFile.read()
-		propFile.close()
-		for line in content.split("\n"):
-			if len(line) >1 and line[0] != "#":
-				pair = line.split("=", 1)
-				if len(pair)==2:
-					if ambiguous:
-						if not properties.has_key(pair[0]):
-							properties[pair[0]] = []
-						properties[pair[0]].append(pair[1])
-					else:
-						properties[pair[0]] = pair[1]
-	except IOError:
-		#print "loadProperties: Creating", propertiesFile
-		if (not os.path.isdir(os.path.dirname(propertiesFile))):
-			os.makedirs(os.path.dirname(propertiesFile))
-		propFile = open(propertiesFile, "w")
-		propFile.close()
-	return properties
-	
+    """ Loads data from a file into a dict
+        
+        The data in the file should have the format::
+            key=value
+        If the file doesn't exist, it will be created. If no filename is given an empty dict is returned
+        @param propertiesFile: The file to deal with
+        @type propertiesFile: string
+        @rtype: dict
+    """
+    properties={}
+    if propertiesFile=="":
+        return {}
+    try:
+        propFile = open(propertiesFile, "r")
+        content = propFile.read()
+        propFile.close()
+        for line in content.split("\n"):
+            if len(line) >1 and line[0] != "#":
+                pair = line.split("=", 1)
+                if len(pair)==2:
+                    if ambiguous:
+                        if not properties.has_key(pair[0]):
+                            properties[pair[0]] = []
+                        properties[pair[0]].append(pair[1])
+                    else:
+                        properties[pair[0]] = pair[1]
+    except IOError:
+        #print "loadProperties: Creating", propertiesFile
+        if (not os.path.isdir(os.path.dirname(propertiesFile))):
+            os.makedirs(os.path.dirname(propertiesFile))
+        propFile = open(propertiesFile, "w")
+        propFile.close()
+    return properties
+    
 def loadList(listFile):
-	""" loads data from a file into a list
-		
-		This function loads simply each line of the file into a list.
-		If the filename is empty, a empty list is returned. If the file given
-		doesn't exist, it will be created.
-		@param listFile: the file to deal with
-		@type listFile: string
-		@rtype: list
-	"""
-	if listFile=="":
-		return []
-	list=[]
-	try:
-		file = open(listFile, "r")
-		content = file.read()
-		file.close()
-		for word in content.split("\n"):
-			if word != "" and word[0] != '#':
-				list.append(word)
-	except IOError:
-		#print "loadList: Creating", listFile
-		if (not os.path.isdir(os.path.dirname(listFile))):
-			os.makedirs(os.path.dirname(listFile))
-		file = open(listFile, "w")
-		file.close()
-	return list
+    """ loads data from a file into a list
+        
+        This function loads simply each line of the file into a list.
+        If the filename is empty, a empty list is returned. If the file given
+        doesn't exist, it will be created.
+        @param listFile: the file to deal with
+        @type listFile: string
+        @rtype: list
+    """
+    if listFile=="":
+        return []
+    list=[]
+    try:
+        file = open(listFile, "r")
+        content = file.read()
+        file.close()
+        for word in content.split("\n"):
+            if word != "" and word[0] != '#':
+                list.append(word)
+    except IOError:
+        #print "loadList: Creating", listFile
+        if (not os.path.isdir(os.path.dirname(listFile))):
+            os.makedirs(os.path.dirname(listFile))
+        file = open(listFile, "w")
+        file.close()
+    return list
