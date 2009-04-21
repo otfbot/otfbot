@@ -150,7 +150,6 @@ class Bot(pluginSupport, irc.IRCClient):
         self.rev_modcharvals = {'!': 16, '@': 8, '%': 4, '+': 2, ' ': 0}
         self.rev_modcharvals = dict([(v, k) for (k, v) in self.modcharvals.iteritems()])
         
-        
         self.logger.info("Starting new Botinstance")
         self.scheduler = scheduler.Scheduler()
 
@@ -404,15 +403,16 @@ class Bot(pluginSupport, irc.IRCClient):
             if a usermode was changed
         """
         channel=channel.lower()
-        m=None
+        print "user: "+user+", channel: "+channel+", args="+str(args)
         for i in range(0, len(args)):
+            m=None
             if modes[0] in ("+","-"):
                 m=modes[0]
                 modes=modes[1:]
             if (m and m == "+") or set:
-                self.users[channel][args[i]] += self.rev_modchars[modes[0]]
+                self.users[channel][self.userlist[args[i]]] += self.rev_modchars[modes[0]]
             elif (m and m == "-") or not set:
-                self.users[channel][args[i]] -= self.rev_modchars[modes[0]]
+                self.users[channel][self.userlist[args[i]]] -= self.rev_modchars[modes[0]]
             else:
                 self.logger.error("Internal error during modeChange: "+set+" "+modes+" "+str(args))
             modes=modes[1:]
