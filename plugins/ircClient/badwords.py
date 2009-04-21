@@ -21,18 +21,18 @@ import random, re
 from lib import chatMod, functions
 
 class Plugin(chatMod.chatMod):
-	def __init__(self, bot):
-		self.bot=bot
+    def __init__(self, bot):
+        self.bot=bot
 
-	def start(self):
-		self.badwordsFile=self.bot.config.getPath("file", datadir, "badwords.txt","badwordsMod")
-		self.badwords=functions.loadList(self.badwordsFile)
+    def start(self):
+        self.badwordsFile=self.bot.config.getPath("file", datadir, "badwords.txt","badwordsMod")
+        self.badwords=functions.loadList(self.badwordsFile)
 
-	def reload(self):
-		self.start()
+    def reload(self):
+        self.start()
 
-	def msg(self, user, channel, msg):
-		for word in self.badwords:
-			if channel in self.bot.channels and word != "" and re.search(word, msg, re.I):
-				self.logger.info("kicking "+user.split("!")[0]+" for badword: "+word)
-				self.bot.kick(channel, user.split("!")[0], "Badword: "+word)
+    def msg(self, user, channel, msg):
+        for word in self.badwords:
+            if channel in self.bot.channels and word != "" and re.search(word, msg, re.I):
+                self.logger.info("kicking "+user.split("!")[0]+" for badword: "+word)
+                self.bot.kick(channel, user.split("!")[0], "Badword: "+word)

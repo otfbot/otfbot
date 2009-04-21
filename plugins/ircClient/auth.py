@@ -24,42 +24,42 @@ from twisted.cred.credentials import UsernamePassword
 from twisted.words.iwords import IUser
 
 class Plugin(chatMod.chatMod):
-	def __init__(self, bot):
-		self.bot=bot
-		self.users={}
+    def __init__(self, bot):
+        self.bot=bot
+        self.users={}
 
-	def query(self, user, channel, msg):
-		"""
-		Uses the auth-service to identify a user. 
-		If no username is given, the nickname is used.
-		"""
+    def query(self, user, channel, msg):
+        """
+        Uses the auth-service to identify a user. 
+        If no username is given, the nickname is used.
+        """
 
-		nick=user.split("!")[0]
-		if msg[0:9] == "identify ":
-			try:
-				portal=self.bot.root.getNamedServices()["auth"]
-			except KeyError:
-				self.logger.error("auth-service unavailable")
-				return
-			msgs=msg.split(" ")
-			if len(msgs) == 2:
-				cred=UsernamePassword(nick,msgs[1])
-			elif len(msgs) == 3:
-				cred=UsernamePassword(msgs[1],msgs[2])
-			else:
-				 self.bot.sendmsg(nick, "Usage: identify [user] pass")
-				 return
-			d=portal.login(cred, self.bot.userlist[nick], IUser)
-			d.addCallback(lambda args: self.bot.sendmsg(nick, "Successfully logged in as "+str(args[1].name)))
-			d.addErrback(lambda failure: self.bot.sendmsg(nick, "Login failed: "+str(failure.getErrorMessage())))
-			
-	def auth(self, user):
-		user=user.split("!")[0]
-		"""
-		Returns the access-level of the given user.
-		"""
-		try:
-			if hasattr(self.bot.userlist[user], 'avatar'):
-				return 10
-		except:
-			return 0
+        nick=user.split("!")[0]
+        if msg[0:9] == "identify ":
+            try:
+                portal=self.bot.root.getNamedServices()["auth"]
+            except KeyError:
+                self.logger.error("auth-service unavailable")
+                return
+            msgs=msg.split(" ")
+            if len(msgs) == 2:
+                cred=UsernamePassword(nick,msgs[1])
+            elif len(msgs) == 3:
+                cred=UsernamePassword(msgs[1],msgs[2])
+            else:
+                 self.bot.sendmsg(nick, "Usage: identify [user] pass")
+                 return
+            d=portal.login(cred, self.bot.userlist[nick], IUser)
+            d.addCallback(lambda args: self.bot.sendmsg(nick, "Successfully logged in as "+str(args[1].name)))
+            d.addErrback(lambda failure: self.bot.sendmsg(nick, "Login failed: "+str(failure.getErrorMessage())))
+            
+    def auth(self, user):
+        user=user.split("!")[0]
+        """
+        Returns the access-level of the given user.
+        """
+        try:
+            if hasattr(self.bot.userlist[user], 'avatar'):
+                return 10
+        except:
+            return 0

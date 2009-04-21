@@ -21,26 +21,26 @@ import random, re
 from lib import chatMod
 
 class Plugin(chatMod.chatMod):
-	def __init__(self, bot):
-		self.bot=bot
+    def __init__(self, bot):
+        self.bot=bot
 
-	def command(self, user, channel, command, options):
-		if command == "wuerfel" or command=="dice":
-			if options == "":
-				self.bot.sendme(channel, "wuerfelt. Das Ergebnis ist: "+str(random.randint(1,6)))
-			else:
-				num = 2
-				string = "wuerfelt. Die Ergebnisse sind: "
-				try:
-					num = int(options)
-				except ValueError:
-					num = 2
-				if num > 10:
-					num = 10
-				for i in range(1,num+1):
-					zahl = random.randint(1,6)
-					if i < num:
-						string += str(zahl)+", "
-					else:
-						string += str(zahl)
-				self.bot.sendme(channel, string) 
+    def command(self, user, channel, command, options):
+        if command == "wuerfel" or command=="dice":
+            if options == "":
+                self.bot.sendme(channel, "wuerfelt. Das Ergebnis ist: "+str(random.randint(1,6)))
+            else:
+                num = 2
+                string = "wuerfelt. Die Ergebnisse sind: "
+                try:
+                    num = int(options)
+                except ValueError:
+                    num = 2
+                if num > 10:
+                    num = 10
+                for i in range(1,num+1):
+                    zahl = random.randint(1,6)
+                    if i < num:
+                        string += str(zahl)+", "
+                    else:
+                        string += str(zahl)
+                self.bot.sendme(channel, string) 

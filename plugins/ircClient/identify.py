@@ -22,26 +22,26 @@ import random, re, time
 from lib import chatMod
 
 class Plugin(chatMod.chatMod):
-	def __init__(self, bot):
-		self.bot=bot
-		self.sent_identification=False
+    def __init__(self, bot):
+        self.bot=bot
+        self.sent_identification=False
 
-	def connectionMade(self):
-		self.password = str(self.bot.config.get("password", "", "identifyMod", self.bot.network))
-	
-	def signedOn(self):
-		self.identify()
-		
-	def identify(self):
-		if self.password != "":
-			self.logger.info("identifying to nickserv")
-			self.bot.sendmsg("nickserv", "identify "+self.password)
-			self.sent_identification=True
-		if self.bot.config.getBool("setBotFlag", True, "identifyMod", self.bot.network):
-			self.logger.info("setting usermode +b")
-			self.bot.mode(self.bot.nickname, 1, "B")
-			
-	def noticed(self, user, channel, msg):
-		user=user.split("!")[0]
-		if (user.lower() == "nickserv" and self.sent_identification):
-			self.logger.debug(user+": "+msg)
+    def connectionMade(self):
+        self.password = str(self.bot.config.get("password", "", "identifyMod", self.bot.network))
+    
+    def signedOn(self):
+        self.identify()
+        
+    def identify(self):
+        if self.password != "":
+            self.logger.info("identifying to nickserv")
+            self.bot.sendmsg("nickserv", "identify "+self.password)
+            self.sent_identification=True
+        if self.bot.config.getBool("setBotFlag", True, "identifyMod", self.bot.network):
+            self.logger.info("setting usermode +b")
+            self.bot.mode(self.bot.nickname, 1, "B")
+            
+    def noticed(self, user, channel, msg):
+        user=user.split("!")[0]
+        if (user.lower() == "nickserv" and self.sent_identification):
+            self.logger.debug(user+": "+msg)

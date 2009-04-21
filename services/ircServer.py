@@ -29,49 +29,49 @@ from lib.pluginSupport import pluginSupport
 import glob
 
 class botService(service.MultiService):
-	name="ircServer"
-	def __init__(self, root, parent):
-		self.root=root
-		self.parent=parent
-		service.MultiService.__init__(self)
-	def startService(self):
-		self.config=self.root.getNamedServices()['config']
-		port=int(self.config.get("port", "6667", "server"))
-		interface=interface=self.config.get("interface", "127.0.0.1", "server")
-		factory=ircServerFactory(self.root, self)
-		serv=internet.TCPServer(port=port, factory=factory, interface=interface)
-		self.addService(serv)
-		service.MultiService.startService(self)  
+    name="ircServer"
+    def __init__(self, root, parent):
+        self.root=root
+        self.parent=parent
+        service.MultiService.__init__(self)
+    def startService(self):
+        self.config=self.root.getNamedServices()['config']
+        port=int(self.config.get("port", "6667", "server"))
+        interface=interface=self.config.get("interface", "127.0.0.1", "server")
+        factory=ircServerFactory(self.root, self)
+        serv=internet.TCPServer(port=port, factory=factory, interface=interface)
+        self.addService(serv)
+        service.MultiService.startService(self)  
 
 
 class Server(IRCUser, pluginSupport):
-	pluginSupportName="ircServer"
-	pluginSupportPath="plugins/ircServer"
-	def __init__(self, root, parent):
-		pluginSupport.__init__(self, root, parent)
+    pluginSupportName="ircServer"
+    pluginSupportPath="plugins/ircServer"
+    def __init__(self, root, parent):
+        pluginSupport.__init__(self, root, parent)
 
-		self.name="nickname"
-		self.user="user"
-		self.firstnick=True
-		self.logger=logging.getLogger("server")
-		self.classes=[]
-		self.config=root.getNamedServices()['config']
+        self.name="nickname"
+        self.user="user"
+        self.firstnick=True
+        self.logger=logging.getLogger("server")
+        self.classes=[]
+        self.config=root.getNamedServices()['config']
 
-		self.startPlugins()
+        self.startPlugins()
 
-	#same as in lib/bot.py. support for legacy-plugins
-	def startPlugin(self, pluginName):
-		plugin=pluginSupport.startPlugin(self, pluginName)
-		#TODO: this is only a workaround until the plugins register their callbacks
-		if plugin:
-			for callback in dir(plugin):
-				self.registerCallback(plugin, callback)
+    #same as in lib/bot.py. support for legacy-plugins
+    def startPlugin(self, pluginName):
+        plugin=pluginSupport.startPlugin(self, pluginName)
+        #TODO: this is only a workaround until the plugins register their callbacks
+        if plugin:
+            for callback in dir(plugin):
+                self.registerCallback(plugin, callback)
 
-	def handleCommand(self, command, prefix, params):
-		"""Determine the function to call for the given command and call
+    def handleCommand(self, command, prefix, params):
+        """Determine the function to call for the given command and call
         it with the given arguments.
         """
-		###twisted handling###
+        ###twisted handling###
         #method = getattr(self, "irc_%s" % command, None)
         #try:
         #    if method is not None:
@@ -80,34 +80,34 @@ class Server(IRCUser, pluginSupport):
         #        self.irc_unknown(prefix, command, params)
         #except:
         #    log.deferr()
-		###we use _apirunner instead###
-		self._apirunner("irc_%s"%command, {'prefix': prefix, 'params': params})
-	def connectionMade(self):
-		self._apirunner("connectionMade")
-	def connectionLost(self, reason):
-		self.connected=False
-	def getHostmask(self):
-		return "%s!%s@%s"%(self.name, self.user, self.hostname)
-	def sendmsg(self, user, channel, msg):
-		if self.connected:
-			self.privmsg(user, channel, msg)
-	def stop(self):
-		self._apirunner("stop")
-		for mod in self.plugins.keys():
-			del(self.plugins[mod])
-		self.plugins={}
+        ###we use _apirunner instead###
+        self._apirunner("irc_%s"%command, {'prefix': prefix, 'params': params})
+    def connectionMade(self):
+        self._apirunner("connectionMade")
+    def connectionLost(self, reason):
+        self.connected=False
+    def getHostmask(self):
+        return "%s!%s@%s"%(self.name, self.user, self.hostname)
+    def sendmsg(self, user, channel, msg):
+        if self.connected:
+            self.privmsg(user, channel, msg)
+    def stop(self):
+        self._apirunner("stop")
+        for mod in self.plugins.keys():
+            del(self.plugins[mod])
+        self.plugins={}
 
 class ircServerFactory(protocol.ServerFactory):
-	def __init__(self, root, parent):
-		self.root=root
-		self.parent=parent
-		self.config=root.getNamedServices()['config']
+    def __init__(self, root, parent):
+        self.root=root
+        self.parent=parent
+        self.config=root.getNamedServices()['config']
 
-		self.protocol=Server
-	def buildProtocol(self, addr):
-		self.p=self.protocol(self.root, self)
-		self.p.connected=True
-		self.p.factory=self
-		return self.p
-	def stopFactory(self):
-		pass
+        self.protocol=Server
+    def buildProtocol(self, addr):
+        self.p=self.protocol(self.root, self)
+        self.p.connected=True
+        self.p.factory=self
+        return self.p
+    def stopFactory(self):
+        pass

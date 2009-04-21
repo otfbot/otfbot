@@ -19,9 +19,9 @@
 from lib import chatMod
 
 class Plugin(chatMod.chatMod):
-	def __init__(self, bot):
-		self.bot=bot
+    def __init__(self, bot):
+        self.bot=bot
 
-	def command(self, user, channel, command, options):
-		if command == "version":
-				self.bot.sendmsg(channel, "r"+str("$Revision: 201 $".split(" ")[1]))
+    def command(self, user, channel, command, options):
+        if command == "version":
+                self.bot.sendmsg(channel, "r"+str("$Revision: 201 $".split(" ")[1]))
