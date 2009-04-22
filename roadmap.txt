@@ -1,0 +1,38 @@
+Milestone 1.0:
+- config split in confidental and non-confidental parts
+- reasonable logging
+- services:
+  - ircClient
+  - config
+  - control
+  - auth
+  - remoteCliServer
+  - optional ircServer
+- plugins:
+  - answers / commands merged
+  - auth
+  - autorejoin
+  - badwords
+  - controlIRC
+  - eightBall
+  - feed
+  - identify
+  - karma
+  - log
+  - ki
+  - marvin
+  - math
+  - mirror
+  - mode (TODO: more functions, refactoring for new auth/userdb?)
+  - reminder
+  - svn(?)
+  - tictactoe
+  - tv
+  - url
+  - weather
+  - version(?) (does not do very much at the moment)
+
+post 1.0:
+- config with sections instead of dots (main.nickname)
+- some cool webServer Plugins?
+  - Log Viewer?
