@@ -16,16 +16,17 @@ Milestone 1.0:
   - controlIRC
   - eightBall
   - feed
-  - identify
+  - google (with apikey)
+  - identify (=> rename to nickserv)
   - karma
   - log
   - ki
+  - kurs
   - marvin
   - math
   - mirror
   - mode (TODO: more functions, refactoring for new auth/userdb?)
   - reminder
-  - svn(?)
   - tictactoe
   - tv
   - url
@@ -36,3 +37,5 @@ post 1.0:
 - config with sections instead of dots (main.nickname)
 - some cool webServer Plugins?
   - Log Viewer?
+- storage abstraction
+- autoreload of changed datafile
