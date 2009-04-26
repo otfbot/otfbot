@@ -28,6 +28,9 @@ class Plugin(chatMod.chatMod):
         self.answersFile=self.bot.config.getPath("file", datadir, "answers.txt", "answerMod")
         self.answers = functions.loadProperties(self.answersFile)
 
+    def action(self, user, channel, msg):
+        return self.msg(user, channel, msg)
+
     def msg(self, user, channel, msg):
         user = user.split("!")[0] #only nick
         if channel in self.bot.channels: #Do not respond to server messages
