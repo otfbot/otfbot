@@ -397,7 +397,7 @@ class Bot(pluginSupport, irc.IRCClient):
             @type msg: string
         """        
         channel=channel.lower()
-        self._apirunner("action",{"user":user,"channel":channel,"message":message})
+        self._apirunner("action",{"user":user,"channel":channel,"msg":message})
 
     def modeChanged(self, user, channel, set, modes, args):
         """ called by twisted
