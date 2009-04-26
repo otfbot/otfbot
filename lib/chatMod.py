@@ -57,7 +57,7 @@ class chatMod:
     def noticed(self, user, channel, msg):
         """we got a notice"""
         pass
-    def action(self, user, channel, message):
+    def action(self, user, channel, msg):
         """action (/me) received"""
         pass
     def modeChanged(self, user, channel, set, modes, args):
