@@ -37,10 +37,10 @@ class Plugin(chatMod.chatMod):
                 color=self.colors[hash(nick)%len(self.colors)]
                 nick="%s%s\x0F"%(color, nick)
             self.getbot(target_network).sendmsg(target_channel, "< %s> %s"%(nick,msg))
-    def action(self, user, channel, message):
+    def action(self, user, channel, msg):
         if (self.network, channel) in self.bot.config.has("mirrorto", "mirrorMod")[2]:
             (target_network, target_channel)=self.bot.config.get("mirrorto", "unset", "mirrorMod", self.network, channel).split("-", 1)
-            self.getbot(target_network).sendmsg(target_channel, "* %s %s "%(user.split("!")[0], message))
+            self.getbot(target_network).sendmsg(target_channel, "* %s %s "%(user.split("!")[0], msg))
     def kickedFrom(self, channel, kicker, message):
         if (self.network, channel) in self.bot.config.has("mirrorto", "mirrorMod")[2]:
             (target_network, target_channel)=self.bot.config.get("mirrorto", "unset", "mirrorMod", self.network, channel).split("-", 1)

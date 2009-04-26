@@ -123,10 +123,10 @@ class Plugin(chatMod.chatMod):
             #self.logger.info(str(user+" : "+channel+" : "+msg))
             self.logPrivate(user.split("!")[0], "< "+user.split("!")[0]+"> "+msg)
 
-    def action(self, user, channel, message):
-        #self.logger.debug(user+channel+message)
+    def action(self, user, channel, msg):
+        #self.logger.debug(user+channel+msg)
         user=user.split("!")[0]
-        self.log(channel, " * "+user+" "+message)
+        self.log(channel, " * "+user+" "+msg)
         
     def modeChanged(self, user, channel, set, modes, args):
         user=user.split("!")[0]
