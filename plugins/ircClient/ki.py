@@ -255,7 +255,7 @@ class Plugin(chatMod.chatMod):
         delay=len(reply)*0.3*float(self.bot.config.get("wait", "2", "kiMod", self.bot.network)) #a normal user does not type that fast
         if number < chance:
             #self.bot.sendmsg(user, reply, "UTF-8")
-            self.bot.scheduler.callLater(delay, self.bot.sendmsg, user, reply, "UTF-8")
+            self.bot.getNamedServices()['scheduler'].callLater(delay, self.bot.sendmsg, user, reply, "UTF-8")
     def msg(self, user, channel, msg):
         user=user.split("!")[0]
         if not user in self.nicklist:
@@ -312,10 +312,10 @@ class Plugin(chatMod.chatMod):
             chance=int(self.bot.config.get("answerPercent", "50", "kiMod", self.bot.network, channel))*10
             if israndom:
                 #self.bot.sendmsg(channel, reply, "UTF-8")
-                self.bot.scheduler.callLater(delay, self.bot.sendmsg, channel, reply, "UTF-8")
+                self.bot.getNamedServices()['scheduler'].callLater(delay, self.bot.sendmsg, channel, reply, "UTF-8")
             elif number < chance: #apply answerPercent only on answers
                 #self.bot.sendmsg(channel, user+": "+reply, "UTF-8")
-                self.bot.scheduler.callLater(delay, self.bot.sendmsg, channel, user+": "+reply, "UTF-8")
+                self.bot.getNamedServices()['scheduler'].callLater(delay, self.bot.sendmsg, channel, user+": "+reply, "UTF-8")
 
     def connectionMade(self):
         self.lnickname=string.lower(self.bot.nickname)

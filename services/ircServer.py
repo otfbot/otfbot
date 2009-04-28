@@ -24,7 +24,7 @@ from twisted.words.protocols import irc
 from twisted.words.service import IRCUser
 from twisted.application import service, internet
 import logging, traceback, sys, time
-from lib import bot, chatMod
+from lib import chatMod
 from lib.pluginSupport import pluginSupport
 import glob
 
