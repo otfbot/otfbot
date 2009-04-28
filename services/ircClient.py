@@ -27,7 +27,6 @@ import logging
 import logging.handlers
 import sys, traceback, string, time, os, glob
 
-from lib import scheduler
 from lib.pluginSupport import pluginSupport
 from lib.User import IrcUser
 
@@ -101,7 +100,6 @@ class Bot(pluginSupport, irc.IRCClient):
         @ivar network: the name of the network we are connected to
         @type network: string
         @ivar logger: a instance of the standard python logger
-        @ivar scheduler: a instance of the L{Scheduler}
         @ivar nickname: the nick of the bot
     """
     pluginSupportPath="plugins/ircClient" #path were the plugins are
@@ -152,7 +150,6 @@ class Bot(pluginSupport, irc.IRCClient):
         self.rev_modcharvals = dict([(v, k) for (k, v) in self.modcharvals.iteritems()])
         
         self.logger.info("Starting new Botinstance")
-        self.scheduler = scheduler.Scheduler()
 
         self.startPlugins()
     

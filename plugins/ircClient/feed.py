@@ -54,7 +54,7 @@ class Plugin(chatMod.chatMod):
         if factor==0:
             self.logger.warning(url+" has a waitFactor of 0. Skipping feed.")
             return
-        self.callIDs[url]=self.bot.scheduler.callLater(minWait*60, self.postNewsLoop, channel, url, minWait, minWait, maxWait, factor, postMax)
+        self.callIDs[url]=self.bot.getNamedServices()['scheduler'].callLater(minWait*60, self.postNewsLoop, channel, url, minWait, minWait, maxWait, factor, postMax)
 
         self.readUrls[channel]=[]
         self.feedLastLoaded[url]=0
@@ -142,7 +142,7 @@ class Plugin(chatMod.chatMod):
         had_new=self.postNews(channel, url, feedPostMax)    
 
         newWait=self.getWaitTime(curWait, minWait, maxWait, factor, had_new)
-        self.callIDs[url]=self.bot.scheduler.callLater(newWait*60, self.postNewsLoop, channel, url, newWait, minWait, maxWait, factor, feedPostMax) #recurse
+        self.callIDs[url]=self.bot.getNamedServices()['scheduler'].callLater(newWait*60, self.postNewsLoop, channel, url, newWait, minWait, maxWait, factor, feedPostMax) #recurse
 
     def connectionLost(self, reason):
         self.stop()

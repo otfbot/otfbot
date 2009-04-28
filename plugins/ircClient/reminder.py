@@ -41,7 +41,7 @@ class Plugin(chatMod.chatMod):
             user=user.split("!")[0]
             options=options.split(" ", 1)
             try:
-                wait=float(options)
+                wait=float(options[0])
             except ValueError:
                 self.bot.sendmsg(channel, user.split("!")[0]+": invalid number format \""+options[0]+"\".")
                 return
@@ -52,4 +52,4 @@ class Plugin(chatMod.chatMod):
                 self.messages[when].append([channel, user, text])
             else:
                 self.messages[when]=[[channel, user, text]]
-            self.bot.scheduler.callLater(wait*60, self.remind)
+            self.bot.root.getNamedServices()['scheduler'].callLater(wait*60, self.remind)
