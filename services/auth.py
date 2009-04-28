@@ -22,7 +22,6 @@ from twisted.internet import protocol, reactor, error
 from twisted.cred import portal, checkers
 from twisted.words.service import WordsRealm, InMemoryWordsRealm
 
-from lib.bot import Bot
 from lib.User import IrcUser
 
 import logging, yaml
