@@ -1,5 +1,5 @@
 core:
-* move scheduler in an own service
+* solve problem with services depending on the correct order (control, auth before ircClient). ircClient should not depend on control or auth at all (disabling modules needing auth, if no auth is available)
 * maybe add channel-name to log-messages
 * priorities of callbacks for modules (module with the highest priority will get the callback first)
 * return value for chatmod callbacks, which can be NO_FURTHER_PROCESSING or maybe MSG_CHANGED(newmsg) or something like this.
