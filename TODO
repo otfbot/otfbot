@@ -1,4 +1,5 @@
 core:
+* move scheduler in an own service
 * maybe add channel-name to log-messages
 * priorities of callbacks for modules (module with the highest priority will get the callback first)
 * return value for chatmod callbacks, which can be NO_FURTHER_PROCESSING or maybe MSG_CHANGED(newmsg) or something like this.
