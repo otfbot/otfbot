@@ -111,7 +111,7 @@ class Plugin(chatMod.chatMod):
     def loadNews(self, url):
         self.feedLastLoaded[url]=int(time.time()) #to be removed, too?
         self.logger.debug("loading new Headlines")
-        urlutils.download(url).addCallback(parseNews)
+        urlutils.download(url).addCallback(self.parseNews)
             
     def parseNews(self, feedcontent):
         #TODO: also a blocking call?
