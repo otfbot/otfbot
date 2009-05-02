@@ -33,6 +33,7 @@ class Plugin(chatMod.chatMod):
         self.autoTinyLength=int(self.bot.config.get("autoLength", "50", "urlMod", self.bot.network))
         self.autoPreview=self.bot.config.get("autopreview", False, "urlMod", self.bot.network)
         self.autoServerinfo=self.bot.config.get("autoserverinfo", False, "urlMod", self.bot.network)
+        self.lasturl=""
 
     def command(self, user, channel, command, options):
         response = ""
@@ -43,7 +44,10 @@ class Plugin(chatMod.chatMod):
             d.addCallback(self.processPreview, channel)
             d.addErrback(self.error, channel)
         if "tinyurl" in command:
-            d=urlutils.download("http://tinyurl.com/api-create.php?url="+options)
+            if options!="":
+                d=urlutils.download("http://tinyurl.com/api-create.php?url="+options)
+            else:
+                d=urlutils.download("http://tinyurl.com/api-create.php?url="+self.lasturl)
             d.addCallback(self.processTiny, channel)
             d.addErrback(self.error, channel)
 
@@ -72,8 +76,11 @@ class Plugin(chatMod.chatMod):
             url=regex.group(1)
             if string.lower(user.split("!")[0]) != string.lower(self.bot.nickname):
                 cmd=""
-                if not "tinyurl.com" in url and len(url) > self.autoTinyLength and self.autoTiny:
-                    cmd+="+tinyurl"
+                if not "tinyurl.com" in url:
+                    if len(url) > self.autoTinyLength and self.autoTiny:
+                        cmd+="+tinyurl"
+                    else:
+                        self.lasturl=url
                 if self.autoPreview:
                     cmd+="+preview"
                 if self.autoServerinfo:
