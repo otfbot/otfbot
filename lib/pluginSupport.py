@@ -133,7 +133,7 @@ class pluginSupport:
         elif type(exception) == self.WontStart:
             logger.info('Plugin "%s" will not start because "%s".'%(plugin, str(exception)))
             return
-        logger.error("Exception in Plugin "+plugin+": "+str(exception))
+        logger.error("Exception in Plugin "+plugin+": "+repr(exception))
         tb_list = traceback.format_tb(sys.exc_info()[2])
         for entry in tb_list:
             for line in entry.strip().split("\n"):
