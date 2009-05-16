@@ -173,7 +173,7 @@ class Plugin(chatMod.chatMod):
         self.time = time.time()
         if command == "wetter":
             c = getWeather(options)
-            if len(c) < 1:
+            if len(c) < 1 or not c.has_key('location'):
                 self.bot.sendmsg(channel,"Keinen passenden Ort gefunden")
             else:
                 answ = "Wetter f\xfcr "+str(c['location']['city'])
