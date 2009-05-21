@@ -195,7 +195,20 @@ class Bot(pluginSupport, irc.IRCClient):
         if not self.plugins.has_key(dependency):
             raise self.DependencyMissing(dependency)
     
-    def sendmsg(self, channel, msg, encoding="iso-8859-15", fallback="iso-8859-15"):
+    def encode_line(self, line, encoding, fallback):
+        try:
+            line=unicode(line, encoding).encode(self.config.get("encoding", "UTF-8", "main"))
+        except UnicodeDecodeError:
+            #self.logger.debug("Unicode Decode Error with String:"+str(msg))
+            #Try with Fallback encoding
+            line=unicode(line, fallback).encode(self.config.get("encoding", "UTF-8", "main"))
+        except UnicodeEncodeError:
+            pass
+            #self.logger.debug("Unicode Encode Error with String:"+str(msg))
+            #use msg as is
+        return line
+
+    def sendmsg(self, channel, msg, encoding="UTF-8", fallback="iso-8859-15"):
         """
             call B{only} this to send messages to channels or users
             it converts the message from iso-8859-15 to a encoding given in the config
@@ -211,22 +224,13 @@ class Bot(pluginSupport, irc.IRCClient):
         if not type(msg)==list:
             msg=[msg]
         for line in msg:
-            try:
-                line=unicode(line, encoding).encode(self.config.get("encoding", "UTF-8", "main"))
-            except UnicodeDecodeError:
-                #self.logger.debug("Unicode Decode Error with String:"+str(msg))
-                #Try with Fallback encoding
-                msg=unicode(line, fallback).encode(self.config.get("encoding", "UTF-8", "main"))
-            except UnicodeEncodeError:
-                pass
-                #self.logger.debug("Unicode Encode Error with String:"+str(msg))
-                #use msg as is
+            line=self.encode_line(line, encoding, fallback)
             
             self.msg(channel, line)
             self.privmsg(self.nickname, channel, line)
             time.sleep(0.5)
         
-    def sendme(self, channel, action, encoding="iso-8859-15"):
+    def sendme(self, channel, action, encoding="UTF-8", fallback="iso-8859-15"):
         """
             call B{only} this to send actions (/me) to channels
             it converts the message from iso-8859-15 to a encoding given in the config
@@ -236,11 +240,12 @@ class Bot(pluginSupport, irc.IRCClient):
             @param    action:        the message to send
             @type    encoding:    string
             @param    encoding:    the encoding of C{msg}
+            @param    fallback:    the encoding of C{msg}
         """
         if not type(action)==list:
             action=[action]
         for line in action:
-            line=unicode(line, encoding).encode(self.config.get("encoding", "UTF-8", "main"))
+            line=self.encode_line(line, encoding, fallback)
             
             self.me(channel, line)
             self.action(self.nickname, channel, line)
