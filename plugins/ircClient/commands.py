@@ -37,9 +37,9 @@ class Plugin(chatMod.chatMod):
             answer=self.respond(channel, user, command, options)
             if answer != "":
                 if answer[0] == ":":
-                    self.bot.sendmsg(channel, answer[1:], self.bot.config.get("commandsMod.fileencoding", "iso-8859-15"))
+                    self.bot.sendmsg(channel, answer[1:], self.bot.config.get("fileencoding", "iso-8859-15", "commandsMod"))
                 else:
-                    self.bot.sendme(channel, answer, self.bot.config.get("commandsMod.fileencoding", "iso-8859-15"))
+                    self.bot.sendme(channel, answer, self.bot.config.get("fileencoding", "iso-8859-15", "commandsMod"))
 
     def start(self):
         self.commands={}
