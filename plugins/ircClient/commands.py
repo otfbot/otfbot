@@ -79,7 +79,7 @@ class Plugin(chatMod.chatMod):
         'testuser wanted to show you how it works'
         """
         answer = ""
-        if len(options) >1:
+        if len(options) >=1:
             options = options.rstrip()
             answers=self.getCommand(channel, command+"_")
             if len(answers):
