@@ -43,6 +43,8 @@ def loadProperties(propertiesFile, ambiguous=False):
             if len(line) >1 and line[0] != "#":
                 pair = line.split("=", 1)
                 if len(pair)==2:
+                    if pair[1][0]=="=": #skip === bla === i.e. from dokuwiki headline
+                        continue
                     if ambiguous:
                         if not properties.has_key(pair[0]):
                             properties[pair[0]] = []
