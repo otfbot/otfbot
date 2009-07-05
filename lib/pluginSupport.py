@@ -18,7 +18,7 @@ class pluginSupport:
     def depends_on_module(self, dependency):
         try:
             __import__(dependency)
-        except ImportError
+        except ImportError:
             raise self.ModuleMissing(dependency)
     def depends_on_service(self, dependency):
         if not self.root.getNamedService(dependency):
