@@ -91,6 +91,12 @@ configfilename="otfbot.yaml"
 application=service.Application("otfbot")
 application.getServices=lambda: service.IServiceCollection(application).services
 application.getNamedServices=lambda: service.IServiceCollection(application).namedServices
+def getNamedService(name):
+    try:
+        return application.getNamedServices()[name]
+    except KeyError:
+        return None
+application.getNamedService=getNamedService
 
 configS=configService.loadConfig(configfilename, "plugins/*/*.yaml")
 if not configS:
@@ -102,6 +108,7 @@ service_names=configS.get("services", [], "main")
 service_classes=[]
 service_instances=[]
 for service_name in service_names:
+    print "starting Service %s"%service_name
     service_classes.append(__import__("services."+service_name, fromlist=['botService']))
     service_instances.append(service_classes[-1].botService(application, application))
-    service_instances[-1].setServiceParent(application)
+    #service_instances[-1].setServiceParent(application)

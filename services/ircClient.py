@@ -37,14 +37,14 @@ class botService(service.MultiService):
         self.root=root
         self.parent=parent
         service.MultiService.__init__(self)
-        if 'control' in self.root.getNamedServices():
-            c=self.root.getNamedServices()['control']
+        c=self.root.getNamedService('control')
+        if c:
             c.register_namespace('ircClient')
             c.register_command(self.connect,'ircClient')
             c.register_command(self.disconnect,'ircClient')
         else:
         	# TODO: turn into a logging-call
-        	print "cannot register commands as no control-service is available"
+        	print "cannot register control-commands as no control-service is available"
         
     def startService(self):
         self.config=self.root.getNamedServices()['config']
