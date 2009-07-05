@@ -70,6 +70,7 @@ class botService(service.MultiService, portal.Portal):
         # TODO: write a custom Realm        
 
     def startService(self):
+        print "auth service started"
         self.config=self.root.getNamedServices()['config']
         portal.Portal.__init__(self, YamlWordsRealm("userdb",self.config.get("datadir","data")+"/userdb.yaml"))        
         # checker hinzufuegen
