@@ -33,7 +33,9 @@ class Plugin(chatMod.chatMod):
         # TODO:add a start()-method with the following 3 lines
         self.logger = logging.getLogger("feedMod")
         if not feedparser_available:
-            self.logger.warning("feedparser module not installed. feedMod disabled.")
+            self.bot.depends("feedparser module")
+        if not self.bot.root.getNamedService('scheduler'):
+            self.bot.depends("scheduler service")
         
         self.feedHeadlines={} #map url -> [(url, headline), ...]
         self.readUrls={} #map channel->[url, url, ...]
@@ -54,7 +56,7 @@ class Plugin(chatMod.chatMod):
         if factor==0:
             self.logger.warning(url+" has a waitFactor of 0. Skipping feed.")
             return
-        self.callIDs[url]=self.bot.getNamedServices()['scheduler'].callLater(minWait*60, self.postNewsLoop, channel, url, minWait, minWait, maxWait, factor, postMax)
+        self.callIDs[url]=self.bot.root.getNamedService('scheduler').callLater(minWait*60, self.postNewsLoop, channel, url, minWait, minWait, maxWait, factor, postMax)
 
         self.readUrls[channel]=[]
         self.feedLastLoaded[url]=0
@@ -111,9 +113,9 @@ class Plugin(chatMod.chatMod):
     def loadNews(self, url):
         self.feedLastLoaded[url]=int(time.time()) #to be removed, too?
         self.logger.debug("loading new Headlines")
-        urlutils.download(url).addCallback(self.parseNews)
+        urlutils.download(url).addCallback(self.parseNews, url)
             
-    def parseNews(self, feedcontent):
+    def parseNews(self, feedcontent, url):
         #TODO: also a blocking call?
         parsed=feedparser.parse(feedcontent)
         self.feedHeadlines[url]=[]
@@ -142,7 +144,7 @@ class Plugin(chatMod.chatMod):
         had_new=self.postNews(channel, url, feedPostMax)    
 
         newWait=self.getWaitTime(curWait, minWait, maxWait, factor, had_new)
-        self.callIDs[url]=self.bot.getNamedServices()['scheduler'].callLater(newWait*60, self.postNewsLoop, channel, url, newWait, minWait, maxWait, factor, feedPostMax) #recurse
+        self.callIDs[url]=self.bot.root.getNamedService('scheduler').callLater(newWait*60, self.postNewsLoop, channel, url, newWait, minWait, maxWait, factor, feedPostMax) #recurse
 
     def connectionLost(self, reason):
         self.stop()
@@ -175,7 +177,7 @@ class Plugin(chatMod.chatMod):
                     self.bot.config.set("feed"+str(num)+".minWait", options[2], "feedMod", self.bot.network, channel)
                 if len(options) >= 2:
                     self.bot.config.set("feed"+str(num)+".postMax", options[1], "feedMod", self.bot.network, channel)
-                if len(options) >=1:
+                if len(options) >=1 and len(options[0]):
                     self.bot.config.set("feed"+str(num)+".url", options[0], "feedMod", self.bot.network, channel)
                 else:
                     self.bot.sendmsg(channel, "Error: Syntax !addfeed url postMax minWait maxWait factor")
