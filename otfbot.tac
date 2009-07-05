@@ -111,4 +111,4 @@ for service_name in service_names:
     print "starting Service %s"%service_name
     service_classes.append(__import__("services."+service_name, fromlist=['botService']))
     service_instances.append(service_classes[-1].botService(application, application))
-    #service_instances[-1].setServiceParent(application)
+    service_instances[-1].setServiceParent(application)
