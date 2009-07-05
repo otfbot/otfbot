@@ -14,9 +14,18 @@ class pluginSupport:
         #XXX: the dependency should be more explicit?
         self.config = root.getNamedServices()['config']
     def depends(self, dependency):
-        """raise an Exception, if the dependency is not active"""
+        raise self.DependencyMissing(dependency)
+    def depends_on_module(self, dependency):
+        try:
+            __import__(dependency)
+        except ImportError
+            raise self.ModuleMissing(dependency)
+    def depends_on_service(self, dependency):
+        if not self.root.getNamedService(dependency):
+            raise self.ServiceMissing(dependency)
+    def depends_on_plugin(dependency):
         if not self.plugins.has_key(dependency):
-            raise self.DependencyMissing(dependency)
+            raise self.PluginMissing(dependency)
     
     def importPlugin(self, name):
         if not self.classes:
@@ -118,6 +127,12 @@ class pluginSupport:
     class WontStart(Exception):
         pass
     class DependencyMissing(Exception):
+        pass
+    class ModuleMissing(DependencyMissing):
+        pass
+    class ServiceMissing(DependencyMissing):
+        pass
+    class PluginMissing(DependencyMissing):
         pass
     def logerror(self, logger, plugin, exception):
         """ format a exception nicely and pass it to the logger
