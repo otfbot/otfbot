@@ -30,8 +30,7 @@ def sendNames(server, network, channel):
 class Plugin(chatMod.chatMod):
     def __init__(self, bot):
         self.bot=bot
-        if not 'ircServer' in  self.bot.root.getNamedServices():
-            self.bot.depends("ircServerService")
+        self.bot.depends_on_service("ircServerService")
         
     def msg(self, user, channel, msg):
         for server in self.bot.root.getNamedServices()['ircServer'].services:
