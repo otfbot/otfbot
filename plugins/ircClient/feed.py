@@ -181,4 +181,5 @@ class Plugin(chatMod.chatMod):
                     self.bot.config.set("feed"+str(num)+".url", options[0], "feedMod", self.bot.network, channel)
                 else:
                     self.bot.sendmsg(channel, "Error: Syntax !addfeed url postMax minWait maxWait factor")
+                    return
                 self.loadSource(num, channel)
