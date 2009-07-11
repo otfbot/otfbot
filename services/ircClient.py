@@ -37,14 +37,13 @@ class botService(service.MultiService):
         self.root=root
         self.parent=parent
         service.MultiService.__init__(self)
-        c=self.root.getNamedService('control')
-        if c:
-            c.register_namespace('ircClient')
-            c.register_command(self.connect,'ircClient')
-            c.register_command(self.disconnect,'ircClient')
-        else:
-        	# TODO: turn into a logging-call
-        	print "cannot register control-commands as no control-service is available"
+        self.c=self.root.getNamedService('control')
+        if not self.c:
+            # TODO: turn into a logging-call
+            print "cannot register control-commands as no control-service is available"        
+        self.register_ctl_command(self.connect)
+        self.register_ctl_command(self.disconnect)
+        self.register_ctl_command(lambda : self.namedServices.keys(), name="list")
         
     def startService(self):
         self.config=self.root.getNamedServices()['config']
@@ -74,6 +73,16 @@ class botService(service.MultiService):
     		return "Disconnected from "+network
     	else:
             return "Not connected to "+network
+    
+    def register_ctl_command(self, f, namespace=None, name=None):
+        if self.c:
+            if namespace is None:
+                namespace=[]
+            if not type(namespace) == list:
+                namespace = [namespace,]
+            namespace.insert(0, self.name)
+            self.c.register_command(f, namespace, name)
+            
 
 class legacyIPC:
     def __init__(self, root):
@@ -113,6 +122,7 @@ class Bot(pluginSupport, irc.IRCClient):
         pluginSupport.__init__(self, root, parent)
         self.config=root.getNamedServices()['config']
         self.network=self.parent.network
+        self.ircClient=self.parent.parent
         self.logger = logging.getLogger(self.network)
         self.ipc=legacyIPC(self.root)
         if self.config.getBool('answerToCTCPVersion', True, 'main', self.network):
@@ -152,6 +162,25 @@ class Bot(pluginSupport, irc.IRCClient):
         self.logger.info("Starting new Botinstance")
 
         self.startPlugins()
+        self.register_my_commands()
+    
+    def register_ctl_command(self, f, namespace=None, name=None):
+        if namespace is None:
+            namespace=[]
+        if not type(namespace) == list:
+            namespace = list(namespace)
+        namespace.insert(0, self.network)
+        self.ircClient.register_ctl_command(f, namespace, name)
+    
+    def register_my_commands(self):
+        #TODO: fill this list up
+        self.register_ctl_command(self.join)
+        self.register_ctl_command(self.leave, name="part")
+        self.register_ctl_command(self.getUsers)
+        self.register_ctl_command(self.setNick, name="rename")
+        self.register_ctl_command(lambda : self.channels, name="listchannels" )
+        self.register_ctl_command(self.kick)
+        self.register_ctl_command(self.sendmsg, name="say")
     
     def startPlugin(self, pluginName):
         plugin=pluginSupport.startPlugin(self, pluginName)

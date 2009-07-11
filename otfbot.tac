@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/twistd -noy
 # -*- coding: iso-8859-1 -*-
 # 
 # This program is free software; you can redistribute it and/or modify

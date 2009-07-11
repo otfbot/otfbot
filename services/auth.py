@@ -37,7 +37,6 @@ class YamlWordsRealm(InMemoryWordsRealm):
         return IrcUser(name+"!user@host")
 
     def addUser(self, user):
-        print "adding user"
         super(YamlWordsRealm, self).addUser(user)
         reactor.callInThread(self.save)
    
@@ -67,6 +66,7 @@ class botService(service.MultiService, portal.Portal):
         self.root=root
         self.parent=parent
         service.MultiService.__init__(self)
+        self.checkers={}
         # TODO: write a custom Realm        
 
     def startService(self):
