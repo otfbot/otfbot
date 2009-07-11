@@ -18,7 +18,7 @@
 #
 
 import random, re, string
-from lib import chatMod, controlInterface
+from lib import chatMod
 
 class Plugin(chatMod.chatMod):
     def __init__(self, bot):
@@ -30,11 +30,11 @@ class Plugin(chatMod.chatMod):
         if self.control.has_key(user) and msg == "endcontrol":
             del self.control[user]
         if msg == "control" and self.bot.auth(user) > 0:
-            self.control[user]=controlInterface.controlInterface(self.bot.root.getNamedServices()["control"])
+            self.control[user]=self.bot.root.getNamedService("control")
             self.bot.sendmsg(nick,"Entered configuration modus. type 'endcontrol' to exit")
         elif self.control.has_key(user):
-            output=self.control[user].input(msg)
-            self.bot.sendmsg(nick, output) #sendmsg can handle lists
+            output=self.control[user].handle_command(msg)
+            self.bot.sendmsg(nick, output)
     
     def command(self, user, channel, command, options):
         if command == "reload" and len(options) > 0:

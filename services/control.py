@@ -38,59 +38,74 @@ class botService(service.MultiService):
         service.MultiService.__init__(self)
         self.logger=logging.getLogger("control")
         self.register_command(self.help)
+        #FIXME: does not really fit here
+        self.register_command(reactor.stop)
 
-    def register_command(self, f, namespace=None):
+    """ Add a command to the control service
+            @type f: callable
+            @param f: the callable to be called, when the command is issued
+    """
+    def register_command(self, f, namespace=None, name=None):
         if not namespace:
             if not f.__name__ in self.commandTree:
                  self.commandTree[f.__name__] = f
             else:
                 self.logger.info("Not overwriting existing Handler for "+f.__name__)
         else:
-            if namespace in self.commandTree:
-                if hasattr(self.commandTree[namespace],'__getitem__'):
-                    self.commandTree[namespace][f.__name__] = f
+            if not type(namespace) == list:
+                namespace = [namespace,]
+            cur=self.commandTree
+            for n in namespace:
+                if not n in cur:
+                    cur[n] = {}
+                cur = cur[n]
+            if hasattr(cur,'__getitem__'):
+                if not name is None:
+                    cur[name] = f
+                else:
+                    cur[f.__name__] = f
+            else:
+                self.logger.error("Not replacing leaf with node at "+namespace)
 
-    def register_namespace(self, name):
-        if not name in self.commandTree:
-            self.commandTree[name] = {}
-    
     def handle_command(self, string):
         s=string.split(" ")
-        if s[0] in self.commandTree:
-            if len(s) > 1 and hasattr(self.commandTree[s[0]],'__getitem__'):
-                if s[1] in self.commandTree[s[0]]:
-                    f=self.commandTree[s[0]][s[1]]
-                    if len(s) > 2:
-                        args=s[2:]
-                    else:
-                        args=[]
-                    space=s[0]
-                else:
-                    return "no such command "+s[1]+" in namespace "+s[0]
+        if not type(s) == list:
+            s=[s,]
+        s.reverse()
+        cur=self.commandTree
+        while len(s) > 0:
+            n = s.pop() 
+            if not n in cur:
+                return n+" not found in "+cur
+            if callable(cur[n]):
+                s.reverse()
+                f=cur[n]
+                try:
+                    return cur[n](*s)
+                except TypeError:
+                    args=inspect.getargspec(cur[n])[0]
+                    if cur[n].im_self:
+                        args.reverse()
+                        args.pop()
+                        args.reverse()
+                    return "Usage: "+cur[n].__name__+ " "+" ".join(args)                
             else:
-                f=self.commandTree[s[0]]
-                args=s[1:]
-                space=""
-            try:
-                return f(*args)
-            except TypeError:
-                #TODO: eliminate first arg when a bound method
-                return "Usage: "+space+" "+f.__name__+ " "+" ".join(inspect.getargspec(f)[0])
-        else:
-            return "no such command: "+s[0]
-    
+                cur=cur[n]
+                
     def help(self):
-        commands = []
-        for c in self.commandTree:
-            if not hasattr(self.commandTree[c], '__getitem__'):
-                commands.append(self.commandTree[c].__name__)
-            else:                
-                subcmds=[]
-                for sc in self.commandTree[c]:
-                    subcmds.append(c+" "+self.commandTree[c][sc].__name__)
-                commands.append(", ".join(subcmds))
-        return "Available commands: "+", ".join(commands)
-
+        return "Available commands: "+", ".join(self._get_cmd_for_subtree(self.commandTree))
+    
+    def _get_cmd_for_subtree(self, dict):
+        r = []
+        for k, v in dict.iteritems():
+            if callable(v):
+                r.append(k)
+            else:
+                sr = self._get_cmd_for_subtree(v)
+                for ee in sr:
+                    r.append(k+" "+ee)
+        return r
+    
     def _cmd_log_get(self, argument):
         index=1
         num=3
@@ -164,10 +179,6 @@ class botService(service.MultiService):
         except ValueError:
             return "Error: your setting is not in the module.setting form"
     
-    def _cmd_stop(self,argument):
-        reactor.stop()
-        return "Disconnecting from all networks und exiting ..."
-
     def _cmd_network_ping(self, argument):
         args=argument.split(" ")
         if args[0] in self.parent.getServiceNamed("ircClient").namedServices:
@@ -175,82 +186,6 @@ class botService(service.MultiService):
             return "pinging network %s" % args[0]
         else:
             return "no network named %s known" % args[0]
-
-    def _cmd_network_list(self,argument):
-        nwks = ", ".join(self.parent.getServiceNamed("ircClient").namedServices.keys())
-        return "Currently connected to: %s." % nwks
-
-    def _cmd_changenick(self,argument):
-        args = argument.split(" ")
-        if len(args) != 2:
-            return "Usage: changenick <network> <newnick>"
-        else:
-            self.parent.getServiceNamed("ircClient").getServiceNamed(args[0]).protocol.setNick(args[1])
-            return "I am now known on %s as %s " % tuple(args)
-
-    def _cmd_channel_list(self,argument):
-        args=argument.split(" ")
-        if len(args) == 1 and args[0] != "":
-            ch=self.parent.getServiceNamed("ircClient").getServiceNamed(args[0]).protocol.channels
-            return "Currently in: %s." % ", ".join(ch)
-        if len(args) == 1 and args[0] == "":
-            ch=[]
-            for net in self.parent.getServiceNamed("ircClient").namedServices.keys():
-                for c in self.parent.getServiceNamed("ircClient").getServiceNamed(net).protocol.channels:
-                    ch.append(net+":"+c)
-            return "Currently in: %s." % ", ".join(ch)
-        else:
-            return "Usage: channel list [network]"
-
-    def _cmd_channel_join(self,argument):
-        args=argument.split(" ",1)
-        if len(args) < 2 or len(args) > 3:
-            return "Usage: join <network> <channel> [key]"
-        else:
-            if len(args) == 2:
-                self.parent.getServiceNamed("ircClient").getServiceNamed(args[0]).protocol.join(args[1])
-            else:
-                self.parent.getServiceNamed("ircClient").getServiceNamed(args[0]).protocol.join(args[1],args[2])
-            return "Joined %s " % args[1]
-
-    def _cmd_channel_part(self,argument):
-        args=argument.split(" ",2)
-        if len(args) < 2:
-            return "Usage: channel part <network> <channel> [message]"
-        if len(args) > 2:
-            partmsg=args[2]
-        else:
-            partmsg=""
-        channel=args[1]
-        self.parent.getServiceNamed("ircClient").getServiceNamed(args[0]).protocol.leave(channel,partmsg)
-        return "Left %s " % channel
-
-    def _cmd_channel_kick(self,argument):
-        msg=""
-        args=argument.split(" ",3)
-        if len(args) < 3:
-            return "Usage: channel kick <network> <channel> <user> [message]"
-        else:
-            channel=args[0]
-            user=args[1]
-            if len(args) == 3:
-                msg = args[3]
-        if msg:
-            self.parent.getServiceNamed("ircClient").getServiceNamed(args[0]).protocol.kick(channel,user,msg)
-        else:
-            self.parent.getServiceNamed("ircClient").getServiceNamed(args[0]).protocol.kick(channel,user)
-        return "Kicked %s from %s." % (user, channel)
-
-    def _cmd_channel_say(self,argument):
-        args=argument.split(" ",2)
-        if len(args) < 3:
-            return "Usage: channel say <network> <channel>|<user> <message>"
-        channel=args[1]
-        msg=args[2]
-        self.parent.getServiceNamed("ircClient").getServiceNamed(args[0]).protocol.sendmsg(channel,msg)
-        return " "
-
-
 
     def _cmd_modules_start(self, argument):
         if len(argument)==0:

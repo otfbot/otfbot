@@ -35,11 +35,10 @@ class Plugin(chatMod.chatMod):
         """
 
         nick=user.split("!")[0]
+        #print nick
         if msg[0:9] == "identify ":
-            try:
-                portal=self.bot.root.getNamedServices()["auth"]
-            except KeyError:
-                self.logger.error("auth-service unavailable")
+            portal=self.bot.root.getNamedService("auth")
+            if not portal:
                 return
             msgs=msg.split(" ")
             if len(msgs) == 2:
