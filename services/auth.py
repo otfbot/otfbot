@@ -18,9 +18,11 @@
 #
 
 from twisted.application import internet, service
-from twisted.internet import protocol, reactor, error
-from twisted.cred import portal, checkers
+from twisted.internet import protocol, reactor, defer
+from twisted.cred import portal, checkers, credentials, error
 from twisted.words.service import WordsRealm, InMemoryWordsRealm
+
+from zope.interface import implements
 
 from lib.User import IrcUser
 
@@ -28,6 +30,11 @@ import logging, yaml
 
 
 class YamlWordsRealm(InMemoryWordsRealm):
+    implements(checkers.ICredentialsChecker)   
+    credentialInterfaces = (
+        credentials.IUsernamePassword,
+    )
+    
     def __init__(self, name, file):
         super(YamlWordsRealm, self).__init__(name)
         self.file=file
@@ -43,6 +50,24 @@ class YamlWordsRealm(InMemoryWordsRealm):
     def addGroup(self, group):
         super(YamlWordsRealm, self).addGroup(user)
         reactor.callInThread(self.save)        
+
+    def requestAvatarId(self, creds):
+        u = self.getUser(unicode(creds.username))
+        u.addErrback(error.UnauthorizedLogin)
+        u.addCallback(self._checkpw, creds)
+        return u
+
+    def _checkpw(self, user, creds):
+        up = credentials.IUsernamePassword(creds)
+        if self._hashpw(up.password) == user.password:
+            return defer.succeed(user.name)
+        else:
+            return defer.fail(error.UnauthorizedLogin())
+
+    def _hashpw(self, pw):
+        #s = sha.new(pw)
+        #return s.digest()
+        return pw
 
     def save(self):
         file=open(self.file, "w")
@@ -72,11 +97,14 @@ class botService(service.MultiService, portal.Portal):
     def startService(self):
         print "auth service started"
         self.config=self.root.getNamedServices()['config']
-        portal.Portal.__init__(self, YamlWordsRealm("userdb",self.config.get("datadir","data")+"/userdb.yaml"))        
+        self.realm = YamlWordsRealm("userdb",self.config.get("datadir","data")+"/userdb.yaml")
+        portal.Portal.__init__(self, self.realm)
         # checker hinzufuegen
-        pwdb = checkers.FilePasswordDB(self.config.get("datadir","data")+"/passwd.txt",cache=True)
-        self.registerChecker(pwdb,*pwdb.credentialInterfaces)
+        #pwdb = checkers.FilePasswordDB(self.config.get("datadir","data")+"/passwd.txt",cache=True)
+        #self.registerChecker(pwdb,*pwdb.credentialInterfaces)
+        self.registerChecker(self.realm,*self.realm.credentialInterfaces)
         service.Service.startService(self)
 
     def getCheckers(self):
         return self.checkers
+

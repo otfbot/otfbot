@@ -37,7 +37,18 @@ class Plugin(chatMod.chatMod):
             self.bot.sendmsg(nick, output)
     
     def command(self, user, channel, command, options):
-        if command == "reload" and len(options) > 0:
+        if self.bot.auth(user) > 0:
+            cmd=[]
+            cmd.append(command)
+            if options and options != "":
+                cmd.append(options)
+            r=self.bot.root.getNamedService("control").handle_command(" ".join(cmd))
+            if r is None:
+                cmd.insert(0,self.bot.parent.parent.name)
+                cmd.insert(0,self.network)
+                r=self.bot.root.getNamedService("control").handle_command(" ".join(cmd))
+            self.bot.sendmsg(channel, r)
+        elif command == "reload" and len(options) > 0:
             try:
                 self.bot.plugins['plugins.ircClient.'+options].reload()
                 self.bot.sendmsg(channel, "Reloaded "+options)

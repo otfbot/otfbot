@@ -42,6 +42,7 @@ class Plugin(chatMod.chatMod):
                     self.bot.sendme(channel, answer, self.bot.config.get("fileencoding", "iso-8859-15", "commandsMod"))
 
     def start(self):
+        self.register_ctl_command(self.reload)
         self.commands={}
         self.commands["general"]=functions.loadProperties(self.bot.config.getPath("file", datadir, "commands.txt","commandsMod"), True)
         self.commands["network"]=functions.loadProperties(self.bot.config.getPath("file", datadir, "commands.txt","commandsMod", self.bot.network), True)
