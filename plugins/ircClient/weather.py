@@ -24,7 +24,8 @@
 import xml.sax
 import xml.sax.handler
 import urllib
-import string, re, time
+import string, re, time, os.path
+import yaml
 from lib import chatMod, functions
 
 class weatherParserOne(xml.sax.handler.ContentHandler):
@@ -172,6 +173,10 @@ class Plugin(chatMod.chatMod):
             return
         self.time = time.time()
         if command == "wetter":
+            if not len(options) and self.lastweather.has_key(nick):
+                options = self.lastweather[nick]
+            elif len(options):
+                self.lastweather[nick]=options
             c = getWeather(options)
             if len(c) < 1 or not c.has_key('location'):
                 self.bot.sendmsg(channel,"Keinen passenden Ort gefunden")
