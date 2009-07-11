@@ -27,6 +27,7 @@ class Plugin(chatMod.chatMod):
     def start(self):
         self.badwordsFile=self.bot.config.getPath("file", datadir, "badwords.txt","badwordsMod")
         self.badwords=functions.loadList(self.badwordsFile)
+        self.register_ctl_command(self.reload)
 
     def reload(self):
         self.start()

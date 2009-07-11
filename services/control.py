@@ -32,6 +32,8 @@ class botService(service.MultiService):
     """
     name="control"
     commandTree={}
+    commandList={}
+    #functionList={}
     def __init__(self, root, parent):
         self.root=root
         self.parent=parent
@@ -46,11 +48,14 @@ class botService(service.MultiService):
             @param f: the callable to be called, when the command is issued
     """
     def register_command(self, f, namespace=None, name=None):
+        if name is None:
+            name=f.__name__
         if not namespace:
             if not f.__name__ in self.commandTree:
                  self.commandTree[f.__name__] = f
             else:
                 self.logger.info("Not overwriting existing Handler for "+f.__name__)
+            #namespace=[]
         else:
             if not type(namespace) == list:
                 namespace = [namespace,]
@@ -60,38 +65,51 @@ class botService(service.MultiService):
                     cur[n] = {}
                 cur = cur[n]
             if hasattr(cur,'__getitem__'):
-                if not name is None:
                     cur[name] = f
-                else:
-                    cur[f.__name__] = f
             else:
                 self.logger.error("Not replacing leaf with node at "+namespace)
+        #namespace.append(name)
+        #self.functionList[f]=namespace
+        if not name in self.commandList:
+            self.commandList[name] = f
+        else:
+            #tmp=self.functionList[self.commandList[name]]
+            self.commandList[name]=[]
+            #self.commandList[name].append(" ".join(tmp))
+            #self.commandList[name].append(" ".join(namespace)) 
 
     def handle_command(self, string):
         s=string.split(" ")
         if not type(s) == list:
             s=[s,]
+        if s[0] in self.commandList:
+            if callable(self.commandList[s[0]]):
+                return self._exec(self.commandList[s[0]], s[1:])
+            else:
+                return "Command \""+s[0]+"\" ambigious: "+", ".join(self.commandList[s[0]])
         s.reverse()
         cur=self.commandTree
         while len(s) > 0:
             n = s.pop() 
             if not n in cur:
-                return n+" not found in "+cur
+                return None
             if callable(cur[n]):
                 s.reverse()
-                f=cur[n]
-                try:
-                    return cur[n](*s)
-                except TypeError:
-                    args=inspect.getargspec(cur[n])[0]
-                    if cur[n].im_self:
-                        args.reverse()
-                        args.pop()
-                        args.reverse()
-                    return "Usage: "+cur[n].__name__+ " "+" ".join(args)                
+                self._exec(cur[n], s)
             else:
                 cur=cur[n]
                 
+    def _exec(self, f, args):
+        try:
+            return f(*args)
+        except TypeError:
+            args=inspect.getargspec(f)[0]
+            if hasattr(f,'im_self'):
+                args.reverse()
+                args.pop()
+                args.reverse()
+            return "Usage: "+f.__name__+ " "+" ".join(args)                
+        
     def help(self):
         return "Available commands: "+", ".join(self._get_cmd_for_subtree(self.commandTree))
     

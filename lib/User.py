@@ -19,6 +19,7 @@
 from twisted.words import service
 
 class IrcUser(service.User):
+    password=""
     def __init__(self, hostmask):
         self.name = hostmask.split("!",1)[0]
         self.user = hostmask.split("!",1)[1].split("@",1)[0]

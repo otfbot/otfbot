@@ -21,6 +21,16 @@ class chatMod:
     """ abstract class for a botmodule    """
     def __init__(self, bot):
         self.bot=bot
+    
+    """ register commands in control service """    
+    def register_ctl_command(self, f, namespace=None, name=None):
+        if namespace is None:
+            namespace=[]
+        if not type(namespace) == list:
+            namespace = list(namespace)
+        namespace.insert(0, self.name.split(".")[-1])
+        self.bot.register_ctl_command(f, namespace, name)
+ 
     def setLogger(self,logger):
         """ set the logger """
         self.logger = logger
