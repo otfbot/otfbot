@@ -165,6 +165,7 @@ class Plugin(chatMod.chatMod):
         self.bot = bot
         self.time=time.time()
         self.commands = ["wetter"]
+        self.lastweather={}
         
     def command(self, user, channel, command, options):
         nick=user.split("!")[0]
