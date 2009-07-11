@@ -31,8 +31,25 @@ class Plugin(chatMod.chatMod):
             
             #http://avila.star-shine.ch/astro/berechnungen.html
             known_fullmoon_date=915245340 #seconds since 1970
+
+            timestamp=time.time()
+            if len(options):
+                options=options.split("-")
+                if len(options)==3:
+                    try:
+                        year=int(options[0])
+                        month=int(options[1])
+                        day=int(options[2])
+                        timestamp=time.mktime((year, month, day, 0, 0, 0, 0, 0, 0))
+                    except ValueError:
+                        self.bot.msg(channel, "Zeitformat: XXXX-XX-XX")
+                        return
+                else:
+                    self.bot.msg(channel, "Zeitformat: XXXX-XX-XX")
+                    return
+
             
-            phase=(time.time()-known_fullmoon_date) /(60*60*24)/ 29.530588
+            phase=(timestamp-known_fullmoon_date) /(60*60*24)/ 29.530588
             phase=phase-int(phase)
             
             if phase < 0.05:
