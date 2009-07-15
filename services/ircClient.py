@@ -37,10 +37,11 @@ class botService(service.MultiService):
         self.root=root
         self.parent=parent
         service.MultiService.__init__(self)
-        self.c=self.root.getNamedService('control')
-        if not self.c:
+        self.controlservice=self.root.getNamedService('control')
+        if not self.controlservice:
             # TODO: turn into a logging-call
             print "cannot register control-commands as no control-service is available"        
+            return
         self.register_ctl_command(self.connect)
         self.register_ctl_command(self.disconnect)
         self.register_ctl_command(lambda : self.namedServices.keys(), name="list")
@@ -75,13 +76,13 @@ class botService(service.MultiService):
             return "Not connected to "+network
     
     def register_ctl_command(self, f, namespace=None, name=None):
-        if self.c:
+        if self.controlservice:
             if namespace is None:
                 namespace=[]
             if not type(namespace) == list:
                 namespace = [namespace,]
             namespace.insert(0, self.name)
-            self.c.register_command(f, namespace, name)
+            self.controlservice.register_command(f, namespace, name)
             
 
 class legacyIPC:
