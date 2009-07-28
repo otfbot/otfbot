@@ -402,7 +402,7 @@ class Bot(pluginSupport, irc.IRCClient):
         """ called by twisted
             for every line that has no own callback
         """
-        #print command
+        #print command, params
         self._apirunner("irc_unknown",{"prefix":prefix,"command":command,"params":params})
 
     def noticed(self, user, channel, msg):
@@ -462,7 +462,7 @@ class Bot(pluginSupport, irc.IRCClient):
         self.logger.info("I was kicked from "+channel+" by "+kicker)
         self._apirunner("kickedFrom",{"channel":channel,"kicker":kicker,"message":message})
         self.channels.remove(channel)
-        self.config.set("enabled", "False", "main", self.network, channel) #disable the channel for the next start of the bot
+        self.config.set("enabled", False, "main", self.network, channel) #disable the channel for the next start of the bot
         del(self.users[channel])
 
     def userKicked(self, kickee, channel, kicker, message):
@@ -558,6 +558,15 @@ class Bot(pluginSupport, irc.IRCClient):
                 u = IrcUser(nick+"!user@host")
                 self.userlist[nick] = u
             self.users[params[2]][u] = self.rev_modcharvals[s]
+    def irc_INVITE(self, prefix, params):
+        """ called by twisted,
+            if the bot was invited
+        """
+        channel=params[1].lower()
+        self.logger.info("I was invited to "+channel+" by "+prefix)
+        self._apirunner("invitedTo",{"channel":channel,"inviter":prefix})
+        self.config.set("enabled", True, "main", self.network, channel)
+        self.join(channel)
 
     def lineReceived(self, line):
         """ called by twisted
