@@ -19,6 +19,7 @@
 # (c) 2008 by Robert Weidlich
 #
 from lib import chatMod
+from lib import urlutils
 
 class Plugin(chatMod.chatMod):
     def __init__(self, bot):
