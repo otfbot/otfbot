@@ -43,7 +43,7 @@ class Plugin(chatMod.chatMod):
         #standardsender = self.bot.getConfig("standardsender","ard,zdf,rtl,sat.1,n24,pro7,vox","tvMod")
         standardsender = self.bot.config.get("standardsender","ard,zdf,rtl,sat.1,n24,pro7,vox","tvMod")
         dataurl = "http://static.xmltv.info/tv.xml.txt"
-        self.bot.getNamedServices()['scheduler'].callLater(1, self.update_data, dataurl)
+        self.bot.getServiceNamed('scheduler').callLater(1, self.update_data, dataurl)
         self.standardsender = []
         for i in standardsender.split(","):
             self.standardsender.append(i.lower().replace(" ",""))
@@ -170,7 +170,7 @@ class Plugin(chatMod.chatMod):
             except:
                 self.logger.info("xmltv-file is not loaded completely yet. TV-Plugin will be aviable as it's loading is done.")
             time.sleep(30)
-        self.bot.getNamedServices()['scheduler'].callLater(86400, self.update_data, dataurl)
+        self.bot.getServiceNamed('scheduler').callLater(86400, self.update_data, dataurl)
     
 class tv:
     def __init__(self,xmltvfile):

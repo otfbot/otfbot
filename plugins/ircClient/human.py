@@ -21,10 +21,10 @@ from lib import chatMod
 
 #same as in serverpart!
 def sendNames(server, network, channel):
-    getClient=lambda network: server.root.getNamedServices()['ircClient'].namedServices[network].kwargs['factory'].protocol
+    getClient=lambda network: server.root.getServiceNamed('ircClient').getServiceNamed(network).protocol
 
-    if network in server.root.getNamedServices()['ircClient'].namedServices.keys():
-        names=[server.root.getNamedServices()['ircClient'].namedServices[network].kwargs['factory'].protocol.users[channel][nickname]['modchar'].strip()+nickname for nickname in getClient(network).users[channel].keys()]
+    if network in server.root.getServiceNamed('ircClient').namedServices.keys():
+        names=[server.root.getServiceNamed('ircClient').namedServices[network].protocol.users[channel][nickname]['modchar'].strip()+nickname for nickname in getClient(network).users[channel].keys()]
         server.names(server.name, "#"+network+"-"+channel, names)
 
 class Plugin(chatMod.chatMod):
@@ -33,7 +33,7 @@ class Plugin(chatMod.chatMod):
         self.bot.depends_on_service("ircServerService")
         
     def msg(self, user, channel, msg):
-        for server in self.bot.root.getNamedServices()['ircServer'].services:
+        for server in self.bot.root.getServiceNamed('ircServer').services:
             #print user, channel, msg,  server.kwargs['factory'].protocol.connected
             server=server.kwargs['factory'].protocol
             if server.connected:
@@ -41,7 +41,7 @@ class Plugin(chatMod.chatMod):
     def query(self, user, channel, msg):
         #TODO FIXME: this is a workaround. the external irc client does not recognize own messages from queries (xchat)
         #or are just the parameters wrong? so it will show the foreign nick, but prefix the message with <botnick>
-        for server in self.bot.root.getNamedServices()['ircServer'].services:
+        for server in self.bot.root.getServiceNamed('ircServer').services:
             server=server.kwargs['factory'].protocol
             if not server.connected:
                 return
@@ -51,7 +51,7 @@ class Plugin(chatMod.chatMod):
                 #server.sendmsg(self.network+"-"+user, self.bot.server.name, msg)
                 server.sendmsg(self.network+"-"+user, server.name, "< %s> "%user.split("!")[0]+msg)
     def irc_RPL_ENDOFNAMES(self, prefix, params):
-        for server in self.bot.root.getNamedServices()['ircServer'].services:
+        for server in self.bot.root.getServiceNamed('ircServer').services:
             server=server.kwargs['factory'].protocol
             if server.connected:
                 sendNames(server, self.network, params[1])

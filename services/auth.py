@@ -96,7 +96,7 @@ class botService(service.MultiService, portal.Portal):
 
     def startService(self):
         print "auth service started"
-        self.config=self.root.getNamedServices()['config']
+        self.config=self.root.getServiceNamed('config')
         self.realm = YamlWordsRealm("userdb",self.config.get("datadir","data")+"/userdb.yaml")
         portal.Portal.__init__(self, self.realm)
         # checker hinzufuegen

@@ -40,7 +40,7 @@ logfile="otfbot.log"
 errfile="otfbot.err"
 stdout=True
 
-formatter = logging.Formatter('%(asctime)s %(name)-18s %(module)-18s %(levelname)-8s %(message)s')
+formatter = logging.Formatter('%(asctime)s %(name)-10s %(module)-14s %(funcName)-20s %(levelname)-8s %(message)s')
 
 filelogger = logging.handlers.RotatingFileHandler(logfile,'a',1048576,5)
 filelogger.setFormatter(formatter)        
@@ -89,14 +89,7 @@ class Options(usage.Options):
 configfilename="otfbot.yaml"
 
 application=service.Application("otfbot")
-application.getServices=lambda: service.IServiceCollection(application).services
-application.getNamedServices=lambda: service.IServiceCollection(application).namedServices
-def getNamedService(name):
-    try:
-        return application.getNamedServices()[name]
-    except KeyError:
-        return None
-application.getNamedService=getNamedService
+application.getServiceNamed=service.IServiceCollection(application).getServiceNamed
 
 configS=configService.loadConfig(configfilename, "plugins/*/*.yaml")
 if not configS:

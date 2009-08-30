@@ -20,6 +20,8 @@
 
 import random, re
 from lib import chatMod
+from lib.User import IrcUser
+
 from twisted.cred.credentials import UsernamePassword
 from twisted.words.iwords import IUser
 
@@ -37,7 +39,7 @@ class Plugin(chatMod.chatMod):
         nick=user.split("!")[0]
         #print nick
         if msg[0:9] == "identify ":
-            portal=self.bot.root.getNamedService("auth")
+            portal=self.bot.root.getServiceNamed("auth")
             if not portal:
                 return
             msgs=msg.split(" ")
@@ -46,8 +48,11 @@ class Plugin(chatMod.chatMod):
             elif len(msgs) == 3:
                 cred=UsernamePassword(msgs[1],msgs[2])
             else:
-                 self.bot.sendmsg(nick, "Usage: identify [user] pass")
-                 return
+                self.bot.sendmsg(nick, "Usage: identify [user] pass")
+                return
+            if not nick in self.bot.userlist:
+                u=IrcUser(user)
+                self.bot.userlist[u.name]=u
             d=portal.login(cred, self.bot.userlist[nick], IUser)
             d.addCallback(lambda args: self.bot.sendmsg(nick, "Successfully logged in as "+str(args[1].name)))
             d.addErrback(lambda failure: self.bot.sendmsg(nick, "Login failed: "+str(failure.getErrorMessage())))

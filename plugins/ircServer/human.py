@@ -25,10 +25,10 @@ from twisted.words import service
 from twisted.protocols import basic
 
 def sendNames(server, network, channel):
-    getClient=lambda network: server.root.getNamedServices()['ircClient'].namedServices[network].kwargs['factory'].protocol
+    getClient=lambda network: server.root.getServiceNamed('ircClient').namedServices[network].kwargs['factory'].protocol
 
-    if network in server.root.getNamedServices()['ircClient'].namedServices.keys():
-        names=[server.root.getNamedServices()['ircClient'].namedServices[network].kwargs['factory'].protocol.users[channel][nickname]['modchar'].strip()+nickname for nickname in getClient(network).users[channel].keys()]
+    if network in server.root.getServiceNamed('ircClient').namedServices.keys():
+        names=[server.root.getServiceNamed('ircClient').namedServices[network].kwargs['factory'].protocol.users[channel][nickname]['modchar'].strip()+nickname for nickname in getClient(network).users[channel].keys()]
         server.names(server.name, "#"+network+"-"+channel, names)
 
 class Plugin(chatMod.chatMod):
@@ -36,8 +36,8 @@ class Plugin(chatMod.chatMod):
         self.server=server
         self.mychannels=[]
         self.first=True
-        self.getClient=lambda network: server.root.getNamedServices()['ircClient'].namedServices[network].kwargs['factory'].protocol
-        self.getClientNames=lambda : [connection.name for connection in self.server.root.getNamedServices()['ircClient'].services]
+        self.getClient=lambda network: server.root.getServiceNamed('ircClient').getServiceNamed(network).protocol
+        self.getClientNames=lambda : [connection.name for connection in self.server.root.getServiceNamed('ircClient').services]
 
         self.server.registerCallback(self, "irc_NICK")
         self.server.registerCallback(self, "irc_PRIVMSG")
@@ -67,7 +67,7 @@ class Plugin(chatMod.chatMod):
             (network, channel)=params[0][1:].split("-", 1) #[1:] and (a,b) can raise ValueErrors
             if network in self.getClientNames():
                 if len(params)>=2: #password given
-                    self.server.root.getNamedServices()['config'].set("password",params[1], "main", network, channel)
+                    self.server.root.getServiceNamed('config').set("password",params[1], "main", network, channel)
                     self.getClient(network).join(channel, params[1])
                 else:
                     self.getClient(network).join(channel)
