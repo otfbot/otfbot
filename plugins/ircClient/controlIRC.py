@@ -30,7 +30,7 @@ class Plugin(chatMod.chatMod):
         if self.control.has_key(user) and msg == "endcontrol":
             del self.control[user]
         if msg == "control" and self.bot.auth(user) > 0:
-            self.control[user]=self.bot.root.getNamedService("control")
+            self.control[user]=self.bot.root.getServiceNamed("control")
             self.bot.sendmsg(nick,"Entered configuration modus. type 'endcontrol' to exit")
         elif self.control.has_key(user):
             output=self.control[user].handle_command(msg)
@@ -44,11 +44,11 @@ class Plugin(chatMod.chatMod):
             cmd.append(command)
             if options and options != "":
                 cmd.append(options)
-            r=self.bot.root.getNamedService("control").handle_command(" ".join(cmd))
+            r=self.bot.root.getServiceNamed("control").handle_command(" ".join(cmd))
             if r is None:
                 cmd.insert(0,self.bot.parent.parent.name)
                 cmd.insert(0,self.network)
-                r=self.bot.root.getNamedService("control").handle_command(" ".join(cmd))
+                r=self.bot.root.getServiceNamed("control").handle_command(" ".join(cmd))
             if r is not None:
                 self.bot.sendmsg(channel, r)
         elif command == "reload" and len(options) > 0:

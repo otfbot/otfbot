@@ -65,7 +65,7 @@ EhQ0wahUTCk1gKA4uPD6TMTChavbh4K63OvbKg==
         f.privateKeys = {'ssh-rsa' : keys.Key.fromString(privateKey) }
         del privateKey
         try:
-            f.portal.checkers = self.root.getNamedServices()["auth"].getCheckers()
+            f.portal.checkers = self.root.getServiceNamed("auth").getCheckers()
         except KeyError:
             pass
         serv=internet.TCPServer(
@@ -119,7 +119,7 @@ class SSHAvatar(avatar.ConchUser):
 
     def openShell(self, protocol):
         #serverProtocol = insults.ServerProtocol(remoteCLI, self)
-        serverProtocol = insults.ServerProtocol(manhole.ColoredManhole, {'app':self.service.root})
+        serverProtocol = insults.ServerProtocol(manhole.ColoredManhole, {'app':self.service.root, 'stop':reactor.stop})
         serverProtocol.makeConnection(protocol)
         protocol.makeConnection(session.wrapProtocol(serverProtocol))
 

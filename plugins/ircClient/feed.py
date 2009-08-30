@@ -34,7 +34,7 @@ class Plugin(chatMod.chatMod):
         self.logger = logging.getLogger("feedMod")
         if not feedparser_available:
             self.bot.depends("feedparser module")
-        if not self.bot.root.getNamedService('scheduler'):
+        if not self.bot.root.getServiceNamed('scheduler'):
             self.bot.depends("scheduler service")
         
         self.feedHeadlines={} #map url -> [(url, headline), ...]
@@ -56,7 +56,7 @@ class Plugin(chatMod.chatMod):
         if factor==0:
             self.logger.warning(url+" has a waitFactor of 0. Skipping feed.")
             return
-        self.callIDs[url]=self.bot.root.getNamedService('scheduler').callLater(minWait*60, self.postNewsLoop, channel, url, minWait, minWait, maxWait, factor, postMax)
+        self.callIDs[url]=self.bot.root.getServiceNamed('scheduler').callLater(minWait*60, self.postNewsLoop, channel, url, minWait, minWait, maxWait, factor, postMax)
 
         self.readUrls[channel]=[]
         self.feedLastLoaded[url]=0
@@ -144,7 +144,7 @@ class Plugin(chatMod.chatMod):
         had_new=self.postNews(channel, url, feedPostMax)    
 
         newWait=self.getWaitTime(curWait, minWait, maxWait, factor, had_new)
-        self.callIDs[url]=self.bot.root.getNamedService('scheduler').callLater(newWait*60, self.postNewsLoop, channel, url, newWait, minWait, maxWait, factor, feedPostMax) #recurse
+        self.callIDs[url]=self.bot.root.getServiceNamed('scheduler').callLater(newWait*60, self.postNewsLoop, channel, url, newWait, minWait, maxWait, factor, feedPostMax) #recurse
 
     def connectionLost(self, reason):
         self.stop()
