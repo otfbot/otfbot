@@ -95,7 +95,7 @@ class botService(service.MultiService):
                 return None
             if callable(cur[n]):
                 s.reverse()
-                self._exec(cur[n], s)
+                return self._exec(cur[n], s)
             else:
                 cur=cur[n]
                 
@@ -196,66 +196,3 @@ class botService(service.MultiService):
                 return self.parent.getServiceNamed("config").get(setting, "[unset]", module, args[1], args[2], set_default=False)
         except ValueError:
             return "Error: your setting is not in the module.setting form"
-    
-    def _cmd_network_ping(self, argument):
-        args=argument.split(" ")
-        if args[0] in self.parent.getServiceNamed("ircClient").namedServices:
-            self.parent.getServiceNamed("ircClient").getServiceNamed(args[0]).protocol.sendLine("PING %f"%time.time())
-            return "pinging network %s" % args[0]
-        else:
-            return "no network named %s known" % args[0]
-
-    def _cmd_modules_start(self, argument):
-        if len(argument)==0:
-            return "modules start module [module2] [module3] [...]"
-        mods = argument.split(" ")
-        for mod in mods:
-            for c in self.bot.classes:
-                if c.__name__==mod:
-                    for network in self.bot.ipc.getall():
-                        self.bot.ipc[network].startMod(c)
-        return "started modules"
-    def _cmd_modules_stop(self, argument):
-        if len(argument)==0:
-            return "modules stop module [module2] [module3] [...]"
-        mods = argument.split(" ")
-        for mod in mods:
-            if mod in self.bot.mods: #TODO: this does not work with different mods per network.
-                for network in self.bot.ipc.getall():
-                    self.bot.ipc[network].stopMod(mod)
-        return "stopped modules"
-    def _cmd_modules_reload(self,argument):
-        tmp = argument.split(" ")
-        if len(tmp) in [1,2]:
-            if tmp[0] in self.bot.ipc.getall().keys():
-                if len(tmp) == 1:
-                    self.bot.ipc[tmp[0]].reloadModules(False)
-                    return "Reloaded all modules of network "+tmp[0]
-                else:
-                    if tmp[1] in self.bot.mods.keys():
-                        for c in self.bot.classes:
-                            if c.__name__==tmp[1]:
-                                self.bot.reloadModuleClass(c)
-                                self.bot.restartModule(tmp[1], tmp[0])
-                                break
-            elif tmp[0]=="all":
-                if len(tmp) == 1:
-                    self.bot.reloadModules(True)
-                    return "reloaded all modules for all networks"
-                else:
-                    if tmp[1] in self.bot.mods.keys(): #any bot instance is ok, because every bot has the same mod classes
-                        for c in self.bot.classes:
-                            if c.__name__==tmp[1]:
-                                self.bot.reloadModuleClass(c)
-                                for network in self.bot.ipc.getall():
-                                    self.bot.ipc[network].restartModule(tmp[1], network)
-                                    return "restarted module %s"%tmp[1]
-                                break
-            else:
-                return "network %s not connected"%tmp[0]
-        return "Usage: [modules] reload network/all [modname]"
-    def _cmd_modules_list(self,argument):
-        module=[]
-        for mod in self.bot.mods:
-            module.append(mod.name)
-        return "The following modules are currently loaded: "+", ".join(module)
