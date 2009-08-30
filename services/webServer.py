@@ -11,7 +11,7 @@ class botService(service.MultiService):
         self.parent=parent
         service.MultiService.__init__(self)
     def startService(self):
-        self.config=self.root.getNamedServices()['config']
+        self.config=self.root.getServiceNamed('config')
         self.server=myHTTPServer(("0.0.0.0", 8080), myHTTPRequestHandler, self.root, self)
         self.thread=thread.start_new_thread(self.server.serve_forever, ())
         service.MultiService.startService(self)  

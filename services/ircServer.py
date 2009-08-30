@@ -35,7 +35,7 @@ class botService(service.MultiService):
         self.parent=parent
         service.MultiService.__init__(self)
     def startService(self):
-        self.config=self.root.getNamedServices()['config']
+        self.config=self.root.getServiceNamed('config')
         port=int(self.config.get("port", "6667", "server"))
         interface=interface=self.config.get("interface", "127.0.0.1", "server")
         factory=ircServerFactory(self.root, self)
@@ -55,7 +55,7 @@ class Server(IRCUser, pluginSupport):
         self.firstnick=True
         self.logger=logging.getLogger("server")
         self.classes=[]
-        self.config=root.getNamedServices()['config']
+        self.config=root.getServiceNamed('config')
 
         self.startPlugins()
 
@@ -101,7 +101,7 @@ class ircServerFactory(protocol.ServerFactory):
     def __init__(self, root, parent):
         self.root=root
         self.parent=parent
-        self.config=root.getNamedServices()['config']
+        self.config=root.getServiceNamed('config')
 
         self.protocol=Server
     def buildProtocol(self, addr):

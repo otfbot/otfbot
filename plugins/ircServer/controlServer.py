@@ -26,7 +26,7 @@ class Plugin(chatMod.chatMod):
     def __init__(self, server):
         self.server=server
         self.first=True
-        self.control=controlInterface.controlInterface(self.server.root.getNamedServices()["control"])
+        self.control=controlInterface.controlInterface(self.server.root.getServiceNamed("control"))
     def irc_NICK(self, prefix, params):
         if self.first:
             self.server.join(self.server.getHostmask(), "#control")

@@ -10,7 +10,7 @@ class pluginSupport:
         self.classes=[]
         self.plugins={}
         #XXX: the dependency should be more explicit?
-        self.config = root.getNamedServices()['config']
+        self.config = root.getServiceNamed('config')
         
     def register_pluginsupport_commands(self):
         # Make sure to have this method!
@@ -29,7 +29,7 @@ class pluginSupport:
         except ImportError:
             raise self.ModuleMissing(dependency)
     def depends_on_service(self, dependency):
-        if not self.root.getNamedService(dependency):
+        if not self.root.getServiceNamed(dependency):
             raise self.ServiceMissing(dependency)
     def depends_on_plugin(dependency):
         if not self.plugins.has_key(dependency):

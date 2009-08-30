@@ -52,4 +52,4 @@ class Plugin(chatMod.chatMod):
                 self.messages[when].append([channel, user, text])
             else:
                 self.messages[when]=[[channel, user, text]]
-            self.bot.root.getNamedServices()['scheduler'].callLater(wait*60, self.remind)
+            self.bot.root.getServiceNamed('scheduler').callLater(wait*60, self.remind)

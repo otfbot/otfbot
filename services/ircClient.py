@@ -36,7 +36,7 @@ class botService(service.MultiService):
         self.root=root
         self.parent=parent
         service.MultiService.__init__(self)
-        self.controlservice=self.root.getNamedService('control')
+        self.controlservice=self.root.getServiceNamed('control')
         self.logger=logging.getLogger(self.name)
         if not self.controlservice:
             logger.warning("cannot register control-commands as no control-service is available")
@@ -46,9 +46,10 @@ class botService(service.MultiService):
             self.register_ctl_command(lambda : self.namedServices.keys(), name="list")
     
     def startService(self):
-        self.config=self.root.getNamedServices()['config']
+        self.config=self.root.getServiceNamed('config')
         for network in self.config.getNetworks():
-            self.connect(network)
+            if self.config.getBool('enabled', 'True', 'main', network):
+                self.connect(network)
         service.MultiService.startService(self)
 
     def connect(self, network):
@@ -82,7 +83,46 @@ class botService(service.MultiService):
                 namespace = [namespace,]
             namespace.insert(0, self.name)
             self.controlservice.register_command(f, namespace, name)
-            
+
+class BotFactory(protocol.ClientFactory):
+    """The Factory for the Bot"""
+
+    def __init__(self, root, parent, network):
+        self.root=root
+        self.parent=parent
+        self.protocol=Bot
+        self.network=network
+        self.config=root.getServiceNamed('config')
+        self.logger=logging.getLogger(network)
+
+    def __repr__(self):
+        return "<BotFactory for network %s>"%self.network
+
+    def clientConnectionLost(self, connector, reason):
+        self.protocol=None
+        self.service.protocol=None
+        if not reason.check(error.ConnectionDone):
+            self.logger.warn("Got disconnected from "+connector.host+": "+str(reason.getErrorMessage()))
+            #protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
+        
+    def clientConnectionFailed(self, connector, reason):
+        self.logger.warn("Connection to "+connector.host+" failed: "+str(reason.getErrorMessage()))
+        #protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
+    
+    def buildProtocol(self,addr):
+        proto=self.protocol(self.root, self)
+        self.protocol=proto
+        self.service.protocol=proto
+        return proto
+    
+#    def stopFactory(self):
+#        #import inspect
+#        #for o in inspect.stack():
+#        #    self.logger.debug(str(o))
+#        self.logger.info("Got Signal to stop factory, stopping service as well")
+#        self.service.disownServiceParent()
+#        self.service.stopService()
+    
 class Bot(pluginSupport, irc.IRCClient):
     """ The Protocol of our IRC-Bot
         @ivar plugins: contains references to all plugins, which are loaded
@@ -106,7 +146,7 @@ class Bot(pluginSupport, irc.IRCClient):
 
     def __init__(self, root, parent):
         pluginSupport.__init__(self, root, parent)
-        self.config=root.getNamedServices()['config']
+        self.config=root.getServiceNamed('config')
         self.network=self.parent.network
         self.ircClient=self.parent.parent
         self.logger = logging.getLogger(self.network)
@@ -114,11 +154,6 @@ class Bot(pluginSupport, irc.IRCClient):
             self.versionName="OTFBot"
             self.versionNum="svn "+"$Revision: 177 $".split(" ")[1]
             self.versionEnv=''
-
-        self.delConfig=lambda *args, **kwargs: self.warn_and_execute(config.delConfig, *args, **kwargs)
-        self.getConfig=lambda *args, **kwargs: self.warn_and_execute(config.getConfig, *args, **kwargs)
-        self.hasConfig=lambda *args, **kwargs: self.warn_and_execute(config.hasConfig, *args, **kwargs)
-        self.setConfig=lambda *args, **kwargs: self.warn_and_execute(config.setConfig, *args, **kwargs)
 
         self.channels=[]
         self.realname=self.config.get("realname", "A Bot", "main", self.network)
@@ -133,11 +168,12 @@ class Bot(pluginSupport, irc.IRCClient):
         
         self.lineRate = 1.0/float(self.config.get("linesPerSecond","2","main",self.network))
 
-        # all users known to the bot, Hostmask => IrcUser
+        # all users known to the bot, nick => IrcUser
         self.userlist    = {}
         # usertracking, channel=>{User => level}
         self.users       = {}
 
+        self.serversupports  = {}
         self.modchars        = {16: 'a', 8: 'o', 4: 'h', 2: 'v', 0: ' '}
         self.rev_modchars    = dict([(v, k) for (k, v) in self.modchars.iteritems()])
 
@@ -329,10 +365,12 @@ class Bot(pluginSupport, irc.IRCClient):
         self.channels.remove(channel)
         self.config.set("enabled", "False", "main", self.network, channel) #disable the channel for the next start of the bot
 
-    #def isupport(self, options):
-        #self.logger.debug("isupport"+str(options))
-    #def bounce(self, info):
-        #self.logger.debug("bounce:"+str(info))
+    def isupport(self, options):
+        for o in options:
+            kv = o.split('=',1)
+            if len(kv) == 1:
+                kv.append(True)
+            self.serversupports[kv[0]] = kv[1]
     #def myInfo(self, servername, version, umodes, cmodes):
         #self.logger.debug("myinfo: servername="+str(servername)+" version="+str(version)+" umodes="+str(umodes)+" cmodes="+str(cmodes))
     def command(self, user, channel, command, options):
@@ -543,7 +581,16 @@ class Bot(pluginSupport, irc.IRCClient):
             else:
                 u = IrcUser(nick+"!user@host")
                 self.userlist[nick] = u
+            self.sendLine("USERHOST "+nick)
             self.users[params[2]][u] = self.rev_modcharvals[s]
+            
+    def irc_RPL_USERHOST(self, prefix, params):
+        for rpl in params[1].strip().split(" "):
+            (nick, hostmask)=rpl.split('=',1)
+            hm=hostmask.split('@',1)
+            self.userlist[nick].user=hm[0][1:]
+            self.userlist[nick].host=hm[1]
+    
     def irc_INVITE(self, prefix, params):
         """ called by twisted,
             if the bot was invited
@@ -553,6 +600,9 @@ class Bot(pluginSupport, irc.IRCClient):
         self._apirunner("invitedTo",{"channel":channel,"inviter":prefix})
         self.config.set("enabled", True, "main", self.network, channel)
         self.join(channel)
+
+    def irc_RPL_BOUNCE(self, prefix, params):
+        self.isupport(params[1:-1])
 
     def lineReceived(self, line):
         """ called by twisted
@@ -582,33 +632,3 @@ class Bot(pluginSupport, irc.IRCClient):
         """disconnects cleanly from the current network"""
         self._apirunner("stop")
         self.quit('Bye')
-        
-class BotFactory(protocol.ReconnectingClientFactory):
-    """The Factory for the Bot"""
-
-    def __init__(self, root, parent, network):
-        self.root=root
-        self.parent=parent
-        self.protocol=Bot
-        self.network=network
-        self.config=root.getNamedServices()['config']
-        self.logger=logging.getLogger(network)
-    def __repr__(self):
-        return "<BotFactory for network %s>"%self.network
-
-    def clientConnectionLost(self, connector, reason):
-        self.protocol=None
-        self.service.protocol=None
-        if not reason.check(error.ConnectionDone):
-            self.logger.warn("Got disconnected from "+connector.host+": "+str(reason.getErrorMessage()))
-            protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
-        
-    def clientConnectionFailed(self, connector, reason):
-        self.logger.warn("Connection to "+connector.host+" failed: "+str(reason.getErrorMessage()))
-        #protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
-    
-    def buildProtocol(self,addr):
-        proto=self.protocol(self.root, self)
-        self.protocol=proto
-        self.parent.getServiceNamed(self.network).protocol=proto
-        return proto
