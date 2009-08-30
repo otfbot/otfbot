@@ -189,3 +189,6 @@ class Plugin(chatMod.chatMod):
         for karmapath in self.karmapaths.keys():
             self.saveKarma(self.karmapaths[karmapath])
 
+    def start(self):
+        for c in self.bot.channels:
+            self.joined(c)

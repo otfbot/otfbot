@@ -28,51 +28,51 @@ from services import config as configService
 
 #logging
 import logging, logging.handlers
-import lib.log as otfbotlog
 from twisted.python import log
 import logging, sys
 
 
-class pythonToTwistedLoggingHandler(logging.Handler):
-    def emit(self, record):
-        log.msg(record.getMessage())
+#class pythonToTwistedLoggingHandler(logging.Handler):
+#    def emit(self, record):
+#        log.msg(record.getMessage())
 
-# Setup Logging
-#path_log="otfbot.log"
-#path_errorlog="otfbot.err"
-# logging to logfile
-#debuglevel=0
-#filelogger = logging.handlers.RotatingFileHandler(path_log,'a',1048576,5)
-#memorylogger = logging.handlers.MemoryHandler(1000)
-#errorlogger = logging.handlers.RotatingFileHandler(path_errorlog,'a',1048576,5)
-#errorlogger.setLevel(logging.ERROR)
+logfile="otfbot.log"
+errfile="otfbot.err"
+stdout=True
+
+formatter = logging.Formatter('%(asctime)s %(name)-18s %(module)-18s %(levelname)-8s %(message)s')
+
+filelogger = logging.handlers.RotatingFileHandler(logfile,'a',1048576,5)
+filelogger.setFormatter(formatter)        
+errorlogger = logging.handlers.RotatingFileHandler(errfile,'a',1048576,5)
+errorlogger.setFormatter(formatter)
+memorylogger = logging.handlers.MemoryHandler(1000)
+memorylogger.setFormatter(formatter)
+if stdout:
+    console = logging.StreamHandler()
+    console.setFormatter(formatter)
+
 logging.getLogger('').setLevel(logging.DEBUG)
-#formatter = logging.Formatter('%(asctime)s %(name)-18s %(module)-18s %(levelname)-8s %(message)s')
-#filelogger.setFormatter(formatter)
-#errorlogger.setFormatter(formatter)
-#memorylogger.setFormatter(formatter)
-#logging.getLogger('').addHandler(filelogger)
-#logging.getLogger('').addHandler(errorlogger)
-#logging.getLogger('').addHandler(memorylogger)
-logging.getLogger('').addHandler(pythonToTwistedLoggingHandler())
+errorlogger.setLevel(logging.ERROR)
 
-#if debuglevel > 0:
-    # logging to stdout
-#console = logging.StreamHandler()
-#logging.getLogger('').setLevel(debuglevel)
-#console.setFormatter(formatter)
-#logging.getLogger('').addHandler(console)
-#corelogger = logging.getLogger('core')
-#corelogger.info("  ___ _____ _____ ____        _   ")
-#corelogger.info(" / _ \_   _|  ___| __ )  ___ | |_ ")
-#corelogger.info("| | | || | | |_  |  _ \ / _ \| __|")
-#corelogger.info("| |_| || | |  _| | |_) | (_) | |_ ")
-#corelogger.info(" \___/ |_| |_|   |____/ \___/ \__|")
-#corelogger.info("")
-#svnrevision="$Revision$".split(" ")[1] #TODO: this is only updated, when otfbot.py is updated
-# get messages from twisted as well
-#plo=otfbotlog.PythonLoggingObserver()
-#plo.start()
+root=logging.getLogger('')
+root.addHandler(filelogger)
+root.addHandler(errorlogger)
+root.addHandler(memorylogger)
+if stdout:
+    root.addHandler(console)
+
+plo = log.PythonLoggingObserver()
+plo.start()
+
+corelogger = logging.getLogger('core')
+corelogger.info("  ___ _____ _____ ____        _   ")
+corelogger.info(" / _ \_   _|  ___| __ )  ___ | |_ ")
+corelogger.info("| | | || | | |_  |  _ \ / _ \| __|")
+corelogger.info("| |_| || | |  _| | |_) | (_) | |_ ")
+corelogger.info(" \___/ |_| |_|   |____/ \___/ \__|")
+corelogger.info("")
+svnrevision="$Revision$".split(" ")[1] #TODO: this is only updated, when otfbot.py is updated
 
 class Options(usage.Options):
         optParameters = [["config","c","otfbot.yaml","Location of configfile"]]
@@ -108,7 +108,7 @@ service_names=configS.get("services", [], "main")
 service_classes=[]
 service_instances=[]
 for service_name in service_names:
-    print "starting Service %s"%service_name
+    log.msg("starting Service %s" % service_name)
     service_classes.append(__import__("services."+service_name, fromlist=['botService']))
     service_instances.append(service_classes[-1].botService(application, application))
     service_instances[-1].setServiceParent(application)
