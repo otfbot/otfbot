@@ -24,8 +24,7 @@ from twisted.internet import protocol, reactor, error, ssl
 from twisted.words.protocols import irc
 
 import logging
-import logging.handlers
-import sys, traceback, string, time, os, glob
+import string, time
 
 from lib.pluginSupport import pluginSupport
 from lib.User import IrcUser
@@ -38,14 +37,14 @@ class botService(service.MultiService):
         self.parent=parent
         service.MultiService.__init__(self)
         self.controlservice=self.root.getNamedService('control')
+        self.logger=logging.getLogger(self.name)
         if not self.controlservice:
-            # TODO: turn into a logging-call
-            print "cannot register control-commands as no control-service is available"        
-            return
-        self.register_ctl_command(self.connect)
-        self.register_ctl_command(self.disconnect)
-        self.register_ctl_command(lambda : self.namedServices.keys(), name="list")
-        
+            logger.warning("cannot register control-commands as no control-service is available")
+        else:
+            self.register_ctl_command(self.connect)
+            self.register_ctl_command(self.disconnect)
+            self.register_ctl_command(lambda : self.namedServices.keys(), name="list")
+    
     def startService(self):
         self.config=self.root.getNamedServices()['config']
         for network in self.config.getNetworks():
@@ -84,21 +83,6 @@ class botService(service.MultiService):
             namespace.insert(0, self.name)
             self.controlservice.register_command(f, namespace, name)
             
-
-class legacyIPC:
-    def __init__(self, root):
-        self.root=root
-        self.logger=logging.getLogger('legacyIPC')
-    def __getitem__(self, item):
-        self.logger.warn("legacy __getitem__ used")
-        return self.root.getNamedServices()['ircClient'].namedServices[item].args[2].protocol
-    def get(self, item):
-        self.logger.warn("legacy get used")
-        return self.__getitem__(item)
-    def getall(self):
-        self.logger.warn("legacy getall used")
-        return self.root.getNamedServices()['ircClient'].namedServices.keys()
-
 class Bot(pluginSupport, irc.IRCClient):
     """ The Protocol of our IRC-Bot
         @ivar plugins: contains references to all plugins, which are loaded
@@ -119,13 +103,13 @@ class Bot(pluginSupport, irc.IRCClient):
         self.logger.debug("deprecated call to %s with args %s"%(str(method), str(args)))
         #XXX: use bot.config.method instead
         return method(*args, **kwargs)
+
     def __init__(self, root, parent):
         pluginSupport.__init__(self, root, parent)
         self.config=root.getNamedServices()['config']
         self.network=self.parent.network
         self.ircClient=self.parent.parent
         self.logger = logging.getLogger(self.network)
-        self.ipc=legacyIPC(self.root)
         if self.config.getBool('answerToCTCPVersion', True, 'main', self.network):
             self.versionName="OTFBot"
             self.versionNum="svn "+"$Revision: 177 $".split(" ")[1]
@@ -164,6 +148,7 @@ class Bot(pluginSupport, irc.IRCClient):
 
         self.startPlugins()
         self.register_my_commands()
+        self.register_pluginsupport_commands()
     
     def register_ctl_command(self, f, namespace=None, name=None):
         if namespace is None:
@@ -182,6 +167,7 @@ class Bot(pluginSupport, irc.IRCClient):
         self.register_ctl_command(lambda : self.channels, name="listchannels" )
         self.register_ctl_command(self.kick)
         self.register_ctl_command(self.sendmsg, name="say")
+        self.register_ctl_command(self.ping)
     
     def startPlugin(self, pluginName):
         plugin=pluginSupport.startPlugin(self, pluginName)
@@ -589,10 +575,13 @@ class Bot(pluginSupport, irc.IRCClient):
         self._apirunner("sendLine",{"line":line})
         irc.IRCClient.sendLine(self, line)
 
+    def ping(self):
+        self.sendLine("PING %f"%time.time())
+    
     def disconnect(self):
         """disconnects cleanly from the current network"""
         self._apirunner("stop")
-        self.quit('Bye')        
+        self.quit('Bye')
         
 class BotFactory(protocol.ReconnectingClientFactory):
     """The Factory for the Bot"""

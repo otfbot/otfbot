@@ -1,7 +1,5 @@
 import sys, traceback
 
-#TODO: we do not have ipc anymore, and self.network only applys to ircClientPlugins
-
 class pluginSupport:
     pluginSupportName="[UNSET]"
     pluginSupportPath="[UNSET]"
@@ -13,6 +11,16 @@ class pluginSupport:
         self.plugins={}
         #XXX: the dependency should be more explicit?
         self.config = root.getNamedServices()['config']
+        
+    def register_pluginsupport_commands(self):
+        # Make sure to have this method!
+        if not "register_ctl_command" in dir(self):
+            self.register_ctl_command = lambda x, y, z: None
+        self.register_ctl_command(self.startPlugin)
+        self.register_ctl_command(self.stopPlugin)
+        self.register_ctl_command(self.restartPlugin)
+        self.register_ctl_command(lambda: self.plugins.keys(), name="listPlugins")
+
     def depends(self, dependency):
         raise self.DependencyMissing(dependency)
     def depends_on_module(self, dependency):
@@ -89,35 +97,26 @@ class pluginSupport:
     def reloadPluginClass(self, pluginClass):
             self.logger.info("reloading class "+pluginClass.__name__)
             reload(pluginClass)
-    def restartPlugin(self, pluginName, network):
-        if network in self.ipc.getall() and pluginName in self.ipc[network].plugins.keys():
-            self.ipc[network].stopPlugin(pluginName)
-            c=None
-            #this is not optimal, because each plugin needs to iterate over all classes
-            for c in self.classes:
-                if c.__name__==pluginName:
-                    break
-            self.ipc[network].startPlugin(c)
 
-    def reloadPlugins(self, all=True):
+    def restartPlugin(self, pluginName):
+        if pluginName in self.plugins.keys():
+            self.stopPlugin(pluginName)
+            self.startPlugin(pluginName)
+
+    def reloadPlugins(self):
         """
             call this to reload all plugins
         """
         for chatPlugin in self.classes:
             self.reloadPluginClass(chatPlugin)
-        if all: #global
-            for network in self.ipc.getall().keys():
-                for plugin in self.ipc[network].plugins.keys():
-                    self.restartPlugin(plugin, network)
-        else:
-            for chatPlugin in self.plugins.values():
-                self.restartPlugin(chatPlugin.name, self.network)
+        for chatPlugin in self.plugins.values():
+            self.restartPlugin(chatPlugin.name)
     
     def stopPlugin(self, pluginName):
         if not pluginName in self.plugins.keys():
             return
         chatPlugin=self.plugins[pluginName]
-        self.logger.info("stopping %s for network %s"%(pluginName, self.network))
+        self.logger.info("stopping %s" % (pluginName,))
         try:
             chatPlugin.stop()
         except Exception, e:
