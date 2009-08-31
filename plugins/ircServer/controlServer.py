@@ -17,7 +17,7 @@
 # (c) 2008 by Alexander Schier
 #
 
-import chatMod
+from lib import chatMod
 import time
 from twisted.internet import reactor
 from lib import controlInterface
