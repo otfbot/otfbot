@@ -18,7 +18,8 @@
 # (c) 2008 by Alexander Schier
 #
 
-import chatMod, string
+from lib import chatMod
+import string
 from twisted.internet import protocol, reactor
 from twisted.words.protocols import irc
 from twisted.words import service
