@@ -80,6 +80,7 @@ class botService(service.MultiService):
 
     def handle_command(self, string):
         s=string.split(" ")
+        #print self.commandList
         if not type(s) == list:
             s=[s,]
         if s[0] in self.commandList:
