@@ -508,6 +508,11 @@ class Bot(pluginSupport, irc.IRCClient):
         else:
             u = IrcUser(user)
             self.userlist[nick] = u
+        
+        print user
+        print channel
+        print self.users
+        
         self.users[channel][u] = 0
         self._apirunner("userJoined",{"user":user,"channel":channel})
 
@@ -587,6 +592,7 @@ class Bot(pluginSupport, irc.IRCClient):
     def irc_RPL_USERHOST(self, prefix, params):
         for rpl in params[1].strip().split(" "):
             (nick, hostmask)=rpl.split('=',1)
+            nick = nick.replace("*","")
             hm=hostmask.split('@',1)
             self.userlist[nick].user=hm[0][1:]
             self.userlist[nick].host=hm[1]
