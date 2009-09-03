@@ -508,11 +508,6 @@ class Bot(pluginSupport, irc.IRCClient):
         else:
             u = IrcUser(user)
             self.userlist[nick] = u
-        
-        print user
-        print channel
-        print self.users
-        
         self.users[channel][u] = 0
         self._apirunner("userJoined",{"user":user,"channel":channel})
 
@@ -618,7 +613,10 @@ class Bot(pluginSupport, irc.IRCClient):
         # adding a correct hostmask for join, part and quit
         self._apirunner("lineReceived", {"line":line})
         if line.split(" ")[1] == "JOIN" and line[1:].split(" ")[0].split("!")[0] != self.nickname:
-            self.userJoined(line[1:].split(" ")[0],string.lower(line.split(" ")[2][1:]))
+            channel = line.split(" ")[2]
+            if channel[0] == ":":
+            	channel = channel[1:]
+            self.userJoined(line[1:].split(" ")[0],string.lower(channel))
             #self.joined(line[1:].split(" ")[0],line.split(" ")[2][1:])
         elif line.split(" ")[1] == "PART" and line[1:].split(" ")[0].split("!")[0] != self.nickname:
             self.userLeft(line[1:].split(" ")[0],line.split(" ")[2])
