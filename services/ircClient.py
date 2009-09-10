@@ -212,12 +212,18 @@ class Bot(pluginSupport, irc.IRCClient):
             for callback in dir(plugin):
                 self.registerCallback(plugin, callback)
 
-    def getUsers(self):
-        """ Get a list of users
+    def getChannelUserDict(self):
+        """ Get a dict with userslists
             @rtype: dict
             @return: a dict with the channelnames as keys
         """
         return self.users
+    def getUsers(self, channel):
+        """ Get a list of users in channel
+            @rtype: dict
+            @return: a list of users
+        """
+        return self.getChannelUserDict()[channel]
     def getFactory(self):
         """ get the factory
             @rtype: BotFactory
