@@ -145,9 +145,9 @@ class Plugin(chatMod.chatMod):
         self.log(channel, "-!- "+user.split("!")[0]+" ["+user.split("!")[1]+"] has left "+channel)#TODO: real Hostmask
     
     def userQuit(self, user, quitMessage):
-        users = self.bot.getUsers()
-        for channel in users:
-            if users[channel].has_key(user.split("!")[0]):
+        userlists = self.bot.getChannelUserDict()
+        for channel in userlists:
+            if userlists[channel].has_key(user.split("!")[0]):
                 self.log(channel, "-!- "+user.split("!")[0]+" ["+user.split("!")[1]+"] has quit ["+quitMessage+"]")
         
     def topicUpdated(self, user, channel, newTopic):
@@ -156,9 +156,9 @@ class Plugin(chatMod.chatMod):
 
     def userRenamed(self, oldname, newname):
         #TODO: This can not handle different channels right
-        user = self.bot.getUsers()
-        for channel in user:
-            if user[channel].has_key(newname):
+        userlists = self.bot.getChannelUserDict()
+        for channel in userlists:
+            if userslists[channel].has_key(newname):
                 self.log(channel, "-!- "+oldname+" is now known as "+newname)
         
     def stop(self):
