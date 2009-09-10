@@ -163,9 +163,6 @@ class Bot(pluginSupport, irc.IRCClient):
         if tmp:
             self.channels=tmp
         
-        self.plugins= {}
-        self.numPlugins = 0
-        
         self.lineRate = 1.0/float(self.config.get("linesPerSecond","2","main",self.network))
 
         # all users known to the bot, nick => IrcUser
