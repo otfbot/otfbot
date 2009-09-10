@@ -158,7 +158,7 @@ class Plugin(chatMod.chatMod):
         #TODO: This can not handle different channels right
         userlists = self.bot.getChannelUserDict()
         for channel in userlists:
-            if userslists[channel].has_key(newname):
+            if userlists[channel].has_key(newname):
                 self.log(channel, "-!- "+oldname+" is now known as "+newname)
         
     def stop(self):
