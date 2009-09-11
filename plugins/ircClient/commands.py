@@ -34,7 +34,7 @@ class Plugin(chatMod.chatMod):
     def command(self, user, channel, command, options):
         user = user.split("!")[0] #only nick
         if user != self.bot.nickname:
-            answer=self.respond(channel, user, command, options)
+            answer=self.respond(channel, user, command.lower(), options)
             if answer != "":
                 if answer[0] == ":":
                     self.bot.sendmsg(channel, answer[1:], self.bot.config.get("fileencoding", "iso-8859-15", "commandsMod"))
