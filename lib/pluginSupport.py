@@ -11,6 +11,8 @@ class pluginSupport:
         self.plugins={}
         #XXX: the dependency should be more explicit?
         self.config = root.getServiceNamed('config')
+    def _getClassName(self, clas):
+        return clas.__name__[8:] #cut off "plugins."
         
     def register_pluginsupport_commands(self):
         # Make sure to have this method!
@@ -42,8 +44,8 @@ class pluginSupport:
             if c.__name__ == name:
                 return c
         self.classes.append(__import__(self.pluginSupportPath.replace("/", ".")+"."+name, fromlist=['*']))
-        self.classes[-1].datadir = self.config.get("datadir", "data")+"/"+self.classes[-1].__name__
-        self.logger.debug("Imported plugin "+self.classes[-1].__name__)        
+        self.classes[-1].datadir = self.config.get("datadir", "data")+"/"+self._getClassName(self.classes[-1])
+        self.logger.debug("Imported plugin "+self._getClassName(self.classes[-1]))
         return self.classes[-1]
 
     def callbackRegistered(self, module, callbackname):
@@ -81,21 +83,21 @@ class pluginSupport:
                     #TODO: no network in this abstract class
                     #self.logger.info("starting %s for network %s"%(pluginClass.__name__, self.network))
                     mod=pluginClass.Plugin(self)
-                    self.plugins[pluginClass.__name__]=mod
-                    self.plugins[pluginClass.__name__].setLogger(self.logger)
-                    self.plugins[pluginClass.__name__].name=pluginClass.__name__
-                    self.plugins[pluginClass.__name__].config=self.config
+                    self.plugins[self._getClassName(pluginClass)]=mod
+                    self.plugins[self._getClassName(pluginClass)].setLogger(self.logger)
+                    self.plugins[self._getClassName(pluginClass)].name=self._getClassName(pluginClass)
+                    self.plugins[self._getClassName(pluginClass)].config=self.config
                     if hasattr(self, "network"): #needed for reload!
-                        self.plugins[pluginClass.__name__].network=self.network
-                    if hasattr(self.plugins[pluginClass.__name__], "start"):
-                        self.plugins[pluginClass.__name__].start()
+                        self.plugins[self._getClassName(pluginClass)].network=self.network
+                    if hasattr(self.plugins[self._getClassName(pluginClass)], "start"):
+                        self.plugins[self._getClassName(pluginClass)].start()
                 except Exception, e:
-                    self.logerror(self.logger, pluginClass.__name__, e)
+                    self.logerror(self.logger, self._getClassName(pluginClass), e)
                     return None #exception occured (e.g. dependency missing, or initialization error)
-            return self.plugins[pluginClass.__name__]
+            return self.plugins[self._getClassName(pluginClass)]
 
     def reloadPluginClass(self, pluginClass):
-            self.logger.info("reloading class "+pluginClass.__name__)
+            self.logger.info("reloading class "+self._getClassName(pluginClass))
             reload(pluginClass)
 
     def restartPlugin(self, pluginName):
