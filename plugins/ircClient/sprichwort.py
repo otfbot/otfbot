@@ -27,7 +27,11 @@ class Plugin(chatMod.chatMod):
     def command(self, user, channel, command, options):
         if command == "sprichwort":
             url=urllib2.urlopen("http://www.sprichwortrekombinator.de")
-            data=url.read()
-            url.close()
-            sprichwort=re.search("<div class=\"spwort\">([^<]*)<\/div>", data, re.S).group(1)
-            self.bot.sendmsg(channel, sprichwort)
+        elif command == "proverb":
+            url=urllib2.urlopen("http://proverb.gener.at/or/")
+        else:
+            return
+        data=url.read()
+        url.close()
+        sprichwort=re.search("<div class=\"spwort\">([^<]*)<\/div>", data, re.S).group(1)
+        self.bot.sendmsg(channel, sprichwort)
