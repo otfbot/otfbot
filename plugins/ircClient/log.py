@@ -139,10 +139,10 @@ class Plugin(chatMod.chatMod):
         self.log(channel, "-!- "+kickee+" was kicked from "+channel+" by "+kicker+" ["+message+"]")
 
     def userJoined(self, user, channel):
-        self.log(channel, "-!- "+user.split("!")[0]+" ["+user.split("!")[1]+"] has joined "+channel)#TODO: real Hostmask
+        self.log(channel, "-!- "+user.split("!")[0]+" ["+user.split("!")[1]+"] has joined "+channel)
 
     def userLeft(self, user, channel):
-        self.log(channel, "-!- "+user.split("!")[0]+" ["+user.split("!")[1]+"] has left "+channel)#TODO: real Hostmask
+        self.log(channel, "-!- "+user.split("!")[0]+" ["+user.split("!")[1]+"] has left "+channel)
     
     def userQuit(self, user, quitMessage):
         userlists = self.bot.getChannelUserDict()
