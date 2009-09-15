@@ -31,47 +31,6 @@ import logging, logging.handlers
 from twisted.python import log
 import logging, sys
 
-
-#class pythonToTwistedLoggingHandler(logging.Handler):
-#    def emit(self, record):
-#        log.msg(record.getMessage())
-
-logfile="otfbot.log"
-errfile="otfbot.err"
-stdout=True
-
-formatter = logging.Formatter('%(asctime)s %(name)-10s %(module)-14s %(funcName)-20s %(levelname)-8s %(message)s')
-
-filelogger = logging.handlers.RotatingFileHandler(logfile,'a',1048576,5)
-filelogger.setFormatter(formatter)        
-errorlogger = logging.handlers.RotatingFileHandler(errfile,'a',1048576,5)
-errorlogger.setFormatter(formatter)
-memorylogger = logging.handlers.MemoryHandler(1000)
-memorylogger.setFormatter(formatter)
-if stdout:
-    console = logging.StreamHandler()
-    console.setFormatter(formatter)
-
-logging.getLogger('').setLevel(logging.DEBUG)
-errorlogger.setLevel(logging.ERROR)
-
-root=logging.getLogger('')
-root.addHandler(filelogger)
-root.addHandler(errorlogger)
-root.addHandler(memorylogger)
-if stdout:
-    root.addHandler(console)
-
-plo = log.PythonLoggingObserver()
-plo.start()
-
-corelogger = logging.getLogger('core')
-corelogger.info("  ___ _____ _____ ____        _   ")
-corelogger.info(" / _ \_   _|  ___| __ )  ___ | |_ ")
-corelogger.info("| | | || | | |_  |  _ \ / _ \| __|")
-corelogger.info("| |_| || | |  _| | |_) | (_) | |_ ")
-corelogger.info(" \___/ |_| |_|   |____/ \___/ \__|")
-corelogger.info("")
 svnrevision="$Revision$".split(" ")[1] #TODO: this is only updated, when otfbot.py is updated
 
 class Options(usage.Options):
@@ -84,7 +43,6 @@ class Options(usage.Options):
 #    print '%s: %s' % (sys.argv[0], errortext)
 #    print '%s: Try --help for usage details.' % (sys.argv[0])
 #    sys.exit(1)
-#class myApp(service.Application):
 
 configfilename="otfbot.yaml"
 
@@ -97,11 +55,55 @@ if not configS:
     sys.exit(1)
 configS.setServiceParent(application)
 
+################################################################################
+## Begin of logging setup
+
+logging.getLogger('').setLevel(logging.DEBUG)
+root=logging.getLogger('')
+
+formatPattern = configS.get("format", '%(asctime)s %(name)-10s %(module)-14s %(funcName)-20s %(levelname)-8s %(message)s', "logging")
+formatter = logging.Formatter(formatPattern)
+
+logfile = configS.get("file", False, "logging")
+if logfile:
+    filelogger = logging.handlers.RotatingFileHandler(logfile,'a',1048576,5)
+    filelogger.setFormatter(formatter)
+    root.addHandler(filelogger)
+errfile = configS.get("errfile", False, "logging")
+if errfile:        
+    errorlogger = logging.handlers.RotatingFileHandler(errfile,'a',1048576,5)
+    errorlogger.setFormatter(formatter)
+    errorlogger.setLevel(logging.ERROR)
+    root.addHandler(errorlogger)
+memorylogger = logging.handlers.MemoryHandler(1000)
+memorylogger.setFormatter(formatter)
+root.addHandler(memorylogger)
+stdout = configS.get("logToConsole", True, "logging")
+if stdout:
+    console = logging.StreamHandler()
+    console.setFormatter(formatter)
+    root.addHandler(console)
+
+plo = log.PythonLoggingObserver()
+log.startLoggingWithObserver(plo.emit, stdout)
+
+corelogger = logging.getLogger('core')
+
+## end of logging setup
+################################################################################
+
+corelogger.info("  ___ _____ _____ ____        _   ")
+corelogger.info(" / _ \_   _|  ___| __ )  ___ | |_ ")
+corelogger.info("| | | || | | |_  |  _ \ / _ \| __|")
+corelogger.info("| |_| || | |  _| | |_) | (_) | |_ ")
+corelogger.info(" \___/ |_| |_|   |____/ \___/ \__|")
+corelogger.info("            bleeding edge from SVN")
+
 service_names=configS.get("services", [], "main")
 service_classes=[]
 service_instances=[]
 for service_name in service_names:
-    log.msg("starting Service %s" % service_name)
+    corelogger.info("starting Service %s" % service_name)
     service_classes.append(__import__("services."+service_name, fromlist=['botService']))
     service_instances.append(service_classes[-1].botService(application, application))
     service_instances[-1].setServiceParent(application)
