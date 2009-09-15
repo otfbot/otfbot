@@ -136,9 +136,12 @@ class Bot(pluginSupport, irc.IRCClient):
         @ivar logger: a instance of the standard python logger
         @ivar nickname: the nick of the bot
     """
-    pluginSupportPath="plugins/ircClient" #path were the plugins are
-    pluginSupportName="ircClient" #prefix for config
+    pluginSupportPath = "plugins/ircClient" #path were the plugins are
+    pluginSupportName = "ircClient" #prefix for config
+    sourceURL = "http://otfbot.berlios.de/"
 
+    modchars = {16: 'a', 8: 'o', 4: 'h', 2: 'v', 0: ' '}
+    modcharvals = {16: '!', 8: '@', 4: '%', 2: '+', 0: ' '}
     def warn_and_execute(self, method, *args, **kwargs):
         self.logger.debug("deprecated call to %s with args %s"%(str(method), str(args)))
         #XXX: use bot.config.method instead
@@ -152,7 +155,7 @@ class Bot(pluginSupport, irc.IRCClient):
         self.logger = logging.getLogger(self.network)
         if self.config.getBool('answerToCTCPVersion', True, 'main', self.network):
             self.versionName="OTFBot"
-            self.versionNum="svn "+"$Revision: 177 $".split(" ")[1]
+            self.versionNum=root.version
             self.versionEnv=''
 
         self.channels=[]
@@ -171,11 +174,6 @@ class Bot(pluginSupport, irc.IRCClient):
         self.users       = {}
 
         self.serversupports  = {}
-        self.modchars        = {16: 'a', 8: 'o', 4: 'h', 2: 'v', 0: ' '}
-        self.rev_modchars    = dict([(v, k) for (k, v) in self.modchars.iteritems()])
-
-        self.modcharvals     = {16: '!', 8: '@', 4: '%', 2: '+', 0: ' '}
-        self.rev_modcharvals = dict([(v, k) for (k, v) in self.modcharvals.iteritems()])
         
         self.logger.info("Starting new Botinstance")
 
@@ -374,6 +372,14 @@ class Bot(pluginSupport, irc.IRCClient):
             if len(kv) == 1:
                 kv.append(True)
             self.serversupports[kv[0]] = kv[1]
+        if 'PREFIX' in serversupports:
+            mode, sym = serversupports['PREFIX'][1:].split(")")
+            for i in range(0,len(mode)):
+                self.modchars[1**i] = mode[i]
+                self.modcharvals[i**i] = sym[i]
+            self.rev_modchars    = dict([(v, k) for (k, v) in self.modchars.iteritems()])
+            self.rev_modcharvals = dict([(v, k) for (k, v) in self.modcharvals.iteritems()])
+
     #def myInfo(self, servername, version, umodes, cmodes):
         #self.logger.debug("myinfo: servername="+str(servername)+" version="+str(version)+" umodes="+str(umodes)+" cmodes="+str(cmodes))
     def command(self, user, channel, command, options):
@@ -600,33 +606,41 @@ class Bot(pluginSupport, irc.IRCClient):
             if the bot was invited
         """
         channel=params[1].lower()
-        self.logger.info("I was invited to "+channel+" by "+prefix)
         self._apirunner("invitedTo",{"channel":channel,"inviter":prefix})
-        self.config.set("enabled", True, "main", self.network, channel)
-        self.join(channel)
 
     def irc_RPL_BOUNCE(self, prefix, params):
+        """ Overridden to get isupport work correctly """
         self.isupport(params[1:-1])
+
+    def irc_JOIN(self, prefix, params):
+        """ Overridden to get the full hostmask """
+        nick = string.split(prefix,'!')[0]
+        channel = params[-1]
+        if nick == self.nickname:
+            self.joined(channel)
+        else:
+            self.userJoined(prefix, channel)
+
+    def irc_PART(self, prefix, params):
+        """ Overridden to get the full hostmask """
+        nick = string.split(prefix,'!')[0]
+        channel = params[0]
+        if nick == self.nickname:
+            self.left(channel)
+        else:
+            self.userLeft(prefix, channel)
+
+    def irc_QUIT(self, prefix, params):
+        """ Overridden to get the full hostmask """
+        self.userQuit(prefix, params[0])
 
     def lineReceived(self, line):
         """ called by twisted
             for every line which was received from the IRC-Server
         """
         #self.logger.debug(str(line))
-        # adding a correct hostmask for join, part and quit
         self._apirunner("lineReceived", {"line":line})
-        if line.split(" ")[1] == "JOIN" and line[1:].split(" ")[0].split("!")[0] != self.nickname:
-            channel = line.split(" ")[2]
-            if channel[0] == ":":
-            	channel = channel[1:]
-            self.userJoined(line[1:].split(" ")[0],string.lower(channel))
-            #self.joined(line[1:].split(" ")[0],line.split(" ")[2][1:])
-        elif line.split(" ")[1] == "PART" and line[1:].split(" ")[0].split("!")[0] != self.nickname:
-            self.userLeft(line[1:].split(" ")[0],line.split(" ")[2])
-        elif line.split(" ")[1] == "QUIT":
-            self.userQuit(line[1:].split(" ")[0],line.split("QUIT :")[1])
-        else:
-            irc.IRCClient.lineReceived(self,line)
+        irc.IRCClient.lineReceived(self,line)
     
     def sendLine(self, line):
         self._apirunner("sendLine",{"line":line})
