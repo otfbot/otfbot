@@ -31,7 +31,17 @@ import logging, logging.handlers
 from twisted.python import log
 import logging, sys
 
-svnrevision="$Revision$".split(" ")[1] #TODO: this is only updated, when otfbot.py is updated
+svnrevision=int("$Revision$".split(" ")[1]) #TODO: this is only updated, when otfbot.py is updated
+
+try:
+    # Try to determine the current version dynamically
+    import pysvn, os.path
+    wcpath=os.path.dirname(os.path.abspath(__file__))
+    client = pysvn.Client()
+    entry = client.info(wcpath)
+    svnrevision=entry.revision.number
+except:
+    pass
 
 class Options(usage.Options):
         optParameters = [["config","c","otfbot.yaml","Location of configfile"]]
@@ -48,6 +58,7 @@ configfilename="otfbot.yaml"
 
 application=service.Application("otfbot")
 application.getServiceNamed=service.IServiceCollection(application).getServiceNamed
+application.version = "SVN revision "+str(svnrevision)
 
 configS=configService.loadConfig(configfilename, "plugins/*/*.yaml")
 if not configS:
@@ -97,7 +108,7 @@ corelogger.info(" / _ \_   _|  ___| __ )  ___ | |_ ")
 corelogger.info("| | | || | | |_  |  _ \ / _ \| __|")
 corelogger.info("| |_| || | |  _| | |_) | (_) | |_ ")
 corelogger.info(" \___/ |_| |_|   |____/ \___/ \__|")
-corelogger.info("            bleeding edge from SVN")
+corelogger.info("    bleeding edge from SVN rev %3i" % svnrevision)
 
 service_names=configS.get("services", [], "main")
 service_classes=[]

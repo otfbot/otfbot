@@ -57,3 +57,9 @@ class Plugin(chatMod.chatMod):
                 self.bot.sendmsg(channel, "Reloaded "+options)
             except KeyError:
                 self.bot.sendmsg(channel, "Could not reload "+options.strip()+": No such Plugin")
+    
+    def invitedTo(self, channel, inviter):
+        self.logger.info("I was invited to "+channel+" by "+inviter)
+        if self.bot.auth(user) > 0:
+            self.logger.info("Accepting invitation.")
+            self.bot.join(channel)
