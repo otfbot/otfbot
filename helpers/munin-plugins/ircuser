@@ -1,0 +1,21 @@
+#!/bin/bash
+
+if [ "$1" == "config" ];then
+echo "graph_title IRC Users
+graph_vlabel \"# User\"
+graph_category chat
+graph_scale no";
+data=$(wget -qO - http://localhost:8080/users|sed 's/#//')
+channels=$(echo $data|sed 's/:.*//g')
+for channel in $channels;do
+    id=$(echo $channel|sed 's/-//;s/\.//;s/:.*//')
+	echo $id.label $(echo $channel|sed 's/\://')
+	echo $id.warning 30
+	echo $id.critical 100
+done
+elif [ "$1" == "autoconf" ];then
+echo "yes"
+else
+    wget -qO - http://localhost:8080/users|sed 's/#//;s/-//;s/\.//;s/:/.value/'
+    echo
+fi
