@@ -13,5 +13,5 @@ class Plugin(chatMod.chatMod):
         if path=='/lines':
             for network in self.wps.root.getServiceNamed("ircClient").services:
                 for channel in network.protocol.getChannelUserDict().keys():
-                    wfile.write("%s.%s: %s"%(network.name, channel, network.protocol.plugins['plugins.ircClient.count'].getLinesPerMinute(channel)))
+                    wfile.write("%s.%s: %s"%(network.name, channel, network.protocol.plugins['ircClient.count'].getLinesPerMinute(channel)))
 #app.getServiceNamed("ircClient").services[0].protocol.plugins['plugins.ircClient.ki']
