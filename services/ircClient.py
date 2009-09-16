@@ -372,8 +372,8 @@ class Bot(pluginSupport, irc.IRCClient):
             if len(kv) == 1:
                 kv.append(True)
             self.serversupports[kv[0]] = kv[1]
-        if 'PREFIX' in serversupports:
-            mode, sym = serversupports['PREFIX'][1:].split(")")
+        if 'PREFIX' in self.serversupports:
+            mode, sym = self.serversupports['PREFIX'][1:].split(")")
             for i in range(0,len(mode)):
                 self.modchars[1**i] = mode[i]
                 self.modcharvals[i**i] = sym[i]
