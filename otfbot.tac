@@ -23,6 +23,7 @@
 
 from twisted.application import service
 from twisted.python import usage
+import twisted
 
 from services import config as configService
 
@@ -96,7 +97,10 @@ if stdout:
     root.addHandler(console)
 
 plo = log.PythonLoggingObserver()
-log.startLoggingWithObserver(plo.emit, stdout)
+if twisted.version.minor >= 2:
+    log.startLoggingWithObserver(plo.emit, stdout)
+else:
+    plo.start()
 
 corelogger = logging.getLogger('core')
 
