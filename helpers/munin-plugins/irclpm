@@ -6,7 +6,7 @@ data=url.read()
 url.close()
 
 config=False
-if len(sys.argv) >= 2:
+if len(sys.argv) >= 2 and sys.argv[1]=="config":
     config=True
     print "graph_title IRC Lines per Minute"
     print "graph_vlabel \"# Lines\""
