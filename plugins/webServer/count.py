@@ -5,13 +5,28 @@ class Plugin(chatMod.chatMod):
         wps.registerCallback(self, 'GET')
     def GET(self, path, headers, rfile, wfile, handler):
         if path=='/users':
-            ns=self.wps.root.getServiceNamed("ircClient").namedServices
-            for n in ns:
+            ircClient=self.wps.root.getServiceNamed("ircClient")
+            ns=ircClient.namedServices
+            for n in ns.keys():
                 cud=ns[n].protocol.getChannelUserDict()
                 for c in cud:
-                    wfile.write("%s.%s: %s"%(n, c, len(cud[c])))
+                    ops=0
+                    hops=0
+                    voices=0
+                    for user in cud[c].keys():
+                        if cud[c][user] & ns[n].protocol.rev_modchars['o']:
+                            ops+=1
+                        elif cud[c][user] & ns[n].protocol.rev_modchars['h']:
+                            hops+=1
+                        elif cud[c][user] & ns[n].protocol.rev_modchars['v']:
+                            voices+=1
+                    wfile.write("%s.%s: %s\n"%(n, c, len(cud[c])))
+                    #wfile.write("%s.%s.total: %s\n"%(n, c, len(cud[c])))
+                    #wfile.write("%s.%s.ops: %s\n"%(n, c, ops))
+                    #wfile.write("%s.%s.hops: %s\n"%(n, c, hops))
+                    #wfile.write("%s.%s.voices: %s\n"%(n, c, voices))
         if path=='/lines':
             for network in self.wps.root.getServiceNamed("ircClient").services:
                 for channel in network.protocol.getChannelUserDict().keys():
-                    wfile.write("%s.%s: %s"%(network.name, channel, network.protocol.plugins['ircClient.count'].getLinesPerMinute(channel)))
+                    wfile.write("%s.%s: %s\n"%(network.name, channel, network.protocol.plugins['ircClient.count'].getLinesPerMinute(channel)))
 #app.getServiceNamed("ircClient").services[0].protocol.plugins['plugins.ircClient.ki']
