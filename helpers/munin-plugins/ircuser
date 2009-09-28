@@ -1,4 +1,4 @@
-#/usr/bin/python
+#!/usr/bin/python
 import sys, re, urllib2
 
 url=urllib2.urlopen("http://localhost:8080/users")
@@ -9,11 +9,15 @@ config=False
 if len(sys.argv) >= 2:
     config=True
 for line in data.split("\n"):
+    print "graph_title IRC Users"
+    print "graph_vlabel \"# User\""
+    print"graph_category chat"
+    print "graph_scale no"
     line2=re.sub("[\#\:-]", "", line)
     if not line2:
         continue
     if not config:
-        print line2
+        print line2.replace(".", "", 1)
     else:
         print re.sub("\.", "", line2.split(" ")[0])+".label", line2.split(" ")[0]
         print re.sub("\.", "", line2.split(" ")[0])+".min", 0
