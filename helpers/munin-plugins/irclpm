@@ -8,11 +8,11 @@ url.close()
 config=False
 if len(sys.argv) >= 2:
     config=True
-for line in data.split("\n"):
     print "graph_title IRC Lines per Minute"
     print "graph_vlabel \"# Lines\""
     print "graph_category chat"
     print "graph_scale no"
+for line in data.split("\n"):
     line2=re.sub("[\#\:-]", "", line)
     if not line2:
         continue
