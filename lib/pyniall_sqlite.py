@@ -70,7 +70,7 @@ class pyNiall:
         self.cur.execute("SELECT id FROM words WHERE word=%s", word)
         id=self.cur.fetchall()
         if not id or not id[0]:
-            return 0
+            return 1
         id=id[0][0]
         self.cur.execute("SELECT ranking FROM relations WHERE word2_id=%s", id)
         result=self.cur.fetchall()
