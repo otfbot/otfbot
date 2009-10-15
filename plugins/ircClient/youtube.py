@@ -38,6 +38,6 @@ class Plugin(chatMod.chatMod):
         if command=="youtube" and options:
             parsed=feedparser.parse("http://gdata.youtube.com/feeds/base/videos?q=%s&client=ytapi-youtube-search&alt=rss&v=2"%urllib.quote(options))
             if len(parsed.entries):
-                self.bot.sendmsg(channel, str("%s - %s"%(parsed.entries[0]['link'], parsed.entries[0]['title'])))
+                self.bot.sendmsg(channel, "%s - %s"%(parsed.entries[0]['link'].encode("UTF-8"), parsed.entries[0]['title'].encode("UTF-8")))
             else:
                 self.bot.sendmsg(channel, "Error: Nothing found")
