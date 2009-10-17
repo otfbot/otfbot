@@ -25,14 +25,11 @@ class Plugin(chatMod.chatMod):
         self.bot=bot
 
     def command(self, user, channel, command, options):
-        if command == "moon" or command == "mond":
-            symbol=""
-            name=""
-            
-            #http://avila.star-shine.ch/astro/berechnungen.html
-            known_fullmoon_date=915245340 #seconds since 1970
-
-            timestamp=time.time()
+        #http://avila.star-shine.ch/astro/berechnungen.html
+        known_fullmoon_date=915245340 #seconds since 1970
+        monthlength =  29.530588
+        timestamp=time.time()
+        if command in ["moon", "fullmoon", "mond", "vollmond"]:
             if len(options):
                 options=options.split("-")
                 if len(options)==3:
@@ -42,15 +39,19 @@ class Plugin(chatMod.chatMod):
                         day=int(options[2])
                         timestamp=time.mktime((year, month, day, 0, 0, 0, 0, 0, 0))
                     except ValueError:
-                        self.bot.msg(channel, "Zeitformat: XXXX-XX-XX")
+                        self.bot.sendmsg(channel, "Zeitformat: XXXX-XX-XX")
                         return
                 else:
-                    self.bot.msg(channel, "Zeitformat: XXXX-XX-XX")
+                    self.bot.sendmsg(channel, "Zeitformat: XXXX-XX-XX")
                     return
+        phase=(timestamp-known_fullmoon_date) /(60*60*24)/ monthlength
+        phase=phase-int(phase)
 
-            
-            phase=(timestamp-known_fullmoon_date) /(60*60*24)/ 29.530588
-            phase=phase-int(phase)
+        if command == "fullmoon" or command == "vollmond":
+            self.bot.sendmsg(channel, "Naechster Vollmond ist in %d Tagen"%(round((1-phase)*monthlength)))
+        elif command == "moon" or command == "mond":
+            symbol=""
+            name=""
             
             if phase < 0.05:
                 symbol="[ (  ) ]"
