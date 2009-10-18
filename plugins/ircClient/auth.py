@@ -41,6 +41,7 @@ class Plugin(chatMod.chatMod):
         if msg[0:9] == "identify ":
             portal=self.bot.root.getServiceNamed("auth")
             if not portal:
+                self.bot.sendmsg(nick, "Error: could not get portal")
                 return
             msgs=msg.split(" ")
             if len(msgs) == 2:
