@@ -23,6 +23,6 @@ class Plugin(chatMod.chatMod):
     def __init__(self, bot):
         self.bot = bot
     def kickedFrom(self, channel, kicker, message):
-        if int(self.bot.config.get("autorejoin",0,"autorejoinMod",self.bot.network,channel)):
+        if int(self.bot.config.get("autorejoin", False, "autorejoin", self.bot.network, channel)):
             self.bot.join(channel)
 

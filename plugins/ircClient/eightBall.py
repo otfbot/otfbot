@@ -47,9 +47,9 @@ class Plugin(chatMod.chatMod):
         ]
 
     def msg(self, user, channel, msg):
-        regex=re.match("[abcdefghijklmnopqrstuvxyz][^\.\?!:;]*\?", msg.lower())
-        if self.bot.config.getBool("autoAnswer", False, "eightballMod", self.network, channel) and regex:
-            self.bot.sendmsg(channel, random.choice(self.answers))
+        if self.bot.config.getBool("autoAnswer", False, "eightballMod", self.network, channel):
+            if re.match("[abcdefghijklmnopqrstuvxyz][^\.\?!:;]*\?", msg.lower())
+                self.bot.sendmsg(channel, random.choice(self.answers))
     def command(self, user, channel, command, options):
-        if command == "8ball" and options != "": #only if the user asked something.
+        if command.lower() in ["8ball","eightball"] and options != "": #only if the user asked something.
             self.bot.sendmsg(channel, random.choice(self.answers))
