@@ -595,7 +595,12 @@ class Bot(pluginSupport, irc.IRCClient):
             
     def irc_RPL_USERHOST(self, prefix, params):
         for rpl in params[1].strip().split(" "):
-            (nick, hostmask)=rpl.split('=',1)
+            tmp=rpl.split('=',1)
+            if len(tmp)==2:
+                (nick, hostmask)=tmp
+            else:
+                print "Error parsing RPL_USERHOST: %s, %s"%(prefix, params)
+                continue
             nick = nick.replace("*","")
             hm=hostmask.split('@',1)
             self.userlist[nick].user=hm[0][1:]

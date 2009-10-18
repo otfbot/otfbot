@@ -60,6 +60,6 @@ class Plugin(chatMod.chatMod):
     
     def invitedTo(self, channel, inviter):
         self.logger.info("I was invited to "+channel+" by "+inviter)
-        if self.bot.auth(user) > 0:
+        if self.bot.auth(inviter) > 0:
             self.logger.info("Accepting invitation.")
             self.bot.join(channel)
