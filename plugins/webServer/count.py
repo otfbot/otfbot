@@ -27,6 +27,7 @@ class Plugin(chatMod.chatMod):
                     #wfile.write("%s.%s.voices: %s\n"%(n, c, voices))
         if path=='/lines':
             for network in self.wps.root.getServiceNamed("ircClient").services:
-                for channel in network.protocol.getChannelUserDict().keys():
-                    wfile.write("%s.%s: %s\n"%(network.name, channel, network.protocol.plugins['ircClient.count'].getLinesPerMinute(channel)))
+                if network and network.protocol: #no NoneType Exception on disconnected network
+                    for channel in network.protocol.getChannelUserDict().keys():
+                        wfile.write("%s.%s: %s\n"%(network.name, channel, network.protocol.plugins['ircClient.count'].getLinesPerMinute(channel)))
 #app.getServiceNamed("ircClient").services[0].protocol.plugins['plugins.ircClient.ki']
