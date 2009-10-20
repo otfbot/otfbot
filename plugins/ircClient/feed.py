@@ -167,6 +167,7 @@ class Plugin(chatMod.chatMod):
                         self.loadSource(num, channel)
             elif command=="addfeed":
                 options=options.split(" ")
+                num=int(self.bot.config.get("numFeeds", 0, "feedMod", self.bot.network, channel))+1
                 if len(options) ==5:
                     self.bot.config.set("feed"+str(num)+".waitFactor", options[4], "feedMod", self.bot.network, channel)
                 if len(options) >=4:
@@ -180,6 +181,5 @@ class Plugin(chatMod.chatMod):
                 else:
                     self.bot.sendmsg(channel, "Error: Syntax !addfeed url postMax minWait maxWait factor")
                     return
-                num=int(self.bot.config.get("numFeeds", 0, "feedMod", self.bot.network, channel))+1
                 self.bot.config.set("numFeeds", num, "feedMod", self.bot.network, channel)
                 self.loadSource(num, channel)
