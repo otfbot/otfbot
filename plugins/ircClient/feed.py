@@ -51,7 +51,7 @@ class Plugin(chatMod.chatMod):
             @param postMax: maximum new items to post on update
         """
         if(minWait > maxWait):
-            self.logger.warning(url+" maxWait is bigger than minWait. Skipping feed.")
+            self.logger.warning(url+" minWait is bigger than maxWait. Skipping feed.")
             return
         if factor==0:
             self.logger.warning(url+" has a waitFactor of 0. Skipping feed.")
