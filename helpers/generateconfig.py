@@ -23,6 +23,10 @@ for file in files:
 config.set("ircServerPlugins", modules, 'main')
 
 files=glob.glob(base+"services/*.py")
+files.sort() #TODO: this is just a hack to get auth and control before ircClient
+#TODO: real solution to service/plugin dependencies!
+
+
 modules=[]
 for file in files:
     plugin=file.split(base+"services/")[1].split(".py")[0]
