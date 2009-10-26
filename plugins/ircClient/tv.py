@@ -29,21 +29,25 @@ except ImportError:
     HAS_PYXMLTV=False
 
 from lib import chatMod, urlutils
-import time, sys
+import time, sys, os
 
 class Plugin(chatMod.chatMod):
     def __init__(self,bot):
         self.bot = bot
         if not HAS_PYXMLTV:
             self.bot.depends("xmltv python module")
+        try:
+        	os.mkdir(datadir)
+        except:
+        	pass
         #self.xmltvfile = datadir + "/" + self.bot.getConfig("xmltvfile","","tvMod")
         self.xmltvfile = datadir + "/" + self.bot.config.get("xmltvfile","tv.xml.txt","tvMod")
         #self.tv = tv(self.xmltvfile) ## This is done by self.update_data()
         self.tv = None
         #standardsender = self.bot.getConfig("standardsender","ard,zdf,rtl,sat.1,n24,pro7,vox","tvMod")
         standardsender = self.bot.config.get("standardsender","ard,zdf,rtl,sat.1,n24,pro7,vox","tvMod")
-        dataurl = "http://static.xmltv.info/tv.xml.txt"
-        self.bot.getServiceNamed('scheduler').callLater(1, self.update_data, dataurl)
+        dataurl = "http://xmltv.info/xw/default/run/xmltv?offset=-1"
+        self.bot.root.getServiceNamed('scheduler').callLater(1, self.update_data, dataurl)
         self.standardsender = []
         for i in standardsender.split(","):
             self.standardsender.append(i.lower().replace(" ",""))
@@ -158,7 +162,7 @@ class Plugin(chatMod.chatMod):
     
     def update_data(self,dataurl):
         urlutils.download(dataurl, self.xmltvfile)
-        self.bot.callLater(10,self.processUpdatedData,dataurl)
+        self.bot.root.getServiceNamed('scheduler').callLater(10,self.processUpdatedData,dataurl)
     
     def processUpdatedData(self, dataurl):
         del self.tv
@@ -169,8 +173,9 @@ class Plugin(chatMod.chatMod):
                 done = 1
             except:
                 self.logger.info("xmltv-file is not loaded completely yet. TV-Plugin will be aviable as it's loading is done.")
+                self.logger.info(sys.exc_info())
             time.sleep(30)
-        self.bot.getServiceNamed('scheduler').callLater(86400, self.update_data, dataurl)
+        self.bot.root.getServiceNamed('scheduler').callLater(86400, self.update_data, dataurl)
     
 class tv:
     def __init__(self,xmltvfile):
