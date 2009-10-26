@@ -32,17 +32,19 @@ import logging, logging.handlers
 from twisted.python import log
 import logging, sys
 
-svnrevision=int("$Revision$".split(" ")[1]) #TODO: this is only updated, when otfbot.py is updated
+#svnrevision=int("$Revision$".split(" ")[1]) #TODO: this is only updated, when otfbot.py is updated
+svnrevision=0 # TODO: Move to git
 
-try:
-    # Try to determine the current version dynamically
-    import pysvn, os.path
-    wcpath=os.path.dirname(os.path.abspath(__file__))
-    client = pysvn.Client()
-    entry = client.info(wcpath)
-    svnrevision=entry.revision.number
-except:
-    pass
+# TODO: Move to git
+#try:
+#    # Try to determine the current version dynamically
+#    import pysvn, os.path
+#    wcpath=os.path.dirname(os.path.abspath(__file__))
+#    client = pysvn.Client()
+#    entry = client.info(wcpath)
+#    svnrevision=entry.revision.number
+#except:
+#    pass
 
 class Options(usage.Options):
         optParameters = [["config","c","otfbot.yaml","Location of configfile"]]
