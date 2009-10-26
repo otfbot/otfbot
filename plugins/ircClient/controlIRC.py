@@ -53,7 +53,7 @@ class Plugin(chatMod.chatMod):
                 self.bot.sendmsg(channel, r)
         elif command == "reload" and len(options) > 0:
             try:
-                self.bot.plugins['plugins.ircClient.'+options].reload()
+                self.bot.plugins['ircClient.'+options].reload()
                 self.bot.sendmsg(channel, "Reloaded "+options)
             except KeyError:
                 self.bot.sendmsg(channel, "Could not reload "+options.strip()+": No such Plugin")
