@@ -12,3 +12,7 @@ optional:
 * python-svn
 * pyxmltv
 
+Gentoo:
+emerge twisted-words pyyaml
+for remoteCliServer:
+emerge twisted-conch
