@@ -24,3 +24,5 @@ authMod:
 
 Many Exceptions on servers which send the channelname not lowercase, when the config is lowercase
 
+tv:
+more precise try: expect: clauses (do NOT catch all exceptions, only the needed ones)
