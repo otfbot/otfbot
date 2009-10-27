@@ -166,16 +166,16 @@ class Plugin(chatMod.chatMod):
     
     def processUpdatedData(self, dataurl):
         del self.tv
-        done = 0
-        while done == 0:
-            try:
-                self.tv = tv(self.xmltvfile)
-                done = 1
-            except:
-                self.logger.info("xmltv-file is not loaded completely yet. TV-Plugin will be aviable as it's loading is done.")
-                self.logger.info(sys.exc_info())
-            time.sleep(30)
-        self.bot.root.getServiceNamed('scheduler').callLater(86400, self.update_data, dataurl)
+        try:
+            self.tv = tv(self.xmltvfile)
+            #reload data tomorrow
+            self.bot.root.getServiceNamed('scheduler').callLater(86400, self.update_data, dataurl)
+        except:
+            self.logger.info("xmltv-file is not loaded completely yet. TV-Plugin will be aviable as it's loading is done.")
+            self.logger.info(sys.exc_info())
+            #retry 30 seconds later
+            self.bot.root.getServiceNamed('scheduler').callLater(30,self.processUpdatedData,dataurl)
+
     
 class tv:
     def __init__(self,xmltvfile):
