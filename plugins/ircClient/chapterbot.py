@@ -37,7 +37,7 @@ class Plugin(chatMod.chatMod):
         file = open(filename, "w")
         for item in data:
             line = item[0] + " " + item[1] + "\n"
-            file.write(line.encode("UTF-8"))
+            file.write(line)
             file.close
 
     def validUser(self, user, channel, userlist=None):
