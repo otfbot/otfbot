@@ -1,5 +1,4 @@
 core:
-* solve problem with services depending on the correct order (control, auth before ircClient). ircClient should not depend on control or auth at all (disabling modules needing auth, if no auth is available)
 * maybe add channel-name to log-messages
 * priorities of callbacks for modules (module with the highest priority will get the callback first)
 * return value for chatmod callbacks, which can be NO_FURTHER_PROCESSING or maybe MSG_CHANGED(newmsg) or something like this.
@@ -8,21 +7,13 @@ core:
 * ability not to *load* modules for certain networks
 * limit the commands processed (maybe put some users temporarily on ignore) and limit the lines sent per minute
 modules:
-* extent modules-api
-* let modules register their commands(?)
+* extend modules-api
 * http://peak.telecommunity.com/DevCenter/PythonEggs
-* use access-levels given by authMod
 kiMod:
 * limit brainsize (maybe requires hacking the megahalpython-binding)
 * I18N
 authMod:
 * authMod should use network information for whitelist(!)
-* bitmask for certain permissions
 * replace all noncritical error-loggers with warning-loggers (see CODING)
 * feedMod remove feed for channel on part
 * fix exceptions of mirrormod, if the mirrorTo channel is not available
-
-Many Exceptions on servers which send the channelname not lowercase, when the config is lowercase
-
-tv:
-more precise try: expect: clauses (do NOT catch all exceptions, only the needed ones)
