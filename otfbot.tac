@@ -60,7 +60,12 @@ class Options(usage.Options):
 configfilename="otfbot.yaml"
 
 application=service.Application("otfbot")
-application.getServiceNamed=service.IServiceCollection(application).getServiceNamed
+def getServiceNamed(name):
+    try:
+        return service.IServiceCollection(application).getServiceNamed(name)
+    except KeyError:
+        return None
+application.getServiceNamed=getServiceNamed
 application.version = "SVN revision "+str(svnrevision)
 
 configS=configService.loadConfig(configfilename, "plugins/*/*.yaml")
