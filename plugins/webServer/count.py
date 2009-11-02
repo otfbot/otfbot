@@ -1,13 +1,19 @@
 from lib import chatMod
+import logging
+
 class Plugin(chatMod.chatMod):
     def __init__(self, wps):
         self.wps=wps
         wps.registerCallback(self, 'GET')
+        self.logger = logging.getLogger("feedMod")
     def GET(self, path, headers, rfile, wfile, handler):
         if path=='/users':
             ircClient=self.wps.root.getServiceNamed("ircClient")
             ns=ircClient.namedServices
             for n in ns.keys():
+                if not ns[n[ or not ns[n].protocol:
+                    self.logger.warning("Error, %s is not connected.")
+                    continue
                 cud=ns[n].protocol.getChannelUserDict()
                 for c in cud:
                     ops=0
