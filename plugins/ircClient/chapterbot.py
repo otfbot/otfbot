@@ -27,7 +27,7 @@ class Plugin(chatMod.chatMod):
         self.started = False
         self.start_time = 0
         self.end_time = 0
-        self.datadir=bot.config.getPath("path", "/", "var/log/chapterbot/", "chapterbot")
+        self.datadir=datadir
         self.admins=bot.config.get("admins", "[]", "chapterbot")
         if not os.path.isdir(self.datadir):
             os.makedirs(self.datadir)
