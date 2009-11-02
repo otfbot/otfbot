@@ -38,7 +38,7 @@ class Plugin(chatMod.chatMod):
             self.bot.depends("xmltv python module")
         try:
         	os.mkdir(datadir)
-        except:
+        except OSError:
         	pass
         #self.xmltvfile = datadir + "/" + self.bot.getConfig("xmltvfile","","tvMod")
         self.xmltvfile = datadir + "/" + self.bot.config.get("xmltvfile","tv.xml.txt","tvMod")
@@ -87,7 +87,7 @@ class Plugin(chatMod.chatMod):
                     programm = self.tv.get_programm_at_time(o1 + "00")
                     #programm = self.parse_programm(programm)
                     filterstandard = 1
-                except:
+                except ValueError:
                     if not self.tv.get_station(o1) and o1 != "help":
                         self.bot.sendmsg(channel,"Station not found! See !tv help")
                     else:
@@ -105,7 +105,7 @@ class Plugin(chatMod.chatMod):
                         if int(o1) > 2400 or int(o1[2:4]) > 59:
                             self.bot.sendmsg(channel,"corrupted time! See !tv help")
                         programm = self.tv.get_programm_at_time_and_station(o[1],o1 + "00")
-                    except:
+                    except ValueError:
                         if not self.tv.get_station(o1) and o1 != "help":
                             self.bot.sendmsg(channel,"Station not found! See !tv help")
                         else:
@@ -170,9 +170,8 @@ class Plugin(chatMod.chatMod):
             self.tv = tv(self.xmltvfile)
             #reload data tomorrow
             self.bot.root.getServiceNamed('scheduler').callLater(86400, self.update_data, dataurl)
-        except:
+        except IOError:
             self.logger.info("xmltv-file is not loaded completely yet. TV-Plugin will be aviable as it's loading is done.")
-            self.logger.info(sys.exc_info())
             #retry 30 seconds later
             self.bot.root.getServiceNamed('scheduler').callLater(30,self.processUpdatedData,dataurl)
 
