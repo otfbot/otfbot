@@ -1,0 +1,9 @@
+!!python/unicode 'admin': !!python/object:lib.User.IrcUser
+  groups: []
+  host: !!python/unicode 'host'
+  lastMessage: 0
+  name: !!python/unicode 'admin'
+  password: !!python/unicode 'admin'
+  user: !!python/unicode 'user'
+--- {}
+
