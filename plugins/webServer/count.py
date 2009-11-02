@@ -11,7 +11,7 @@ class Plugin(chatMod.chatMod):
             ircClient=self.wps.root.getServiceNamed("ircClient")
             ns=ircClient.namedServices
             for n in ns.keys():
-                if not ns[n[ or not ns[n].protocol:
+                if not ns[n] or not ns[n].protocol:
                     self.logger.warning("Error, %s is not connected.")
                     continue
                 cud=ns[n].protocol.getChannelUserDict()
