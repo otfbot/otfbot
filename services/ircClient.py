@@ -279,9 +279,19 @@ class Bot(pluginSupport, irc.IRCClient):
         for line in msg:
             line=self.encode_line(line, encoding, fallback)
             
-            self.msg(channel, line)
-            self.privmsg(self.nickname, channel, line)
-            time.sleep(0.5)
+            #from the RFC:
+            #IRC messages are always lines of characters terminated with a CR-LF
+            #(Carriage Return - Line Feed) pair, and these messages shall not
+            #exceed 512 characters in length, counting all characters including
+            #the trailing CR-LF. Thus, there are 510 characters maximum allowed
+            #for the command and its parameters.
+            #There is no provision for continuation message lines.
+            while len(line):
+                #TODO: Better splitting algorithm
+                self.msg(channel, line[:450])
+                self.privmsg(self.nickname, channel, line[:450])
+                time.sleep(0.5) #TODO is this still needed with self.lineRate setting?
+                line=line[450:]
         
     def sendme(self, channel, action, encoding="UTF-8", fallback="iso-8859-15"):
         """
