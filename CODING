@@ -2,3 +2,9 @@ style
 =====
 -use logger instead of print, productivity code should contain no prints (with very few exceptions)
 -use logger.error and logger.crit only for messages which should be reported as bug.
+
+Services and plugins should work independend of their starting order:
+-services should not depend on other services in __init__. 
+They may depend on other services beeing instanced (__init__) but not started (startService) in their
+startService routine.
+-plugins may depend on other plugins, but not in __init__.

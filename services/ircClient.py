@@ -36,17 +36,17 @@ class botService(service.MultiService):
         self.root=root
         self.parent=parent
         service.MultiService.__init__(self)
+    
+    def startService(self):
         self.controlservice=self.root.getServiceNamed('control')
         self.logger=logging.getLogger(self.name)
+        self.config=self.root.getServiceNamed('config')
         if not self.controlservice:
             logger.warning("cannot register control-commands as no control-service is available")
         else:
             self.register_ctl_command(self.connect)
             self.register_ctl_command(self.disconnect)
             self.register_ctl_command(lambda : self.namedServices.keys(), name="list")
-    
-    def startService(self):
-        self.config=self.root.getServiceNamed('config')
         for network in self.config.getNetworks():
             if self.config.getBool('enabled', 'True', 'main', network):
                 self.connect(network)
