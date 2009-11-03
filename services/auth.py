@@ -24,7 +24,7 @@ from twisted.words.service import WordsRealm, InMemoryWordsRealm
 
 from zope.interface import implements
 
-from lib.User import IrcUser
+from lib.User import BotUser
 
 import logging, yaml
 
@@ -41,7 +41,7 @@ class YamlWordsRealm(InMemoryWordsRealm):
         reactor.callInThread(self.load)
             
     def userFactory(self, name):
-        return IrcUser(name+"!user@host")
+        return BotUser(name+"!user@host")
 
     def addUser(self, user):
         super(YamlWordsRealm, self).addUser(user)

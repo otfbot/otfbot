@@ -18,6 +18,13 @@
 
 from twisted.words import service
 
+class BotUser(service.User):
+    password=""
+    def __init__(self, name):
+        self.name=name
+    def __repr__(self):
+        return "<BotUser %s>" % self.name
+
 class IrcUser(service.User):
     password=""
     def __init__(self, hostmask):
