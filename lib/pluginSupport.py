@@ -80,8 +80,6 @@ class pluginSupport:
             pluginClass=self.importPlugin(pluginName)
             if hasattr(pluginClass, "Plugin"): #and hasattr(pluginClass.Plugin.ircClientPlugin) (?)
                 try:
-                    #TODO: no network in this abstract class
-                    #self.logger.info("starting %s for network %s"%(pluginClass.__name__, self.network))
                     mod=pluginClass.Plugin(self)
                     self.plugins[self._getClassName(pluginClass)]=mod
                     self.plugins[self._getClassName(pluginClass)].setLogger(self.logger)
