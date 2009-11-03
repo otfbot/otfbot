@@ -119,7 +119,7 @@ corelogger.info(" / _ \_   _|  ___| __ )  ___ | |_ ")
 corelogger.info("| | | || | | |_  |  _ \ / _ \| __|")
 corelogger.info("| |_| || | |  _| | |_) | (_) | |_ ")
 corelogger.info(" \___/ |_| |_|   |____/ \___/ \__|")
-corelogger.info("    bleeding edge from SVN rev %3i" % svnrevision)
+corelogger.info("    bleeding edge from GIT")
 
 service_names=configS.get("services", [], "main")
 service_classes=[]
