@@ -41,7 +41,7 @@ class YamlWordsRealm(InMemoryWordsRealm):
         reactor.callInThread(self.load)
             
     def userFactory(self, name):
-        return BotUser(name+"!user@host")
+        return BotUser(name)
 
     def addUser(self, user):
         super(YamlWordsRealm, self).addUser(user)
