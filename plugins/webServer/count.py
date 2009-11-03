@@ -12,7 +12,7 @@ class Plugin(chatMod.chatMod):
             ns=ircClient.namedServices
             for n in ns.keys():
                 if not ns[n] or not ns[n].protocol:
-                    self.logger.warning("Error, %s is not connected.")
+                    self.logger.warning("Error, %s is not connected."%n)
                     continue
                 cud=ns[n].protocol.getChannelUserDict()
                 for c in cud:
