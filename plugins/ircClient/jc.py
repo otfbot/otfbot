@@ -29,14 +29,15 @@ class Plugin(chatMod.chatMod):
         self.gamechannel=""
 
     def query(self, user, channel, msg):
-        (command, options)=msg.split(" ", 1)
-        self.command(user, self.gamechannel, command, options)
+        if " " in msg:
+            (command, options)=msg.split(" ", 1)
+            self.command(user, self.gamechannel, command, options)
 
     def command(self, user, channel, command, options):
         user=user.split("!")[0]
         if command=="newgame":
             self.gamechannel=channel
-        if True: #command in ['nimm', 'zweifel', 'ich', 'remove', 'newgame', 'startgame', 'zahl']:
+        if command in ['nimm', 'zweifel', 'ich', 'remove', 'newgame', 'startgame', 'zahl']:
             lines=self.game.input(user, command, options)
             for line in lines:
                 if line[1]==True:
