@@ -589,7 +589,8 @@ class Bot(pluginSupport, irc.IRCClient):
 
     def irc_RPL_NAMREPLY(self, prefix, params):
         self._apirunner("irc_RPL_NAMREPLY",{"prefix":prefix,"params":params})
-        for nick in params[3].strip().split(" "):
+        nicks = params[3].strip().split(" ")
+        for nick in nicks:
             if nick[0] in "@%+!":
                 s=nick[0]
                 nick=nick[1:]
@@ -600,8 +601,12 @@ class Bot(pluginSupport, irc.IRCClient):
             else:
                 u = IrcUser(nick+"!user@host")
                 self.userlist[nick] = u
-            self.sendLine("USERHOST "+nick)
             self.users[params[2]][u] = self.rev_modcharvals[s]
+        while len(nicks):
+            #send USERHOST request for 5 nicks at the same time
+            #(maximum allowed by RFC)
+            self.sendLine("USERHOST "+" ".join(nicks[:5]))
+            nicks=nicks[5:]
             
     def irc_RPL_USERHOST(self, prefix, params):
         for rpl in params[1].strip().split(" "):
@@ -609,12 +614,15 @@ class Bot(pluginSupport, irc.IRCClient):
             if len(tmp)==2:
                 (nick, hostmask)=tmp
             else:
-                print "Error parsing RPL_USERHOST: %s, %s"%(prefix, params)
+                self.logger.warning("Error parsing RPL_USERHOST: %s, %s"%(prefix, params))
                 continue
             nick = nick.replace("*","")
             hm=hostmask.split('@',1)
-            self.userlist[nick].user=hm[0][1:]
-            self.userlist[nick].host=hm[1]
+            if self.userlist.has_key(nick):
+                self.userlist[nick].user=hm[0][1:]
+                self.userlist[nick].host=hm[1]
+            else:
+                self.logger.warning("received RPL_USERHOST for \"%s\", who is not in list"%nick)
     
     def irc_INVITE(self, prefix, params):
         """ called by twisted,
