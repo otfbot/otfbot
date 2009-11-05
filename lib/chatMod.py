@@ -14,26 +14,23 @@
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 # 
-# (c) 2005, 2006 by Alexander Schier
-#
+# (c) 2005-2009 by Alexander Schier
+
+from plugin import Plugin
 """ contains a abstract class for a Bot-module """
-class chatMod:
-    """ abstract class for a botmodule    """
+
+class chatMod(Plugin):
+    """
+    this class is mainly for documentation of the callbacks.
+    some functions are helper functions for common tasks, i.e.
+    kicked calls userLeft, so a plugin only implementing userLeft
+    will notice that a kicked user left the channel. a plugin implementing
+    kicked too, can handle it independent from userLeft, because kicked will
+    be overwritten
+    """
     def __init__(self, bot):
         self.bot=bot
     
-    """ register commands in control service """    
-    def register_ctl_command(self, f, namespace=None, name=None):
-        if namespace is None:
-            namespace=[]
-        if not type(namespace) == list:
-            namespace = list(namespace)
-        namespace.insert(0, self.name.split(".")[-1])
-        self.bot.register_ctl_command(f, namespace, name)
- 
-    def setLogger(self,logger):
-        """ set the logger """
-        self.logger = logger
     def auth(self, user):
         """check the authorisation of the user"""
         pass
