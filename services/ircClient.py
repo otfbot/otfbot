@@ -104,6 +104,8 @@ class BotFactory(protocol.ClientFactory):
         if not reason.check(error.ConnectionDone):
             self.logger.warn("Got disconnected from "+connector.host+": "+str(reason.getErrorMessage()))
             #protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
+        else:
+            self.parent.removeService(self.service)
         
     def clientConnectionFailed(self, connector, reason):
         self.logger.warn("Connection to "+connector.host+" failed: "+str(reason.getErrorMessage()))
@@ -601,7 +603,8 @@ class Bot(pluginSupport, irc.IRCClient):
             else:
                 u = IrcUser(nick+"!user@host")
                 self.userlist[nick] = u
-            self.users[params[2]][u] = self.rev_modcharvals[s]
+            if hasattr(self, "rev_modcharvals"): #for irc servers which do not provide this (miniircd)
+                self.users[params[2]][u] = self.rev_modcharvals[s]
         while len(nicks):
             #send USERHOST request for 5 nicks at the same time
             #(maximum allowed by RFC)
