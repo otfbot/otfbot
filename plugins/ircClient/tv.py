@@ -40,12 +40,12 @@ class Plugin(chatMod.chatMod):
         	os.mkdir(datadir)
         except OSError:
         	pass
-        #self.xmltvfile = datadir + "/" + self.bot.getConfig("xmltvfile","","tvMod")
-        self.xmltvfile = datadir + "/" + self.bot.config.get("xmltvfile","tv.xml.txt","tvMod")
+        #self.xmltvfile = datadir + "/" + self.bot.getConfig("xmltvfile","","tv")
+        self.xmltvfile = datadir + "/" + self.bot.config.get("xmltvfile","tv.xml.txt","tv")
         #self.tv = tv(self.xmltvfile) ## This is done by self.update_data()
         self.tv = None
-        #standardsender = self.bot.getConfig("standardsender","ard,zdf,rtl,sat.1,n24,pro7,vox","tvMod")
-        standardsender = self.bot.config.get("standardsender","ard,zdf,rtl,sat.1,n24,pro7,vox","tvMod")
+        #standardsender = self.bot.getConfig("standardsender","ard,zdf,rtl,sat.1,n24,pro7,vox","tv")
+        standardsender = self.bot.config.get("standardsender","ard,zdf,rtl,sat.1,n24,pro7,vox","tv")
         dataurl = "http://xmltv.info/xw/default/run/xmltv?offset=-1"
         self.bot.root.getServiceNamed('scheduler').callLater(1, self.update_data, dataurl)
         self.standardsender = []

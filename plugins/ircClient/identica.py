@@ -29,7 +29,7 @@ class Plugin(chatMod.chatMod):
         self.bot=bot
     def connectionMade(self):
         if not LIB:
-            self.logger.info("please download http://media.commandline.org.uk/code/identi.txt to lib/identi.py to use identicaMod")
+            self.logger.info("please download http://media.commandline.org.uk/code/identi.txt to lib/identi.py to use identica")
             return
 
     def command(self, user, channel, command, options):
@@ -37,7 +37,7 @@ class Plugin(chatMod.chatMod):
             return
         if command in ["identica", "i", "identicawithnick", "iwn"]:
             #TODO: blocking            
-            self.api=identi.IdentiCA(self.bot.config.get("username", '', 'identicaMod', self.bot.network, channel), self.bot.config.get("username", '', 'identicaMod', self.bot.network, channel))
+            self.api=identi.IdentiCA(self.bot.config.get("username", '', 'identica', self.bot.network, channel), self.bot.config.get("username", '', 'identica', self.bot.network, channel))
             #TODO: blocking
             self.api.login()
             if command=="iwn" or command=="identicawithnick":

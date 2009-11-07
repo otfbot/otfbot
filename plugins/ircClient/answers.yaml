@@ -1,2 +1,2 @@
-answerMod.file: answers.txt
-answerMod.fileencoding: iso-8859-15
+answer.file: answers.txt
+answer.fileencoding: iso-8859-15

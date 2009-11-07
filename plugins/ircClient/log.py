@@ -30,8 +30,8 @@ class Plugin(chatMod.chatMod):
         self.files={}
         self.path={}
         #this has no usable defaultconfig string, because datadir is only known at runtime
-        self.datadir=bot.config.getPath("logdir", datadir, ".", "logMod") 
-        self.logpath=self.datadir+"/"+bot.config.get("path", "$n-$c/$y-$m-$d.log", "logMod")
+        self.datadir=bot.config.getPath("logdir", datadir, ".", "log") 
+        self.logpath=self.datadir+"/"+bot.config.get("path", "$n-$c/$y-$m-$d.log", "log")
         if not os.path.isdir(self.datadir):
             os.makedirs(self.datadir)
         try:

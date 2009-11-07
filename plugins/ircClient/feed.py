@@ -31,7 +31,7 @@ class Plugin(chatMod.chatMod):
         self.bot = bot
         self.end = False
         # TODO:add a start()-method with the following 3 lines
-        self.logger = logging.getLogger("feedMod")
+        self.logger = logging.getLogger("feed")
         if not feedparser_available:
             self.bot.depends("feedparser module")
         if not self.bot.root.getServiceNamed('scheduler'):
@@ -65,19 +65,19 @@ class Plugin(chatMod.chatMod):
         self.logger.debug(url+" (update every "+str(minWait)+" - "+str(maxWait)+" minutes), waitFactor "+str(factor)+".")
 
     def loadSource(self, num, channel):
-        feedUrl=self.bot.config.get("feed"+str(num)+".url", "", "feedMod", self.bot.network, channel)
+        feedUrl=self.bot.config.get("feed"+str(num)+".url", "", "feed", self.bot.network, channel)
 
-        feedMinWait=float(self.bot.config.get("feed"+str(num)+".minWait", "5.0", "feedMod", self.bot.network, channel))
-        feedMaxWait=float(self.bot.config.get("feed"+str(num)+".maxWait", "60.0", "feedMod", self.bot.network, channel))
-        feedWaitFactor=float(self.bot.config.get("feed"+str(num)+".waitFactor", "1.5", "feedMod", self.bot.network, channel))
-        feedPostMax=int(self.bot.config.get("feed"+str(num)+".postMax", "3", "feedMod", self.bot.network, channel))
+        feedMinWait=float(self.bot.config.get("feed"+str(num)+".minWait", "5.0", "feed", self.bot.network, channel))
+        feedMaxWait=float(self.bot.config.get("feed"+str(num)+".maxWait", "60.0", "feed", self.bot.network, channel))
+        feedWaitFactor=float(self.bot.config.get("feed"+str(num)+".waitFactor", "1.5", "feed", self.bot.network, channel))
+        feedPostMax=int(self.bot.config.get("feed"+str(num)+".postMax", "3", "feed", self.bot.network, channel))
 
         self.addSource(feedUrl, channel, feedMinWait, feedMaxWait, feedWaitFactor, feedPostMax)
 
     def joined(self, channel):
         if not feedparser_available:
             return
-        numFeeds=int(self.bot.config.get("numFeeds", 0, "feedMod", self.bot.network, channel))
+        numFeeds=int(self.bot.config.get("numFeeds", 0, "feed", self.bot.network, channel))
         if numFeeds > 0:
             self.logger.debug("Found "+str(numFeeds)+" Feed-Urls:")
             for i in xrange(1,numFeeds+1):
@@ -160,26 +160,26 @@ class Plugin(chatMod.chatMod):
                 if options!="":
                     num=int(options)
                     if num!=0:
-                        feedUrl=self.bot.config.get("feed"+str(num)+".url", "", "feedMod", self.bot.network, channel)
+                        feedUrl=self.bot.config.get("feed"+str(num)+".url", "", "feed", self.bot.network, channel)
                         self.callIDs[feedUrl].cancel()
                         self.loadNews(feedUrl)
-                        self.postNews(channel, feedUrl, int(self.bot.config.get("feed"+str(num)+".postMax", "3", "feedMod", self.bot.network, channel) ))
+                        self.postNews(channel, feedUrl, int(self.bot.config.get("feed"+str(num)+".postMax", "3", "feed", self.bot.network, channel) ))
                         self.loadSource(num, channel)
             elif command=="addfeed":
                 options=options.split(" ")
-                num=int(self.bot.config.get("numFeeds", 0, "feedMod", self.bot.network, channel))+1
+                num=int(self.bot.config.get("numFeeds", 0, "feed", self.bot.network, channel))+1
                 if len(options) ==5:
-                    self.bot.config.set("feed"+str(num)+".waitFactor", options[4], "feedMod", self.bot.network, channel)
+                    self.bot.config.set("feed"+str(num)+".waitFactor", options[4], "feed", self.bot.network, channel)
                 if len(options) >=4:
-                    self.bot.config.set("feed"+str(num)+".maxWait", options[3], "feedMod", self.bot.network, channel)
+                    self.bot.config.set("feed"+str(num)+".maxWait", options[3], "feed", self.bot.network, channel)
                 if len(options) >=3:
-                    self.bot.config.set("feed"+str(num)+".minWait", options[2], "feedMod", self.bot.network, channel)
+                    self.bot.config.set("feed"+str(num)+".minWait", options[2], "feed", self.bot.network, channel)
                 if len(options) >= 2:
-                    self.bot.config.set("feed"+str(num)+".postMax", options[1], "feedMod", self.bot.network, channel)
+                    self.bot.config.set("feed"+str(num)+".postMax", options[1], "feed", self.bot.network, channel)
                 if len(options) >=1 and len(options[0]):
-                    self.bot.config.set("feed"+str(num)+".url", options[0], "feedMod", self.bot.network, channel)
+                    self.bot.config.set("feed"+str(num)+".url", options[0], "feed", self.bot.network, channel)
                 else:
                     self.bot.sendmsg(channel, "Error: Syntax !addfeed url postMax minWait maxWait factor")
                     return
-                self.bot.config.set("numFeeds", num, "feedMod", self.bot.network, channel)
+                self.bot.config.set("numFeeds", num, "feed", self.bot.network, channel)
                 self.loadSource(num, channel)
