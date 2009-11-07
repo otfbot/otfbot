@@ -45,7 +45,8 @@ class chatMod(Plugin):
         pass
     def privmsg(self, user, channel, msg):
         """a private message received"""
-        pass    
+        #FIXME: turn all query callbacks in plugins into privmsg, then remove this line
+        return self.query(user, channel, msg)
     def msg(self, user, channel, msg):
         """message received"""
         pass
