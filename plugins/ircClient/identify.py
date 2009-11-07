@@ -24,10 +24,8 @@ from lib import chatMod
 class Plugin(chatMod.chatMod):
     def __init__(self, bot):
         self.bot=bot
+        #TODO: set to False again on disconnect
         self.sent_identification=False
-
-    def connectionMade(self):
-        self.password = str(self.bot.config.get("password", "", "identifyMod", self.bot.network))
     
     def signedOn(self):
         self.identify()
@@ -35,9 +33,10 @@ class Plugin(chatMod.chatMod):
     def identify(self):
         if self.password != "":
             self.logger.info("identifying to nickserv")
-            self.bot.sendmsg("nickserv", "identify "+self.password)
+            password = str(self.bot.config.get("nickservPassword", "", "identify", self.bot.network))
+            self.bot.sendmsg("nickserv", "identify "+password)
             self.sent_identification=True
-        if self.bot.config.getBool("setBotFlag", True, "identifyMod", self.bot.network):
+        if self.bot.config.getBool("setBotFlag", True, "identify", self.bot.network):
             self.logger.info("setting usermode +b")
             self.bot.mode(self.bot.nickname, 1, "B")
             

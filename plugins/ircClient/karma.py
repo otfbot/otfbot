@@ -31,13 +31,13 @@ class Plugin(chatMod.chatMod):
         self.bot=bot
         self.karmas={} #channel ->  (what -> karma-struct)
         self.karmapaths={} #path -> (what -> channel) (pointer!)
-        self.verbose=self.bot.config.getBool("karmaMod.verbose", True)
-        self.freestyle=self.bot.config.getBool("karmaMod.freestyle", True)
+        self.verbose=self.bot.config.getBool("karma.verbose", True)
+        self.freestyle=self.bot.config.getBool("karma.freestyle", True)
 
     def loadKarma(self, channel):
         if not os.path.exists(datadir):
             os.makedirs(datadir)
-        karmapath=self.bot.config.getPath("file", datadir, "karma.dat", "karmaMod", self.bot.network, channel)
+        karmapath=self.bot.config.getPath("file", datadir, "karma.dat", "karma", self.bot.network, channel)
         if not karmapath in self.karmapaths.keys():
             if os.path.exists(karmapath):
                 #TODO: blocking
@@ -53,7 +53,7 @@ class Plugin(chatMod.chatMod):
     def saveKarma(self, channel):
         #Attention: we write the files from karmapaths(which are unique), not from the channels array!
         #TODO: blocking
-        karmapath=self.bot.config.getPath("file", datadir, "karma.dat", "karmaMod", self.bot.network, channel)
+        karmapath=self.bot.config.getPath("file", datadir, "karma.dat", "karma", self.bot.network, channel)
         karmafile=open(karmapath, "w")
         pickle.dump(self.karmas[channel], karmafile)
         karmafile.close()

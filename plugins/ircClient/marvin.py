@@ -30,12 +30,12 @@ class Plugin(chatMod.chatMod):
         #if msg[0]=="!" or msg[:len(self.bot.nickname)]==self.bot.nickname:
         if (msg[0]=="!" or self.bot.nickname in msg) and len(self.marvin):
             number=random.randint(0,100)
-            chance=int(self.bot.config.get("percent", "1", "marvinMod"))
+            chance=int(self.bot.config.get("percent", "1", "marvin"))
             if number <chance:
-                self.bot.sendmsg(channel, random.choice(self.marvin), self.bot.config.get("fileencoding", "iso-8859-15", "marvinMod"))
+                self.bot.sendmsg(channel, random.choice(self.marvin), self.bot.config.get("fileencoding", "iso-8859-15", "marvin"))
 
     def start(self):
-        self.marvin=functions.loadList(self.bot.config.getPath("file", datadir, "marvin.txt", "marvinMod"))
+        self.marvin=functions.loadList(self.bot.config.getPath("file", datadir, "marvin.txt", "marvin"))
 
     def reload(self):
         self.start()

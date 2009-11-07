@@ -29,7 +29,7 @@ class Plugin(chatMod.chatMod):
     def __init__(self,bot):
         """
         Config has to look like this:
-        svnMod.repositories:
+        svn.repositories:
           samplesvn:
              checkinterval: 30 (in Minutes!)
              url: svn://url.to.your/svn
@@ -37,7 +37,7 @@ class Plugin(chatMod.chatMod):
         and then do this in your channel-config:
         samplenetwork:
           '#samplechannel':
-            svnMod.repros: samplesvn
+            svn.repros: samplesvn
         
         and the bot will post updates of samplesvn in your channel.
         You can specify more repros just by appending them seperated with a comma.
@@ -46,9 +46,9 @@ class Plugin(chatMod.chatMod):
         if not HAS_PYSVN:
             self.bot.depends("pysvn python module")
         self.callIds = {}
-        self.svnconfig = self.bot.config.get("repositories",[] , "svnMod")
+        self.svnconfig = self.bot.config.get("repositories",[] , "svn")
     def joined(self,channel):
-        repros = self.bot.config.get("repros","","svnMod",self.bot.network,channel)
+        repros = self.bot.config.get("repros","","svn",self.bot.network,channel)
         if repros != "":
             try:
                 repros = repros.split(",")
@@ -67,7 +67,7 @@ class Plugin(chatMod.chatMod):
     def kickedFrom(self, channel, kicker, message):
         self.left(channel)
     def left(self, channel):
-        repros = self.bot.config.get("repros","","svnMod",self.bot.network,channel)
+        repros = self.bot.config.get("repros", "", "svn", self.bot.network, channel)
         if repros != "":
             try:
                 repros = repros.split(",")

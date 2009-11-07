@@ -94,9 +94,9 @@ def ascii_string(msg):
 class udpResponder(responder):
     def __init__(self, bot):
         self.bot=bot
-        self.host=self.bot.config.get("host", "", "kiMod", self.bot.network)
-        self.remoteport=int(self.bot.config.get("remoteport", "", "kiMod", self.bot.network))
-        self.localport=int(self.bot.config.get("localport", "", "kiMod", self.bot.network))
+        self.host=self.bot.config.get("host", "", "ki", self.bot.network)
+        self.remoteport=int(self.bot.config.get("remoteport", "", "ki", self.bot.network))
+        self.localport=int(self.bot.config.get("localport", "", "ki", self.bot.network))
         self.socket=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.settimeout(10)
@@ -112,10 +112,10 @@ class webResponder(responder):
     def __init__(self, bot):
         self.bot=bot
     def learn(self, msg):
-        url=self.bot.config.get("url", "", "kiMod", self.bot.network)
+        url=self.bot.config.get("url", "", "ki", self.bot.network)
         urllib2.urlopen(url+urllib.quote(msg)).read()
     def reply(self, msg):    
-        url=self.bot.config.get("url", "", "kiMod", self.bot.network)
+        url=self.bot.config.get("url", "", "ki", self.bot.network)
         return ascii_string(urllib2.urlopen(url+urllib.quote(msg)).read())
 
 class niallResponder(responder):
@@ -198,7 +198,7 @@ class megahalResponder(responder):
 class Plugin(chatMod.chatMod):
     def __init__(self, bot):
         self.bot=bot
-        if hasattr(self.bot, "nickname"): #on reload, because "connectionMade" is not invoked for a reloaded kiMod
+        if hasattr(self.bot, "nickname"): #on reload, because "connectionMade" is not invoked for a reloaded ki plugin
             self.lnickname=string.lower(self.bot.nickname)
 
     def start(self):
@@ -207,12 +207,12 @@ class Plugin(chatMod.chatMod):
         self.wordpairs=functions.loadProperties(self.wordpairsFile)
         self.nicklist=[string.lower(self.bot.config.get("nickname", "otfbot", "main", self.bot.network))]
 
-        module=self.bot.config.get("module", "megahal", "kiMod", self.bot.network)
-        self.logger.debug("kiMod: using module "+module+",megahal="+str(MEGAHAL)+",niall="+str(NIALL))
+        module=self.bot.config.get("module", "megahal", "ki", self.bot.network)
+        self.logger.debug("ki: using module "+module+",megahal="+str(MEGAHAL)+",niall="+str(NIALL))
         if module=="niall":
             if NIALL:
                 self.responder=niallResponder(self.bot, datadir)
-                self.logger.info("kiMod: using niall module")
+                self.logger.info("ki: using niall module")
             else:
                 self.logger.warning("Cannot use niall. Module niall not availible.")
                 if MEGAHAL:
@@ -245,14 +245,14 @@ class Plugin(chatMod.chatMod):
         user=user.split("!")[0]
         if user[0:len(self.lnickname)]==self.lnickname:
             return
-        if user.lower()==self.bot.nickname.lower() or string.lower(user) in self.bot.config.get("ignore", "", "kiMod", self.bot.network).split(","):
+        if user.lower()==self.bot.nickname.lower() or string.lower(user) in self.bot.config.get("ignore", "", "ki", self.bot.network).split(","):
             return
         reply=self.responder.reply(msg)
         if not reply:
             return
         number=random.randint(1,1000)
-        chance=int(self.bot.config.get("answerQueryPercent", "70", "kiMod", self.bot.network))*10
-        delay=len(reply)*0.3*float(self.bot.config.get("wait", "2", "kiMod", self.bot.network)) #a normal user does not type that fast
+        chance=int(self.bot.config.get("answerQueryPercent", "70", "ki", self.bot.network))*10
+        delay=len(reply)*0.3*float(self.bot.config.get("wait", "2", "ki", self.bot.network)) #a normal user does not type that fast
         if number < chance:
             #self.bot.sendmsg(user, reply, "UTF-8")
             self.bot.root.getServiceNamed('scheduler').callLater(delay, self.bot.sendmsg, user, reply, "UTF-8")
@@ -260,7 +260,7 @@ class Plugin(chatMod.chatMod):
         user=user.split("!")[0]
         if not user in self.nicklist:
             self.nicklist.append(string.lower(user))
-        if string.lower(user) in self.bot.config.get("ignore", "", "kiMod", self.bot.network, channel).split(","):
+        if string.lower(user) in self.bot.config.get("ignore", "", "ki", self.bot.network, channel).split(","):
             return
 
         if user == self.bot.nickname:
@@ -275,7 +275,7 @@ class Plugin(chatMod.chatMod):
 
         #bot answers random messages
         number=random.randint(1,1000)
-        chance=int(float(self.bot.config.get("randomPercent", "0", "kiMod", self.bot.network, channel))*10)
+        chance=int(float(self.bot.config.get("randomPercent", "0", "ki", self.bot.network, channel))*10)
         israndom=0
         if number < chance:
             israndom=1
@@ -307,9 +307,9 @@ class Plugin(chatMod.chatMod):
 
             if reply==string.upper(reply): #no UPPERCASE only Posts
                 reply=string.lower(reply)
-            delay=len(reply)*0.3*float(self.bot.config.get("wait", "2", "kiMod", self.bot.network, channel)) #a normal user does not type that fast
+            delay=len(reply)*0.3*float(self.bot.config.get("wait", "2", "ki", self.bot.network, channel)) #a normal user does not type that fast
             number=random.randint(1,1000)
-            chance=int(self.bot.config.get("answerPercent", "50", "kiMod", self.bot.network, channel))*10
+            chance=int(self.bot.config.get("answerPercent", "50", "ki", self.bot.network, channel))*10
             if israndom:
                 #self.bot.sendmsg(channel, reply, "UTF-8")
                 self.bot.root.getServiceNamed('scheduler').callLater(delay, self.bot.sendmsg, channel, reply, "UTF-8")
