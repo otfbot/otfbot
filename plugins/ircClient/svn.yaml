@@ -1,4 +1,4 @@
-svnMod.repositorys:
+svn.repositorys:
   samplerepository:
     url:
     checkinterval:

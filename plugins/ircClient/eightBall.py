@@ -47,7 +47,7 @@ class Plugin(chatMod.chatMod):
         ]
 
     def msg(self, user, channel, msg):
-        if self.bot.config.getBool("autoAnswer", False, "eightballMod", self.network, channel):
+        if self.bot.config.getBool("autoAnswer", False, "eightball", self.network, channel):
             if re.match("[abcdefghijklmnopqrstuvxyz][^\.\?!:;]*\?", msg.lower()):
                 self.bot.sendmsg(channel, random.choice(self.answers))
     def command(self, user, channel, command, options):

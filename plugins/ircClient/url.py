@@ -29,10 +29,10 @@ class Plugin(chatMod.chatMod):
     def __init__(self, bot):
         self.bot = bot
         self.parser = titleExtractor()
-        self.autoTiny=self.bot.config.get("autotiny", False, "urlMod", self.bot.network)
-        self.autoTinyLength=int(self.bot.config.get("autoLength", "50", "urlMod", self.bot.network))
-        self.autoPreview=self.bot.config.get("autopreview", False, "urlMod", self.bot.network)
-        self.autoServerinfo=self.bot.config.get("autoserverinfo", False, "urlMod", self.bot.network)
+        self.autoTiny=self.bot.config.get("autotiny", False, "url", self.bot.network)
+        self.autoTinyLength=int(self.bot.config.get("autoLength", "50", "url", self.bot.network))
+        self.autoPreview=self.bot.config.get("autopreview", False, "url", self.bot.network)
+        self.autoServerinfo=self.bot.config.get("autoserverinfo", False, "url", self.bot.network)
         self.lasturl=""
 
     def command(self, user, channel, command, options):
