@@ -26,6 +26,7 @@ class Plugin(chatMod.chatMod):
         self.bot=bot
         #TODO: set to False again on disconnect
         self.sent_identification=False
+        self.password=""
     
     def signedOn(self):
         self.identify()
