@@ -19,7 +19,34 @@
 
 from lib import chatMod
 import urllib2, re
+from HTMLParser import HTMLParser, HTMLParseError
 
+class versionIDExtractor(HTMLParser):
+    in_version_select=False
+    version_right=False
+    in_option=False
+    versionID=""
+    version=""
+    def __init__(self, version):
+        HTMLParser.__init__(self)
+        self.version=version
+    def handle_starttag(self, tag, attrs):
+            if tag == "select" and ("name", "due[]") in attrs:
+                    self.in_version_select=True
+            elif self.in_version_select and tag=="option":
+                versionID=dict(attrs)[value]
+                self.in_option=True
+    def handle_endtag(self, tag):
+            if tag == "select":
+                self.in_version_select=False
+            elif tag == "option":
+                self.in_option=False
+    def handle_data(self, data):
+        if self.in_option:
+            if data==self.version:
+                self.versionID=data
+    def get_result(self):
+            return self.versionID
 class Plugin(chatMod.chatMod):
     def __init__(self, bot):
         self.bot=bot
@@ -51,4 +78,13 @@ class Plugin(chatMod.chatMod):
                     self.bot.sendmsg(channel, title)
                 else:
                     self.bot.sendmsg(channel, "Error parsing the flyspray page")
+        if command == "fs-ver":
+            parser=versionIDExtractor(options)
+            try:
+                url=self.config.get("url", "", "flyspray", self.bot.network, channel)
+                if url:
+                    parser.feed(urllib2.urlopen(url).read())
+                    self.bot.sendmsg(channel, parser.get_result())
+            except HTMLParseError:
+                pass
 
