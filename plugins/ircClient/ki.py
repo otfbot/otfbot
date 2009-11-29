@@ -257,10 +257,10 @@ class Plugin(chatMod.chatMod):
             #self.bot.sendmsg(user, reply, "UTF-8")
             self.bot.root.getServiceNamed('scheduler').callLater(delay, self.bot.sendmsg, user, reply, "UTF-8")
     def msg(self, user, channel, msg):
-        user=user.split("!")[0]
+        user=user.split("!")[0].lower()
         if not user in self.nicklist:
-            self.nicklist.append(string.lower(user))
-        if string.lower(user) in self.bot.config.get("ignore", "", "ki", self.bot.network, channel).split(","):
+            self.nicklist.append(user)
+        if user in self.bot.config.get("ignore", [], "ki", self.bot.network, channel):
             return
 
         if user == self.bot.nickname:
