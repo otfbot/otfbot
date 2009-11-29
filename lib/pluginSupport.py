@@ -174,7 +174,7 @@ class pluginSupport:
                 if args.has_key("channel"):
                     args['channel']=args['channel'].lower()
                     if plugin.name in self.config.get("pluginsDisabled",[],"main",self.network,args["channel"], set_default=False):
-                        return
+                        continue
                 if plugin.name in self.config.get("pluginsDisabled", [], "main", self.network):
                     return
             try:
