@@ -124,6 +124,14 @@ class BotFactory(protocol.ClientFactory):
 #        self.logger.info("Got Signal to stop factory, stopping service as well")
 #        self.service.disownServiceParent()
 #        self.service.stopService()
+
+class creatingDict(dict):
+    """helper class: a dict, which adds unknown keys with value 0 on access"""
+    def __getitem__(self, item):
+        if not self.has_key(item):
+            self[item]=0
+            print "created non-existant key %s"%repr(item)
+        return dict.__getitem__(self, item)
     
 class Bot(pluginSupport, irc.IRCClient):
     """ The Protocol of our IRC-Bot
@@ -173,7 +181,7 @@ class Bot(pluginSupport, irc.IRCClient):
         # all users known to the bot, nick => IrcUser
         self.userlist    = {}
         # usertracking, channel=>{User => level}
-        self.users       = {}
+        self.users       = creatingDict()
 
         self.serversupports  = {}
         
