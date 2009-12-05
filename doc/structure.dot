@@ -1,0 +1,74 @@
+digraph otfbot {
+    "otfbot.tac" -> application;
+    application -> services;
+    services -> configservice;
+    subgraph classes {
+        pluginSupport[style=filled,fillcolor=grey];
+        pluginSupport -> ircClient [style=dotted]
+        pluginSupport -> ircServer [style=dotted]
+        ircClientClass[label="irc.IRCClient",style=filled,fillcolor=grey]
+        ircClientClass -> ircClient [style=dotted]
+        ircServerClass[label="IRCUser",style=filled,fillcolor=grey]
+        ircServerClass -> ircServer [style=dotted]
+        libPlugin[label="lib.Plugin",style=filled,fillcolor=grey]
+        libPlugin -> commands [style=dotted];
+        libPlugin -> ki [style=dotted];
+        libPlugin -> weather [style=dotted];
+        libPlugin -> otherplugins [style=dotted];
+        libPlugin -> count[style=dotted];
+        libPlugin -> hello[style=dotted];
+    }
+    subgraph configfiles {
+    label="config files"
+        "otfbot.yaml"[shape=box];
+        allconfigs[label="plugins/*/*.yaml",shape=box];
+    }
+    configservice -> "otfbot.yaml";
+    configservice -> allconfigs;
+    configservice -> application [label="root",style="dashed"];
+    configservice -> application [label="parent",style="dashed"];
+    subgraph dynamicServices {
+        color=blue
+        ircClient
+        ircServer
+        other[label="other dynamic services"]
+        services[label="services[]"]
+        services -> ircClient
+        services -> ircServer
+        services -> other
+    }
+    network1[label="irc network 1"];
+    network2[label="irc network 2"];
+    network3[label="irc network ..."];
+    networks[label="Bot[]"]
+    ircClient -> application [label="root",style="dashed"];
+    ircClient -> application [label="parent",style="dashed"];
+    ircClient -> networks
+    networks -> network1
+    network1 -> application [label="root",style="dashed"];
+    network1 -> ircClient [label="parent",style="dashed"];
+    networks -> network2
+    networks -> network3
+    plugins[label="plugins[]"]
+    network1 -> plugins;
+    plugins -> ki
+    ki -> application [label="root",style="dashed"];
+    ki -> network1 [label="parent",style="dashed"];
+    plugins -> weather
+    weather -> application [label="root",style="dashed"];
+    weather -> network1 [label="parent",style="dashed"];
+    plugins -> commands
+    commands -> application [label="root",style="dashed"];
+    commands -> network1 [label="parent",style="dashed"];
+    plugins -> otherplugins
+    serverPlugins[label="plugins[]"]
+    serverPlugins -> hello
+    serverPlugins -> count
+    ircServer -> serverPlugins;
+    subgraph plugins {
+        commands;
+        ki;
+        weather;
+        otherplugins[label="..."]
+    }
+}
