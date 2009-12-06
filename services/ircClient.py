@@ -74,7 +74,7 @@ class botService(service.MultiService):
     		return "Disconnected from "+network
     	else:
             return "Not connected to "+network
-    
+
     def register_ctl_command(self, f, namespace=None, name=None):
         if self.controlservice:
             if namespace is None:
@@ -208,7 +208,7 @@ class Bot(pluginSupport, irc.IRCClient):
     
     def startPlugins(self):
         for pluginName in self.config.get(self.pluginSupportName+"Plugins", [], "main", set_default=False):
-            ifnot pluginName in self.config.get("pluginsDisabled", [], "main", self.network):
+            if not pluginName in self.config.get("pluginsDisabled", [], "main", self.network):
                 self.startPlugin(pluginName)
 
     def startPlugin(self, pluginName):
