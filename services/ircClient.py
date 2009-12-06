@@ -206,6 +206,11 @@ class Bot(pluginSupport, irc.IRCClient):
         self.register_ctl_command(self.sendmsg, name="say")
         self.register_ctl_command(self.ping)
     
+    def startPlugins(self):
+        for pluginName in self.config.get(self.pluginSupportName+"Plugins", [], "main", set_default=False):
+            ifnot pluginName in self.config.get("pluginsDisabled", [], "main", self.network):
+                self.startPlugin(pluginName)
+
     def startPlugin(self, pluginName):
         plugin=pluginSupport.startPlugin(self, pluginName)
         #TODO: this is only a workaround until the plugins register their callbacks
