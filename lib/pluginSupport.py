@@ -144,7 +144,7 @@ class pluginSupport:
             @type exception: exception
         """
         if type(exception) == self.DependencyMissing:
-            logger.error("Dependency missing in plugin %s: %s is not active."%(plugin, str(exception)))
+            logger.warning("Dependency missing in plugin %s: %s is not active."%(plugin, str(exception)))
             return
         elif type(exception) == self.WontStart:
             logger.info('Plugin "%s" will not start because "%s".'%(plugin, str(exception)))
