@@ -75,7 +75,7 @@ class pluginSupport:
         """
         for pluginName in self.config.get(self.pluginSupportName+"Plugins", [], "main", set_default=False):
             #if we are an ircClient with network attribute, disable loading of plugins network-wide
-            if hasattr(self, "network") and not plugin.name in self.config.get("pluginsDisabled", [], "main", self.network):
+            if hasattr(self, "network") and not pluginName in self.config.get("pluginsDisabled", [], "main", self.network):
                 self.startPlugin(pluginName)
 
     def startPlugin(self, pluginName):
