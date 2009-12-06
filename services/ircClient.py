@@ -152,10 +152,6 @@ class Bot(pluginSupport, irc.IRCClient):
 
     modchars = {16: 'a', 8: 'o', 4: 'h', 2: 'v', 0: ' '}
     modcharvals = {16: '!', 8: '@', 4: '%', 2: '+', 0: ' '}
-    def warn_and_execute(self, method, *args, **kwargs):
-        self.logger.debug("deprecated call to %s with args %s"%(str(method), str(args)))
-        #XXX: use bot.config.method instead
-        return method(*args, **kwargs)
 
     def __init__(self, root, parent):
         pluginSupport.__init__(self, root, parent)
