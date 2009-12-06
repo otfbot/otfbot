@@ -74,7 +74,9 @@ class pluginSupport:
             initializes all known plugins
         """
         for pluginName in self.config.get(self.pluginSupportName+"Plugins", [], "main", set_default=False):
-            self.startPlugin(pluginName)
+            #if we are an ircClient with network attribute, disable loading of plugins network-wide
+            if hasattr(self, "network") and not plugin.name in self.config.get("pluginsDisabled", [], "main", self.network):
+                self.startPlugin(pluginName)
 
     def startPlugin(self, pluginName):
             pluginClass=self.importPlugin(pluginName)
@@ -170,13 +172,12 @@ class pluginSupport:
             plugin=plugin_and_priority[0] #(module, priority)
             #self.logger.debug("running "+apifunction+" for plugin "+str(mod))
             #if a channel is present, check if the plugin is disabled for the channel.
+            #network wide pluginsDisabled is handled by startPlugins
             if hasattr(self, "network"):
                 if args.has_key("channel"):
                     args['channel']=args['channel'].lower()
                     if plugin.name in self.config.get("pluginsDisabled",[],"main",self.network,args["channel"], set_default=False):
                         continue
-                if plugin.name in self.config.get("pluginsDisabled", [], "main", self.network):
-                    return
             try:
                 result=getattr(plugin, apifunction)(**args)
                 #TODO: this should be extended something like this:
