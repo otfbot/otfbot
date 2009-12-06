@@ -37,7 +37,7 @@ class Plugin(chatMod.chatMod):
         try:
             locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
         except:
-            #self.logger.error("Couldn't set locale 'de_DE.UTF-8'. Using system-default")
+            #self.logger.warning("Couldn't set locale 'de_DE.UTF-8'. Using system-default")
             locale.setlocale(locale.LC_ALL, "")
         self.day=self.ts("%d") #saves the hour, to detect daychanges
         for c in self.bot.channels:
