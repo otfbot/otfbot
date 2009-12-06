@@ -139,7 +139,9 @@ class Plugin(chatMod.chatMod):
         if self.end:
             return
 
-        self.loadNews(url)
+        #avoid loading, if it was loaded by another channel-loop while the wait-time
+        if time.time() - self.feedLastLoaded[url] > curWait:
+            self.loadNews(url)
         had_new=self.postNews(channel, url, feedPostMax)    
 
         newWait=self.getWaitTime(curWait, minWait, maxWait, factor, had_new)
