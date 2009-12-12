@@ -89,7 +89,7 @@ def ascii_string(msg):
             pass
         except UnicodeEncodeError:
             pass
-    return re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890@.!?;: ]", "", msg)
+    return re.sub("[ ]*", " ", re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890@.!?;: ]", " ", msg))
 
 class udpResponder(responder):
     def __init__(self, bot):
