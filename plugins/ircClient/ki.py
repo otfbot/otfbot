@@ -252,7 +252,7 @@ class Plugin(chatMod.chatMod):
             return
         number=random.randint(1,1000)
         chance=int(self.bot.config.get("answerQueryPercent", "70", "ki", self.bot.network))*10
-        delay=len(reply)*0.3*float(self.bot.config.get("wait", "2", "ki", self.bot.network)) #a normal user does not type that fast
+        delay=len(reply)*0.3*float(self.bot.config.get("wait", 2, "ki", self.bot.network)) #a normal user does not type that fast
         if number < chance:
             #self.bot.sendmsg(user, reply, "UTF-8")
             self.bot.root.getServiceNamed('scheduler').callLater(delay, self.bot.sendmsg, user, reply, "UTF-8")
@@ -307,7 +307,7 @@ class Plugin(chatMod.chatMod):
 
             if reply==string.upper(reply): #no UPPERCASE only Posts
                 reply=string.lower(reply)
-            delay=len(reply)*0.3*float(self.bot.config.get("wait", "2", "ki", self.bot.network, channel)) #a normal user does not type that fast
+            delay=len(reply)*0.3*float(self.bot.config.get("wait", 2, "ki", self.bot.network, channel)) #a normal user does not type that fast
             number=random.randint(1,1000)
             chance=int(self.bot.config.get("answerPercent", "50", "ki", self.bot.network, channel))*10
             if israndom:
