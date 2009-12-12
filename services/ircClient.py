@@ -624,7 +624,8 @@ class Bot(pluginSupport, irc.IRCClient):
             if len(tmp)==2:
                 (nick, hostmask)=tmp
             else:
-                self.logger.warning("Error parsing RPL_USERHOST: %s, %s"%(prefix, params))
+                if not self.nickname == rpl:
+                    self.logger.warning("Error parsing RPL_USERHOST: %s, %s"%(prefix, params))
                 continue
             nick = nick.replace("*","")
             hm=hostmask.split('@',1)
