@@ -55,8 +55,8 @@ class botService(service.MultiService):
     def connect(self, network):
         f = BotFactory(self.root, self, network)
         servername=self.config.get("server", "localhost", "main", network)
-        port = int(self.config.get('port','6667','main', network))
-        if (self.config.getBool('ssl','False','main', network)):
+        port = int(self.config.get('port', 6667, 'main', network))
+        if (self.config.getBool('ssl', False, 'main', network)):
             s = ssl.ClientContextFactory()
             serv=internet.SSLClient(host=servername, port=port, factory=f,contextFactory=s)
             serv.__repr__=lambda: "<IRC Connection with SSL to %s:%s>"%(servername, port)
