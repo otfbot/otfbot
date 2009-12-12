@@ -17,8 +17,12 @@
 # (c) 2008 by Alexander Schier
 #
 import urllib2
-from twisted.web.client import getPage, downloadPage
+from twisted.web import client
 
+getPage=client.getPage
+downloadPage=client.downloadPage
+
+client.HTTPClientFactory.noisy=False
 svnrevision="$Revision: 187 $".split(" ")[1]
 
 def get_headers(url):
