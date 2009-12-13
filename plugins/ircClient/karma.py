@@ -185,7 +185,7 @@ class Plugin(chatMod.chatMod):
             if reason:
                 karma[what][4].append(str(reason))
 
-    def connectionLost(self, reason):
+    def stop(self):
         for karmapath in self.karmapaths.keys():
             self.saveKarma(self.karmapaths[karmapath])
 
