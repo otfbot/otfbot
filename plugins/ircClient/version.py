@@ -18,10 +18,12 @@
 
 from lib import chatMod
 
+from twisted.python import versions
+
 class Plugin(chatMod.chatMod):
     def __init__(self, bot):
         self.bot=bot
 
     def command(self, user, channel, command, options):
         if command == "version":
-                self.bot.sendmsg(channel, "r"+str("$Revision: 201 $".split(" ")[1]))
+                self.bot.sendmsg(channel, self.bot.root.version.short())
