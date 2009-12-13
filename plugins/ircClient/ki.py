@@ -245,7 +245,7 @@ class Plugin(chatMod.chatMod):
         user=user.split("!")[0]
         if user[0:len(self.lnickname)]==self.lnickname:
             return
-        if user.lower()==self.bot.nickname.lower() or string.lower(user) in self.bot.config.get("ignore", "", "ki", self.bot.network).split(","):
+        if user.lower()==self.bot.nickname.lower() or string.lower(user) in self.bot.config.get("ignore", [], "ki", self.bot.network):
             return
         reply=self.responder.reply(msg)
         if not reply:
