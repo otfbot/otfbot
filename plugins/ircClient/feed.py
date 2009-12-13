@@ -34,8 +34,7 @@ class Plugin(chatMod.chatMod):
         self.logger = logging.getLogger("feed")
         if not feedparser_available:
             self.bot.depends("feedparser module")
-        if not self.bot.root.getServiceNamed('scheduler'):
-            self.bot.depends("scheduler service")
+        self.bot.depends_on_service("scheduler")
         
         self.feedHeadlines={} #map url -> [(url, headline), ...]
         self.readUrls={} #map channel->[url, url, ...]
@@ -140,7 +139,9 @@ class Plugin(chatMod.chatMod):
         if self.end:
             return
 
-        self.loadNews(url)
+        #avoid loading, if it was loaded by another channel-loop while the wait-time
+        if time.time() - self.feedLastLoaded[url] > curWait:
+            self.loadNews(url)
         had_new=self.postNews(channel, url, feedPostMax)    
 
         newWait=self.getWaitTime(curWait, minWait, maxWait, factor, had_new)

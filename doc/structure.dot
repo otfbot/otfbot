@@ -1,0 +1,91 @@
+digraph otfbot {
+    "otfbot.tac" -> application;
+    services[label="services[]"]
+    application[root=true]
+    application -> services;
+    services -> configservice;
+    //subgraph cluster_classes {
+        pluginSupport[style=filled,fillcolor=grey];
+        ircClientClass[label="irc.IRCClient",style=filled,fillcolor=grey]
+        ircServerClass[label="IRCUser",style=filled,fillcolor=grey]
+        libPlugin[label="lib.Plugin",style=filled,fillcolor=grey]
+        multiservice[label="service.MultiService",style=filled,fillcolor=grey]
+    //}
+    multiservice -> ircClient [style=dotted]
+    multiservice -> ircServer [style=dotted]
+    multiservice -> irc[style=dotted]
+    pluginSupport -> ircClient [style=dotted]
+    pluginSupport -> ircServer [style=dotted]
+    ircClientClass -> ircClient [style=dotted]
+    ircServerClass -> ircServer [style=dotted]
+    libPlugin -> commands [style=dotted];
+    libPlugin -> ki [style=dotted];
+    libPlugin -> weather [style=dotted];
+    libPlugin -> otherplugins [style=dotted];
+    libPlugin -> count[style=dotted];
+    libPlugin -> hello[style=dotted];
+    subgraph cluster_configfiles {
+    label="config files"
+        "otfbot.yaml"[shape=box];
+        allconfigs[label="plugins/*/*.yaml",shape=box];
+    }
+    configservice -> "otfbot.yaml";
+    configservice -> allconfigs;
+    //configservice -> application [label="root",style="dashed"];
+    //configservice -> application [label="parent",style="dashed"];
+    subgraph cluster_dynamicServices {
+        label="dynamic services"
+        ircClient
+        ircServer
+        exampleService[label="example dynamic service"]
+    }
+    services -> ircClient
+    services -> ircServer
+    services -> exampleService
+    exampleService -> application[label="root", style="dashed"]
+    exampleService -> application[label="parent", style="dashed"]
+    pluginSupport -> exampleService
+    multiservice -> exampleService
+    network1[label="irc network 1"];
+    network2[label="irc network 2"];
+    network3[label="irc network ..."];
+    networks[label="Bot[]"]
+    //ircClient -> application [label="root",style="dashed"];
+    //ircClient -> application [label="parent",style="dashed"];
+    ircClient -> networks
+    networks -> network1
+    //network1 -> application [label="root",style="dashed"];
+    //network1 -> ircClient [label="parent",style="dashed"];
+    networks -> network2
+    networks -> network3
+    plugins[label="plugins[]"]
+    network1 -> plugins;
+    plugins -> ki
+    examplePlugins[label="plugins[]"]
+    exampleService -> examplePlugins
+    examplePlugins -> application[label="root",style="dashed"]
+    examplePlugins -> exampleService[label="parent",style="dashed"]
+    subgraph cluster_examplePlugins {
+        examplePlugin1[label="example plugin 1"]
+        examplePlugin2[label="example plugin 2"]
+    }
+    examplePlugins -> examplePlugin1
+    examplePlugins -> examplePlugin2
+    examplePlugin1 -> application[label="root",style="dashed"]
+    examplePlugin2 -> application[label="root",style="dashed"]
+    examplePlugin1 -> exampleService[label="parent",style="dashed"]
+    examplePlugin2 -> exampleService[label="parent",style="dashed"]
+    plugins -> weather
+    plugins -> commands
+    plugins -> otherplugins
+    serverPlugins[label="plugins[]"]
+    serverPlugins -> hello
+    serverPlugins -> count
+    ircServer -> serverPlugins;
+    subgraph cluster_plugins {
+        commands;
+        ki;
+        weather;
+        otherplugins[label="..."]
+    }
+}

@@ -1,0 +1,45 @@
+digraph classes {
+    libPlugin[label="lib.Plugin",shape=box]
+    libChatmod[label="lib.chatMod",shape=box]
+    libChatmod -> libPlugin
+    multiservice[label="service.MultiService",shape=box]
+    service [label="service.Service",shape=box]
+    multiservice -> service
+    pluginSupport[label="lib.pluginSupport",shape=box]
+    ircClient[shape=box]
+    ircServer[shape=box]
+    auth[shape=box]
+    control[shape=box]
+    config[shape=box]
+    remoteCliServer[shape=box]
+    webserver[shape=box]
+    scheduler[shape=box]
+    application -> services [style=dotted]
+    services -> ircClient [style=dotted]
+    services -> ircServer [style=dotted]
+    services -> auth [style=dotted]
+    services -> control [style=dotted]
+    services -> webserver [style=dotted]
+    services -> config [style=dotted]
+    services -> remoteCliServer[style=dotted]
+    services -> scheduler[style=dotted]
+    
+    ircClient -> multiservice
+    ircServer -> multiservice
+    webserver -> multiservice
+    remoteCliServer -> multiservice
+    config -> service
+    auth -> multiservice
+    scheduler -> multiservice
+    control -> multiservice
+    ircClient -> pluginSupport
+    ircServer -> pluginSupport
+    webserver -> pluginSupport
+
+    plugins[label="plugins[]"]
+    pluginSupport -> plugins [style=dotted]
+    plugins -> libPlugin [style=dotted]
+    plugins -> libPlugin [style=dotted,label="..."]
+    plugins -> libPlugin [style=dotted]
+
+}
