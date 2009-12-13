@@ -44,4 +44,7 @@ config.set('enabled', True, 'main', name, raw_input().strip())
 sys.stdout.write("Nickname: ")
 config.set('nickname', raw_input().strip(), 'main')
 config.set('encoding', 'UTF-8', 'main')
+
+config.set('errfile', 'error.log', 'logging')
+
 config.writeConfig()
