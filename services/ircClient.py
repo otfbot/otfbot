@@ -161,7 +161,7 @@ class Bot(pluginSupport, irc.IRCClient):
         self.logger = logging.getLogger(self.network)
         if self.config.getBool('answerToCTCPVersion', True, 'main', self.network):
             self.versionName="OTFBot"
-            self.versionNum=root.version
+            self.versionNum=root.version.short()
             self.versionEnv=''
 
         self.channels=[]
