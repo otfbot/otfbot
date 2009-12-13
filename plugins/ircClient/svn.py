@@ -62,7 +62,7 @@ class Plugin(chatMod.chatMod):
                 try:
                     self.callIds[i + "-" + channel] = self.bot.getServiceNamed('scheduler').callLater(1, self.svncheck, self.svnconfig[i]['url'],self.svnconfig[i]['checkinterval'],channel,i)
                 except KeyError:
-                    self.logger.error("Repository " + i + " doen't exist!")
+                    self.logger.warning("Repository " + i + " doen't exist!")
         
     def kickedFrom(self, channel, kicker, message):
         self.left(channel)
@@ -85,7 +85,7 @@ class Plugin(chatMod.chatMod):
             data = pysvn.Client().log(url,limit=1)[0].data
             rev = data['revision'].number
         except:
-            self.logger.error("Client Error. Ensure the url is right.")
+            self.logger.warning("Client Error. Ensure the url is right.")
             rev = lastrevision
         channel = channels
         if rev != lastrevision:
