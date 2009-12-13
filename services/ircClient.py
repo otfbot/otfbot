@@ -343,6 +343,7 @@ class Bot(pluginSupport, irc.IRCClient):
         #self.logger.info("lost connection: "+str(reason))
         irc.IRCClient.connectionLost(self)
         self._apirunner("connectionLost",{"reason": reason})
+        self.stopPlugins()
     
     def signedOn(self):
         """ called by twisted,
