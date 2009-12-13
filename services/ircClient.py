@@ -55,8 +55,8 @@ class botService(service.MultiService):
     def connect(self, network):
         f = BotFactory(self.root, self, network)
         servername=self.config.get("server", "localhost", "main", network)
-        port = int(self.config.get('port','6667','main', network))
-        if (self.config.getBool('ssl','False','main', network)):
+        port = int(self.config.get('port', 6667, 'main', network))
+        if (self.config.getBool('ssl', False, 'main', network)):
             s = ssl.ClientContextFactory()
             serv=internet.SSLClient(host=servername, port=port, factory=f,contextFactory=s)
             serv.__repr__=lambda: "<IRC Connection with SSL to %s:%s>"%(servername, port)
@@ -74,7 +74,7 @@ class botService(service.MultiService):
     		return "Disconnected from "+network
     	else:
             return "Not connected to "+network
-    
+
     def register_ctl_command(self, f, namespace=None, name=None):
         if self.controlservice:
             if namespace is None:
@@ -124,6 +124,14 @@ class BotFactory(protocol.ClientFactory):
 #        self.logger.info("Got Signal to stop factory, stopping service as well")
 #        self.service.disownServiceParent()
 #        self.service.stopService()
+
+class creatingDict(dict):
+    """helper class: a dict, which adds unknown keys with value 0 on access"""
+    def __getitem__(self, item):
+        if not self.has_key(item):
+            self[item]=0
+            print "created non-existant key %s"%repr(item)
+        return dict.__getitem__(self, item)
     
 class Bot(pluginSupport, irc.IRCClient):
     """ The Protocol of our IRC-Bot
@@ -144,10 +152,6 @@ class Bot(pluginSupport, irc.IRCClient):
 
     modchars = {16: 'a', 8: 'o', 4: 'h', 2: 'v', 0: ' '}
     modcharvals = {16: '!', 8: '@', 4: '%', 2: '+', 0: ' '}
-    def warn_and_execute(self, method, *args, **kwargs):
-        self.logger.debug("deprecated call to %s with args %s"%(str(method), str(args)))
-        #XXX: use bot.config.method instead
-        return method(*args, **kwargs)
 
     def __init__(self, root, parent):
         pluginSupport.__init__(self, root, parent)
@@ -173,7 +177,7 @@ class Bot(pluginSupport, irc.IRCClient):
         # all users known to the bot, nick => IrcUser
         self.userlist    = {}
         # usertracking, channel=>{User => level}
-        self.users       = {}
+        self.users       = creatingDict()
 
         self.serversupports  = {}
         
@@ -202,6 +206,11 @@ class Bot(pluginSupport, irc.IRCClient):
         self.register_ctl_command(self.sendmsg, name="say")
         self.register_ctl_command(self.ping)
     
+    def startPlugins(self):
+        for pluginName in self.config.get(self.pluginSupportName+"Plugins", [], "main", set_default=False):
+            if not pluginName in self.config.get("pluginsDisabled", [], "main", self.network):
+                self.startPlugin(pluginName)
+
     def startPlugin(self, pluginName):
         plugin=pluginSupport.startPlugin(self, pluginName)
         #TODO: this is only a workaround until the plugins register their callbacks
@@ -615,7 +624,8 @@ class Bot(pluginSupport, irc.IRCClient):
             if len(tmp)==2:
                 (nick, hostmask)=tmp
             else:
-                self.logger.warning("Error parsing RPL_USERHOST: %s, %s"%(prefix, params))
+                if not self.nickname == rpl:
+                    self.logger.warning("Error parsing RPL_USERHOST: %s, %s"%(prefix, params))
                 continue
             nick = nick.replace("*","")
             hm=hostmask.split('@',1)

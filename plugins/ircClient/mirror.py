@@ -27,54 +27,45 @@ class Plugin(chatMod.chatMod):
         #x034 (red) is the bot
         self.colors=["\x032", "\x033", "\x035", "\x0311", "\x0310", "\x0312", "\x0315", "\x0314", "\x0316", "\x0313", "\x036"]
 
+    def _sendToMirror(self, channel, message):
+        if (self.network, channel) in self.bot.config.has("mirrorto", "mirror")[2]:
+            (target_network, target_channel)=self.bot.config.get("mirrorto", "unset", "mirror", self.network, channel).split("-", 1)
+            ircClient=self.bot.root.getServiceNamed('ircClient')
+            if ircClient.namedServices.has_key(target_network):
+                networkService=ircClient.getServiceNamed(target_network)
+                networkService.protocol.sendmsg(target_channel, message)
+
+
     def msg(self, user, channel, msg):
-        if (self.network, channel) in self.bot.config.has("mirrorto", "mirror")[2]:
-            (target_network, target_channel)=self.bot.config.get("mirrorto", "unset", "mirror", self.network, channel).split("-", 1)
-            nick=user.split("!")[0]
-            if nick.lower()==self.bot.nickname.lower():
-                nick="\x034%s\x0F"%nick
-            else:
-                color=self.colors[hash(nick)%len(self.colors)]
-                nick="%s%s\x0F"%(color, nick)
-            self.getbot(target_network).sendmsg(target_channel, "< %s> %s"%(nick,msg))
+        nick=user.split("!")[0]
+        if nick.lower()==self.bot.nickname.lower():
+            nick="\x034%s\x0F"%nick
+        else:
+            color=self.colors[hash(nick)%len(self.colors)]
+            nick="%s%s\x0F"%(color, nick)
+        self._sendToMirror(channel, "< %s> %s"%(nick,msg))
     def action(self, user, channel, msg):
-        if (self.network, channel) in self.bot.config.has("mirrorto", "mirror")[2]:
-            (target_network, target_channel)=self.bot.config.get("mirrorto", "unset", "mirror", self.network, channel).split("-", 1)
-            self.getbot(target_network).sendmsg(target_channel, "* %s %s "%(user.split("!")[0], msg))
+        self._sendToMirror(channel, "* %s %s "%(user.split("!")[0], msg))
     def kickedFrom(self, channel, kicker, message):
-        if (self.network, channel) in self.bot.config.has("mirrorto", "mirror")[2]:
-            (target_network, target_channel)=self.bot.config.get("mirrorto", "unset", "mirror", self.network, channel).split("-", 1)
-            self.getbot(target_network).sendmsg(target_channel, "%s was kicked from %s by %s [%s]"%(self.bot.nickname, channel, kicker, message))
+        self._sendToMirror(channel, "%s was kicked from %s by %s [%s]"%(self.bot.nickname, channel, kicker, message))
     def userKicked(self, kickee, channel, kicker, message):
-        if (self.network, channel) in self.bot.config.has("mirrorto", "mirror")[2]:
-            (target_network, target_channel)=self.bot.config.get("mirrorto", "unset", "mirror", self.network, channel).split("-", 1)
-            self.getbot(target_network).sendmsg(target_channel, "%s was kicked from %s by %s [%s]"%(kickee, channel, kicker, message))
+        self._sendToMirror(channel, "%s was kicked from %s by %s [%s]"%(kickee, channel, kicker, message))
     def userJoined(self, user, channel):
-        if (self.network, channel) in self.bot.config.has("mirrorto", "mirror")[2]:
-            (target_network, target_channel)=self.bot.config.get("mirrorto", "unset", "mirror", self.network, channel).split("-", 1)
-            self.getbot(target_network).sendmsg(target_channel, "%s has joined %s"%(user.split("!")[0], channel))
+        self._sendToMirror(channel, "%s has joined %s"%(user.split("!")[0], channel))
     def userLeft(self, user, channel):
-        if (self.network, channel) in self.bot.config.has("mirrorto", "mirror")[2]:
-            (target_network, target_channel)=self.bot.config.get("mirrorto", "unset", "mirror", self.network, channel).split("-", 1)
-            self.getbot(target_network).sendmsg(target_channel, "%s has left %s"%(user.split("!")[0], channel))
+        self._sendToMirror(channel, "%s has left %s"%(user.split("!")[0], channel))
     def userQuit(self, user, quitMessage):
         for (network, channel) in self.bot.config.has("mirrorto", "mirror")[2]:
             if self.network == network:
-                (target_network, target_channel)=self.bot.config.get("mirrorto", "unset", "mirror", self.network, channel).split("-", 1)
-                self.getbot(target_network).sendmsg(target_channel, "%s has quit [%s]"%(user.split("!")[0], quitMessage))
+                self._sendToMirror(channel, "%s has quit [%s]"%(user.split("!")[0], quitMessage))
     def userRenamed(self, oldname, newname):
         for (network, channel) in self.bot.config.has("mirrorto", "mirror")[2]:
             if self.network == network:
-                (target_network, target_channel)=self.bot.config.get("mirrorto", "unset", "mirror", self.network, channel).split("-", 1)
-                self.getbot(target_network).sendmsg(target_channel, "%s is now known as %s"%(oldname, newname))
+                self._sendToMirror(channel, "%s is now known as %s"%(oldname, newname))
     def modeChanged(self, user, channel, set, modes, args):
-        if (self.network, channel) in self.bot.config.has("mirrorto", "mirror")[2]:
-            (target_network, target_channel)=self.bot.config.get("mirrorto", "unset", "mirror", self.network, channel).split("-", 1)
-            sign="+"
-            if not set:
-                sign="-"
-            self.getbot(target_network).sendmsg(target_channel, "mode/"+channel+" ["+sign+modes+" "+" ".join(args)+"] by "+user.split("!")[0])
+        sign="+"
+        if not set:
+            sign="-"
+        self._sendToMirror(channel, "mode/"+channel+" ["+sign+modes+" "+" ".join(args)+"] by "+user.split("!")[0])
     def joined(self, channel):
-        if (self.network, channel) in self.bot.config.has("mirrorto", "mirror")[2]:
-            (target_network, target_channel)=self.bot.config.get("mirrorto", "unset", "mirror", self.network, channel).split("-", 1)
-            self.getbot(target_network).sendmsg(target_channel, "joined %s"%(channel))
+        self._sendToMirror(channel, "joined %s"%channel)

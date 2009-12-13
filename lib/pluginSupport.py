@@ -74,7 +74,8 @@ class pluginSupport:
             initializes all known plugins
         """
         for pluginName in self.config.get(self.pluginSupportName+"Plugins", [], "main", set_default=False):
-            self.startPlugin(pluginName)
+            if not pluginName in self.config.get("pluginsDisabled", [], "main"):
+                self.startPlugin(pluginName)
 
     def startPlugin(self, pluginName):
             pluginClass=self.importPlugin(pluginName)
@@ -142,7 +143,7 @@ class pluginSupport:
             @type exception: exception
         """
         if type(exception) == self.DependencyMissing:
-            logger.error("Dependency missing in plugin %s: %s is not active."%(plugin, str(exception)))
+            logger.warning("Dependency missing in plugin %s: %s is not active."%(plugin, str(exception)))
             return
         elif type(exception) == self.WontStart:
             logger.info('Plugin "%s" will not start because "%s".'%(plugin, str(exception)))
@@ -170,13 +171,12 @@ class pluginSupport:
             plugin=plugin_and_priority[0] #(module, priority)
             #self.logger.debug("running "+apifunction+" for plugin "+str(mod))
             #if a channel is present, check if the plugin is disabled for the channel.
+            #network wide pluginsDisabled is handled by startPlugins
             if hasattr(self, "network"):
                 if args.has_key("channel"):
                     args['channel']=args['channel'].lower()
                     if plugin.name in self.config.get("pluginsDisabled",[],"main",self.network,args["channel"], set_default=False):
-                        return
-                if plugin.name in self.config.get("pluginsDisabled", [], "main", self.network):
-                    return
+                        continue
             try:
                 result=getattr(plugin, apifunction)(**args)
                 #TODO: this should be extended something like this:
