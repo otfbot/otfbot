@@ -19,9 +19,6 @@
 import urllib2
 from twisted.web import client
 
-getPage=client.getPage
-downloadPage=client.downloadPage
-
 client.HTTPClientFactory.noisy=False
 svnrevision="$Revision: 187 $".split(" ")[1]
 
@@ -56,6 +53,6 @@ def download(url, file=None, **kwargs):
     if not kwargs.has_key("agent"):
         kwargs['agent'] = "OTFBot (svn r%s; otfbot.berlios.de)"%(svnrevision)
     if file:
-        return downloadPage(url, file, **kwargs)
+        return client.downloadPage(url, file, **kwargs)
     else:
-        return getPage(url, **kwargs)
+        return client.getPage(url, **kwargs)
