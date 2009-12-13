@@ -112,6 +112,13 @@ class pluginSupport:
             self.reloadPluginClass(chatPlugin)
         for chatPlugin in self.plugins.values():
             self.restartPlugin(chatPlugin.name)
+
+    def stopPlugins(self):
+        """
+            stop all Plugins
+        """
+        for chatPlugin in self.plugins.values():
+            self.stopPlugin(chatPlugin.name)
     
     def stopPlugin(self, pluginName):
         if not pluginName in self.plugins.keys():
