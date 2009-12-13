@@ -26,25 +26,12 @@ from twisted.python import usage
 import twisted
 
 from services import config as configService
+from lib import version
 
 #logging
 import logging, logging.handlers
 from twisted.python import log
 import logging, sys
-
-#svnrevision=int("$Revision$".split(" ")[1]) #TODO: this is only updated, when otfbot.py is updated
-svnrevision=0 # TODO: Move to git
-
-# TODO: Move to git
-#try:
-#    # Try to determine the current version dynamically
-#    import pysvn, os.path
-#    wcpath=os.path.dirname(os.path.abspath(__file__))
-#    client = pysvn.Client()
-#    entry = client.info(wcpath)
-#    svnrevision=entry.revision.number
-#except:
-#    pass
 
 class Options(usage.Options):
         optParameters = [["config","c","otfbot.yaml","Location of configfile"]]
@@ -60,13 +47,13 @@ class Options(usage.Options):
 configfilename="otfbot.yaml"
 
 application=service.Application("otfbot")
+application.version=version._version
 def getServiceNamed(name):
     try:
         return service.IServiceCollection(application).getServiceNamed(name)
     except KeyError:
         return None
 application.getServiceNamed=getServiceNamed
-application.version = "SVN revision "+str(svnrevision)
 
 configS=configService.loadConfig(configfilename, "plugins/*/*.yaml")
 if not configS:
@@ -104,8 +91,8 @@ if stdout:
     root.addHandler(console)
 
 plo = log.PythonLoggingObserver()
-if twisted.version.minor >= 2:
-    log.startLoggingWithObserver(plo.emit, stdout)
+if twisted.version.minor > 2:
+    log.startLoggingWithObserver(plo.emit)
 else:
     plo.start()
 
@@ -119,7 +106,8 @@ corelogger.info(" / _ \_   _|  ___| __ )  ___ | |_ ")
 corelogger.info("| | | || | | |_  |  _ \ / _ \| __|")
 corelogger.info("| |_| || | |  _| | |_) | (_) | |_ ")
 corelogger.info(" \___/ |_| |_|   |____/ \___/ \__|")
-corelogger.info("    bleeding edge from GIT")
+_v="version %s" % application.version.short()
+corelogger.info(" "*(34-len(_v))+_v)
 
 service_names=configS.get("services", [], "main")
 service_classes=[]
