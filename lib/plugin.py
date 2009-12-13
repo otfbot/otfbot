@@ -32,3 +32,11 @@ class Plugin:
     def setLogger(self,logger):
         """ set the logger """
         self.logger = logger
+    
+    class Meta:
+        name=__module__
+        description="Basic Plugin"
+        serviceDepends=[]
+        #serviceDepends.append("control")
+        pluginDepends=[]
+        #pluginDepends.append("something")
