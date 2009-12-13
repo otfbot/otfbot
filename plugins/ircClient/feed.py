@@ -124,14 +124,16 @@ class Plugin(chatMod.chatMod):
     def postNews(self, channel, url, feedPostMax):
         had_new=False #new urls? needed for wait-time modification
         numPostUrls=feedPostMax
+        channels=self.bot.getChannelUserDict().keys()
         for (url, headline) in self.feedHeadlines[url]:
-            if not url in self.readUrls[channel]:
-                if numPostUrls > 0:
-                    numPostUrls-=1
-                    self.bot.sendmsg(channel.encode("UTF-8"), (url+" - "+headline).encode("UTF-8"), "UTF-8");
-                    #self.readUrls[channel].append(url) #with this line, all urls will be posted, but the queue may get longer and longer
-                self.readUrls[channel].append(url) #with this line, we will throw away all new urls, which are more than feedPostMax
-                had_new=True
+            if channel in channels:
+                if not url in self.readUrls[channel]:
+                    if numPostUrls > 0:
+                        numPostUrls-=1
+                        self.bot.sendmsg(channel.encode("UTF-8"), (url+" - "+headline).encode("UTF-8"), "UTF-8");
+                        #self.readUrls[channel].appenddd(url) #with this line, all urls will be posted, but the queue may get longer and longer
+                    self.readUrls[channel].append(url) #with this line, we will throw away all new urls, which are more than feedPostMax (less indented)
+                    had_new=True
         self.logger.debug("posted "+str(feedPostMax-numPostUrls)+" new URLs")
         return had_new
     def postNewsLoop(self, channel, url, curWait=5.0, minWait=1.0, maxWait=60.0, factor=1.5, feedPostMax=3):
