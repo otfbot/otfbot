@@ -20,7 +20,7 @@
 
 import random, re
 from lib import chatMod
-from lib.User import BotUser
+from lib.User import BotUser, IrcUser
 
 from twisted.cred.credentials import UsernamePassword
 from twisted.words.iwords import IUser
@@ -52,9 +52,12 @@ class Plugin(chatMod.chatMod):
                 self.bot.sendmsg(nick, "Usage: identify [user] pass")
                 return
             if not nick in self.bot.userlist:
-                u=BotUser(user.split("!")[0])
+                u=IrcUser(user)
                 self.bot.userlist[u.name]=u
-            d=portal.login(cred, self.bot.userlist[nick], IUser)
+            if not self.bot.userlist[nick].hasBotuser():
+                self.bot.userlist[nick].setBotuser(BotUser(nick))
+            print self.bot.userlist[nick].getBotuser()
+            d=portal.login(cred, self.bot.userlist[nick].getBotuser(), IUser)
             d.addCallback(lambda args: self.bot.sendmsg(nick, "Successfully logged in as "+str(args[1].name)))
             d.addErrback(lambda failure: self.bot.sendmsg(nick, "Login failed: "+str(failure.getErrorMessage())))
             
