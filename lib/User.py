@@ -31,7 +31,14 @@ class IrcUser(service.User):
         self.name = hostmask.split("!",1)[0]
         self.user = hostmask.split("!",1)[1].split("@",1)[0]
         self.host = hostmask.split("!",1)[1].split("@",1)[1]
+        self.botuser = None
         super(IrcUser,self).__init__(self.name)
+    def setBotuser(self, botuser):
+        self.botuser=botuser
+    def getBotuser(self):
+        return self.botuser
+    def hasBotuser(self):
+        return self.botuser!=None
     
     def getHostMask(self):
         return self.name+"!"+self.user+"@"+self.host
