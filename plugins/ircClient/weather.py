@@ -32,7 +32,7 @@ class Plugin(chatMod.chatMod):
 			self.bot.depends("pywapi - http://code.google.com/p/python-weather-api/")
 	
 	def command(self, user, channel, command, options):
-		if command == "wetter":
+		if command in ["wetter", "weather"]:
 			try:
 				wetter = pywapi.get_weather_from_google(options,"DE")
 				feuchtigkeit = wetter['current_conditions']['humidity']
