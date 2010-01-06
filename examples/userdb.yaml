@@ -1,4 +1,4 @@
-!!python/unicode 'admin': !!python/object:lib.User.BotUser
+!!python/unicode 'admin': !!python/object:otfbot.lib.User.BotUser
   groups: []
   host: !!python/unicode 'host'
   lastMessage: 0
