@@ -23,19 +23,19 @@ class pluginSupport:
         self.register_ctl_command(self.restartPlugin)
         self.register_ctl_command(lambda: self.plugins.keys(), name="listPlugins")
 
-    def depends(self, dependency):
-        raise self.DependencyMissing(dependency)
-    def depends_on_module(self, dependency):
+    def depends(self, dependency, description=""):
+        raise self.DependencyMissing(dependency, description)
+    def depends_on_module(self, dependency, description=""):
         try:
             __import__(dependency)
         except ImportError:
-            raise self.ModuleMissing(dependency)
-    def depends_on_service(self, dependency):
+            raise self.ModuleMissing(dependency, description)
+    def depends_on_service(self, dependency, description=""):
         if not self.root.getServiceNamed(dependency):
-            raise self.ServiceMissing(dependency)
-    def depends_on_plugin(dependency):
+            raise self.ServiceMissing(dependency, description)
+    def depends_on_plugin(dependency, description=""):
         if not self.plugins.has_key(dependency):
-            raise self.PluginMissing(dependency)
+            raise self.PluginMissing(dependency, description)
     
     def importPlugin(self, name):
         if not self.classes:
@@ -134,7 +134,10 @@ class pluginSupport:
     class WontStart(Exception):
         pass
     class DependencyMissing(Exception):
-        pass
+        def __init__(self, dependency, description):
+            self.dependency=dependency
+            self.description=description
+            Exception.__init__(self, "%s missing. %s"%(dependency, description))
     class ModuleMissing(DependencyMissing):
         pass
     class ServiceMissing(DependencyMissing):
