@@ -254,11 +254,6 @@ class Bot(pluginSupport, irc.IRCClient):
                 pass
         return level
 
-    def depends(self, dependency):
-        """raise an Exception, if the dependency is not active"""
-        if not self.plugins.has_key(dependency):
-            raise self.DependencyMissing(dependency)
-    
     def encode_line(self, line, encoding, fallback):
         try:
             line=unicode(line, encoding).encode(self.config.get("encoding", "UTF-8", "main"))
