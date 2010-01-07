@@ -139,7 +139,7 @@ class pyNiall:
         else:
             if index==-1: #no sentence end included
                 return self._createRandomSentence(newindex, "", False)
-            #attention: here we use index2, so the current word is NOT part of the sentence,
+            #attention: here we use newindex, so the current word is NOT part of the sentence,
             #while the current word IS part of the sentence when scanning forward.
             #so we can use forward+" "+backward to build a sentence
             return self._createRandomSentence(newindex, self.words[newindex]+" "+sentence, False).strip()
