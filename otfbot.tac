@@ -25,8 +25,8 @@ from twisted.application import service
 from twisted.python import usage
 import twisted
 
-from services import config as configService
-from lib import version
+from otfbot.services import config as configService
+from otfbot.lib import version
 
 #logging
 import logging, logging.handlers
@@ -114,6 +114,6 @@ service_classes=[]
 service_instances=[]
 for service_name in service_names:
     corelogger.info("starting Service %s" % service_name)
-    service_classes.append(__import__("services."+service_name, fromlist=['botService']))
+    service_classes.append(__import__("otfbot.services."+service_name, fromlist=['botService']))
     service_instances.append(service_classes[-1].botService(application, application))
     service_instances[-1].setServiceParent(application)
