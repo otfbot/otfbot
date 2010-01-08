@@ -12,7 +12,7 @@ class pluginSupport:
         #XXX: the dependency should be more explicit?
         self.config = root.getServiceNamed('config')
     def _getClassName(self, clas):
-        return clas.__name__[8:] #cut off "plugins."
+        return clas.__name__[15:] #cut off "otfbot.plugins."
         
     def register_pluginsupport_commands(self):
         # Make sure to have this method!
