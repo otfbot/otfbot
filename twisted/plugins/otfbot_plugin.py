@@ -51,7 +51,7 @@ class MyServiceMaker(object):
         
         configS=configService.loadConfig(options['config'], "plugins/*/*.yaml")
         if not configS:
-            print "please run helpers/generateconfig.py"
+            print "please run twistd gen-otfbot-config"
             sys.exit(1)
         configS.setServiceParent(application)
 
