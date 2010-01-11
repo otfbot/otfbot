@@ -1,9 +1,0 @@
-!!python/unicode 'admin': !!python/object:otfbot.lib.User.BotUser
-  groups: []
-  host: !!python/unicode 'host'
-  lastMessage: 0
-  name: !!python/unicode 'admin'
-  password: !!python/unicode 'admin'
-  user: !!python/unicode 'user'
---- {}
-
