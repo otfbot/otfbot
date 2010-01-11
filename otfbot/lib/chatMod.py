@@ -14,7 +14,9 @@
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 # 
-# (c) 2005-2009 by Alexander Schier
+# (c) 2005 - 2010 by Alexander Schier
+# (c) 2006 - 2010 by Robert Weidlich
+#
 
 from plugin import Plugin
 """ contains a abstract class for a Bot-module """

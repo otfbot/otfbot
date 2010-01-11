@@ -16,6 +16,7 @@
 # 
 # (c) 2009 by Thomas Wiegart
 #
+
 import pickle,time,os
 from otfbot.lib import chatMod
 
