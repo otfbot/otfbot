@@ -27,7 +27,7 @@ import logging
 import string, time
 
 from otfbot.lib.pluginSupport import pluginSupport
-from otfbot.lib.User import IrcUser
+from otfbot.lib.user import IrcUser
 
 
 class botService(service.MultiService):
@@ -530,7 +530,7 @@ class Bot(pluginSupport, irc.IRCClient):
         if self.userlist.has_key(nick):
             u = self.userlist[nick]
         else:
-            u = IrcUser(user)
+            u = IrcUser(user, self)
             self.userlist[nick] = u
         self.users[channel][u] = 0
         self._apirunner("userJoined",{"user":user,"channel":channel})
@@ -604,7 +604,7 @@ class Bot(pluginSupport, irc.IRCClient):
             if self.userlist.has_key(nick):
                 u = self.userlist[nick]
             else:
-                u = IrcUser(nick+"!user@host")
+                u = IrcUser(nick+"!user@host", self)
                 self.userlist[nick] = u
             if hasattr(self, "rev_modcharvals"): #for irc servers which do not provide this (miniircd)
                 self.users[params[2]][u] = self.rev_modcharvals[s]
