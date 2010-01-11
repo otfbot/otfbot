@@ -14,7 +14,9 @@
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 # 
-# (c) 2009 by Alexander Schier
+# (c) 2009 - 2010 by Alexander Schier
+# (c) 2009 - 2010 by Robert Weidlich
+# 
 
 class Plugin:
     def __init__(self, root, parent):
