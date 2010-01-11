@@ -57,11 +57,6 @@ class Plugin(chatMod.chatMod):
                 u=IrcUser(user, self.bot)
                 self.bot.userlist[u.name]=u
                 
-            #if not self.bot.userlist[nick].hasBotuser():
-            #    self.bot.userlist[nick].setBotuser(BotUser(nick))
-            
-            #print self.bot.userlist[nick].getBotuser()
-            
             d=portal.login(cred, self.bot.userlist[nick], IUser)
             d.addCallback(lambda args: self.bot.sendmsg(nick, "Successfully logged in as "+str(args[1].name)))
             d.addErrback(lambda failure: self.bot.sendmsg(nick, "Login failed: "+str(failure.getErrorMessage())))
