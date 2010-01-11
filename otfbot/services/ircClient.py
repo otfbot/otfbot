@@ -84,13 +84,13 @@ class botService(service.MultiService):
             namespace.insert(0, self.name)
             self.controlservice.register_command(f, namespace, name)
 
-class BotFactory(protocol.ClientFactory):
+class BotFactory(protocol.ReconnectingClientFactory):
     """The Factory for the Bot"""
 
     def __init__(self, root, parent, network):
         self.root=root
         self.parent=parent
-        self.protocol=Bot
+        self.protocolClass=Bot
         self.network=network
         self.config=root.getServiceNamed('config')
         self.logger=logging.getLogger(network)
@@ -103,16 +103,16 @@ class BotFactory(protocol.ClientFactory):
         self.service.protocol=None
         if not reason.check(error.ConnectionDone):
             self.logger.warn("Got disconnected from "+connector.host+": "+str(reason.getErrorMessage()))
-            #protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
+            protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
         else:
             self.parent.removeService(self.service)
         
     def clientConnectionFailed(self, connector, reason):
         self.logger.warn("Connection to "+connector.host+" failed: "+str(reason.getErrorMessage()))
-        #protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
+        protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
     
-    def buildProtocol(self,addr):
-        proto=self.protocol(self.root, self)
+    def buildProtocol(self, addr):
+        proto=self.protocolClass(self.root, self)
         self.protocol=proto
         self.service.protocol=proto
         return proto
