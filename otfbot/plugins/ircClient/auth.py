@@ -23,7 +23,7 @@ from twisted.cred.credentials import UsernamePassword
 from twisted.words.iwords import IUser
 
 from otfbot.lib import chatMod
-from otfbot.lib.User import BotUser, IrcUser
+from otfbot.lib.user import BotUser, IrcUser
 
 import random, re
 
@@ -54,15 +54,18 @@ class Plugin(chatMod.chatMod):
                 self.bot.sendmsg(nick, "Usage: identify [user] pass")
                 return
             if not nick in self.bot.userlist:
-                u=IrcUser(user)
+                u=IrcUser(user, self.bot)
                 self.bot.userlist[u.name]=u
-            if not self.bot.userlist[nick].hasBotuser():
-                self.bot.userlist[nick].setBotuser(BotUser(nick))
-            print self.bot.userlist[nick].getBotuser()
-            d=portal.login(cred, self.bot.userlist[nick].getBotuser(), IUser)
+                
+            #if not self.bot.userlist[nick].hasBotuser():
+            #    self.bot.userlist[nick].setBotuser(BotUser(nick))
+            
+            #print self.bot.userlist[nick].getBotuser()
+            
+            d=portal.login(cred, self.bot.userlist[nick], IUser)
             d.addCallback(lambda args: self.bot.sendmsg(nick, "Successfully logged in as "+str(args[1].name)))
             d.addErrback(lambda failure: self.bot.sendmsg(nick, "Login failed: "+str(failure.getErrorMessage())))
-            
+    
     def auth(self, user):
         user=user.split("!")[0]
         """
