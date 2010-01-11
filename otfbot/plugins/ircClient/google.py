@@ -15,8 +15,8 @@
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 # 
-# (c) 2008 by Alexander Schier
-# (c) 2008 by Robert Weidlich
+# (c) 2008 - 2010 by Alexander Schier
+# (c) 2008 - 2010 by Robert Weidlich
 #
 from otfbot.lib import chatMod, urlutils
 

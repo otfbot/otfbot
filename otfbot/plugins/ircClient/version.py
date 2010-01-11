@@ -15,6 +15,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 # 
 # (c) 2009 by Alexander Schier
+#
 
 from otfbot.lib import chatMod
 

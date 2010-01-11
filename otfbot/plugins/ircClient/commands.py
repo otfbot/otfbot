@@ -14,7 +14,7 @@
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 # 
-# (c) 2005, 2006, 2007 by Alexander Schier
+# (c) 2005 - 2010 by Alexander Schier
 #
 
 from otfbot.lib import chatMod, functions

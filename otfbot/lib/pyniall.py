@@ -14,7 +14,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  0211
 #
-# (c) 2008 by Alexander Schier
+# (c) 2008 - 2010 by Alexander Schier
 
 import random, yaml
 
