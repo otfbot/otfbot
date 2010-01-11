@@ -1,18 +1,22 @@
 needed pythonmodules:
-* twisted
-* python-twisted-words
-* python-twisted-conch
-* python-twisted-web
-* python-yaml
-* python-pyopenssl
-* python-crypto
+ * twisted
+ * python-twisted-words
+ * python-twisted-conch
+ * python-twisted-web
+ * python-yaml
+ * python-pyopenssl
+ * python-crypto
 
 optional:
-* python-feedparser
-* python-svn
-* pyxmltv
-
+ * python-feedparser
+ * python-svn
+ * pyxmltv
+ * pywapi (http://code.google.com/p/python-weather-api/)
 Gentoo:
 emerge twisted-words pyyaml
 for remoteCliServer:
 emerge twisted-conch
+
+The bot is started with
+> twistd otfbot -c otfbot.yaml
+from the root-dir of the project
