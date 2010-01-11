@@ -20,30 +20,45 @@
 
 from twisted.words import service
 
+import hashlib
+
 class BotUser(service.User):
     password=""
+    ircuser={}
+    
     def __init__(self, name):
         self.name=name
+    
+    def setPasswd(self, passwd):
+        self.password=self._hashpw(passwd)
+        
+    def checkPasswd(self, passwd):
+        return self._hashpw(passwd)==self.password
+    
+    def _hashpw(self, pw):
+        s = hashlib.sha1(pw)
+        return s.hexdigest()
+        
     def __repr__(self):
         return "<BotUser %s>" % self.name
 
-class IrcUser(service.User):
-    password=""
-    def __init__(self, hostmask):
-        self.name = hostmask.split("!",1)[0]
+class IrcUser(object):
+    def __init__(self, hostmask, network):
+        self.network=network
+        self.name = "anonymous"
+        self.nick = hostmask.split("!",1)[0]
         self.user = hostmask.split("!",1)[1].split("@",1)[0]
         self.host = hostmask.split("!",1)[1].split("@",1)[1]
-        self.botuser = None
-        super(IrcUser,self).__init__(self.name)
-    def setBotuser(self, botuser):
-        self.botuser=botuser
+        self.avatar = None
+
     def getBotuser(self):
-        return self.botuser
+        return self.avatar
+    
     def hasBotuser(self):
-        return self.botuser!=None
+        return self.avatar!=None
     
     def getHostMask(self):
-        return self.name+"!"+self.user+"@"+self.host
+        return self.nick+"!"+self.user+"@"+self.host
     
     def __repr__(self):
-        return "<IrcUser %s>" % self.getHostMask()
+        return "<IrcUser %s (%s)>" % (self.getHostMask(), self.name)

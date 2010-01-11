@@ -52,6 +52,7 @@ class Plugin(chatMod.chatMod):
 
     def reload(self):
         self.start()
+        return "reloaded commands"
     
     def getCommand(self, channel, cmd):
         if not self.commands.has_key(channel):

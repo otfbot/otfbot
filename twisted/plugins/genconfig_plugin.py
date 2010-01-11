@@ -22,18 +22,19 @@ from otfbot import services
 from otfbot.lib import version
 from otfbot.plugins import ircClient, ircServer
 from otfbot.services import config as configService
+from otfbot.services.auth import YamlWordsRealm as auth
+from otfbot.lib.user import BotUser
+
 from twisted.application import internet, service
 from twisted.application.service import IServiceMaker
 from twisted.plugin import IPlugin
 from twisted.internet import reactor
 from twisted.python import usage
+
 from zope.interface import implements
-import sys
-import glob
-import os.path
 
-
-        
+import sys, glob, os.path
+       
 class Options(usage.Options):
     optParameters = [["config", "c", "otfbot.yaml", "Location of configfile"]]
 
@@ -50,7 +51,6 @@ class MyServiceMaker(object):
         config = configService.configService(options['config'])
         
         # ircClient plugins
-
         path = os.path.abspath(ircClient.__path__[0])
         
         files = glob.glob(os.path.join(path, "*.py"))
@@ -97,8 +97,16 @@ class MyServiceMaker(object):
         config.set('encoding', 'UTF-8', 'main')
         
         config.set('errfile', 'error.log', 'logging')
-        
         config.writeConfig()
+        
+        authS = auth("userdb", "data/userdb.yaml")
+        sys.stdout.write("create admin user\nname: ")
+        user=BotUser(raw_input().strip())
+        sys.stdout.write("password (will be echoed in cleartext): ")
+        user.setPasswd(raw_input().strip())
+        authS.addUser(user)
+        authS.save()
+        
         reactor.addSystemEventTrigger('after', 'startup', reactor.stop) 
        
         return config

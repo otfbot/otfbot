@@ -24,9 +24,9 @@ from twisted.words.service import WordsRealm, InMemoryWordsRealm
 
 from zope.interface import implements
 
-from otfbot.lib.User import BotUser
+from otfbot.lib.user import BotUser
 
-import logging, yaml
+import logging, yaml, hashlib
 
 
 class YamlWordsRealm(InMemoryWordsRealm):
@@ -57,23 +57,37 @@ class YamlWordsRealm(InMemoryWordsRealm):
         u.addCallback(self._checkpw, creds)
         return u
 
+    def requestAvatar(self, avatarId, mind, *interfaces):
+        if isinstance(avatarId, str):
+            avatarId = avatarId.decode(self._encoding)
+
+        def gotAvatar(avatar):
+            #if avatar.realm is not None:
+            #    raise ewords.AlreadyLoggedIn()
+            for iface in interfaces:
+                facet = iface(avatar, None)
+                if facet is not None:
+                    avatar.loggedIn(self, mind)
+                    mind.name = avatarId
+                    mind.realm = self
+                    mind.avatar = avatar
+                    return iface, facet, self.logoutFactory(avatar, facet)
+            raise NotImplementedError(self, interfaces)
+
+        return self.getUser(avatarId).addCallback(gotAvatar)
+
     def _checkpw(self, user, creds):
         up = credentials.IUsernamePassword(creds)
-        if self._hashpw(up.password) == user.password:
+        if user.checkPasswd(up.password):
             return defer.succeed(user.name)
         else:
             return defer.fail(error.UnauthorizedLogin())
-
-    def _hashpw(self, pw):
-        #s = sha.new(pw)
-        #return s.digest()
-        return pw
 
     def save(self):
         file=open(self.file, "w")
         file.write(yaml.dump_all([self.users,self.groups], default_flow_style=False))
         file.close()
-        
+
     def load(self):
         try:
             f=open(self.file, "r")
