@@ -43,6 +43,9 @@ def download_headers_and_content_if_html(url):
     return (headers, content)
 
 def download_if_html(url):
+    """
+    download content, if the mimetype is text/html
+    """
     if is_html(get_headers(url)):
         return download(url)
     return ""
