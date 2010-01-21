@@ -66,8 +66,7 @@ class Plugin(chatMod.chatMod):
         """
         Returns the access-level of the given user.
         """
-        try:
-            if hasattr(self.bot.userlist[user], 'avatar'):
-                return 10
-        except:
+        if self.bot.userlist[user].avatar is not None:
+            return 10
+        else:
             return 0
