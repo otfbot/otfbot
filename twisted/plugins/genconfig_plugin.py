@@ -33,7 +33,7 @@ from twisted.python import usage
 
 from zope.interface import implements
 
-import sys, glob, os.path
+import sys, glob, os
        
 class Options(usage.Options):
     optParameters = [["config", "c", "otfbot.yaml", "Location of configfile"]]
@@ -99,6 +99,10 @@ class MyServiceMaker(object):
         config.set('errfile', 'error.log', 'logging')
         config.writeConfig()
         
+        try:
+            os.mkdir("data")
+        except OSError:
+            pass
         authS = auth("userdb", "data/userdb.yaml")
         sys.stdout.write("create admin user\nname: ")
         user=BotUser(raw_input().strip())
