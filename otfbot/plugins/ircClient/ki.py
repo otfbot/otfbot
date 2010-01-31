@@ -265,7 +265,7 @@ class Plugin(chatMod.chatMod):
         if user in self.bot.config.get("ignore", [], "ki", self.bot.network, channel):
             return
 
-        if user == self.bot.nickname:
+        if user == self.bot.nickname.lower():
             return
         #if not channel in self.channels: 
         #    return
