@@ -105,7 +105,7 @@ class MyServiceMaker(object):
             pass
         authS = auth("userdb", "data/userdb.yaml")
         sys.stdout.write("create admin user\nname: ")
-        user=BotUser(raw_input().strip())
+        user=BotUser(raw_input().strip().lower())
         sys.stdout.write("password (will be echoed in cleartext): ")
         user.setPasswd(raw_input().strip())
         authS.addUser(user)
