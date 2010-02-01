@@ -244,20 +244,23 @@ class Plugin(chatMod.chatMod):
     def joined(self, channel):
         self.channels.append(channel)
     def query(self, user, channel, msg):
-        user=user.split("!")[0]
-        if user[0:len(self.lnickname)]==self.lnickname:
-            return
-        if user.lower()==self.bot.nickname.lower() or string.lower(user) in self.bot.config.get("ignore", [], "ki", self.bot.network):
-            return
-        reply=self.responder.reply(msg)
-        if not reply:
-            return
-        number=random.randint(1,1000)
-        chance=int(self.bot.config.get("answerQueryPercent", "70", "ki", self.bot.network))*10
-        delay=len(reply)*0.3*float(self.bot.config.get("wait", 2, "ki", self.bot.network)) #a normal user does not type that fast
-        if number < chance:
-            #self.bot.sendmsg(user, reply, "UTF-8")
-            self.bot.root.getServiceNamed('scheduler').callLater(delay, self.bot.sendmsg, user, reply, "UTF-8")
+        if not self.bot.config.get("ignoreQuery",True,"ki",self.bot.network):
+            ## ignoreQuery should be set to True if you're using auth.
+            ## Else the ki also saves your username and password and maybe posts it in public!
+            user=user.split("!")[0]
+            if user[0:len(self.lnickname)]==self.lnickname:
+                return
+            if user.lower()==self.bot.nickname.lower() or string.lower(user) in self.bot.config.get("ignore", [], "ki", self.bot.network):
+                return
+            reply=self.responder.reply(msg)
+            if not reply:
+                return
+            number=random.randint(1,1000)
+            chance=int(self.bot.config.get("answerQueryPercent", "70", "ki", self.bot.network))*10
+            delay=len(reply)*0.3*float(self.bot.config.get("wait", 2, "ki", self.bot.network)) #a normal user does not type that fast
+            if number < chance:
+                #self.bot.sendmsg(user, reply, "UTF-8")
+                self.bot.root.getServiceNamed('scheduler').callLater(delay, self.bot.sendmsg, user, reply, "UTF-8")
     def msg(self, user, channel, msg):
         user=user.split("!")[0].lower()
         if not user in self.nicklist:
