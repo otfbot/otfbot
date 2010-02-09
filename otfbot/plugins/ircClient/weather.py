@@ -40,5 +40,5 @@ class Plugin(chatMod.chatMod):
 				wind = wetter['current_conditions']['wind_condition']
 				beschreibung = wetter['current_conditions']['condition']
 				self.bot.sendmsg(channel,"Wetter fuer " + options + ": " + beschreibung.encode("utf8") + " bei " + temperatur.encode("utf8") + ". " + wind.encode("utf8") + ", " + feuchtigkeit.encode("utf8"),"UTF-8")
-			except:
+			except KeyError:
 				self.bot.sendmsg(channel,"Unbekannter Ort oder PLZ: " + options)
