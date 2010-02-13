@@ -1,0 +1,72 @@
+|------------------------------------------------------------------------------|
+|----------------------------------- OtfBot -----------------------------------|
+|------------------------------------------------------------------------------|
+
+
+################################################################################
+# Table of contents
+################################################################################
+	1. Requirements
+	2. Setup
+	3. Starting
+	4. Developing plugins
+	5. Contact
+
+################################################################################
+# 1. Requirements
+################################################################################
+	- python
+	- python-twistd-words
+	- python-twistd-conch
+	- python-twistd-web
+	- python-yaml
+	- python-pyopenssl (for ssl-connections)
+	- python-crypto (for ssl-connections)
+	
+	optional (only needed for some plugins):
+	- feed: python-feedparser
+	- ki: megahal (if megahal is used)
+	- svn: pysvn
+	- tv: python-xmltv (http://www.funktronics.ca/python-xmltv/)
+	- weather: pywapi (http://code.google.com/p/python-weather-api/)
+	- youtube: python-feedparser
+	- zitat: python-feedparser
+
+################################################################################
+# 2. Setup
+################################################################################
+	First, to generate a config file, just run
+		twistd gen-otfbot-config
+	and answer the questions.
+	After that, by default, all plugins will be enabled. If you want to disable
+	some of them or just want to add another network or channel, edit the config
+	file called 'otfbot.yaml'. Just delete the plugins listed in
+	main.ircClientPlugins you don't want to use. To add further channels or
+	networks see the first network at the end of the configfile.
+	(Remind: one indentation are two spaces)
+
+################################################################################
+# 3. Starting
+################################################################################
+	To start up after configuring, just type
+		twistd otfbot
+	and the bot will start and connect to the configured networks and channels.
+	That's all!
+
+################################################################################
+# 4. Developing plugins
+################################################################################
+	OtfBot is very easy extendable by developing your own plugins.
+	Just have a look at example/example.py.
+	All Callbacks are listed in this file. If you aren't sure what a
+	specific callback does, just copy the plugin to otfbot/plugins/ircClient/,
+	add it to config and start otfbot to test it.
+	If you have finished follow the steps to enable a plugin above.
+	If you think your plugin is of general interest, you are welcome to contact
+	us and send us your plugin.
+
+################################################################################
+# 5. Contact
+################################################################################
+	IRC: #otfbot at irc.freenode.net
+	Mailing-list: http://list.otfbot.org/mailman/listinfo/otfbot-dev
