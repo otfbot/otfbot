@@ -98,6 +98,9 @@ class BotFactory(protocol.ReconnectingClientFactory):
     def __repr__(self):
         return "<BotFactory for network %s>"%self.network
 
+    def startedConnecting(self, connector):
+        self.logger.info("Started to connect")
+
     def clientConnectionLost(self, connector, reason):
         self.protocol=None
         self.service.protocol=None
@@ -115,6 +118,7 @@ class BotFactory(protocol.ReconnectingClientFactory):
         proto=self.protocolClass(self.root, self)
         self.protocol=proto
         self.service.protocol=proto
+	self.resetDelay()
         return proto
     
 #    def stopFactory(self):
@@ -335,7 +339,7 @@ class Bot(pluginSupport, irc.IRCClient):
             if the connection to the IRC-Server was lost
             @type reason:    twisted.python.failure.Failure
         """
-        #self.logger.info("lost connection: "+str(reason))
+        self.logger.info("lost connection: "+str(reason))
         irc.IRCClient.connectionLost(self)
         self._apirunner("connectionLost",{"reason": reason})
         self.stopPlugins()
@@ -674,6 +678,7 @@ class Bot(pluginSupport, irc.IRCClient):
     
     def sendLine(self, line):
         self._apirunner("sendLine",{"line":line})
+        #self.logger.debug(str(line))
         irc.IRCClient.sendLine(self, line)
 
     def ping(self):
