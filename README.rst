@@ -1,0 +1,81 @@
+===========================
+ OTFBot - The friendly Bot 
+===========================
+
+.. contents::
+.. sectnum::
+
+Requirements
+------------
+
+For the core functionality are a *python interpreter* and the following 
+modules necessary. Currently version 2.5.2 of cPython is used to develop 
+the the bot. If you are encountering problems with other versions of python 
+please file a bug.
+
+OTFBot is build around the *twisted framework*, so you need this with a 
+version of 8.2.0 or newer as well. Currently the the ``words``, ``conch`` 
+and ``web`` modules are used (Debian packages ``python-twisted``, 
+``python-twisted-bin``, ``python-twisted-conch``, ``python-twisted-core``, 
+``python-twisted-web`` and ``python-twisted-words``)
+
+As the configuration is stored in a yaml-file, you need the *python-bindings
+for yaml*. If you intend to use a encrypted connection you need also
+``python-pyopenssl`` and ``python-crypto``.
+
+Some plugins require additional modules. You'll need ``python-feedparser`` 
+for ``feed``, ``youtube`` and ``zitat``, python-xmltv_ for ``tv``, 
+``pysvn`` for ``svn``, python bindings for megahal for ``ki`` or pywapi_
+for ``weather``.
+
+
+Setup
+-----
+
+To create a initial configuration for connecting to a network, joining a 
+channel and creating a superuser, run
+
+   twistd gen-otfbot-config -c otfbot.yaml
+
+from the root directory of the bot and answer the questions.
+
+Review the config and adjust some settings as necessary. Do not modify the
+configuration while the bot is running, as it will be overwritten while
+the bot shuts down.
+
+
+Starting
+--------
+
+The bot is launched via twisteds ``twistd``:
+
+   twistd otfbot -c otfbot.yaml
+
+``twistd`` lets you also specify the user and group and some other settings.
+Be aware that the logging is configured via otfbot.yaml and not via twistd.
+
+
+Developing plugins
+------------------
+
+OtfBot is very easy extendable by developing your own plugins. Just have a 
+look at example/example.py. All Callbacks are listed in this file. If you 
+aren't sure what a specific callback does, just copy the plugin to 
+otfbot/plugins/ircClient/, add it to config and start otfbot to test it.
+
+If you have finished follow the steps to enable a plugin above.
+If you think your plugin is of general interest, you are welcome to contact
+us to include it into the repository.
+
+
+Contact
+-------
+
+You can contact the developers via IRC in #otfbot at irc.freenode.net, via
+a mailing-list_ or by filing a bug into the bug-tracker_
+
+
+.. _python-xmltv: http://www.funktronics.ca/python-xmltv/
+.. _pywapi: http://code.google.com/p/python-weather-api/
+.. _mailing-list: http://list.otfbot.org/mailman/listinfo/otfbot-dev
+.. _bug-tracker: http://www.otfbot.org/bugs/
