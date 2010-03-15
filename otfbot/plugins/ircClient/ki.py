@@ -33,7 +33,7 @@ try:
 except ImportError:
     MEGAHAL=0
 try:
-    from lib import pyniall_sqlite
+    from otfbot.lib import pyniall_sqlite
 except ImportError:
     NIALL=0
 
