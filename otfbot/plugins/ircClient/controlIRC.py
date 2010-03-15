@@ -52,7 +52,7 @@ class Plugin(chatMod.chatMod):
                 r=self.bot.root.getServiceNamed("control").handle_command(" ".join(cmd))
             if r is not None:
                 self.bot.sendmsg(channel, r)
-        elif command == "reload" and len(options) > 0:
+        if command == "reload" and len(options) > 0:
             try:
                 self.bot.plugins['ircClient.'+options].reload()
                 self.bot.sendmsg(channel, "Reloaded "+options)

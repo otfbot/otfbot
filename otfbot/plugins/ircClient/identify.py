@@ -26,13 +26,12 @@ class Plugin(chatMod.chatMod):
         self.bot=bot
         #TODO: set to False again on disconnect
         self.sent_identification=False
-        self.password=""
     
     def signedOn(self):
         self.identify()
         
     def identify(self):
-        if self.password != "":
+        if str(self.bot.config.get("nickservPassword", "", "identify", self.bot.network)):
             self.logger.info("identifying to nickserv")
             password = str(self.bot.config.get("nickservPassword", "", "identify", self.bot.network))
             self.bot.sendmsg("nickserv", "identify "+password)

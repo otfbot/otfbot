@@ -121,7 +121,7 @@ class SSHAvatar(avatar.ConchUser):
     def openShell(self, protocol):
         #serverProtocol = insults.ServerProtocol(remoteCLI, self)
         control=self.service.root.getServiceNamed('control').handle_command
-        serverProtocol = insults.ServerProtocol(manhole.ColoredManhole, {'app': self.service.root, 'stop': reactor.stop, '_': control})
+        serverProtocol = insults.ServerProtocol(manhole.ColoredManhole, {'app': self.service.root, 'stop': reactor.stop, 'c': control})
         serverProtocol.makeConnection(protocol)
         protocol.makeConnection(session.wrapProtocol(serverProtocol))
 
