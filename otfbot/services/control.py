@@ -52,7 +52,7 @@ class botService(service.MultiService):
             name=f.__name__
         if not namespace:
             if not f.__name__ in self.commandTree:
-                 self.commandTree[f.__name__] = f
+                self.commandTree[f.__name__] = f
             else:
                 self.logger.info("Not overwriting existing Handler for "+f.__name__)
             #namespace=[]

@@ -21,24 +21,24 @@
 from otfbot.lib import chatMod
 HAS_PYWAPI = True
 try:
-	import pywapi
+    import pywapi
 except ImportError:
-	HAS_PYWAPI = False
+    HAS_PYWAPI = False
 
 class Plugin(chatMod.chatMod):
-	def __init__(self, bot):
-		self.bot = bot
-		if not HAS_PYWAPI:
-			self.bot.depends("pywapi - http://code.google.com/p/python-weather-api/")
-	
-	def command(self, user, channel, command, options):
-		if command in ["wetter", "weather"]:
-			try:
-				wetter = pywapi.get_weather_from_google(options,"DE")
-				feuchtigkeit = wetter['current_conditions']['humidity']
-				temperatur = wetter['current_conditions']['temp_c'] + " Grad C"
-				wind = wetter['current_conditions']['wind_condition']
-				beschreibung = wetter['current_conditions']['condition']
-				self.bot.sendmsg(channel,"Wetter fuer " + options + ": " + beschreibung.encode("utf8") + " bei " + temperatur.encode("utf8") + ". " + wind.encode("utf8") + ", " + feuchtigkeit.encode("utf8"),"UTF-8")
-			except KeyError:
-				self.bot.sendmsg(channel,"Unbekannter Ort oder PLZ: " + options)
+    def __init__(self, bot):
+        self.bot = bot
+        if not HAS_PYWAPI:
+            self.bot.depends("pywapi - http://code.google.com/p/python-weather-api/")
+    
+    def command(self, user, channel, command, options):
+        if command in ["wetter", "weather"]:
+            try:
+                wetter = pywapi.get_weather_from_google(options,"DE")
+                feuchtigkeit = wetter['current_conditions']['humidity']
+                temperatur = wetter['current_conditions']['temp_c'] + " Grad C"
+                wind = wetter['current_conditions']['wind_condition']
+                beschreibung = wetter['current_conditions']['condition']
+                self.bot.sendmsg(channel,"Wetter fuer " + options + ": " + beschreibung.encode("utf8") + " bei " + temperatur.encode("utf8") + ". " + wind.encode("utf8") + ", " + feuchtigkeit.encode("utf8"),"UTF-8")
+            except KeyError:
+                self.bot.sendmsg(channel,"Unbekannter Ort oder PLZ: " + options)

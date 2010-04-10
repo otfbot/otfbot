@@ -591,8 +591,8 @@ class Bot(pluginSupport, irc.IRCClient):
                 self.users[chan][newname] = self.users[chan][oldname]
                 del self.users[chan][oldname]
         if self.userlist.has_key(oldname):
-             self.userlist[newname] = self.userlist[oldname]
-             del self.userlist[oldname]
+            self.userlist[newname] = self.userlist[oldname]
+            del self.userlist[oldname]
 
     def topicUpdated(self, user, channel, newTopic):
         """ called by twisted

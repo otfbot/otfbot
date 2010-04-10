@@ -42,7 +42,8 @@ class Plugin(chatMod.chatMod):
             file.close
 
     def validUser(self, user, channel, userlist=None):
-        if userlist==None: userlist=self.admins
+        if userlist==None: 
+            userlist=self.admins
         for i in userlist:
             if i == user: return True
         return False

@@ -27,7 +27,7 @@ class Plugin(chatMod.chatMod):
     def command(self, user, channel, command, options):
         #http://avila.star-shine.ch/astro/berechnungen.html
         known_fullmoon_date=915245340 #seconds since 1970
-        monthlength =  29.530588
+        monthlength = 29.530588
         timestamp=time.time()
         if command in ["moon", "fullmoon", "mond", "vollmond"]:
             if len(options):
