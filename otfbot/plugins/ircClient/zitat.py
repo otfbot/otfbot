@@ -19,23 +19,23 @@
 
 HAS_FEEDPARSER=True
 try:
-	import feedparser
+    import feedparser
 except ImportError:
-	HAS_FEEDPARSER=False
+    HAS_FEEDPARSER=False
 
 from otfbot.lib import chatMod
 import re
 
 class Plugin(chatMod.chatMod):
-	def __init__(self,bot):
-		self.bot = bot
-		if not HAS_FEEDPARSER:
-			self.bot.depends("feedparser python module")
-	
-	def command(self, user, channel, command, options):
-		if command.lower() == "zitat":
-			zitat=feedparser.parse("http://www.all4quotes.com/quote/rss/quotes/")
-			zitat=zitat['entries'][0]
-			desc = zitat['description'].replace('<p class="q_pate"><a href="http://www.all4quotes.com/paten-information/b3967a0e938dc2a6340e258630febd5a/" target="_blank" title="Treffsichere Textlinkwerbung">Werden Sie Zitatepate&trade;</a></p>',"").encode("utf8")
-			desc = desc.replace(re.findall('<p.*class=".+">.+</p>',desc)[0],"")
-			self.bot.msg(channel,"\"" + desc + "\" (" + zitat['title'].encode("utf8") + ")")
+    def __init__(self,bot):
+        self.bot = bot
+        if not HAS_FEEDPARSER:
+            self.bot.depends("feedparser python module")
+    
+    def command(self, user, channel, command, options):
+        if command.lower() == "zitat":
+            zitat=feedparser.parse("http://www.all4quotes.com/quote/rss/quotes/")
+            zitat=zitat['entries'][0]
+            desc = zitat['description'].replace('<p class="q_pate"><a href="http://www.all4quotes.com/paten-information/b3967a0e938dc2a6340e258630febd5a/" target="_blank" title="Treffsichere Textlinkwerbung">Werden Sie Zitatepate&trade;</a></p>',"").encode("utf8")
+            desc = desc.replace(re.findall('<p.*class=".+">.+</p>',desc)[0],"")
+            self.bot.msg(channel,"\"" + desc + "\" (" + zitat['title'].encode("utf8") + ")")

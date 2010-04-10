@@ -64,19 +64,19 @@ class Plugin(chatMod.chatMod):
         for data in datas:
             data = data.strip().split(";")
             date = data[4].split("/")
-            d = { 'name' : data[0], 
-                  'symbol' : data[1],
-                  'kurs' : data[2],
-                  'day' : date[1]+"."+date[0]+"."+date[2],
-                  'time' : data[3],
-                  'change_kurs' : "", #data[5].split(" - ")[0],
-                  'change_percent' : data[5], #.split(" - ")[1],
-                  'last_day' : data[6],
-                  'top_range' : data[7],
-                  'low_range' : data[8],
-                  'volumen' : data[9],
-                  'currency' : data[10],
-                  'boerse' : data[11]
+            d = {'name' : data[0], 
+                 'symbol' : data[1],
+                 'kurs' : data[2],
+                 'day' : date[1]+"."+date[0]+"."+date[2],
+                 'time' : data[3],
+                 'change_kurs' : "", #data[5].split(" - ")[0],
+                 'change_percent' : data[5], #.split(" - ")[1],
+                 'last_day' : data[6],
+                 'top_range' : data[7],
+                 'low_range' : data[8],
+                 'volumen' : data[9],
+                 'currency' : data[10],
+                 'boerse' : data[11]
             }
             # \x03C C=Colorcode
             answer = d['day']+", "+d['time']+" "+ d['name']+" ("+d['boerse']+":"+d['symbol']+") "+d['kurs']+" "+d['currency']
