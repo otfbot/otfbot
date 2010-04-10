@@ -38,4 +38,4 @@ class Plugin(chatMod.chatMod):
 			zitat=zitat['entries'][0]
 			desc = zitat['description'].replace('<p class="q_pate"><a href="http://www.all4quotes.com/paten-information/b3967a0e938dc2a6340e258630febd5a/" target="_blank" title="Treffsichere Textlinkwerbung">Werden Sie Zitatepate&trade;</a></p>',"").encode("utf8")
 			desc = desc.replace(re.findall('<p.*class=".+">.+</p>',desc)[0],"")
-			self.bot.msg(channel,"\"" + desc +  "\" (" + zitat['title'].encode("utf8") + ")")
+			self.bot.msg(channel,"\"" + desc + "\" (" + zitat['title'].encode("utf8") + ")")
