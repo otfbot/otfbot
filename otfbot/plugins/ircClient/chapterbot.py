@@ -45,7 +45,8 @@ class Plugin(chatMod.chatMod):
         if userlist==None: 
             userlist=self.admins
         for i in userlist:
-            if i == user: return True
+            if i == user:
+                return True
         return False
         
     def command(self, user, channel, command, options):

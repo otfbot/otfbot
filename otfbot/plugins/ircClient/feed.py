@@ -132,7 +132,7 @@ class Plugin(chatMod.chatMod):
                 if not url in self.readUrls[channel]:
                     if numPostUrls > 0:
                         numPostUrls-=1
-                        self.bot.sendmsg(channel.encode("UTF-8"), (url+" - "+headline).encode("UTF-8"), "UTF-8");
+                        self.bot.sendmsg(channel.encode("UTF-8"), (url+" - "+headline).encode("UTF-8"), "UTF-8")
                         #self.readUrls[channel].appenddd(url) #with this line, all urls will be posted, but the queue may get longer and longer
                     self.readUrls[channel].append(url) #with this line, we will throw away all new urls, which are more than feedPostMax (less indented)
                     had_new=True

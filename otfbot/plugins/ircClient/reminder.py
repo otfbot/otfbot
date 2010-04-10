@@ -27,7 +27,7 @@ class Plugin(chatMod.chatMod):
         self.messages={}
 
     def remind(self):
-        when=int( (time.time())/60 )
+        when=int((time.time())/60)
         messages=[]
         if self.messages.has_key(when):
             messages=self.messages[when]
@@ -47,7 +47,7 @@ class Plugin(chatMod.chatMod):
                 return
             text=str(options[1])
             
-            when=int( (time.time()+wait*60)/60 ) #when will this be executed? (minutes since 1.1.1970 ;-))
+            when=int((time.time()+wait*60)/60) #when will this be executed? (minutes since 1.1.1970 ;-))
             if self.messages.has_key(when):
                 self.messages[when].append([channel, user, text])
             else:
