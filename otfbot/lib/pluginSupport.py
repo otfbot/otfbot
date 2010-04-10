@@ -117,27 +117,27 @@ class pluginSupport:
 
         start a plugin, by importing pluginSupportName.pluginName, instancing the plugin and calling its start() function
         """
-            pluginClass=self.importPlugin(pluginName)
-            if hasattr(pluginClass, "Plugin"): #and hasattr(pluginClass.Plugin.ircClientPlugin) (?)
-                try:
-                    mod=pluginClass.Plugin(self)
-                    self.plugins[self._getClassName(pluginClass)]=mod
-                    self.plugins[self._getClassName(pluginClass)].setLogger(self.logger)
-                    self.plugins[self._getClassName(pluginClass)].name=self._getClassName(pluginClass)
-                    self.plugins[self._getClassName(pluginClass)].config=self.config
-                    if hasattr(self, "network"): #needed for reload!
-                        self.plugins[self._getClassName(pluginClass)].network=self.network
-                    if hasattr(self.plugins[self._getClassName(pluginClass)], "start"):
-                        self.plugins[self._getClassName(pluginClass)].start()
-                except Exception, e:
-                    self.logerror(self.logger, self._getClassName(pluginClass), e)
-                    return None #exception occured (e.g. dependency missing, or initialization error)
-            return self.plugins[self._getClassName(pluginClass)]
+        pluginClass=self.importPlugin(pluginName)
+        if hasattr(pluginClass, "Plugin"): #and hasattr(pluginClass.Plugin.ircClientPlugin) (?)
+            try:
+                mod=pluginClass.Plugin(self)
+                self.plugins[self._getClassName(pluginClass)]=mod
+                self.plugins[self._getClassName(pluginClass)].setLogger(self.logger)
+                self.plugins[self._getClassName(pluginClass)].name=self._getClassName(pluginClass)
+                self.plugins[self._getClassName(pluginClass)].config=self.config
+                if hasattr(self, "network"): #needed for reload!
+                    self.plugins[self._getClassName(pluginClass)].network=self.network
+                if hasattr(self.plugins[self._getClassName(pluginClass)], "start"):
+                    self.plugins[self._getClassName(pluginClass)].start()
+            except Exception, e:
+                self.logerror(self.logger, self._getClassName(pluginClass), e)
+                return None #exception occured (e.g. dependency missing, or initialization error)
+        return self.plugins[self._getClassName(pluginClass)]
 
     def reloadPluginClass(self, pluginClass):
         """reload a pluginClass"""
-            self.logger.info("reloading class "+self._getClassName(pluginClass))
-            reload(pluginClass)
+        self.logger.info("reloading class "+self._getClassName(pluginClass))
+        reload(pluginClass)
 
     def restartPlugin(self, pluginName):
         """stop and start again a plugin"""
