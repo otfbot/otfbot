@@ -15,4 +15,3 @@ try:
     doctest.testmod(module)
 except ImportError:
     print "import error for module \"%s\"" % args[0]
-
