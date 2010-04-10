@@ -21,7 +21,9 @@ from otfbot.lib import chatMod
 
 """ an example for a plugin for the ircClient """
 
+
 class Plugin(chatMod.chatMod):
+
     def __init__(self, bot):
         self.bot = bot
     def joined(self, channel):                                                                                                                                     
