@@ -56,7 +56,7 @@ class pluginSupport:
     def depends_on_module(self, dependency, description=""):
         """try to import a module, raise a ModuleException, if it cannot be loaded"""
         try:
-            __import__(dependency)
+            return __import__(dependency)
         except ImportError:
             raise self.ModuleMissing(dependency, description)
     def depends_on_service(self, dependency, description=""):
