@@ -78,9 +78,9 @@ class Plugin(chatMod.chatMod):
         respond to a command, substituting USER by the actual user
         and OTHER by the given options
 
-        >>> c=chatMod(None)
+        >>> c=Plugin(None)
         >>> c.commands={} #just for the example to work
-        >>> c.commands['general']={"test": "USER wanted a test", "test_": "USER wanted to show OTHER how it works"}
+        >>> c.commands['general']={"test": ["USER wanted a test"], "test_": ["USER wanted to show OTHER how it works"]}
         >>> c.commands['network']={}
         >>> #example begins here:
         >>> c.respond("", "testuser", "test", "")

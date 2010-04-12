@@ -58,7 +58,7 @@ class botService(service.MultiService):
         """
         def func(delay,function,**kwargs):
             args=(delay,function)
-            if function(**kwargs):
+            if function and function(**kwargs):
                 reactor.callLater(delay,func,*args,**kwargs)
         args=(delay,function)
         reactor.callLater(delay,func,*args,**kwargs)
