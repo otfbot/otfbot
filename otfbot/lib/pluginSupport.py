@@ -21,6 +21,12 @@
 import sys, traceback
 
 class pluginSupport:
+    """
+    inherit from this class to enable support for plugins
+
+    you need to inherit from this class, and set pluginSupportName and pluginSupportPath
+    you need to inherit from twisted.application.service.MultiService, too
+    """
     pluginSupportName="[UNSET]"
     pluginSupportPath="[UNSET]"
     def __init__(self, root, parent):
@@ -31,6 +37,7 @@ class pluginSupport:
         self.plugins={}
         #XXX: the dependency should be more explicit?
         self.config = root.getServiceNamed('config')
+
     def _getClassName(self, clas):
         return clas.__name__[15:] #cut off "otfbot.plugins."
         
@@ -44,16 +51,20 @@ class pluginSupport:
         self.register_ctl_command(lambda: self.plugins.keys(), name="listPlugins")
 
     def depends(self, dependency, description=""):
+        """raises a DependencyMissing exception for dependency"""
         raise self.DependencyMissing(dependency, description)
     def depends_on_module(self, dependency, description=""):
+        """try to import a module, raise a ModuleException, if it cannot be loaded"""
         try:
-            __import__(dependency)
+            return __import__(dependency)
         except ImportError:
             raise self.ModuleMissing(dependency, description)
     def depends_on_service(self, dependency, description=""):
+        """depend on a service, raise an ServiceMissing Exception, if its not available/enabled/loaded"""
         if not self.root.getServiceNamed(dependency):
             raise self.ServiceMissing(dependency, description)
     def depends_on_plugin(dependency, description=""):
+        """depend on another plugin, raise a PluginMissing Exception, if its not enabled"""
         if not self.plugins.has_key(dependency):
             raise self.PluginMissing(dependency, description)
     
@@ -69,6 +80,7 @@ class pluginSupport:
         return self.classes[-1]
 
     def callbackRegistered(self, module, callbackname):
+        """test, if a module has already registered a callback for callbackname"""
         if not self.callbacks.has_key(callbackname):
             return False
         for item in self.callbacks[callbackname]:
@@ -76,6 +88,7 @@ class pluginSupport:
                 return True
         return False
     def registerCallback(self, module, callbackname, priority=10):
+        """register module for a callbackname, with a specified priority (higher priority = invoced before callbacks from other modules)"""
         if not self.callbacks.has_key(callbackname):
             self.callbacks[callbackname]=[]
         #if the module has already registered for the callback, do not reregister
@@ -83,6 +96,7 @@ class pluginSupport:
             self.callbacks[callbackname].append((module, priority))
             self.callbacks[callbackname].sort(cmp=lambda a, b: b[1]-a[1])
     def unregisterCallback(self, module, callbackname):
+        """unregister a callback for a module"""
         if not self.callbacks.has_key(callbackname):
             return
         for index in len(self.callbacks[callbackname]):
@@ -98,28 +112,35 @@ class pluginSupport:
                 self.startPlugin(pluginName)
 
     def startPlugin(self, pluginName):
-            pluginClass=self.importPlugin(pluginName)
-            if hasattr(pluginClass, "Plugin"): #and hasattr(pluginClass.Plugin.ircClientPlugin) (?)
-                try:
-                    mod=pluginClass.Plugin(self)
-                    self.plugins[self._getClassName(pluginClass)]=mod
-                    self.plugins[self._getClassName(pluginClass)].setLogger(self.logger)
-                    self.plugins[self._getClassName(pluginClass)].name=self._getClassName(pluginClass)
-                    self.plugins[self._getClassName(pluginClass)].config=self.config
-                    if hasattr(self, "network"): #needed for reload!
-                        self.plugins[self._getClassName(pluginClass)].network=self.network
-                    if hasattr(self.plugins[self._getClassName(pluginClass)], "start"):
-                        self.plugins[self._getClassName(pluginClass)].start()
-                except Exception, e:
-                    self.logerror(self.logger, self._getClassName(pluginClass), e)
-                    return None #exception occured (e.g. dependency missing, or initialization error)
-            return self.plugins[self._getClassName(pluginClass)]
+        """
+        start the plugin named pluginName
+
+        start a plugin, by importing pluginSupportName.pluginName, instancing the plugin and calling its start() function
+        """
+        pluginClass=self.importPlugin(pluginName)
+        if hasattr(pluginClass, "Plugin"): #and hasattr(pluginClass.Plugin.ircClientPlugin) (?)
+            try:
+                mod=pluginClass.Plugin(self)
+                self.plugins[self._getClassName(pluginClass)]=mod
+                self.plugins[self._getClassName(pluginClass)].setLogger(self.logger)
+                self.plugins[self._getClassName(pluginClass)].name=self._getClassName(pluginClass)
+                self.plugins[self._getClassName(pluginClass)].config=self.config
+                if hasattr(self, "network"): #needed for reload!
+                    self.plugins[self._getClassName(pluginClass)].network=self.network
+                if hasattr(self.plugins[self._getClassName(pluginClass)], "start"):
+                    self.plugins[self._getClassName(pluginClass)].start()
+            except Exception, e:
+                self.logerror(self.logger, self._getClassName(pluginClass), e)
+                return None #exception occured (e.g. dependency missing, or initialization error)
+        return self.plugins[self._getClassName(pluginClass)]
 
     def reloadPluginClass(self, pluginClass):
-            self.logger.info("reloading class "+self._getClassName(pluginClass))
-            reload(pluginClass)
+        """reload a pluginClass"""
+        self.logger.info("reloading class "+self._getClassName(pluginClass))
+        reload(pluginClass)
 
     def restartPlugin(self, pluginName):
+        """stop and start again a plugin"""
         if pluginName in self.plugins.keys():
             self.stopPlugin(pluginName)
             self.startPlugin(pluginName)
@@ -141,6 +162,7 @@ class pluginSupport:
             self.stopPlugin(chatPlugin.name)
     
     def stopPlugin(self, pluginName):
+        """stop a plugin named pluginName"""
         if not pluginName in self.plugins.keys():
             return
         chatPlugin=self.plugins[pluginName]
@@ -152,17 +174,22 @@ class pluginSupport:
         del(self.plugins[pluginName])
         del(chatPlugin)
     class WontStart(Exception):
+        """Exception thrown by plugins, which cannot start"""
         pass
     class DependencyMissing(Exception):
+        """thrown, if a dependency is missing"""
         def __init__(self, dependency, description):
             self.dependency=dependency
             self.description=description
             Exception.__init__(self, "%s missing. %s"%(dependency, description))
     class ModuleMissing(DependencyMissing):
+        """through if a module is missing"""
         pass
     class ServiceMissing(DependencyMissing):
+        """through if a service is missing"""
         pass
     class PluginMissing(DependencyMissing):
+        """through if a plugin is missing"""
         pass
     def logerror(self, logger, plugin, exception):
         """ format a exception nicely and pass it to the logger

@@ -1,2 +1,3 @@
 commands.file: commands.txt
 commands.fileencoding: iso-8859-15
+commands.autoReload: true

@@ -144,5 +144,5 @@ class SSHRealm:
         if conchinterfaces.IConchUser in interfaces:
             return conchinterfaces.IConchUser, SSHAvatar(avatarId, self.service), lambda: None
         else:
-            raise Exception, "No supported interfaces found." 
+            raise Exception("No supported interfaces found.")
     
