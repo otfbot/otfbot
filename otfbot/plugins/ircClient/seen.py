@@ -46,7 +46,6 @@ class Plugin(chatMod.chatMod):
             self.userdata[0][channel][user.split("!")[0].lower()] = {'msg':msg, 'time':time.time()}
     
     def command(self, user, channel, command, options):
-        self.logger.info(channel)
         if command == "seen":
             try:
                 zeit = self.userdata[0][channel][options.lower()]['time']
