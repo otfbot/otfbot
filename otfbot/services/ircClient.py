@@ -540,10 +540,10 @@ class Bot(pluginSupport, irc.IRCClient):
         """
         channel = channel.lower()
         nick = user.split("!")[0]
-        if self.userlist.has_key(nick):
+        if nick in self.userlist:
             u = self.userlist[nick]
         else:
-            u = IrcUser(user, self)
+            u = IrcUser(nick, user.split("@", 1)[0].split("!")[1], user.split("@")[1], nick, self)
             self.userlist[nick] = u
         self.users[channel][u] = 0
         self._apirunner("userJoined", {"user":user, "channel":channel})
