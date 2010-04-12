@@ -21,9 +21,11 @@ from twisted.internet import protocol, error, reactor
 from twisted.protocols import basic
 from twisted.application import service, internet
 from twisted.cred import portal, checkers, credentials
+from twisted.cred.portal import Portal
 from twisted.conch import error, avatar, manhole, recvline, interfaces as conchinterfaces
 from twisted.conch.ssh import factory, userauth, connection, keys, session, common 
 from twisted.conch.insults import insults 
+from twisted.internet.protocol import ProcessProtocol
 
 from zope.interface import implements
 
