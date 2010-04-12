@@ -50,7 +50,7 @@ class myHTTPServer(HTTPServer):
 
 class webPluginSupport(pluginSupport):
     pluginSupportName="webServer"
-    pluginSupportPath="plugins/webServer"
+    pluginSupportPath="otfbot/plugins/webServer"
     def __init__(self, root, parent):
         self.root=root
         self.parent=parent
