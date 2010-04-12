@@ -34,7 +34,7 @@ class Plugin(chatMod.chatMod):
     def command(self, user, channel, command, options):
         if command in ["wetter", "weather"]:
             try:
-                wetter = pywapi.get_weather_from_google(options,"DE")
+                wetter = pywapi.get_weather_from_google(options)
                 feuchtigkeit = wetter['current_conditions']['humidity']
                 temperatur = wetter['current_conditions']['temp_c'] + " Grad C"
                 wind = wetter['current_conditions']['wind_condition']

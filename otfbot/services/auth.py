@@ -17,6 +17,11 @@
 # (c) 2009 Robert Weidlich
 #
 
+"""
+Provides a user registry and authentication
+ 
+"""
+
 from twisted.application import internet, service
 from twisted.internet import protocol, reactor, defer
 from twisted.cred import portal, checkers, credentials, error

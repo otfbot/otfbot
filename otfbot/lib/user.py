@@ -43,13 +43,14 @@ class BotUser(service.User):
         return "<BotUser %s>" % self.name
 
 class IrcUser(object):
-    def __init__(self, hostmask, network):
-        self.network=network
+    def __init__(self, nick, user, host, realname, network):
+        self.network = network
         self.name = "anonymous"
-        self.nick = hostmask.split("!",1)[0]
-        self.user = hostmask.split("!",1)[1].split("@",1)[0]
-        self.host = hostmask.split("!",1)[1].split("@",1)[1]
+        self.nick = nick
+        self.user = user
+        self.host = host
         self.avatar = None
+        self.realname = realname
 
     def getBotuser(self):
         return self.avatar
