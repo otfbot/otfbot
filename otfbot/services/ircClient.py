@@ -512,7 +512,7 @@ class Bot(pluginSupport, irc.IRCClient):
             else:
                 self.logger.info("Change of channel mode " + modes[0] + " not tracked")
             modes = modes[1:]
-        self._apirunner("modeChanged", {"user":user, "channel":channel, "set":set, "modes":modes, "args":args})
+        self._apirunner("modeChanged", {"user":user, "channel":channel, "set":set, "modes":modes, "args":[str(arg) for arg in args]})
 
     def kickedFrom(self, channel, kicker, message):
         """ called by twisted,
