@@ -21,6 +21,7 @@
 
 import sys, os, logging, glob
 from twisted.application import internet, service
+from twisted.internet.defer import Deferred
 import yaml
 
 class configService(service.Service):
@@ -72,57 +73,59 @@ class configService(service.Service):
                     self.network_options[network][channel]={} #emtpy option-list for the given channel
 
     def get(self, option, default, module=None, network=None, channel=None, set_default=True):
-            """
-            get an option and set the default value, if the option is unset.
-            @param set_default if True, the default will be set in the config, if its used.
-            if False, the default will be returned, but the config will not be changed.
+        """ 
+        get an option and set the default value, if the option is unset.
 
-            >>> c=configService()
-            >>> c.get("option", "default")
-            'default'
-            >>> c.get("option", "unset?")
-            'default'
-            """
-            if module:
-                option=module+"."+option
+        >>> c=configService()
+        >>> c.get("option", "default")
+        'default'
+        >>> c.get("option", "unset?")
+        'default'                                
+        
+        @param set_default: if True, the default will be set in the config, if its used.
+                            if False, the default will be returned, but the config will 
+                            not be changed.
+        """
+        if module:
+            option=module+"."+option
 
-            #This part tries to get the config value for an option only
-            if self.network_options.has_key(network):
-                if self.network_options[network].has_key(channel):
-                    if self.network_options[network][channel].has_key(option):
-                        #1) choice: channel specific
-                        return self.network_options[network][channel][option]
-                if self.network_options[network].has_key(option):
-                    #2) choice: network specific
-                    return self.network_options[network][option];
-            if self.generic_options.has_key(option):
-                #3) choice: general key
-                return self.generic_options[option]
+        #This part tries to get the config value for an option only
+        if self.network_options.has_key(network):
+            if self.network_options[network].has_key(channel):
+                if self.network_options[network][channel].has_key(option):
+                    #1) choice: channel specific
+                    return self.network_options[network][channel][option]
+            if self.network_options[network].has_key(option):
+                #2) choice: network specific
+                return self.network_options[network][option];
+        if self.generic_options.has_key(option):
+            #3) choice: general key
+            return self.generic_options[option]
 
-            #if we did not return above, we need to check if the default should be written to config
-            #and return the default
+        #if we did not return above, we need to check if the default should be written to config
+        #and return the default
 
-            if network:
-                if channel:
-                    self._create_preceding(network, channel)
-                    self.network_options[network][channel][option]=default #set the default
-                else:
-                    self._create_preceding(network)
-                    self.network_options[network][option]=default #set the default
+        if network:
+            if channel:
+                self._create_preceding(network, channel)
+                self.network_options[network][channel][option]=default #set the default
             else:
-                #config.writeDefaultValues is a global setting, 
-                #which decides if the get default-values are written to config,
-                #if they are in no defaultconfig-snippets present
-                #set_default is a local setting, which decides the same,
-                #so modules can decide, if they want to write the default value to the config.
-                #if the global setting is false, its never written to config.
+                self._create_preceding(network)
+                self.network_options[network][option]=default #set the default
+        else:
+            #config.writeDefaultValues is a global setting, 
+            #which decides if the get default-values are written to config,
+            #if they are in no defaultconfig-snippets present
+            #set_default is a local setting, which decides the same,
+            #so modules can decide, if they want to write the default value to the config.
+            #if the global setting is false, its never written to config.
 
-                #write this config.writeDefaultValues option as defaultvalue, even if the default is not to write default values.
-                if option=="config.writeDefaultValues" or (self.has("config.writeDefaultValues") and self.getBool("config.writeDefaultValues", False) and set_default):
-                    self.set(option, default, still_default=False) #this will write the default value to the config
-                else:
-                    self.set(option, default, still_default=True) #this will avoid a config with a lot of default options.
-            return default
+            #write this config.writeDefaultValues option as defaultvalue, even if the default is not to write default values.
+            if option=="config.writeDefaultValues" or (self.has("config.writeDefaultValues") and self.getBool("config.writeDefaultValues", False) and set_default):
+                self.set(option, default, still_default=False) #this will write the default value to the config
+            else:
+                self.set(option, default, still_default=True) #this will avoid a config with a lot of default options.
+        return default
 
     def has(self, option, module=None):
         """

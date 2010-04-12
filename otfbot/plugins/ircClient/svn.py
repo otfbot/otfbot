@@ -29,15 +29,11 @@ class Plugin(chatMod.chatMod):
     def __init__(self,bot):
         """
         Config has to look like this:
-        svn.repositories:
-          samplesvn:
-             checkinterval: 30 (in Minutes!)
-             url: svn://url.to.your/svn
+        svn.repositories.samplesvn.checkinterval: 30 (in Minutes!)
+        svn.repositories.samplesvn.url: svn://url.to.your/svn
         
         and then do this in your channel-config:
-        samplenetwork:
-          '#samplechannel':
-            svn.repros: samplesvn
+        samplenetwork.'#samplechannel'.svn.repros: samplesvn
         
         and the bot will post updates of samplesvn in your channel.
         You can specify more repros just by appending them seperated with a comma.

@@ -26,6 +26,8 @@ from twisted.application import internet, service
 from twisted.internet import protocol, reactor, defer
 from twisted.cred import portal, checkers, credentials, error
 from twisted.words.service import WordsRealm, InMemoryWordsRealm
+from twisted.words.iwords import IGroup, IUser
+from twisted.cred.portal import Portal, IRealm
 
 from zope.interface import implements
 
