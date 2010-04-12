@@ -379,7 +379,7 @@ class Bot(pluginSupport, irc.IRCClient):
         self.logger.info("joined " + channel)
         self.channels.append(channel)
         self.users[channel] = {}
-        #self.sendLine("WHO")
+        self.sendLine("WHO %s" % channel)
         self._apirunner("joined", {"channel":channel})
         self.config.set("enabled", True, "main", self.network, channel)
 
@@ -602,31 +602,25 @@ class Bot(pluginSupport, irc.IRCClient):
         channel = channel.lower()
         self._apirunner("topicUpdated", {"user":user, "channel":channel, "newTopic":newTopic})
 
-    def irc_RPL_ENDOFNAMES(self, prefix, params):
-        self._apirunner("irc_RPL_ENDOFNAMES", {"prefix":prefix, "params":params})
+    def irc_RPL_WHOREPLY(self, prefix, params):
+        """
+            "<channel> <user> <host> <server> <nick> <H|G>[*][@|+] :<hopcount> <real name>"
+        """
+        #print repr(params)
+        #['finisher', '#otfbot', 'ChanServ', 'services.', 'services.', 'ChanServ', 'H@', '0 Channel Services']
+        (trash, channel, user, host, server, nick, modes, hopsrealname) = params
+        (hops, realname) = hopsrealname.split(" ",1)
+        if nick in self.userlist:
+            u = self.userlist[nick]
+        else:
+            u = IrcUser(nick, user, host, realname, self)
+            self.userlist[nick] = u
+        if modes[-1] in self.rev_modcharvals:
+            s = modes[-1]
+        else:
+            s = " "
+        self.users[channel][u] = self.rev_modcharvals[s]
 
-    def irc_RPL_NAMREPLY(self, prefix, params):
-        self._apirunner("irc_RPL_NAMREPLY", {"prefix":prefix, "params":params})
-        nicks = params[3].strip().split(" ")
-        for nick in nicks:
-            if nick[0] in "@%+!":
-                s = nick[0]
-                nick = nick[1:]
-            else:
-                s = " "
-            if self.userlist.has_key(nick):
-                u = self.userlist[nick]
-            else:
-                u = IrcUser(nick + "!user@host", self)
-                self.userlist[nick] = u
-            if hasattr(self, "rev_modcharvals"): #for irc servers which do not provide this (miniircd)
-                self.users[params[2]][u] = self.rev_modcharvals[s]
-        while len(nicks):
-            #send USERHOST request for 5 nicks at the same time
-            #(maximum allowed by RFC)
-            self.sendLine("USERHOST " + " ".join(nicks[:5]))
-            nicks = nicks[5:]
-            
     def irc_RPL_USERHOST(self, prefix, params):
         for rpl in params[1].strip().split(" "):
             tmp = rpl.split('=', 1)
