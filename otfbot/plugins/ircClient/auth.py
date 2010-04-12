@@ -54,8 +54,11 @@ class Plugin(chatMod.chatMod):
                 self.bot.sendmsg(nick, "Usage: identify [user] pass")
                 return
             if not nick in self.bot.userlist:
-                u=IrcUser(user, self.bot)
-                self.bot.userlist[u.name]=u
+                u=IrcUser(user.split("!")[0],
+                          user.split("!",1)[1].split("@")[0],
+                          user.split("!",1)[1].split("@")[1],
+                          user.split("!")[0], self.bot)
+                self.bot.userlist[nick]=u
                 
             d=portal.login(cred, self.bot.userlist[nick], IUser)
             d.addCallback(lambda args: self.bot.sendmsg(nick, "Successfully logged in as "+str(args[1].name)))
