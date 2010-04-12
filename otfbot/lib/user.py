@@ -62,3 +62,4 @@ class IrcUser(object):
     
     def __repr__(self):
         return "<IrcUser %s (%s)>" % (self.getHostMask(), self.name)
+

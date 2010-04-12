@@ -46,7 +46,7 @@ class Plugin(chatMod.chatMod):
         if not HAS_PYSVN:
             self.bot.depends("pysvn python module")
         self.callIds = {}
-        self.svnconfig = self.bot.config.get("repositories",[] , "svn")
+        self.svnconfig = self.bot.config.get("repositories", [], "svn")
     def joined(self,channel):
         repros = self.bot.config.get("repros","","svn",self.bot.network,channel)
         if repros != "":
