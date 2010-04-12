@@ -18,11 +18,13 @@
 #
 
 from otfbot.lib import chatMod
+import time
 
 class Plugin(chatMod.chatMod):
     def __init__(self, bot):
         self.bot=bot
         self.getServers=lambda: [connection.kwargs['factory'].protocol for connection in bot.root.getServiceNamed('ircServer').services]
+
     def irc_unknown(self, prefix, command, params):
         if command=="PONG":
                 for server in self.getServers():
