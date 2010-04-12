@@ -181,7 +181,7 @@ class Bot(pluginSupport, irc.IRCClient):
         # all users known to the bot, nick => IrcUser
         self.userlist = {}
         # usertracking, channel=>{User => level}
-        self.users = creatingDict()
+        self.users = {}
 
         self.serversupports = {}
         
@@ -237,18 +237,21 @@ class Bot(pluginSupport, irc.IRCClient):
             @return: a dict with the channelnames as keys
         """
         return self.users
+
     def getUsers(self, channel):
         """ Get a list of users in channel
             @rtype: dict
             @return: a list of users
         """
         return self.getChannelUserDict()[channel]
+
     def getFactory(self):
         """ get the factory
             @rtype: BotFactory
             @return: the current factory
         """
         return self.factory
+
     def auth(self, user):
         """
             call this, to see which rights C{user} has
@@ -305,12 +308,8 @@ class Bot(pluginSupport, irc.IRCClient):
             #the trailing CR-LF. Thus, there are 510 characters maximum allowed
             #for the command and its parameters.
             #There is no provision for continuation message lines.
-            while len(line):
-                #TODO: Better splitting algorithm
-                self.msg(channel, line[:450])
-                self.privmsg(self.nickname, channel, line[:450])
-                time.sleep(0.5) #TODO is this still needed with self.lineRate setting?
-                line = line[450:]
+            self.msg(channel, line, 450)
+            self.privmsg(self.nickname, channel, line)
         
     def sendme(self, channel, action, encoding="UTF-8", fallback="iso-8859-15"):
         """
@@ -329,7 +328,7 @@ class Bot(pluginSupport, irc.IRCClient):
         for line in action:
             line = self.encode_line(line, encoding, fallback)
             
-            self.me(channel, line)
+            self.describe(channel, line)
             self.action(self.nickname, channel, line)
             time.sleep(0.5)
     
@@ -559,7 +558,7 @@ class Bot(pluginSupport, irc.IRCClient):
 
     def userQuit(self, user, quitMessage):
         """ called by twisted,
-            of a C{user} quits
+            if a C{user} quits
         """
         self._apirunner("userQuit", {"user":user, "quitMessage":quitMessage})
         nick = user.split("!")[0]
@@ -594,6 +593,9 @@ class Bot(pluginSupport, irc.IRCClient):
         if self.userlist.has_key(oldname):
             self.userlist[newname] = self.userlist[oldname]
             del self.userlist[oldname]
+            self.userlist[newname].nick = newname
+        else:
+            self.logger.error("Renaming user not in userlist")
 
     def topicUpdated(self, user, channel, newTopic):
         """ called by twisted
@@ -606,12 +608,15 @@ class Bot(pluginSupport, irc.IRCClient):
         """
             "<channel> <user> <host> <server> <nick> <H|G>[*][@|+] :<hopcount> <real name>"
         """
-        #print repr(params)
-        #['finisher', '#otfbot', 'ChanServ', 'services.', 'services.', 'ChanServ', 'H@', '0 Channel Services']
+        # modes: H = Here, G = Gone, r=registerd, B=Bot
         (trash, channel, user, host, server, nick, modes, hopsrealname) = params
+        channel = channel.lower()
         (hops, realname) = hopsrealname.split(" ",1)
         if nick in self.userlist:
             u = self.userlist[nick]
+            u.user = user
+            u.host = host
+            u.realname = realname
         else:
             u = IrcUser(nick, user, host, realname, self)
             self.userlist[nick] = u
