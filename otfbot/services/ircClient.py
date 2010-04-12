@@ -192,12 +192,13 @@ class Bot(pluginSupport, irc.IRCClient):
         self.register_pluginsupport_commands()
 
         self.lastLine = time.time()
-        self.root.getServiceNamed('scheduler').callPeriodic(60, self._check_sendLastLine())
+        self.root.getServiceNamed('scheduler').callPeriodic(60, self._check_sendLastLine)
 
     def _check_sendLastLine(self):
         if time.time() - self.lastLine > 60:
             self.logger.info("Timeout in sight. Sending a ping.")
             self.ping()
+        return True
     
     def register_ctl_command(self, f, namespace=None, name=None):
         if namespace is None:
