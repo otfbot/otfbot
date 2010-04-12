@@ -37,9 +37,9 @@ class Plugin(chatMod.chatMod):
         if not HAS_PYXMLTV:
             self.bot.depends("xmltv python module")
         try:
-        	os.mkdir(datadir)
+            os.mkdir(datadir)
         except OSError:
-        	pass
+            pass
         #self.xmltvfile = datadir + "/" + self.bot.getConfig("xmltvfile","","tv")
         self.xmltvfile = datadir + "/" + self.bot.config.get("xmltvfile","tv.xml.txt","tv")
         #self.tv = tv(self.xmltvfile) ## This is done by self.update_data()
@@ -123,7 +123,7 @@ class Plugin(chatMod.chatMod):
                         self.bot.sendmsg(user,unicode(str(chr(2)) + i['station'][0] + str(chr(2)) + " (" + str(i['start'][8:10]) + ":" + str(i['start'][10:12]) + "-" + str(i['stop'][8:10]) + ":" + str(i['stop'][10:12]) + "): " + i['title'] + " (" + i['language'] + ")").encode("utf8"))
                     else:
                         #+ str(i['start'][6:8]) + "." + str(i['start'][4:6]) + "., "
-                        self.bot.sendmsg(channel,unicode(str(chr(2)) + i['station'][0] + str(chr(2)) + " ("  + str(i['start'][8:10]) + ":" + str(i['start'][10:12]) + "-" + str(i['stop'][8:10]) + ":" + str(i['stop'][10:12]) + "): " + i['title'] + " (" + i['language'] + ")").encode("utf8"))
+                        self.bot.sendmsg(channel,unicode(str(chr(2)) + i['station'][0] + str(chr(2)) + " (" + str(i['start'][8:10]) + ":" + str(i['start'][10:12]) + "-" + str(i['stop'][8:10]) + ":" + str(i['stop'][10:12]) + "): " + i['title'] + " (" + i['language'] + ")").encode("utf8"))
         elif command.lower() == "tvsearch":
             result = self.tv.search(options)
             t_result = self.parse_programm(result)

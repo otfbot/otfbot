@@ -19,12 +19,13 @@
 
 from otfbot.lib import chatMod, functions
 
-import string, re, random
+import string, re, random, os
 
 class Plugin(chatMod.chatMod):
     def __init__(self, bot):
         self.bot = bot
         self.channels=[]
+        self.mtime=0
 
     def connectionMade(self):
         self.start()
@@ -34,6 +35,12 @@ class Plugin(chatMod.chatMod):
     
     def command(self, user, channel, command, options):
         user = user.split("!")[0] #only nick
+        if self.bot.config.getBool("autoReload", True, "commands", self.bot.network, channel):
+            network_mtime = os.stat(self.bot.config.getPath("file", datadir, "commands.txt","commands", self.bot.network)).st_mtime
+            general_mtime = os.stat(self.bot.config.getPath("file", datadir, "commands.txt","commands")).st_mtime
+            if self.mtime < network_mtime or self.mtime < general_mtime:
+                self.reload()
+                self.mtime = max(network_mtime, general_mtime)
         if user != self.bot.nickname:
             answer=self.respond(channel, user, command.lower(), options)
             if answer != "":

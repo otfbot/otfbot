@@ -40,7 +40,7 @@ class Plugin(chatMod.chatMod):
         self.mychannels=[]
         self.first=True
         self.getClient=lambda network: server.root.getServiceNamed('ircClient').getServiceNamed(network).protocol
-        self.getClientNames=lambda : [connection.name for connection in self.server.root.getServiceNamed('ircClient').services]
+        self.getClientNames=lambda: [connection.name for connection in self.server.root.getServiceNamed('ircClient').services]
 
         self.server.registerCallback(self, "irc_NICK")
         self.server.registerCallback(self, "irc_PRIVMSG")

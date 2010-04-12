@@ -46,7 +46,7 @@ def loadProperties(propertiesFile, ambiguous=False):
                     if pair[1][0]=="=": #skip === bla === i.e. from dokuwiki headline
                         continue
                     if ambiguous:
-                        if not properties.has_key(pair[0]):
+                        if not pair[0] in properties:
                             properties[pair[0]] = []
                         properties[pair[0]].append(pair[1])
                     else:

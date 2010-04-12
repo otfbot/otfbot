@@ -46,7 +46,7 @@ class botService(service.MultiService):
         else:
             self.register_ctl_command(self.connect)
             self.register_ctl_command(self.disconnect)
-            self.register_ctl_command(lambda : self.namedServices.keys(), name="list")
+            self.register_ctl_command(lambda: self.namedServices.keys(), name="list")
         for network in self.config.getNetworks():
             if self.config.getBool('enabled', 'True', 'main', network):
                 self.connect(network)
@@ -213,7 +213,7 @@ class Bot(pluginSupport, irc.IRCClient):
         self.register_ctl_command(self.leave, name="part")
         self.register_ctl_command(self.getUsers)
         self.register_ctl_command(self.setNick, name="rename")
-        self.register_ctl_command(lambda : self.channels, name="listchannels")
+        self.register_ctl_command(lambda: self.channels, name="listchannels")
         self.register_ctl_command(self.kick)
         self.register_ctl_command(self.sendmsg, name="say")
         self.register_ctl_command(self.ping)
@@ -591,8 +591,8 @@ class Bot(pluginSupport, irc.IRCClient):
                 self.users[chan][newname] = self.users[chan][oldname]
                 del self.users[chan][oldname]
         if self.userlist.has_key(oldname):
-             self.userlist[newname] = self.userlist[oldname]
-             del self.userlist[oldname]
+            self.userlist[newname] = self.userlist[oldname]
+            del self.userlist[oldname]
 
     def topicUpdated(self, user, channel, newTopic):
         """ called by twisted
