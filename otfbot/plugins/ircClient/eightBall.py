@@ -44,8 +44,7 @@ class Plugin(chatMod.chatMod):
         "Concentrate and ask again (Konzentriere dich und frag nochmal)",
         "Better not tell you now (Ich sags dir jetzt lieber nicht)",
         "Cannot predict now (Kann es jetzt nicht vorhersagen)",
-        "Ask again later (Frag spaeter nochmal)"
-        ]
+        "Ask again later (Frag spaeter nochmal)"]
 
     def msg(self, user, channel, msg):
         if self.bot.config.getBool("autoAnswer", False, "eightball", self.network, channel):

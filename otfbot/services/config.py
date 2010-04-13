@@ -97,7 +97,7 @@ class configService(service.Service):
                     return self.network_options[network][channel][option]
             if self.network_options[network].has_key(option):
                 #2) choice: network specific
-                return self.network_options[network][option];
+                return self.network_options[network][option]
         if self.generic_options.has_key(option):
             #3) choice: general key
             return self.generic_options[option]

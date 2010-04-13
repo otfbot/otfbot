@@ -17,8 +17,12 @@
 # (c) 2005 - 2010 by Alexander Schier
 #
 
-from otfbot.lib import chatMod, functions
+"""
+react to !commands with text from a commands.txt file
+"""
 
+
+from otfbot.lib import chatMod, functions
 import string, re, random, os
 
 class Plugin(chatMod.chatMod):

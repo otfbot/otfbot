@@ -17,12 +17,19 @@
 # (c) 2008 - 2010 by Thomas Wiegart
 #
 
+"""
+rejoin, if kicked. (note: this is often a bad idea!)
+"""
+
+
 from otfbot.lib import chatMod
 
+
 class Plugin(chatMod.chatMod):
+
     def __init__(self, bot):
         self.bot = bot
+
     def kickedFrom(self, channel, kicker, message):
         if int(self.bot.config.get("enabled", False, "autorejoin", self.bot.network, channel)):
             self.bot.join(channel)
-

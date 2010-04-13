@@ -87,4 +87,3 @@ class Plugin(chatMod.chatMod):
                     self.bot.sendmsg(channel, parser.get_result())
             except HTMLParseError:
                 pass
-

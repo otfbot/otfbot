@@ -76,8 +76,7 @@ class Plugin(chatMod.chatMod):
                  'low_range' : data[8],
                  'volumen' : data[9],
                  'currency' : data[10],
-                 'boerse' : data[11]
-            }
+                 'boerse' : data[11]}
             # \x03C C=Colorcode
             answer = d['day']+", "+d['time']+" "+ d['name']+" ("+d['boerse']+":"+d['symbol']+") "+d['kurs']+" "+d['currency']
             if d['change_kurs'] != "N/A":
