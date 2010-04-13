@@ -1,1 +1,1 @@
-"""plugins for the $i service"""
+"""plugins for the remoteCliServer service"""
