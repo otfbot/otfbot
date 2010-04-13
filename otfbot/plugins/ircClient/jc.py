@@ -44,4 +44,3 @@ class Plugin(chatMod.chatMod):
                     self.bot.sendmsg(channel, line[0])
                 else:
                     self.bot.sendmsg(user, line[0])
-            

@@ -17,7 +17,12 @@
 # (c) 2009 by Alexander Schier
 #
 
+"""
+cast a vote with !votecast question and collect answers
+"""
+
 from otfbot.lib import chatMod
+
 
 class Plugin(chatMod.chatMod):
     def __init__(self, bot):
@@ -51,4 +56,3 @@ class Plugin(chatMod.chatMod):
         self.bot.sendmsg(channel, "Vote: %s"%self.votes[channel][0])
         self.bot.sendmsg(channel, "Ja: %s, Nein: %s, Egal: %s"%(self.votes[channel][1], self.votes[channel][2], self.votes[channel][3]))
         del(self.votes[channel])
-

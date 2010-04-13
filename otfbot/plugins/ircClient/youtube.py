@@ -17,26 +17,23 @@
 # (c) 2009 by Alexander Schier
 #
 
+"""
+search on youtube with !youtube search phrase
+"""
+
 from otfbot.lib import chatMod, urlutils
 import logging
 import urllib
-feedparser_available=True
-try:
-    import feedparser
-except ImportError:
-    feedparser_available=False
+
 
 class Plugin(chatMod.chatMod):
     def __init__(self, bot):
         self.bot = bot
         self.logger = logging.getLogger("youtube")
-        if not feedparser_available:
-            self.logger.warning("feedparser module not installed. youtube disabled.")
+        self.feedparser=self.bot.depends_on_module("feedparser")
     def command(self, user, channel, command, options):
-        if not feedparser_available:
-            return
         if command=="youtube" and options:
-            parsed=feedparser.parse("http://gdata.youtube.com/feeds/base/videos?q=%s&client=ytapi-youtube-search&alt=rss&v=2"%urllib.quote(options))
+            parsed=self.feedparser.parse("http://gdata.youtube.com/feeds/base/videos?q=%s&client=ytapi-youtube-search&alt=rss&v=2"%urllib.quote(options))
             if len(parsed.entries):
                 self.bot.sendmsg(channel, "%s - %s"%(parsed.entries[0]['link'].encode("UTF-8"), parsed.entries[0]['title'].encode("UTF-8")))
             else:

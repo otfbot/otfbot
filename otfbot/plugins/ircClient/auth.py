@@ -19,6 +19,10 @@
 # (c) 2008 - 2010 by Thomas Wiegart
 #
 
+"""
+authenticates the botnick to a nickserv
+"""
+
 from twisted.cred.credentials import UsernamePassword
 from twisted.words.iwords import IUser
 
@@ -26,6 +30,7 @@ from otfbot.lib import chatMod
 from otfbot.lib.user import BotUser, IrcUser
 
 import random, re
+
 
 class Plugin(chatMod.chatMod):
     def __init__(self, bot):
