@@ -17,26 +17,24 @@
 # (c) 2005 - 2010 by Alexander Schier
 #
 
+"""
+post Headlines and Links from a Newsfeed
+"""
+
 
 import time, logging
-
-feedparser_available=True
-try:
-    import feedparser
-except ImportError:
-    feedparser_available=False
-
 from otfbot.lib import chatMod, urlutils
 
+
 class Plugin(chatMod.chatMod):
+
     def __init__(self, bot):
         self.bot = bot
         self.end = False
-        # TODO:add a start()-method with the following 3 lines
-        self.logger = logging.getLogger("feed")
-        if not feedparser_available:
-            self.bot.depends("feedparser module")
+
+        self.feedparser=self.bot.depends_on_module("feedparser")
         self.bot.depends_on_service("scheduler")
+        self.logger = logging.getLogger("feed")
         
         self.feedHeadlines={} #map url -> [(url, headline), ...]
         self.readUrls={} #map channel->[url, url, ...]
@@ -76,8 +74,6 @@ class Plugin(chatMod.chatMod):
         self.addSource(feedUrl, channel, feedMinWait, feedMaxWait, feedWaitFactor, feedPostMax)
 
     def joined(self, channel):
-        if not feedparser_available:
-            return
         numFeeds=int(self.bot.config.get("numFeeds", 0, "feed", self.bot.network, channel))
         if numFeeds > 0:
             self.logger.debug("Found "+str(numFeeds)+" Feed-Urls:")
@@ -118,7 +114,7 @@ class Plugin(chatMod.chatMod):
             
     def parseNews(self, feedcontent, url):
         #TODO: also a blocking call?
-        parsed=feedparser.parse(feedcontent)
+        parsed=self.feedparser.parse(feedcontent)
         self.feedHeadlines[url]=[]
         for entry in parsed['entries']:
             self.feedHeadlines[url].append((entry['link'], entry['title']))
@@ -158,8 +154,6 @@ class Plugin(chatMod.chatMod):
         self.end=1
 
     def command(self, user, channel, command, options):
-        if not feedparser_available:
-            return
         if self.bot.auth(user) >= 10:
             if command=="refresh":
                 if options!="":
@@ -168,7 +162,7 @@ class Plugin(chatMod.chatMod):
                         feedUrl=self.bot.config.get("feed"+str(num)+".url", "", "feed", self.bot.network, channel)
                         self.callIDs[feedUrl].cancel()
                         self.loadNews(feedUrl)
-                        self.postNews(channel, feedUrl, int(self.bot.config.get("feed"+str(num)+".postMax", "3", "feed", self.bot.network, channel) ))
+                        self.postNews(channel, feedUrl, int(self.bot.config.get("feed"+str(num)+".postMax", "3", "feed", self.bot.network, channel)))
                         self.loadSource(num, channel)
             elif command=="addfeed":
                 options=options.split(" ")

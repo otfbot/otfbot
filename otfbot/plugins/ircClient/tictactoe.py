@@ -53,8 +53,7 @@ class Game:
             6: [5,3,9,8,2],
             7: [4,5,8],
             8: [7,4,5,9,6],
-            9: [8,6]
-        }[pos]
+            9: [8,6]}[pos]
     def winningField(self, stone, stone2, fields):
         print stone, stone2, fields
         for field in fields:
