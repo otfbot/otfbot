@@ -195,8 +195,8 @@ class Bot(pluginSupport, irc.IRCClient):
         self.root.getServiceNamed('scheduler').callPeriodic(60, self._check_sendLastLine)
 
     def _check_sendLastLine(self):
-        if time.time() - self.lastLine > 60:
-            self.logger.info("Timeout in sight. Sending a ping.")
+        if time.time() - self.lastLine > self.config.get("timeout", 120, "main", self.network):
+            self.logger.debug("Timeout in sight. Sending a ping.")
             self.ping()
         return True
     
@@ -502,7 +502,7 @@ class Bot(pluginSupport, irc.IRCClient):
             if modes[0] in ("+", "-"):
                 m = modes[0]
                 modes = modes[1:]
-            if modes[0] in self.rev_modchars:
+            if modes[0] in self.rev_modchars and args[i] in self.userlist and self.userlist[args[i]] in self.users:
                 if (m and m == "+") or set:
                     self.users[channel][self.userlist[args[i]]] += self.rev_modchars[modes[0]]
                 elif (m and m == "-") or not set:
