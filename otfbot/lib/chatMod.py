@@ -60,7 +60,7 @@ class chatMod(Plugin):
         """made connection to server"""
         pass
 
-    def connectionLost(self,reason):
+    def connectionLost(self, reason):
         """lost connection to server"""
         pass
 
@@ -90,7 +90,7 @@ class chatMod(Plugin):
 
     def userKicked(self, kickee, channel, kicker, message):
         """someone kicked someone else"""
-        self.userLeft(kickee,channel)
+        self.userLeft(kickee, channel)
 
     def userJoined(self, user, channel):
         """a user joined the channel"""
@@ -137,10 +137,10 @@ class chatMod(Plugin):
         """
         pass
 
-    def sendLine(self,line):
+    def sendLine(self, line):
         pass
 
-    def lineReceived(self,line):
+    def lineReceived(self, line):
         pass
 
     def ctcpQuery(self, user, channel, messages):

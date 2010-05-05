@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-# 
+#
 # (c) 2005 - 2010 by Alexander Schier
 # (c) 2006 - 2010 by Robert Weidlich
 #
@@ -24,10 +24,12 @@ import os
 
 def loadProperties(propertiesFile, ambiguous=False):
     """ Loads data from a file into a dict
-        
-        The data in the file should have the format::
+
+        The data in the file should have the format:
             key=value
-        If the file doesn't exist, it will be created. If no filename is given an empty dict is returned
+        If the file doesn't exist, it will be created. If no filename
+        is given an empty dict is returned
+
         @param propertiesFile: The file to deal with
         @type propertiesFile: string
         @rtype: dict
@@ -43,7 +45,8 @@ def loadProperties(propertiesFile, ambiguous=False):
             if len(line) >1 and line[0] != "#":
                 pair = line.split("=", 1)
                 if len(pair)==2:
-                    if pair[1][0]=="=": #skip === bla === i.e. from dokuwiki headline
+                    #skip === bla === i.e. from dokuwiki headline
+                    if pair[1][0]=="=":
                         continue
                     if ambiguous:
                         if not pair[0] in properties:
@@ -58,10 +61,11 @@ def loadProperties(propertiesFile, ambiguous=False):
         propFile = open(propertiesFile, "w")
         propFile.close()
     return properties
-    
+
+
 def loadList(listFile):
     """ loads data from a file into a list
-        
+
         This function loads simply each line of the file into a list.
         If the filename is empty, a empty list is returned. If the file given
         doesn't exist, it will be created.

@@ -58,5 +58,4 @@ class GitVersion(versions.Version):
             s += "+" + str(svnver)
         return s
 
-
 _version = GitVersion('OTFBot',1,0,0)
