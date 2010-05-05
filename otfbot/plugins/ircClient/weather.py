@@ -93,7 +93,7 @@ class YahooWeatherParser(xml.sax.handler.ContentHandler):
             if not name == self.inItem:
                 self.inSub = 1
                 self.Sub = name
-        if name in _attrs:
+        if name in self._attrs:
             vals = {}
             for attr in attributes.getNames():
                 vals[attr] = attributes.getValue(attr)
@@ -210,8 +210,7 @@ class Plugin(chatMod.chatMod):
                 options = self.lastweather[nick]
             elif len(options):
                 self.lastweather[nick] = options
-            print "Getting weather"
-            get_weather(options).addCallback(self.send_answer, channel)
+            get_weather(options).addCallback(self.send_answer, channel).addErrback(defer.logError)
 
     def send_answer(self, c, channel):
         if len(c) < 1 or 'location' not in c:
