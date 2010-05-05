@@ -65,7 +65,7 @@ class pluginSupport:
             raise self.ServiceMissing(dependency, description)
     def depends_on_plugin(dependency, description=""):
         """depend on another plugin, raise a PluginMissing Exception, if its not enabled"""
-        if not self.plugins.has_key(dependency):
+        if not dependency in self.plugins:
             raise self.PluginMissing(dependency, description)
     
     def importPlugin(self, name):
@@ -81,7 +81,7 @@ class pluginSupport:
 
     def callbackRegistered(self, module, callbackname):
         """test, if a module has already registered a callback for callbackname"""
-        if not self.callbacks.has_key(callbackname):
+        if callbackname not in self.callbacks:
             return False
         for item in self.callbacks[callbackname]:
             if item[0]==module:
@@ -89,7 +89,7 @@ class pluginSupport:
         return False
     def registerCallback(self, module, callbackname, priority=10):
         """register module for a callbackname, with a specified priority (higher priority = invoced before callbacks from other modules)"""
-        if not self.callbacks.has_key(callbackname):
+        if callbackname not in self.callbacks:
             self.callbacks[callbackname]=[]
         #if the module has already registered for the callback, do not reregister
         if not self.callbackRegistered(module, callbackname):
@@ -97,7 +97,7 @@ class pluginSupport:
             self.callbacks[callbackname].sort(cmp=lambda a, b: b[1]-a[1])
     def unregisterCallback(self, module, callbackname):
         """unregister a callback for a module"""
-        if not self.callbacks.has_key(callbackname):
+        if callbackname not in self.callbacks:
             return
         for index in len(self.callbacks[callbackname]):
             if self.callbacks[callbackname][0]==module:
@@ -222,7 +222,7 @@ class pluginSupport:
             @type    args:    dict
             @param    args:    the arguments for the callback
         """
-        if not self.callbacks.has_key(apifunction):
+        if apifunction not in self.callbacks:
             return
         for plugin_and_priority in self.callbacks[apifunction]:
             plugin=plugin_and_priority[0] #(module, priority)
@@ -230,7 +230,7 @@ class pluginSupport:
             #if a channel is present, check if the plugin is disabled for the channel.
             #network wide pluginsDisabled is handled by startPlugins
             if hasattr(self, "network"):
-                if args.has_key("channel"):
+                if "channel" in args:
                     args['channel']=args['channel'].lower()
                     if plugin.name in self.config.get("pluginsDisabled",[],"main",self.network,args["channel"], set_default=False):
                         continue

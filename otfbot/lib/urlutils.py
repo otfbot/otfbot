@@ -57,7 +57,7 @@ def download(url, file=None, **kwargs):
     @return: A Defered which will call a Callback with the content as argument
     
     """
-    if not kwargs.has_key("agent"):
+    if "agent" not in kwargs:
         kwargs['agent'] = "OTFBot (%s; otfbot.berlios.de)" % _version.short()
     if file:
         return client.downloadPage(url, file, **kwargs)
