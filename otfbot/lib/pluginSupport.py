@@ -254,7 +254,7 @@ class pluginSupport:
             logger.info(msg % (plugin, str(exception)))
             return
         logger.error("Exception in Plugin " + plugin + ": " + repr(exception))
-        tb_list = traceback.format_tb(sys.exc_info()[2])
+        tb_list = traceback.format_tb(sys.exc_info()[2])[1:]
         for entry in tb_list:
             for line in entry.strip().split("\n"):
                 logger.error(line)
