@@ -18,6 +18,9 @@
 # (c) 2009 - 2010 by Robert Weidlich
 #
 
+""" Objects to represent users
+"""
+
 from twisted.words import service
 
 import hashlib

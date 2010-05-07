@@ -52,7 +52,7 @@ class Plugin:
                                 of the plugin
             @ivar serviceDepends: a list of services
                                 needed by the plugin
-            @ivar pluginDepends: a list of services
+            @ivar pluginDepends: a list of plugins
                                 needed by the plugin
         """
         name = __module__
