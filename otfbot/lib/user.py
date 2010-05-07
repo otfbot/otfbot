@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-# 
+#
 # (c) 2008 - 2010 by Alexander Schier
 # (c) 2009 - 2010 by Robert Weidlich
 #
@@ -22,27 +22,47 @@ from twisted.words import service
 
 import hashlib
 
+
 class BotUser(service.User):
-    password=""
-    ircuser={}
-    
+    """ represents a user of the bot
+
+        @ivar password: Authentification data
+        @ivar ircuser: references to IrcUser instances
+    """
+    password = ""
+    ircuser = {}
+
     def __init__(self, name):
-        self.name=name
-    
+        self.name = name
+
     def setPasswd(self, passwd):
-        self.password=self._hashpw(passwd)
-        
+        self.password = self._hashpw(passwd)
+
     def checkPasswd(self, passwd):
-        return self._hashpw(passwd)==self.password
-    
+        return self._hashpw(passwd) == self.password
+
     def _hashpw(self, pw):
         s = hashlib.sha1(pw)
         return s.hexdigest()
-        
+
     def __repr__(self):
         return "<BotUser %s>" % self.name
 
+
 class IrcUser(object):
+    """ Represents the connection of a L{BotUser} via IRC
+
+        @ivar network: reference to the network over which
+                        the user is connected
+        @ivar name:    verbose name of this connection
+        @ivar nick:    IRC nick
+        @ivar user:    user part of the hostmask
+        @ivar host:    host part of the hostmask
+        @ivar avatar:  reference to the corresponding L{BotUser}
+                       instance
+        @ivar realname: content of the realname property of the user
+    """
+
     def __init__(self, nick, user, host, realname, network):
         self.network = network
         self.name = "anonymous"
@@ -54,13 +74,12 @@ class IrcUser(object):
 
     def getBotuser(self):
         return self.avatar
-    
+
     def hasBotuser(self):
-        return self.avatar!=None
-    
+        return self.avatar != None
+
     def getHostMask(self):
-        return self.nick+"!"+self.user+"@"+self.host
-    
+        return self.nick + "!" + self.user + "@" + self.host
+
     def __repr__(self):
         return "<IrcUser %s (%s)>" % (self.getHostMask(), self.name)
-

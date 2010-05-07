@@ -20,13 +20,13 @@ import random, yaml
 
 class pyNiall:
     def __init__(self):
-        self.words=[">"] #[word1, word2, word3, ...]
-        self.next={0: set()} #id: [next-id1, next-id2, ...]
-        self.prob={} #(id, next-id): times seen (probabilty = this / total)
+        self.words = [">"] #[word1, word2, word3, ...]
+        self.next = {0: set()} #id: [next-id1, next-id2, ...]
+        self.prob = {} #(id, next-id): times seen (probabilty = this / total)
 
         #these can be calculated from the vars above
-        self.prev={-1: set()} #id: [prev-id1, prev-id2, ...]
-        self.rank={} #{id: totalrank}
+        self.prev = {-1: set()} #id: [prev-id1, prev-id2, ...]
+        self.rank = {} #{id: totalrank}
 
     def _addRelation(self, word1, word2):
         """
@@ -50,34 +50,34 @@ class pyNiall:
         if not word1 in self.words:
             print "Error in Database: word1 not in words"
             return
-        index1=self.words.index(word1)
+        index1 = self.words.index(word1)
 
         #create word if needed
         if not word2 in self.words:
             self.words.append(word2) #create word (and index)
-            index2=self.words.index(word2)
-            self.next[index2]=set() #create empty association set
+            index2 = self.words.index(word2)
+            self.next[index2] = set() #create empty association set
         else:
-            index2=self.words.index(word2) #get index
+            index2 = self.words.index(word2) #get index
 
         #add next relation
         if not index2 in self.next[index1]: #not associated, yet
             self.next[index1].add(index2) #add
-            self.prob[(index1, index2)]=1 #first time
+            self.prob[(index1, index2)] = 1 #first time
         else:
-            self.prob[(index1, index2)]+=1
+            self.prob[(index1, index2)] += 1
 
         #add previous relation
         if not index2 in self.prev.keys():
-            self.prev[index2]=set([index1])
+            self.prev[index2] = set([index1])
         else:
             self.prev[index2].add(index1)
 
         #totalrank of word
         if not index2 in self.rank.keys():
-            self.rank[index2]=1
+            self.rank[index2] = 1
         else:
-            self.rank[index2]+=1
+            self.rank[index2] += 1
 
     def _addEndRelation(self, word):
         """
@@ -97,14 +97,14 @@ class pyNiall:
         >>> n.rank #the same as in _addRelation
         {1: 2, 2: 1}
         """
-        index=self.words.index(word)
+        index = self.words.index(word)
 
         #calculate next
-        if not -1 in self.next[index]:
+        if not - 1 in self.next[index]:
             self.next[index].add(-1)
-            self.prob[(index, -1)]=1
+            self.prob[(index, -1)] = 1
         else:
-            self.prob[(index, -1)]+=1
+            self.prob[(index, -1)] += 1
 
         #calculate prev
         if not index in self.prev[-1]:
@@ -114,79 +114,79 @@ class pyNiall:
         """
         rank a word by length and probability
         """
-        rank=0
-        length=len(word)
-        rank=self.rank[self.words.index(word)]
-        return rank+length*0.7
+        rank = 0
+        length = len(word)
+        rank = self.rank[self.words.index(word)]
+        return rank + length * 0.7
 
     def _createRandomSentence(self, index, sentence, forward=True):
-        candidates=[]
+        candidates = []
         if forward:
             for index2 in self.next[index]:
-                candidates+=[index2]*self.prob[(index, index2)]
+                candidates += [index2] * self.prob[(index, index2)]
         else:
             for index2 in self.prev[index]:
-                candidates+=[index2]*self.prob[(index2, index)]
-        newindex=random.choice(candidates)
-        if newindex==0: #sentence start
+                candidates += [index2] * self.prob[(index2, index)]
+        newindex = random.choice(candidates)
+        if newindex == 0: #sentence start
             return sentence.strip()
-        if newindex==-1: #sentence end
+        if newindex == -1: #sentence end
             #return sentence
-            return (sentence+" "+self.words[index]).strip()
+            return (sentence + " " + self.words[index]).strip()
         if forward:
-            if index==0: #no ">" included
+            if index == 0: #no ">" included
                 return self._createRandomSentence(newindex, "")
-            return self._createRandomSentence(newindex, sentence+" "+self.words[index])
+            return self._createRandomSentence(newindex, sentence + " " + self.words[index])
         else:
-            if index==-1: #no sentence end included
+            if index == -1: #no sentence end included
                 return self._createRandomSentence(newindex, "", False)
             #attention: here we use newindex, so the current word is NOT part of the sentence,
             #while the current word IS part of the sentence when scanning forward.
             #so we can use forward+" "+backward to build a sentence
-            return self._createRandomSentence(newindex, self.words[newindex]+" "+sentence, False).strip()
+            return self._createRandomSentence(newindex, self.words[newindex] + " " + sentence, False).strip()
     
     def _createReply(self, msg):
-        words=msg.strip().split(" ")
-        bestword=None
-        bestwordrank=0
+        words = msg.strip().split(" ")
+        bestword = None
+        bestwordrank = 0
         for word in words:
             #no fresh learned words as context! (else the bot just echos)
-            if not self.rank[self.words.index(word)]>1:
+            if not self.rank[self.words.index(word)] > 1:
                 continue
-            rank=self._rankWord(word)
-            if rank>bestwordrank:
-                bestwordrank=rank
-                bestword=word
+            rank = self._rankWord(word)
+            if rank > bestwordrank:
+                bestwordrank = rank
+                bestword = word
         if bestword:
-            index=self.words.index(bestword)
-            return self._createRandomSentence(index, "", False)+" "+self._createRandomSentence(index, "")
+            index = self.words.index(bestword)
+            return self._createRandomSentence(index, "", False) + " " + self._createRandomSentence(index, "")
         else:
             return self._createRandomSentence(0, "")
 
 
     def learn(self, msg):
-        words=msg.lower().split(" ")
-        oldword=">"
+        words = msg.lower().split(" ")
+        oldword = ">"
         for word in words:
-            word=word.strip()
+            word = word.strip()
             if len(word):
                 self._addRelation(oldword, word)
-                oldword=word
+                oldword = word
         if oldword != ">":
             self._addEndRelation(oldword)
 
     def reply(self, msg):
         self.learn(msg)
-        if len(self.words)<200: #if we reply with context to early, the bot just echos
+        if len(self.words) < 200: #if we reply with context to early, the bot just echos
             return self._createRandomSentence(0, "")
         else:
             return self._createReply(msg.lower()).strip()
 
     def import_brain(self, data):
-        tmp=yaml.load_all(data)
-        self.words=tmp.next()
-        self.next=tmp.next()
-        self.prob=tmp.next()
+        tmp = yaml.load_all(data)
+        self.words = tmp.next()
+        self.next = tmp.next()
+        self.prob = tmp.next()
 
         #calculate the optional fields
         for id in self.next.keys():
@@ -194,12 +194,12 @@ class pyNiall:
                 if id2 in self.prev:
                     self.prev[id2].add(id)
                 else:
-                    self.prev[id2]=set([id])
-        for (a,b) in self.prob.keys():
-            if b!=-1 and b in self.rank:
-                self.rank[b]+=self.prob[(a,b)]
+                    self.prev[id2] = set([id])
+        for (a, b) in self.prob.keys():
+            if b != -1 and b in self.rank:
+                self.rank[b] += self.prob[(a, b)]
             else:
-                self.rank[b]=self.prob[(a,b)]
+                self.rank[b] = self.prob[(a, b)]
 
     def export_brain(self):
         return yaml.dump_all([self.words, self.next, self.prob])
