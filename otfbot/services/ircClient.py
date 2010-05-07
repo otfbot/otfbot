@@ -183,6 +183,10 @@ class Bot(pluginSupport, irc.IRCClient):
         # usertracking, channel=>{User => level}
         self.users = {}
 
+        # my usermmodess
+        self.mymodes = {}
+        # modes for channels
+        self.channelmodes = {}
         self.serversupports = {}
         
         self.logger.info("Starting new Botinstance")
@@ -196,7 +200,7 @@ class Bot(pluginSupport, irc.IRCClient):
 
     def _check_sendLastLine(self):
         if time.time() - self.lastLine > self.config.get("timeout", 120, "main", self.network):
-            self.logger.debug("Timeout in sight. Sending a ping.")
+            #self.logger.debug("Timeout in sight. Sending a ping.")
             self.ping()
         return True
     
@@ -378,6 +382,7 @@ class Bot(pluginSupport, irc.IRCClient):
         self.logger.info("joined " + channel)
         self.channels.append(channel)
         self.users[channel] = {}
+        self.channelmodes[channel] = {}
         self.sendLine("WHO %s" % channel)
         self._apirunner("joined", {"channel":channel})
         self.config.set("enabled", True, "main", self.network, channel)
@@ -392,6 +397,7 @@ class Bot(pluginSupport, irc.IRCClient):
         self.logger.info("left " + channel)
         self._apirunner("left", {"channel":channel})
         del self.users[channel]
+        del self.channelmodes[channel]
         self.channels.remove(channel)
         self.config.set("enabled", "False", "main", self.network, channel) #disable the channel for the next start of the bot
 
@@ -496,22 +502,41 @@ class Bot(pluginSupport, irc.IRCClient):
             if a usermode was changed
         """
         channel = channel.lower()
-        # track usermodes
-        for i in range(0, len(args)):
-            m = False
-            if modes[0] in ("+", "-"):
-                m = modes[0]
-                modes = modes[1:]
-            if modes[0] in self.rev_modchars and args[i] in self.userlist and self.userlist[args[i]] in self.users:
-                if (m and m == "+") or set:
-                    self.users[channel][self.userlist[args[i]]] += self.rev_modchars[modes[0]]
-                elif (m and m == "-") or not set:
-                    self.users[channel][self.userlist[args[i]]] -= self.rev_modchars[modes[0]]
+        mstr = "mode change: user %s channel %s set %s modes %s args %s"
+        self.logger.debug(mstr % (user, channel, set, modes, args))
+        if len(modes) != len(args):
+            self.logger.debug("length of modes and args mismatched")
+        if user == channel: # my modes
+            for i in range(0, len(modes)):
+                if set:
+                    self.mymodes[modes[i]] = args[i]
                 else:
-                    self.logger.error("Internal error during modeChange: " + set + " " + modes + " " + str(args))
-            else:
-                self.logger.info("Change of channel mode " + modes[0] + " not tracked")
-            modes = modes[1:]
+                    del self.mymodes[modes[i]]
+        else:
+            for i in range(0, len(modes)): # track usermodes
+                if modes[i] in self.rev_modchars: # is a usermode
+                    if args[i] in self.userlist: # user is known to bot 
+                        if self.userlist[args[i]] in self.users[channel]: # user in channel
+                            s = (-1+2*set)*self.rev_modchars[modes[i]]
+                            self.users[channel][self.userlist[args[i]]] += s 
+                        else:
+                            self.logger.info(user+" not in "+channel)
+                    else:
+                        self.logger.info(user+" not known to me")
+                else: # channelmodes
+                    am = self.supported.getFeature('CHANMODES')['addressModes']
+                    if modes[i] in am: # channel modes with lists
+                        if set:
+                            if modes[i] not in self.channelmodes[channel]:
+                                self.channelmodes[channel][modes[i]]=[]
+                            self.channelmodes[channel][modes[i]].append(args[i])
+                        else:
+                            self.channelmodes[channel][modes[i]].remove(args[i])
+                    else: #flagging or key-value modes
+                        if set:
+                            self.channelmodes[channel][modes[i]] = args[i]
+                        else:
+                            del self.channelmodes[channel][modes[i]]
         self._apirunner("modeChanged", {"user":user, "channel":channel, "set":set, "modes":modes, "args":[str(arg) for arg in args]})
 
     def kickedFrom(self, channel, kicker, message):
