@@ -17,6 +17,9 @@
 # (c) 2009 - 2010 by Robert Weidlich
 #
 
+""" Provides global version information
+"""
+
 import sys
 import os.path
 

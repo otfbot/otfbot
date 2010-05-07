@@ -18,6 +18,10 @@
 # (c) 2008 - 2010 by Robert Weidlich
 #
 
+"""
+   Some functions to simplify handling of HTTP-requests
+"""
+
 import urllib2
 from twisted.web import client
 client.HTTPClientFactory.noisy = False
@@ -25,10 +29,6 @@ client.HTTPClientFactory.noisy = False
 from otfbot.lib import version
 
 _version = version._version
-
-"""
-   Some functions to simplify handling of HTTP-requests
-"""
 
 
 def get_headers(url):
