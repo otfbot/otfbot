@@ -142,6 +142,9 @@ def get_weather(location):
 
 
 def fetch_weather(codes):
+    """
+        Get the weather from Yahoo! Weather.
+    """
     if len(codes) < 1:
         return defer.succeed([])
     url = "http://xml.weather.yahoo.com/forecastrss/%s_c.xml" \
