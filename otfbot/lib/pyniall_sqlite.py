@@ -22,38 +22,38 @@ class pyNiall:
     def __init__(self, dbname):
         if not os.path.exists(dbname):
             init_db(dbname)
-        self.db=sqlite.connect(dbname)
-        self.cur=self.db.cursor()
+        self.db = sqlite.connect(dbname)
+        self.cur = self.db.cursor()
 
     def _addRelation(self, word1, word2):
         self.cur.execute("SELECT id FROM words WHERE word=%s", [word1])
-        index1=self.cur.fetchall()[0][0]
+        index1 = self.cur.fetchall()[0][0]
 
         #create word if needed
         self.cur.execute("SELECT id FROM words WHERE word=%s", [word2])
-        result=self.cur.fetchall()
+        result = self.cur.fetchall()
         if len(result):
-            index2=result[0][0]
+            index2 = result[0][0]
         else:
             self.cur.execute("INSERT INTO words VALUES (null, %s)", [word2])
-            index2=self.cur.lastrowid
+            index2 = self.cur.lastrowid
 
         #add next relation
         self.cur.execute("SELECT ranking FROM relations WHERE word1_id=%s AND word2_id=%s", (index1, index2))
-        result=self.cur.fetchall()
+        result = self.cur.fetchall()
         if not len(result):
             self.cur.execute("INSERT INTO relations VALUES (%s, %s, 1)", (index1, index2))
         else:
-            ranking=result[0][0]
-            self.cur.execute("UPDATE relations SET ranking=%s WHERE word1_id=%s AND word2_id=%s", (ranking+1, index1, index2))
+            ranking = result[0][0]
+            self.cur.execute("UPDATE relations SET ranking=%s WHERE word1_id=%s AND word2_id=%s", (ranking + 1, index1, index2))
 
     def _addEndRelation(self, word):
         self.cur.execute("SELECT id FROM words WHERE word=%s", [word])
-        index=self.cur.fetchall()[0][0]
+        index = self.cur.fetchall()[0][0]
 
         #calculate next
         self.cur.execute("SELECT ranking FROM relations WHERE word1_id=%s AND word2_id=-1", [index])
-        result=self.cur.fetchall()
+        result = self.cur.fetchall()
         if not len(result):
             self.cur.execute("INSERT INTO relations VALUES (%s, -1, 1)", [index])
         else:
@@ -63,86 +63,86 @@ class pyNiall:
         """
         rank a word by length and probability
         """
-        rank=0
-        length=len(word)
-        return self._getWordRank(word)+length*0.7
+        rank = 0
+        length = len(word)
+        return self._getWordRank(word) + length * 0.7
 
     def _getWordRank(self, word):
         self.cur.execute("SELECT id FROM words WHERE word=%s", word)
-        id=self.cur.fetchall()
+        id = self.cur.fetchall()
         if not id or not id[0]:
             return 1
-        id=id[0][0]
+        id = id[0][0]
         self.cur.execute("SELECT ranking FROM relations WHERE word2_id=%s", id)
-        result=self.cur.fetchall()
-        rank=0
+        result = self.cur.fetchall()
+        rank = 0
         for row in result:
-            rank+=row[0]
+            rank += row[0]
         return rank
 
     def _createRandomSentence(self, index, sentence, forward=True):
-        candidates=[]
+        candidates = []
         if forward:
             self.cur.execute("SELECT word2_id, ranking FROM relations WHERE word1_id=%s", [index])
         else:
             self.cur.execute("SELECT word1_id, ranking FROM relations WHERE word2_id=%s", [index])
-        result=self.cur.fetchall()
+        result = self.cur.fetchall()
         for row in result:
-            candidates+=[row[0]]*row[1]
+            candidates += [row[0]] * row[1]
 
-        newindex=random.choice(candidates)
-        if newindex==0: #sentence start
+        newindex = random.choice(candidates)
+        if newindex == 0: #sentence start
             return sentence.strip()
-        if newindex==-1: #sentence end
+        if newindex == -1: #sentence end
             #return sentence
             self.cur.execute("SELECT word FROM words WHERE id=%s", index)
-            word=self.cur.fetchall()[0][0]
-            return (sentence+" "+word).strip()
+            word = self.cur.fetchall()[0][0]
+            return (sentence + " " + word).strip()
         if forward:
-            if index==0: #no ">" included
+            if index == 0: #no ">" included
                 return self._createRandomSentence(newindex, "")
             self.cur.execute("SELECT word FROM words WHERE id=%s", index)
-            word=self.cur.fetchall()[0][0]
-            return self._createRandomSentence(newindex, sentence+" "+word)
+            word = self.cur.fetchall()[0][0]
+            return self._createRandomSentence(newindex, sentence + " " + word)
         else:
-            if index==-1: #no sentence end included
+            if index == -1: #no sentence end included
                 return self._createRandomSentence(newindex, "", False)
             #attention: here we use index2, so the current word is NOT part of the sentence,
             #while the current word IS part of the sentence when scanning forward.
             #so we can use forward+" "+backward to build a sentence
             self.cur.execute("SELECT word FROM words WHERE id=%s", newindex)
-            word=self.cur.fetchall()[0][0]
-            return self._createRandomSentence(newindex, word+" "+sentence, False).strip()
+            word = self.cur.fetchall()[0][0]
+            return self._createRandomSentence(newindex, word + " " + sentence, False).strip()
     
     def _createReply(self, msg):
-        words=msg.strip().split(" ")
-        bestword=None
-        bestwordrank=0
+        words = msg.strip().split(" ")
+        bestword = None
+        bestwordrank = 0
         for word in words:
             #no fresh learned words as context! (else the bot just echos)
-            rank=self._getWordRank(word)
-            if not rank>1:
+            rank = self._getWordRank(word)
+            if not rank > 1:
                 continue
-            rank=self._rankWord(word)
-            if rank>bestwordrank:
-                bestwordrank=rank
-                bestword=word
+            rank = self._rankWord(word)
+            if rank > bestwordrank:
+                bestwordrank = rank
+                bestword = word
         if bestword:
             self.cur.execute("SELECT id FROM words WHERE word=%s", [bestword])
-            index=self.cur.fetchall()[0][0]
-            return self._createRandomSentence(index, "", False)+" "+self._createRandomSentence(index, "")
+            index = self.cur.fetchall()[0][0]
+            return self._createRandomSentence(index, "", False) + " " + self._createRandomSentence(index, "")
         else:
             return self._createRandomSentence(0, "")
 
 
     def learn(self, msg):
-        words=msg.split(" ")
-        oldword=">"
+        words = msg.split(" ")
+        oldword = ">"
         for word in words:
-            word=word.strip()
+            word = word.strip()
             if len(word):
                 self._addRelation(oldword, word)
-                oldword=word
+                oldword = word
         if oldword != ">":
             self._addEndRelation(oldword)
 
@@ -154,8 +154,8 @@ class pyNiall:
         #self.db.close()
 
 def init_db(name):
-    db=sqlite.connect(name)
-    cur=db.cursor()
+    db = sqlite.connect(name)
+    cur = db.cursor()
     cur.execute('CREATE TABLE words (id INTEGER PRIMARY KEY, word VARCHAR(255))')
     cur.execute('CREATE TABLE relations (word1_id INTEGER, word2_id INTEGER, ranking INTEGER)')
     cur.execute('INSERT INTO words VALUES (0, ">")')

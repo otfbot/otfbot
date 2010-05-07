@@ -22,31 +22,32 @@
 
 import os
 
+
 def loadProperties(propertiesFile, ambiguous=False):
     """ Loads data from a file into a dict
 
-        The data in the file should have the format:
-            key=value
-        If the file doesn't exist, it will be created. If no filename
-        is given an empty dict is returned
+        The data in the file should have the format
+        key=valu. If the file doesn't exist, it
+        will be created. If no filename is given
+        an empty dict is returned.
 
         @param propertiesFile: The file to deal with
         @type propertiesFile: string
         @rtype: dict
     """
-    properties={}
-    if propertiesFile=="":
+    properties = {}
+    if propertiesFile == "":
         return {}
     try:
         propFile = open(propertiesFile, "r")
         content = propFile.read()
         propFile.close()
         for line in content.split("\n"):
-            if len(line) >1 and line[0] != "#":
+            if len(line) > 1 and line[0] != "#":
                 pair = line.split("=", 1)
-                if len(pair)==2:
+                if len(pair) == 2:
                     #skip === bla === i.e. from dokuwiki headline
-                    if pair[1][0]=="=":
+                    if pair[1][0] == "=":
                         continue
                     if ambiguous:
                         if not pair[0] in properties:
@@ -73,9 +74,9 @@ def loadList(listFile):
         @type listFile: string
         @rtype: list
     """
-    if listFile=="":
+    if listFile == "":
         return []
-    list=[]
+    list = []
     try:
         file = open(listFile, "r")
         content = file.read()
