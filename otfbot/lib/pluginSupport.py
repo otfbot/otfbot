@@ -92,12 +92,16 @@ class pluginSupport:
             if c.__name__ == name:
                 return c
         pkg = self.pluginSupportPath.replace("/", ".") + "." + name
-        cls = __import__(pkg, fromlist=['*'])
-        cls.datadir = self.config.get("datadir", "data")
-        cls.datadir += "/" + self._getClassName(cls)
-        self.classes.append(cls)
-        self.logger.debug("Imported plugin " + self._getClassName(cls))
-        return self.classes[-1]
+        try:
+            cls = __import__(pkg, fromlist=['*'])
+            cls.datadir = self.config.get("datadir", "data")
+            cls.datadir += "/" + self._getClassName(cls)
+            self.classes.append(cls)
+            self.logger.debug("Imported plugin " + self._getClassName(cls))
+            return self.classes[-1]
+        except ImportError:
+            self.logger.warning("Cannot import plugin " + name)
+            return None
 
     def callbackRegistered(self, module, callbackname):
         """
@@ -153,6 +157,8 @@ class pluginSupport:
         instancing the plugin and calling its start() function
         """
         pluginClass = self.importPlugin(pluginName)
+        if not pluginClass:
+            return None#import error, should already be logged in importPlugin
         if hasattr(pluginClass, "Plugin"):
         # and hasattr(pluginClass.Plugin.ircClientPlugin) (?)
             try:
