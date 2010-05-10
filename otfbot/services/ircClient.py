@@ -506,7 +506,7 @@ class Bot(pluginSupport, irc.IRCClient):
         self.logger.debug(mstr % (user, channel, set, modes, args))
         if len(modes) != len(args):
             self.logger.debug("length of modes and args mismatched")
-        if user == channel: # my modes
+        elif user == channel: # my modes
             for i in range(0, len(modes)):
                 if set:
                     self.mymodes[modes[i]] = args[i]
