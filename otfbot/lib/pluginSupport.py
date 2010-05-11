@@ -270,8 +270,7 @@ class pluginSupport:
             Pass all calls to plugin callbacks through this method, they
             are checked whether they should be executed or not.
 
-            Example C{self._apirunner("privmsg",
-                                {"user":user,"channel":channel,"msg":msg})}
+            Example C{self._apirunner("privmsg", {"user":user,"channel":channel,"msg":msg})}
 
             @type  apifunction: string
             @param apifunction: the name of the callback function

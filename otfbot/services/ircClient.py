@@ -689,8 +689,7 @@ class Bot(pluginSupport, irc.IRCClient):
 
     def irc_RPL_WHOREPLY(self, prefix, params):
         """
-            "<channel> <user> <host> <server>
-                        <nick> <H|G>[*][@|+] :<hopcount> <real name>"
+            "<channel> <user> <host> <server> <nick> <H|G>[*][@|+] :<hopcount> <real name>"
         """
         # modes: H = Here, G = Gone, r=registerd, B=Bot
         (t, channel, user, host, server, nick, modes, hopsrealname) = params
