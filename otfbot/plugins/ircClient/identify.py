@@ -21,10 +21,13 @@
 import random, re, time
 from otfbot.lib import chatMod
 
+"""
+Plugin to identify to a nickserv, if the botnick is registered
+"""
+
 class Plugin(chatMod.chatMod):
     def __init__(self, bot):
         self.bot=bot
-        #TODO: set to False again on disconnect
         self.sent_identification=False
     
     def signedOn(self):
@@ -44,3 +47,6 @@ class Plugin(chatMod.chatMod):
         user=user.split("!")[0]
         if (user.lower() == "nickserv" and self.sent_identification):
             self.logger.debug(user+": "+msg)
+
+    def connectionLost(self, reason):
+        self.sent_identification=False
