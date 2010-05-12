@@ -581,7 +581,10 @@ class Bot(pluginSupport, irc.IRCClient):
                                 self.channelmodes[chan][modes[i]] = []
                             self.channelmodes[chan][modes[i]].append(args[i])
                         else:
-                            self.channelmodes[chan][modes[i]].remove(args[i])
+                            #TODO: remove this check if fetching the initial
+                            #      state works
+                            if args[i] in self.channelmodes[chan][modes[i]]: 
+                                self.channelmodes[chan][modes[i]].remove(args[i])
                     else: #flagging or key-value modes
                         if set:
                             self.channelmodes[chan][modes[i]] = args[i]
