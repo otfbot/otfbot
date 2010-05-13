@@ -13,42 +13,61 @@
 # You should have received a copy of the GNU General Public License
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-# 
+#
 # (c) 2005 - 2010 by Alexander Schier
 #
 
-import string, re
-from otfbot.lib import chatMod, functions
-        
+"""
+    Send answers from file based on regexes
+"""
+
+import string
+import re
+
+from otfbot.lib import chatMod
+from otfbot.lib import functions
+
+
 class Plugin(chatMod.chatMod):
+
     def __init__(self, bot):
         self.bot = bot
 
     def start(self):
-        self.answersFile=self.bot.config.getPath("file", datadir, "answers.txt", "answer")
-        self.answers = functions.loadProperties(self.answersFile)
+        self.answersFile = self.bot.config.getPath("file", datadir, "answers.txt", "answer")
+        self.encoding = self.bot.config.get("fileencoding", "iso-8859-15", "answer")
+        self.reload()
 
     def action(self, user, channel, msg):
         return self.msg(user, channel, msg)
 
     def msg(self, user, channel, msg):
-        user = user.split("!")[0] #only nick
+        user = user.split("!")[0] # only nick
         if channel in self.bot.channels: #Do not respond to server messages
             answer = self.respond(user, msg)
             if answer != "":
-                self.bot.sendmsg(channel, answer, self.bot.config.get("fileencoding", "iso-8859-15","answer"))
+                self.bot.sendmsg(channel, answer, self.encoding)
 
     def reload(self):
+        """
+            load the answers from the configured file
+        """
         self.answers = functions.loadProperties(self.answersFile)
 
     def respond(self, user, msg):
+        """
+            assemble a response
+
+            @param user: name of the user which issued the message
+            @param msg: the message which needs a response
+        """
         answer = ""
         for key in self.answers.keys():
             if re.search(key, msg, re.I):
                 answer = self.answers[key]
                 answer = re.sub("USER", user, answer)
                 answer = re.sub("MESSAGE", msg, answer)
-        if len(answer)>0 and answer[-1] == "\n":
+        if len(answer) > 0 and answer[-1] == "\n":
             return answer[0:-1]
         else:
             return answer

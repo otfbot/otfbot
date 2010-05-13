@@ -13,66 +13,81 @@
 # You should have received a copy of the GNU General Public License
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-# 
+#
 # (c) 2005 - 2010 by Alexander Schier
 #
 
 """
-react to !commands with text from a commands.txt file
+React to !commands with text from a commands.txt file
 """
 
 
-from otfbot.lib import chatMod, functions
-import string, re, random, os
+from otfbot.lib import chatMod
+from otfbot.lib import functions
+
+import string
+import re
+import random
+import os
+
 
 class Plugin(chatMod.chatMod):
+
     def __init__(self, bot):
         self.bot = bot
-        self.channels=[]
-        self.mtime=0
+        self.channels = []
+        self.mtime = 0
 
     def connectionMade(self):
         self.start()
-        
+
     def joined(self, channel):
-        self.commands[channel]=functions.loadProperties(self.bot.config.getPath("file", datadir, "commands.txt", "commands", self.bot.network, channel), True)
-    
+        filename = self.bot.config.getPath("file", datadir, "commands.txt", "commands", self.bot.network, channel)
+        self.commands[channel] = functions.loadProperties(filename, True)
+
     def command(self, user, channel, command, options):
         user = user.split("!")[0] #only nick
         if self.bot.config.getBool("autoReload", True, "commands", self.bot.network, channel):
-            network_mtime = os.stat(self.bot.config.getPath("file", datadir, "commands.txt","commands", self.bot.network)).st_mtime
-            general_mtime = os.stat(self.bot.config.getPath("file", datadir, "commands.txt","commands")).st_mtime
+            #TODO: blocking
+            net_file = self.bot.config.getPath("file", datadir, "commands.txt", "commands", self.bot.network)
+            network_mtime = os.stat(net_file).st_mtime
+            global_file = self.bot.config.getPath("file", datadir, "commands.txt", "commands")
+            general_mtime = os.stat(global_file).st_mtime
             if self.mtime < network_mtime or self.mtime < general_mtime:
                 self.reload()
                 self.mtime = max(network_mtime, general_mtime)
         if user != self.bot.nickname:
-            answer=self.respond(channel, user, command.lower(), options)
+            answer = self.respond(channel, user, command.lower(), options)
             if answer != "":
                 if answer[0] == ":":
-                    self.bot.sendmsg(channel, answer[1:], self.bot.config.get("fileencoding", "iso-8859-15", "commands", self.bot.network, channel))
+                    enc = self.bot.config.get("fileencoding", "iso-8859-15", "commands", self.bot.network, channel)
+                    self.bot.sendmsg(channel, answer[1:], enc)
                 else:
-                    self.bot.sendme(channel, answer, self.bot.config.get("fileencoding", "iso-8859-15", "commands", self.bot.network, channel))
+                    enc = self.bot.config.get("fileencoding", "iso-8859-15", "commands", self.bot.network, channel)
+                    self.bot.sendme(channel, answer, enc)
 
     def start(self):
         self.register_ctl_command(self.reload)
-        self.commands={}
-        self.commands["general"]=functions.loadProperties(self.bot.config.getPath("file", datadir, "commands.txt","commands"), True)
-        self.commands["network"]=functions.loadProperties(self.bot.config.getPath("file", datadir, "commands.txt","commands", self.bot.network), True)
+        self.commands = {}
+        file = self.bot.config.getPath("file", datadir, "commands.txt", "commands")
+        self.commands["general"] = functions.loadProperties(file, True)
+        file = self.bot.config.getPath("file", datadir, "commands.txt", "commands", self.bot.network)
+        self.commands["network"] = functions.loadProperties(file, True)
         for chan in self.bot.channels:
             self.joined(chan)
 
     def reload(self):
         self.start()
         return "reloaded commands"
-    
+
     def getCommand(self, channel, cmd):
-        if not self.commands.has_key(channel):
-            self.commands[channel]={}
-        if self.commands.has_key(channel) and self.commands[channel].has_key(cmd):
+        if not channel in self.commands:
+            self.commands[channel] = {}
+        if channel in self.commands and cmd in self.commands[channel]:
             return self.commands[channel][cmd]
-        elif self.commands.has_key("network") and self.commands["network"].has_key(cmd):
+        elif "network" in self.commands and cmd in self.commands["network"]:
             return self.commands["network"][cmd]
-        elif self.commands.has_key("general") and self.commands["general"].has_key(cmd):
+        elif "general" in self.commands and cmd in self.commands["general"]:
             return self.commands["general"][cmd]
         else:
             return ""
@@ -93,19 +108,19 @@ class Plugin(chatMod.chatMod):
         'testuser wanted to show you how it works'
         """
         answer = ""
-        if len(options) >=1:
+        if len(options) >= 1:
             options = options.rstrip()
-            answers=self.getCommand(channel, command+"_")
+            answers = self.getCommand(channel, command + "_")
             if len(answers):
-                answer=random.choice(answers)
+                answer = random.choice(answers)
                 answer = re.sub("OTHER", options, answer)
         else:
-            answers=self.getCommand(channel, command)
+            answers = self.getCommand(channel, command)
             if len(answers):
-                answer=random.choice(answers)
+                answer = random.choice(answers)
         answer = re.sub("USER", user, answer)
-                
-        if len(answer)>0 and answer[-1] == "\n":
+
+        if len(answer) > 0 and answer[-1] == "\n":
             return answer[0:-1]
         else:
             return answer

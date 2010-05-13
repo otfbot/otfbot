@@ -13,21 +13,27 @@
 # You should have received a copy of the GNU General Public License
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-# 
+#
 # (c) 2008 by Thomas Wiegart
 # (c) 2009 by Alexander Schier
 #
-import urllib2, re
+
+
 from otfbot.lib import chatMod
 
+import urllib2
+import re
+
+
 class Plugin(chatMod.chatMod):
+    quoteurl = "http://www.all4quotes.com/quote/rss/quotes/"
     def __init__(self,bot):
         self.bot = bot
         self.feedparser = self.bot.depends_on_module("feedparser")
     
     def command(self, user, channel, command, options):
         if command.lower() == "zitat":
-            zitat=self.feedparser.parse("http://www.all4quotes.com/quote/rss/quotes/")
+            zitat=self.feedparser.parse(self.quoteurl)
             zitat=zitat['entries'][0]
             desc = zitat['description'].replace('<p class="q_pate"><a href="http://www.all4quotes.com/paten-information/b3967a0e938dc2a6340e258630febd5a/" target="_blank" title="Treffsichere Textlinkwerbung">Werden Sie Zitatepate&trade;</a></p>',"").encode("utf8")
             desc = desc.replace(re.findall('<p.*class=".+">.+</p>',desc)[0],"")

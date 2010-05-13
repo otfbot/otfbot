@@ -13,34 +13,36 @@
 # You should have received a copy of the GNU General Public License
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-# 
+#
 # (c) 2008 by Alexander Schier
 #
 
 from otfbot.lib.jcgame import Game
 from otfbot.lib import chatMod
 
+
 class Plugin(chatMod.chatMod):
+
     def __init__(self, bot):
-        self.bot=bot
-    
+        self.bot = bot
+
     def start(self):
-        self.game=Game()
-        self.gamechannel=""
+        self.game = Game()
+        self.gamechannel = ""
 
     def query(self, user, channel, msg):
         if " " in msg:
-            (command, options)=msg.split(" ", 1)
+            (command, options) = msg.split(" ", 1)
             self.command(user, self.gamechannel, command, options)
 
     def command(self, user, channel, command, options):
-        user=user.split("!")[0]
-        if command=="newgame":
-            self.gamechannel=channel
+        user = user.split("!")[0]
+        if command == "newgame":
+            self.gamechannel = channel
         if command in ['nimm', 'zweifel', 'ich', 'remove', 'newgame', 'startgame', 'zahl']:
-            lines=self.game.input(user, command, options)
+            lines = self.game.input(user, command, options)
             for line in lines:
-                if line[1]==True:
+                if line[1] == True:
                     self.bot.sendmsg(channel, line[0])
                 else:
                     self.bot.sendmsg(user, line[0])

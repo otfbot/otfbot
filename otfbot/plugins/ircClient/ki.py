@@ -18,6 +18,10 @@
 # (c) 2005, 2006 by Alexander Schier
 #
 
+"""
+    Try to emulate a normal user by answering
+"""
+
 import string, re, random, time, atexit, os.path
 import urllib, urllib2, socket
 
@@ -26,20 +30,20 @@ from otfbot.lib.eliza import eliza
 
 import yaml
 
-MEGAHAL=1
-NIALL=1
+MEGAHAL = 1
+NIALL = 1
 try:
     import mh_python
 except ImportError:
-    MEGAHAL=0
+    MEGAHAL = 0
 try:
     from otfbot.lib import pyniall_sqlite
 except ImportError:
-    NIALL=0
+    NIALL = 0
 
 
 def filtercolors(string):
-    return string.replace(chr(3) + "1","").replace(chr(3) + "2","").replace(chr(3) + "3","").replace(chr(3) + "4","").replace(chr(3) + "5","").replace(chr(3) + "6","").replace(chr(3) + "7","").replace(chr(3) + "8","").replace(chr(3) + "9","").replace(chr(3) + "10","").replace(chr(3) + "11","").replace(chr(3) + "12","").replace(chr(3) + "13","").replace(chr(3) + "14","").replace(chr(3) + "15","").replace(chr(3),"")
+    return string.replace(chr(3) + "1", "").replace(chr(3) + "2", "").replace(chr(3) + "3", "").replace(chr(3) + "4", "").replace(chr(3) + "5", "").replace(chr(3) + "6", "").replace(chr(3) + "7", "").replace(chr(3) + "8", "").replace(chr(3) + "9", "").replace(chr(3) + "10", "").replace(chr(3) + "11", "").replace(chr(3) + "12", "").replace(chr(3) + "13", "").replace(chr(3) + "14", "").replace(chr(3) + "15", "").replace(chr(3), "")
 
 
 class responder:
@@ -68,7 +72,7 @@ def ascii_string(msg):
     >>> ascii_string("Umlaute: äöüÜÖÄß!")
     'Umlaute aeoeueUeOeAess'
     """
-    mapping={
+    mapping = {
             "ö": "oe",
             "ä": "ae",
             "ü": "ue",
@@ -76,17 +80,17 @@ def ascii_string(msg):
             "Ä": "Ae",
             "Ö": "Oe",
             "ß": "ss"}
-    msg=filtercolors(msg)
+    msg = filtercolors(msg)
     for key in mapping.keys():
-        msg=re.sub(key, mapping[key], msg)
+        msg = re.sub(key, mapping[key], msg)
         try:
-            msg=re.sub(key.decode("iso-8859-15").encode("utf-8"), mapping[key], msg)
+            msg = re.sub(key.decode("iso-8859-15").encode("utf-8"), mapping[key], msg)
         except UnicodeDecodeError:
             pass
         except UnicodeEncodeError:
             pass
         try:
-            msg=re.sub(key.decode("utf-8").encode("iso-8859-15"), mapping[key], msg)
+            msg = re.sub(key.decode("utf-8").encode("iso-8859-15"), mapping[key], msg)
         except UnicodeDecodeError:
             pass
         except UnicodeEncodeError:
@@ -95,55 +99,55 @@ def ascii_string(msg):
 
 class udpResponder(responder):
     def __init__(self, bot):
-        self.bot=bot
-        self.host=self.bot.config.get("host", "", "ki", self.bot.network)
-        self.remoteport=int(self.bot.config.get("remoteport", "", "ki", self.bot.network))
-        self.localport=int(self.bot.config.get("localport", "", "ki", self.bot.network))
-        self.socket=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.bot = bot
+        self.host = self.bot.config.get("host", "", "ki", self.bot.network)
+        self.remoteport = int(self.bot.config.get("remoteport", "", "ki", self.bot.network))
+        self.localport = int(self.bot.config.get("localport", "", "ki", self.bot.network))
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.settimeout(10)
         self.socket.bind(("", self.localport))
     def learn(self, msg):
         self.socket.sendto(msg, (self.host, self.remoteport))
-        self.socket.recvfrom(8*1024)
+        self.socket.recvfrom(8 * 1024)
     def reply(self, msg):    
         self.socket.sendto(msg, (self.host, self.remoteport))
-        return ascii_string(self.socket.recvfrom(8*1024)[0].strip())
+        return ascii_string(self.socket.recvfrom(8 * 1024)[0].strip())
 
 class webResponder(responder):
     def __init__(self, bot):
-        self.bot=bot
+        self.bot = bot
     def learn(self, msg):
-        url=self.bot.config.get("url", "", "ki", self.bot.network)
-        urllib2.urlopen(url+urllib.quote(msg)).read()
+        url = self.bot.config.get("url", "", "ki", self.bot.network)
+        urllib2.urlopen(url + urllib.quote(msg)).read()
     def reply(self, msg):    
-        url=self.bot.config.get("url", "", "ki", self.bot.network)
-        return ascii_string(urllib2.urlopen(url+urllib.quote(msg)).read())
+        url = self.bot.config.get("url", "", "ki", self.bot.network)
+        return ascii_string(urllib2.urlopen(url + urllib.quote(msg)).read())
 
 class niallResponder(responder):
     def __init__(self, bot, datadir):
-        self.niall=pyniall_sqlite.pyNiall(datadir+"/%s.db"%bot.network)
+        self.niall = pyniall_sqlite.pyNiall(datadir + "/%s.db" % bot.network)
     def learn(self, msg):
-        msg=ascii_string(msg)
+        msg = ascii_string(msg)
         if msg:
             self.niall.learn(msg)
     def reply(self, msg):
-        msg=ascii_string(msg)
-        reply=self.niall.reply(str(msg))
-        if reply==None:
-            reply=""
+        msg = ascii_string(msg)
+        reply = self.niall.reply(str(msg))
+        if reply == None:
+            reply = ""
         return reply
     def cleanup(self):
         self.niall.cleanup()
 
 class elizaResponder(responder):
     def __init__(self, bot, datadir):
-        self.eliza=eliza()
-        if os.path.exists(datadir+"/eliza.yaml"):
-            file=open(datadir+"/eliza.yaml")
-            data=file.read()
+        self.eliza = eliza()
+        if os.path.exists(datadir + "/eliza.yaml"):
+            file = open(datadir + "/eliza.yaml")
+            data = file.read()
             file.close()
-            tmp=yaml.load(data)
+            tmp = yaml.load(data)
             self.eliza.setReflections(tmp[0])
             self.eliza.setPatterns(tmp[1])
     def reply(self, msg):
@@ -159,14 +163,14 @@ class megahalResponder(responder):
         except:
             pass
         mh_python.initbrain()
-        self.bot=bot
+        self.bot = bot
     def learn(self, msg):
         """learns msg without responding
         @type    msg:    string
         @param    msg:    the string to learn
         """
         try:
-            msg=unicode(msg, "UTF-8").encode("iso-8859-15")
+            msg = unicode(msg, "UTF-8").encode("iso-8859-15")
         except UnicodeEncodeError:
             return
             #pass
@@ -182,7 +186,7 @@ class megahalResponder(responder):
         @returns the answer of the megahal bot
         """
         try:
-            string=unicode(msg, "UTF-8").encode("iso-8859-15")
+            string = unicode(msg, "UTF-8").encode("iso-8859-15")
         except UnicodeEncodeError:
             return ""
             #pass
@@ -199,70 +203,70 @@ class megahalResponder(responder):
 
 class Plugin(chatMod.chatMod):
     def __init__(self, bot):
-        self.bot=bot
+        self.bot = bot
         if hasattr(self.bot, "nickname"): #on reload, because "connectionMade" is not invoked for a reloaded ki plugin
-            self.lnickname=string.lower(self.bot.nickname)
+            self.lnickname = string.lower(self.bot.nickname)
 
     def start(self):
-        self.channels=[]
-        self.wordpairsFile=self.bot.config.getPath("wordpairsFile", datadir, "wordpairs.txt")#XXX: this needs to be utf-8 encoded
-        self.wordpairs=functions.loadProperties(self.wordpairsFile)
-        self.nicklist=[string.lower(self.bot.config.get("nickname", "otfbot", "main", self.bot.network))]
+        self.channels = []
+        self.wordpairsFile = self.bot.config.getPath("wordpairsFile", datadir, "wordpairs.txt")#XXX: this needs to be utf-8 encoded
+        self.wordpairs = functions.loadProperties(self.wordpairsFile)
+        self.nicklist = [string.lower(self.bot.config.get("nickname", "otfbot", "main", self.bot.network))]
 
-        module=self.bot.config.get("module", "megahal", "ki", self.bot.network)
-        self.logger.debug("ki: using module "+module+",megahal="+str(MEGAHAL)+",niall="+str(NIALL))
-        if module=="niall":
+        module = self.bot.config.get("module", "megahal", "ki", self.bot.network)
+        self.logger.debug("ki: using module " + module + ",megahal=" + str(MEGAHAL) + ",niall=" + str(NIALL))
+        if module == "niall":
             if NIALL:
-                self.responder=niallResponder(self.bot, datadir)
+                self.responder = niallResponder(self.bot, datadir)
                 self.logger.info("ki: using niall module")
             else:
                 self.logger.warning("Cannot use niall. Module niall not availible.")
                 if MEGAHAL:
                     self.logger.info("Using Megahal instead")
-                    self.responder=megahalResponder(self.bot)
+                    self.responder = megahalResponder(self.bot)
                 else:
                     self.logger.info("Using no KI.")
-                    self.responder=responder() #null responder
-        elif module=="megahal":
+                    self.responder = responder() #null responder
+        elif module == "megahal":
             if MEGAHAL:
-                self.responder=megahalResponder(self.bot)
+                self.responder = megahalResponder(self.bot)
             else:
                 self.logger.warning("Cannot use megahal. Module mh_python not availible.")
-                self.responder=responder() #null responder
+                self.responder = responder() #null responder
                 #Fallback
                 if NIALL:
                     self.logger.warning("Trying niall instead.")
-                    self.responder=niallResponder(self.bot, datadir)
-        elif module=="web":
-            self.responder=webResponder(self.bot)
-        elif module=="udp":
-            self.responder=udpResponder(self.bot)
-        elif module=="eliza":
-            self.responder=elizaResponder(self.bot, datadir)
+                    self.responder = niallResponder(self.bot, datadir)
+        elif module == "web":
+            self.responder = webResponder(self.bot)
+        elif module == "udp":
+            self.responder = udpResponder(self.bot)
+        elif module == "eliza":
+            self.responder = elizaResponder(self.bot, datadir)
         atexit.register(self.responder.cleanup)
 
     def joined(self, channel):
         self.channels.append(channel)
     def query(self, user, channel, msg):
-        if not self.bot.config.get("ignoreQuery",True,"ki",self.bot.network):
+        if not self.bot.config.get("ignoreQuery", True, "ki", self.bot.network):
             ## ignoreQuery should be set to True if you're using auth.
             ## Else the ki also saves your username and password and maybe posts it in public!
-            user=user.split("!")[0]
-            if user[0:len(self.lnickname)]==self.lnickname:
+            user = user.split("!")[0]
+            if user[0:len(self.lnickname)] == self.lnickname:
                 return
-            if user.lower()==self.bot.nickname.lower() or string.lower(user) in self.bot.config.get("ignore", [], "ki", self.bot.network):
+            if user.lower() == self.bot.nickname.lower() or string.lower(user) in self.bot.config.get("ignore", [], "ki", self.bot.network):
                 return
-            reply=self.responder.reply(msg)
+            reply = self.responder.reply(msg)
             if not reply:
                 return
-            number=random.randint(1,1000)
-            chance=int(self.bot.config.get("answerQueryPercent", "70", "ki", self.bot.network))*10
-            delay=len(reply)*0.3*float(self.bot.config.get("wait", 2, "ki", self.bot.network)) #a normal user does not type that fast
+            number = random.randint(1, 1000)
+            chance = int(self.bot.config.get("answerQueryPercent", "70", "ki", self.bot.network)) * 10
+            delay = len(reply) * 0.3 * float(self.bot.config.get("wait", 2, "ki", self.bot.network)) #a normal user does not type that fast
             if number < chance:
                 #self.bot.sendmsg(user, reply, "UTF-8")
                 self.bot.root.getServiceNamed('scheduler').callLater(delay, self.bot.sendmsg, user, reply, "UTF-8")
     def msg(self, user, channel, msg):
-        user=user.split("!")[0].lower()
+        user = user.split("!")[0].lower()
         if not user in self.nicklist:
             self.nicklist.append(user)
         if user in self.bot.config.get("ignore", [], "ki", self.bot.network, channel):
@@ -272,58 +276,58 @@ class Plugin(chatMod.chatMod):
             return
         #if not channel in self.channels: 
         #    return
-        if msg[0]=="!":
+        if msg[0] == "!":
             return
             
 
-        reply=""
+        reply = ""
 
         #bot answers random messages
-        number=random.randint(1,1000)
-        chance=int(float(self.bot.config.get("randomPercent", "0", "ki", self.bot.network, channel))*10)
-        israndom=0
+        number = random.randint(1, 1000)
+        chance = int(float(self.bot.config.get("randomPercent", "0", "ki", self.bot.network, channel)) * 10)
+        israndom = 0
         if number < chance:
-            israndom=1
+            israndom = 1
         #bot answers if it hears its name
-        ishighlighted=self.lnickname in string.lower(msg)
+        ishighlighted = self.lnickname in string.lower(msg)
             
 
         #test, if it starts with user:
         for nick in self.nicklist:
-            if string.lower(msg[0:len(nick)])==nick:
-                msg=msg[len(nick)+1:] #cut of len of nick + one char (":", ",", " ", etc.)
+            if string.lower(msg[0:len(nick)]) == nick:
+                msg = msg[len(nick) + 1:] #cut of len of nick + one char (":", ",", " ", etc.)
 
-        if len(msg) and msg[0]==" ": 
-            msg=msg[1:]
+        if len(msg) and msg[0] == " ": 
+            msg = msg[1:]
 
-        channel=string.lower(channel)
+        channel = string.lower(channel)
         if ishighlighted or israndom:
-            reply=self.responder.reply(msg)
+            reply = self.responder.reply(msg)
         else:
             self.responder.learn(msg)
 
         if reply:
             #reply=re.sub(" "+self.bot.nickname, " "+user, reply) #more secure to match only the name
-            reply=re.sub(self.lnickname, user, str(reply), re.I) 
+            reply = re.sub(self.lnickname, user, str(reply), re.I) 
             for key in self.wordpairs.keys():
-                reply=re.sub(key, self.wordpairs[key], reply, re.I)
+                reply = re.sub(key, self.wordpairs[key], reply, re.I)
             
-            reply=re.sub("Http", "http", reply, re.I) #fix for nice urls
+            reply = re.sub("Http", "http", reply, re.I) #fix for nice urls
 
-            if reply==string.upper(reply): #no UPPERCASE only Posts
-                reply=string.lower(reply)
-            delay=len(reply)*0.3*float(self.bot.config.get("wait", 2, "ki", self.bot.network, channel)) #a normal user does not type that fast
-            number=random.randint(1,1000)
-            chance=int(self.bot.config.get("answerPercent", "50", "ki", self.bot.network, channel))*10
+            if reply == string.upper(reply): #no UPPERCASE only Posts
+                reply = string.lower(reply)
+            delay = len(reply) * 0.3 * float(self.bot.config.get("wait", 2, "ki", self.bot.network, channel)) #a normal user does not type that fast
+            number = random.randint(1, 1000)
+            chance = int(self.bot.config.get("answerPercent", "50", "ki", self.bot.network, channel)) * 10
             if israndom:
                 #self.bot.sendmsg(channel, reply, "UTF-8")
                 self.bot.root.getServiceNamed('scheduler').callLater(delay, self.bot.sendmsg, channel, reply, "UTF-8")
             elif number < chance: #apply answerPercent only on answers
                 #self.bot.sendmsg(channel, user+": "+reply, "UTF-8")
-                self.bot.root.getServiceNamed('scheduler').callLater(delay, self.bot.sendmsg, channel, user+": "+reply, "UTF-8")
+                self.bot.root.getServiceNamed('scheduler').callLater(delay, self.bot.sendmsg, channel, user + ": " + reply, "UTF-8")
 
     def connectionMade(self):
-        self.lnickname=string.lower(self.bot.nickname)
+        self.lnickname = string.lower(self.bot.nickname)
     def connectionLost(self, reason):
         self.responder.cleanup()
 
