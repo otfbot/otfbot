@@ -13,36 +13,44 @@
 # You should have received a copy of the GNU General Public License
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-# 
+#
 # (c) 2008 by Alexander Schier
 #
 
+"""
+    Post something to the microblog identi.ca
+"""
+
 from otfbot.lib import chatMod
 
-LIB=True
+LIB = True
 try:
     import identi
 except ImportError:
-    LIB=False
+    LIB = False
+
 
 class Plugin(chatMod.chatMod):
+
     def __init__(self, bot):
-        self.bot=bot
-    def connectionMade(self):
+        self.bot = bot
         if not LIB:
-            self.logger.info("please download http://media.commandline.org.uk/code/identi.txt to lib/identi.py to use identica")
-            return
+            self.logger.info("please download http://media.commandline.org" +
+                             ".uk/code/identi.txt to lib/identi.py to use" +
+                             " identica")
 
     def command(self, user, channel, command, options):
         if not LIB:
             return
         if command in ["identica", "i", "identicawithnick", "iwn"]:
-            #TODO: blocking            
-            self.api=identi.IdentiCA(self.bot.config.get("username", '', 'identica', self.bot.network, channel), self.bot.config.get("username", '', 'identica', self.bot.network, channel))
+            #TODO: blocking
+            u = self.bot.config.get("username", '', 'identica', self.bot.network, channel)
+            p = self.bot.config.get("password", '', 'identica', self.bot.network, channel)
+            self.api = identi.IdentiCA(u, p)
             #TODO: blocking
             self.api.login()
-            if command=="iwn" or command=="identicawithnick":
-                options=user.split("!")[0]+": "+options
-            options=options[:140]
-            #TODO: blocking            
+            if command == "iwn" or command == "identicawithnick":
+                options = user.split("!")[0] + ": " + options
+            options = options[:140]
+            #TODO: blocking
             self.api.put_message(options)

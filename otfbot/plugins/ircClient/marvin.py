@@ -13,29 +13,34 @@
 # You should have received a copy of the GNU General Public License
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-# 
+#
 # (c) 2005, 2006 by Alexander Schier
 #
 
+from otfbot.lib import chatMod
+from otfbot.lib import functions
+
 import random
-from otfbot.lib import chatMod, functions
 
 
 class Plugin(chatMod.chatMod):
+
     def __init__(self, bot):
-        self.bot=bot
+        self.bot = bot
 
     def msg(self, user, channel, msg):
         #if channel == self.bot.nickname:
         #if msg[0]=="!" or msg[:len(self.bot.nickname)]==self.bot.nickname:
-        if (msg[0]=="!" or self.bot.nickname in msg) and len(self.marvin):
-            number=random.randint(0,100)
-            chance=int(self.bot.config.get("percent", "1", "marvin"))
-            if number <chance:
-                self.bot.sendmsg(channel, random.choice(self.marvin), self.bot.config.get("fileencoding", "iso-8859-15", "marvin"))
+        if (msg[0] == "!" or self.bot.nickname in msg) and len(self.marvin):
+            number = random.randint(0, 100)
+            chance = int(self.bot.config.get("percent", "1", "marvin"))
+            enc = self.bot.config.get("fileencoding", "iso-8859-15", "marvin")
+            if number < chance:
+                self.bot.sendmsg(channel, random.choice(self.marvin), enc)
 
     def start(self):
-        self.marvin=functions.loadList(self.bot.config.getPath("file", datadir, "marvin.txt", "marvin"))
+        fn = self.bot.config.getPath("file", datadir, "marvin.txt", "marvin")
+        self.marvin = functions.loadList(fn)
 
     def reload(self):
         self.start()

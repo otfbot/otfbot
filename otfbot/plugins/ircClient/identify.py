@@ -13,40 +13,41 @@
 # You should have received a copy of the GNU General Public License
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-# 
+#
 # (c) 2005 - 2007 by Alexander Schier
 # (c) 2006 - 2010 by Robert Weidlich
 #
 
-import random, re, time
+"""
+Identify the Bot to a nickserv, if the botnick is registered
+"""
+
 from otfbot.lib import chatMod
 
-"""
-Plugin to identify to a nickserv, if the botnick is registered
-"""
 
 class Plugin(chatMod.chatMod):
+
     def __init__(self, bot):
-        self.bot=bot
-        self.sent_identification=False
-    
+        self.bot = bot
+        self.sent_identification = False
+
     def signedOn(self):
         self.identify()
-        
+
     def identify(self):
         if str(self.bot.config.get("nickservPassword", "", "identify", self.bot.network)):
             self.logger.info("identifying to nickserv")
             password = str(self.bot.config.get("nickservPassword", "", "identify", self.bot.network))
-            self.bot.sendmsg("nickserv", "identify "+password)
-            self.sent_identification=True
+            self.bot.sendmsg("nickserv", "identify " + password)
+            self.sent_identification = True
         if self.bot.config.getBool("setBotFlag", True, "identify", self.bot.network):
             self.logger.info("setting usermode +b")
             self.bot.mode(self.bot.nickname, 1, "B")
-            
+
     def noticed(self, user, channel, msg):
-        user=user.split("!")[0]
+        user = user.split("!")[0]
         if (user.lower() == "nickserv" and self.sent_identification):
-            self.logger.debug(user+": "+msg)
+            self.logger.debug(user + ": " + msg)
 
     def connectionLost(self, reason):
-        self.sent_identification=False
+        self.sent_identification = False

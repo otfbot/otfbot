@@ -17,24 +17,33 @@
 # (c) 2009 by Finn Wilke
 #
 
+"""
+    Record a series of user generated events with time stamps
+"""
+
 from otfbot.lib import chatMod
 
-import time, os
-from time import gmtime, strftime
+import time
+import os
+from time import gmtime
+from time import strftime
+
 
 class Plugin(chatMod.chatMod):
+
     def __init__(self, bot):
         self.bot = bot
         self.started = False
         self.start_time = 0
         self.end_time = 0
-        self.datadir=datadir
-        self.admins=bot.config.get("admins", "[]", "chapterbot")
+        self.datadir = datadir
+        self.admins = bot.config.get("admins", "[]", "chapterbot")
+        #TODO: blocking
         if not os.path.isdir(self.datadir):
             os.makedirs(self.datadir)
 
-
     def writelog(self, filename, data):
+        #TODO: blocking
         file = open(filename, "w")
         for item in data:
             line = item[0] + " " + item[1] + "\n"
@@ -42,13 +51,13 @@ class Plugin(chatMod.chatMod):
             file.close
 
     def validUser(self, user, channel, userlist=None):
-        if userlist==None: 
-            userlist=self.admins
+        if userlist == None:
+            userlist = self.admins
         for i in userlist:
             if i == user:
                 return True
         return False
-        
+
     def command(self, user, channel, command, options):
         sender = user.split("!")[0]
 
@@ -56,23 +65,24 @@ class Plugin(chatMod.chatMod):
             self.bot.sendmsg(channel, self.admins)
 
         if command == "start":
-            if not self.started and self.validUser(sender,channel):
+            if not self.started and self.validUser(sender, channel):
                 self.started = True
                 self.start_time = time.time()
                 self.chapters = []
                 self.chaptercount = 0
-                self.logpath=self.datadir+strftime("%Y-%m-%d", time.gmtime(self.start_time))
-                if os.path.exists(self.logpath+".log"):
-                    i=1
-                    while os.path.exists(self.logpath+"."+str(i)+".log"):
-                        i+=1
-                    self.logpath += "."+str(i)
+                self.logpath = self.datadir + strftime("%Y-%m-%d", time.gmtime(self.start_time))
+                #TODO: blocking
+                if os.path.exists(self.logpath + ".log"):
+                    i = 1
+                    while os.path.exists(self.logpath + "." + str(i) + ".log"):
+                        i += 1
+                    self.logpath += "." + str(i)
                 self.logpath += ".log"
                 #self.bot.msg(channel, "datadir is:" + str(self.datadir))
                 #self.bot.msg(channel, "logpath is:" + str(self.logpath))
                 self.bot.sendmsg(channel, "Sitzung beginnt jetzt (time: " + strftime("%H:%M:%S", time.gmtime(self.start_time)) + ")")
 
-        if command == "stop" and self.validUser(sender,channel):
+        if command == "stop" and self.validUser(sender, channel):
             if self.started:
                 self.started = False
                 self.stop_time = time.time()
@@ -90,8 +100,8 @@ class Plugin(chatMod.chatMod):
 
         if command == "list":
             if self.chaptercount != 0:
-                self.bot.sendmsg(sender,"Es gibt "+str(self.chaptercount)+" Kapitel:")
+                self.bot.sendmsg(sender, "Es gibt " + str(self.chaptercount) + " Kapitel:")
                 i = 0
                 for item in self.chapters:
-                    i+=1
-                    self.bot.sendmsg(sender,"Kapitel "+str(i)+" ("+str(item[0])+"): \""+str(item[1])+"\"")
+                    i += 1
+                    self.bot.sendmsg(sender, "Kapitel " + str(i) + " (" + str(item[0]) + "): \"" + str(item[1]) + "\"")

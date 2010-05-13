@@ -13,54 +13,70 @@
 # You should have received a copy of the GNU General Public License
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-# 
+#
 # (c) 2007 - 2010 by Robert Weidlich
 #
 
+"""
+    Access the control service via IRC to control the Bot.
+"""
+
 from otfbot.lib import chatMod
 
-import random, re, string
 
 class Plugin(chatMod.chatMod):
+    """
+        Control the Bot as a identified user. Either query the Bot and enter
+        the control mode by typing C{control} or use commands in a channel.
+
+        An identified user can also invite the Bot to a channel.
+
+        As unidentified user it is possible to issue a reload of a plugins
+        state by typing a command like C{!reload <plugin>}.
+    """
+
     def __init__(self, bot):
-        self.bot=bot
-        self.control={}
-    
+        self.bot = bot
+        self.control = {}
+
     def query(self, user, channel, msg):
-        nick=user.split("!")[0]
-        if self.control.has_key(user) and msg == "endcontrol":
+        nick = user.split("!")[0]
+        if user in self.control and msg == "endcontrol":
             del self.control[user]
         if msg == "control" and self.bot.auth(user) > 0:
-            self.control[user]=self.bot.root.getServiceNamed("control")
-            self.bot.sendmsg(nick,"Entered configuration modus. type 'endcontrol' to exit")
-        elif self.control.has_key(user):
-            output=self.control[user].handle_command(msg)
+            self.control[user] = self.bot.root.getServiceNamed("control")
+            welcome = "Entered configuration modus. type 'endcontrol' to exit"
+            self.bot.sendmsg(nick, welcome)
+        elif user in self.control:
+            output = self.control[user].handle_command(msg)
             if output == None:
                 output = "None"
             self.bot.sendmsg(nick, output)
-    
+
     def command(self, user, channel, command, options):
         if self.bot.auth(user) > 0:
-            cmd=[]
+            cmd = []
             cmd.append(command)
+            control = self.bot.root.getServiceNamed("control")
             if options and options != "":
                 cmd.append(options)
-            r=self.bot.root.getServiceNamed("control").handle_command(" ".join(cmd))
+            r = control.handle_command(" ".join(cmd))
             if r is None:
-                cmd.insert(0,self.bot.parent.parent.name)
-                cmd.insert(0,self.network)
-                r=self.bot.root.getServiceNamed("control").handle_command(" ".join(cmd))
+                cmd.insert(0, self.bot.parent.parent.name)
+                cmd.insert(0, self.network)
+                r = control.handle_command(" ".join(cmd))
             if r is not None:
                 self.bot.sendmsg(channel, r)
         if command == "reload" and len(options) > 0:
             try:
-                self.bot.plugins['ircClient.'+options].reload()
-                self.bot.sendmsg(channel, "Reloaded "+options)
+                self.bot.plugins['ircClient.' + options].reload()
+                self.bot.sendmsg(channel, "Reloaded " + options)
             except KeyError:
-                self.bot.sendmsg(channel, "Could not reload "+options.strip()+": No such Plugin")
-    
+                emsg = "Could not reload %s: No such Plugin" % options.strip()
+                self.bot.sendmsg(channel, emsg)
+
     def invitedTo(self, channel, inviter):
-        self.logger.info("I was invited to "+channel+" by "+inviter)
+        self.logger.info("I was invited to " + channel + " by " + inviter)
         if self.bot.auth(inviter) > 0:
             self.logger.info("Accepting invitation.")
             self.bot.join(channel)

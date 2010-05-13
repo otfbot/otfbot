@@ -13,19 +13,34 @@
 # You should have received a copy of the GNU General Public License
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-# 
+#
 # (c) 2008 by Alexander Schier
 #
 
+"""
+    Helper Plugin for the ircServer service
+"""
+
 from otfbot.lib import chatMod
+
 import time
 
+
 class Plugin(chatMod.chatMod):
+
     def __init__(self, bot):
-        self.bot=bot
-        self.getServers=lambda: [connection.kwargs['factory'].protocol for connection in bot.root.getServiceNamed('ircServer').services]
+        self.bot = bot
+
+    def getServers(self):
+        ret = []
+        for connection in bot.root.getServiceNamed('ircServer').services:
+            ret.append(connection.kwargs['factory'].protocol)
+        return ret
 
     def irc_unknown(self, prefix, command, params):
-        if command=="PONG":
-                for server in self.getServers():
-                    server.sendmsg(self.bot.nickname+"!bot@localhost", "#control", "%f sec. to %s."%(round(time.time()-float(params[1]), 3), params[0]))
+        if command == "PONG":
+            for server in self.getServers():
+                timediff = round(time.time() - float(params[1]), 3)
+                rmsg = "%f sec. to %s." % (timediff, params[0])
+                ruser = self.bot.nickname + "!bot@localhost"
+                server.sendmsg(ruser, "#control", rmsg)
