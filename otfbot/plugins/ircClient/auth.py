@@ -71,10 +71,10 @@ class Plugin(chatMod.chatMod):
                 self.bot.userlist[nick] = u
 
             d = portal.login(cred, self.bot.userlist[nick], IUser)
-            msg = "Successfully logged in as %s" % args[1].name
-            d.addCallback(lambda args: self.bot.sendmsg(nick, msg))
-            fail = "Login failed: %s" % failure.getErrorMessage()
-            d.addErrback(lambda failure: self.bot.sendmsg(nick, fail))
+            msg = "Successfully logged in as %s"
+            d.addCallback(lambda args: self.bot.sendmsg(nick, msg % args[1].name))
+            fail = "Login failed: %s"
+            d.addErrback(lambda failure: self.bot.sendmsg(nick, fail % failure.getErrorMessage()))
 
     def auth(self, user):
         """
