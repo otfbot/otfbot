@@ -33,7 +33,7 @@ class Plugin(chatMod.chatMod):
 
     def getServers(self):
         ret = []
-        for connection in bot.root.getServiceNamed('ircServer').services:
+        for connection in self.bot.root.getServiceNamed('ircServer').services:
             ret.append(connection.kwargs['factory'].protocol)
         return ret
 

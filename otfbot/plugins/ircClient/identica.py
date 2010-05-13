@@ -35,9 +35,9 @@ class Plugin(chatMod.chatMod):
     def __init__(self, bot):
         self.bot = bot
         if not LIB:
-            self.logger.info("please download http://media.commandline.org" +
-                             ".uk/code/identi.txt to lib/identi.py to use" +
-                             " identica")
+            self.bot.depends_on_module("identi", "please download "+
+                    "http://media.commandline.org.uk/code/identi.txt to "+
+                    "lib/identi.py to use identica")
 
     def command(self, user, channel, command, options):
         if not LIB:
