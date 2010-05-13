@@ -13,21 +13,29 @@
 # You should have received a copy of the GNU General Public License
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-# 
+#
 # (c) 2005, 2006 by Alexander Schier
 #
 
-import random, re
+"""
+    Calculate a random number
+"""
+
 from otfbot.lib import chatMod
 
+import random
+
+
 class Plugin(chatMod.chatMod):
+
     def __init__(self, bot):
-        self.bot=bot
+        self.bot = bot
 
     def command(self, user, channel, command, options):
-        if command == "wuerfel" or command=="dice":
+        if command == "wuerfel" or command == "dice":
             if options == "":
-                self.bot.sendme(channel, "wuerfelt. Das Ergebnis ist: "+str(random.randint(1,6)))
+                answ = "wuerfelt. Das Ergebnis ist: %i" % random.randint(1, 6)
+                self.bot.sendme(channel, answ)
             else:
                 num = 2
                 string = "wuerfelt. Die Ergebnisse sind: "
@@ -37,10 +45,10 @@ class Plugin(chatMod.chatMod):
                     num = 2
                 if num > 10:
                     num = 10
-                for i in range(1,num+1):
-                    zahl = random.randint(1,6)
+                for i in range(1, num + 1):
+                    zahl = random.randint(1, 6)
                     if i < num:
-                        string += str(zahl)+", "
+                        string += str(zahl) + ", "
                     else:
                         string += str(zahl)
-                self.bot.sendme(channel, string) 
+                self.bot.sendme(channel, string)

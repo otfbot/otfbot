@@ -13,28 +13,40 @@
 # You should have received a copy of the GNU General Public License
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-# 
+#
 # (c) 2005 - 2010 by Alexander Schier
 #
 
-from otfbot.lib import chatMod, functions
+"""
+    Kick user from a channel based on a list of bad words
+"""
 
-import random, re
+from otfbot.lib import chatMod
+from otfbot.lib import functions
+
+import re
+
 
 class Plugin(chatMod.chatMod):
+
     def __init__(self, bot):
-        self.bot=bot
+        self.bot = bot
 
     def start(self):
-        self.badwordsFile=self.bot.config.getPath("file", datadir, "badwords.txt","badwords")
-        self.badwords=functions.loadList(self.badwordsFile)
+        self.badwordsFile = self.bot.config.getPath("file", datadir, "badwords.txt", "badwords")
         self.register_ctl_command(self.reload)
+        self.reload()
 
     def reload(self):
-        self.start()
+        """
+            (Re-)load the file with the bad words
+        """
+        self.badwords = functions.loadList(self.badwordsFile)
 
     def msg(self, user, channel, msg):
+        nick = user.split("!")[0]
         for word in self.badwords:
-            if channel in self.bot.channels and word != "" and re.search(word, msg, re.I):
-                self.logger.info("kicking "+user.split("!")[0]+" for badword: "+word)
-                self.bot.kick(channel, user.split("!")[0], "Badword: "+word)
+            if channel in self.bot.channels:
+                if word != "" and re.search(word, msg, re.I):
+                    self.logger.info("kicked %s for badword %s" % (nick, word))
+                    self.bot.kick(channel, nick, "Bad word: " + word)

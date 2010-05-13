@@ -13,67 +13,74 @@
 # You should have received a copy of the GNU General Public License
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-# 
+#
 # (c) 2005 - 2010 by Alexander Schier
 # (c) 2006 - 2010 by Robert Weidlich
 # (c) 2008 - 2010 by Thomas Wiegart
 #
 
 """
-authenticates the botnick to a nickserv
+    Authenticates a user to the Bot
 """
 
 from twisted.cred.credentials import UsernamePassword
 from twisted.words.iwords import IUser
 
 from otfbot.lib import chatMod
-from otfbot.lib.user import BotUser, IrcUser
-
-import random, re
+from otfbot.lib.user import BotUser
+from otfbot.lib.user import IrcUser
 
 
 class Plugin(chatMod.chatMod):
+    """
+        Make a query to the bot to prove the users identity:
+
+        Use C{msg <bot> identify <password>} if the user name in the bot is
+        equal to the IRC-Nickname. Use C{msg <bot> identify <user> <password>}
+        to explicitly specify a user.
+    """
+
     def __init__(self, bot):
-        self.bot=bot
-        self.users={}
+        self.bot = bot
+        self.users = {}
 
     def query(self, user, channel, msg):
         """
-        Uses the auth-service to identify a user. 
+        Uses the auth-service to identify a user.
         If no username is given, the nickname is used.
         """
-
-        nick=user.split("!")[0]
-        #print nick
+        nick = user.split("!")[0]
         if msg[0:9] == "identify ":
-            portal=self.bot.root.getServiceNamed("auth")
+            portal = self.bot.root.getServiceNamed("auth")
             if not portal:
                 self.bot.sendmsg(nick, "Error: could not get portal")
                 return
-            msgs=msg.split(" ")
+            msgs = msg.split(" ")
             if len(msgs) == 2:
-                cred=UsernamePassword(nick,msgs[1])
+                cred = UsernamePassword(nick, msgs[1])
             elif len(msgs) == 3:
-                cred=UsernamePassword(msgs[1],msgs[2])
+                cred = UsernamePassword(msgs[1], msgs[2])
             else:
                 self.bot.sendmsg(nick, "Usage: identify [user] pass")
                 return
             if not nick in self.bot.userlist:
-                u=IrcUser(user.split("!")[0],
-                          user.split("!",1)[1].split("@")[0],
-                          user.split("!",1)[1].split("@")[1],
+                u = IrcUser(user.split("!")[0],
+                          user.split("!", 1)[1].split("@")[0],
+                          user.split("!", 1)[1].split("@")[1],
                           user.split("!")[0], self.bot)
-                self.bot.userlist[nick]=u
-                
-            d=portal.login(cred, self.bot.userlist[nick], IUser)
-            d.addCallback(lambda args: self.bot.sendmsg(nick, "Successfully logged in as "+str(args[1].name)))
-            d.addErrback(lambda failure: self.bot.sendmsg(nick, "Login failed: "+str(failure.getErrorMessage())))
-    
+                self.bot.userlist[nick] = u
+
+            d = portal.login(cred, self.bot.userlist[nick], IUser)
+            msg = "Successfully logged in as %s" % args[1].name
+            d.addCallback(lambda args: self.bot.sendmsg(nick, msg))
+            fail = "Login failed: %s" % failure.getErrorMessage()
+            d.addErrback(lambda failure: self.bot.sendmsg(nick, fail))
+
     def auth(self, user):
-        user=user.split("!")[0]
         """
         Returns the access-level of the given user.
         """
+        user = user.split("!")[0]
         if self.bot.userlist[user].avatar is not None:
             return 10
         else:

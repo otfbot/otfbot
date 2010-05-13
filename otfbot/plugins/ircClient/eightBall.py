@@ -13,18 +13,25 @@
 # You should have received a copy of the GNU General Public License
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-# 
+#
 # (c) 2006 by Alexander Schier
 #
 
+"""
+    Provide some aid to make a decision
+"""
+
 from otfbot.lib import chatMod
 
-import random, re
+import random
+import re
+
 
 class Plugin(chatMod.chatMod):
+
     def __init__(self, bot):
-        self.bot=bot
-        self.answers=[
+        self.bot = bot
+        self.answers = [
         "Signs point to yes (Zeichen deuten auf ja)",
         "Yes (Ja)",
         "Without a doubt (Ohne einen Zweifel)",
@@ -48,8 +55,10 @@ class Plugin(chatMod.chatMod):
 
     def msg(self, user, channel, msg):
         if self.bot.config.getBool("autoAnswer", False, "eightball", self.network, channel):
-            if re.match("[abcdefghijklmnopqrstuvxyz][^\.\?!:;]*\?", msg.lower()):
+            if re.match("[a-z][^\.\?!:;]*\?", msg.lower()):
                 self.bot.sendmsg(channel, random.choice(self.answers))
+
     def command(self, user, channel, command, options):
-        if command.lower() in ["8ball","eightball"] and options != "": #only if the user asked something.
+        # only if the user asked something.
+        if command.lower() in ["8ball", "eightball"] and options != "":
             self.bot.sendmsg(channel, random.choice(self.answers))
