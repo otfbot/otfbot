@@ -1,10 +1,23 @@
-style
-=====
--use logger instead of print, productivity code should contain no prints (with very few exceptions)
--use logger.error and logger.crit only for messages which should be reported as bug.
+======
+Coding
+======
 
-Services and plugins should work independend of their starting order:
--services should not depend on other services in __init__. 
-They may depend on other services beeing instanced (__init__) but not started (startService) in their
-startService routine.
--plugins may depend on other plugins, but not in __init__.
+General guidelines
+------------------
+- Read, understand and apply PEP8 (check with pep8.py)
+- Write docstrings
+- Use logger instead of print, productivity code should contain
+  no prints (with very few exceptions)
+- Use logger.error and logger.crit only for messages which should
+  be reported as bug.
+- Be always aware of blocking code. Network access should be handled with
+  twisted's methods, file system access should be done in a thread
+
+Current Caveats
+---------------
+Services and plugins should work independently of their starting order
+
+- Services should not depend on other services in the constructor. They may
+  depend on other services being instanced (__init__) but not started
+  (startService) in their startService method.
+- Plugins may depend on other Plugins, but not in their constructor
