@@ -53,6 +53,8 @@ The bot is launched via twisteds ``twistd``:
 
 ``twistd`` lets you also specify the user and group and some other settings.
 Be aware that the logging is configured via otfbot.yaml and not via twistd.
+Running the bot as root is neither needed nor supported. in fact it will not
+even start as root, but give you an error.
 
 
 Developing plugins
