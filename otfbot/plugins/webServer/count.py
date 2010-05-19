@@ -55,5 +55,5 @@ class Plugin(chatMod.chatMod):
                 if network and network.protocol: #no NoneType Exception on disconnected network
                     for channel in network.protocol.getChannelUserDict().keys():
                         if not wfile.closed:
-                            wfile.write("%s.%s: %s\n"%(network.name, channel, network.protocol.plugins['ircClient.count'].getLinesPerMinute(channel)))
+                            wfile.write("%s.%s: %s\n"%(network.name, channel, network.protocol.plugins['ircClient.statistics'].getLinesPerMinute(channel)))
 #app.getServiceNamed("ircClient").services[0].protocol.plugins['plugins.ircClient.ki']
