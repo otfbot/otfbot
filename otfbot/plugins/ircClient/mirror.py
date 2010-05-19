@@ -33,6 +33,7 @@ class Plugin(chatMod.chatMod):
         self.colors = ["\x032", "\x033", "\x035", "\x0311", "\x0310", "\x0312", "\x0315", "\x0314", "\x0316", "\x0313", "\x036"]
 
     def _sendToMirror(self, channel, message):
+        """Send a message to the mirrorChannel of the channel"""
         if (self.network, channel) in self.bot.config.has("mirrorto", "mirror")[2]:
             (target_network, target_channel) = self.bot.config.get("mirrorto", "unset", "mirror", self.network, channel).split("-", 1)
             ircClient = self.bot.root.getServiceNamed('ircClient')
