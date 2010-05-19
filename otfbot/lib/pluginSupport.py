@@ -251,7 +251,7 @@ class pluginSupport:
             @param exception: the exception
             @type exception: exception
         """
-        if type(exception) == self.DependencyMissing or type(exception) == self.ModuleMissing or type(exception) == ServiceMissing or type(exception) == PluginMissing:
+        if type(exception) == self.DependencyMissing or type(exception) == self.ModuleMissing or type(exception) == self.ServiceMissing or type(exception) == self.PluginMissing:
             msg = "Dependency missing in plugin %s: %s. plugin not started."
             logger.warning(msg % (plugin, str(exception)))
             return
