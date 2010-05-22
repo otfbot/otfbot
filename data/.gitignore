@@ -1,2 +1,2 @@
-ircClient.*
-userdb.yaml
+*
+!.gitignore
