@@ -26,6 +26,7 @@ from twisted.application import internet, service
 from twisted.application.service import IServiceMaker
 from twisted.plugin import IPlugin
 from twisted.python import log, usage
+from twisted.python import versions as twversions
 import twisted
 
 from zope.interface import implements
@@ -34,9 +35,15 @@ import logging
 import logging.handlers
 from logging.handlers import RotatingFileHandler
 import sys
+import os
 
 from otfbot.lib import version
 from otfbot.services import config as configService
+
+required_version = twversions.Version('twisted', 9, 0, 0)
+if twisted._version.version < required_version:
+    print "Get %s or newer to run OTFBot" % required_version
+    os._exit(1)
 
 
 class Options(usage.Options):
@@ -55,8 +62,9 @@ class MyServiceMaker(object):
 
         cfgS = configService.loadConfig(options['config'], "plugins/*/*.yaml")
         if not cfgS:
-            print "please run twistd gen-otfbot-config"
-            sys.exit(1)
+            print "Could not load configuration. Check the path or create" + \
+                 " a new one by running 'twistd gen-otfbot-config'"
+            os._exit(1)
         cfgS.setServiceParent(application)
 
         ######################################################################
@@ -91,10 +99,7 @@ class MyServiceMaker(object):
             root.addHandler(console)
 
         plo = log.PythonLoggingObserver()
-        if twisted.version.minor > 2:
-            log.startLoggingWithObserver(plo.emit)
-        else:
-            plo.start()
+        log.startLoggingWithObserver(plo.emit)
 
         corelogger = logging.getLogger('core')
 
