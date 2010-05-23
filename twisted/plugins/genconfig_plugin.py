@@ -23,7 +23,11 @@
 
 from otfbot import services
 from otfbot.lib import version
-from otfbot.plugins import ircClient, ircServer
+from otfbot.plugins import ircClient
+try:
+    from otfbot.plugins import ircServer
+except ImportError:
+    pass
 from otfbot.services import config as configService
 from otfbot.services.auth import YamlWordsRealm as auth
 from otfbot.lib.user import BotUser
@@ -58,7 +62,6 @@ class MyServiceMaker(object):
 
         # ircClient plugins
         path = os.path.abspath(ircClient.__path__[0])
-
         files = glob.glob(os.path.join(path, "*.py"))
         modules = []
         for file in files:
@@ -67,20 +70,21 @@ class MyServiceMaker(object):
                 modules.append(plugin)
         config.set("ircClientPlugins", modules, 'main')
 
-        # ircServer plugins
-        path = os.path.abspath(ircServer.__path__[0])
-        files = glob.glob(os.path.join(path, "*.py"))
-        modules = []
-        for file in files:
-            plugin = os.path.basename(file)[:-3]
-            if not plugin == "__init__":
-                modules.append(plugin)
-        config.set("ircServerPlugins", modules, 'main')
+        if 'ircServer' in sys.modules:
+            # ircServer plugins
+            path = os.path.abspath(ircServer.__path__[0])
+            files = glob.glob(os.path.join(path, "*.py"))
+            modules = []
+            for file in files:
+                plugin = os.path.basename(file)[:-3]
+                if not plugin == "__init__":
+                    modules.append(plugin)
+            config.set("ircServerPlugins", modules, 'main')
 
         # detect services
         path = os.path.abspath(services.__path__[0])
         files = glob.glob(os.path.join(path, "*.py"))
-        #TODO: it'sjust a hack to get auth and control before ircClient
+        #TODO: it's just a hack to get auth and control before ircClient
         files.sort()
         #TODO: real solution to service/plugin dependencies!
 
