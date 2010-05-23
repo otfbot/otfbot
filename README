@@ -9,12 +9,12 @@ Requirements
 ------------
 
 For the core functionality are a *python interpreter* and the following 
-modules necessary. Currently version 2.5.2 of cPython is used to develop 
+modules necessary. Currently version 2.6 of cPython is used to develop 
 the the bot. If you are encountering problems with other versions of python 
 please file a bug.
 
 OTFBot is build around the *twisted framework*, so you need this with a 
-version of 8.2.0 or newer as well. Currently the the ``words``, ``conch`` 
+version of 9.0.0 or newer as well. Currently the the ``words``, ``conch`` 
 and ``web`` modules are used (Debian packages ``python-twisted``, 
 ``python-twisted-bin``, ``python-twisted-conch``, ``python-twisted-core``, 
 ``python-twisted-web`` and ``python-twisted-words``)
