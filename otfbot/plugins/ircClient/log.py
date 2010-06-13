@@ -171,6 +171,7 @@ class Plugin(chatMod.chatMod):
 
     def userRenamed(self, oldname, newname):
         #TODO: This can not handle different channels right
+        #TODO: usertracking should now be possible via bot.userlist
         userlists = self.bot.getChannelUserDict()
         for channel in userlists:
             if newname in userlists[channel]:
