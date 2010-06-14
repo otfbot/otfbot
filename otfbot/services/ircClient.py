@@ -169,7 +169,8 @@ class Bot(pluginSupport, irc.IRCClient):
     """
     pluginSupportPath = "otfbot/plugins/ircClient" #path were the plugins are
     pluginSupportName = "ircClient" #prefix for config
-    sourceURL = "http://otfbot.berlios.de/"
+    sourceURL = "http://www.otfbot.org/download/"
+    erroneousNickFallback = "otfbot"
 
     modchars = {16: 'a', 8: 'o', 4: 'h', 2: 'v', 0: ' '}
     modcharvals = {16: '!', 8: '@', 4: '%', 2: '+', 0: ' '}
