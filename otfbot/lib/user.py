@@ -51,7 +51,22 @@ class BotUser(service.User):
     def __repr__(self):
         return "<BotUser %s>" % self.name
 
-
+MODE_CHARS = {
+    ' ': 0,
+    'v': 1,
+    'h': 2,
+    'o': 4,
+    'a': 8,
+    'q': 16
+}
+MODE_SIGNS={
+    0: ' ',
+    1: '+',
+    2: 'h',
+    4: '@',
+    8: '!',
+    16: '&'
+}
 class IrcUser(object):
     """ Represents the connection of a L{BotUser} via IRC
 
@@ -75,6 +90,7 @@ class IrcUser(object):
         self.avatar = None
         self.realname = realname
         self.channels = set()
+        self.modes = {} #dict channel -> modes
 
     def getBotuser(self):
         return self.avatar
@@ -91,6 +107,10 @@ class IrcUser(object):
         """
         self.channels = set(channels)
 
+    def getChannels(self):
+        """ get the channels list """
+        return self.channels
+
     def addChannel(self, channel):
         """ add a channel to the list of channels of the user
             @ivar channel: the channel to add
@@ -104,6 +124,33 @@ class IrcUser(object):
         """
         assert(channel in self.channels)
         self.channels.remove(channel)
+
+    def setMode(self, channel, modechar):
+        """ set the usermode specified by the char modchar on channel
+            @ivar channel: the channel where the mode is set
+            @ivar modechar: the char corrosponding to the mode (i.e. "o")
+        """
+        assert(channel in self.channels)
+        assert(modechar in MODE_CHARS)
+        self.modes[channel]=self.modes | MODE_CHARS[modechar]
+
+    def removeMode(self, channel, modechar):
+        """ remove the usermode specified by the char modchar on channel
+            @ivar channel: the channel where the mode is removed
+            @ivar modechar: the char corrosponding to the mode (i.e. "o")
+        """
+        assert(channel in self.channels)
+        assert(modechar in MODE_CHARS)
+        self.modes[channel]=self.modes ^ MODE_CHARS[modechar]
+
+    def getModeSign(self, channel):
+        assert(channel in self.channels)
+        ret_sign=""
+        for sign in MODE_SIGNS:
+            if self.modes[channel] & sign: #signs are ASCENDING in importance
+                ret_sign=MODE_SIGNS[sign]
+        return ret_sign
+
 
     def getHostMask(self):
         return self.nick + "!" + self.user + "@" + self.host
