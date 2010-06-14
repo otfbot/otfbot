@@ -101,11 +101,16 @@ class IrcUser(object):
     def hasBotuser(self):
         return self.avatar != None
 
+    def setNick(self, nick):
+        self.nick = nick
+
     def setChannels(self, channels):
         """ set the channels list to the set given as parameter
             @ivar channels: the channellist
         """
-        self.channels = set(channels)
+        self.channels = set([channel.lower() for channel in channels])
+        for channel in channels:
+            self.modes[channel]=0
 
     def getChannels(self):
         """ get the channels list """
@@ -116,34 +121,44 @@ class IrcUser(object):
             @ivar channel: the channel to add
         """
         assert type(channel) == str
-        self.channels.add(channel)
+        self.channels.add(channel.lower())
+        self.modes[channel]=0
+
+    def hasChannel(self, channel):
+        return channel.lower() in self.channels
 
     def removeChannel(self, channel):
         """ remove a channel from the list of channels
             @ivar channel: the channel to remove
         """
+        channel=channel.lower()
         assert(channel in self.channels)
         self.channels.remove(channel)
+        self.modes.remove(channel)
 
     def setMode(self, channel, modechar):
         """ set the usermode specified by the char modchar on channel
             @ivar channel: the channel where the mode is set
             @ivar modechar: the char corrosponding to the mode (i.e. "o")
         """
+        channel=channel.lower()
         assert(channel in self.channels)
         assert(modechar in MODE_CHARS)
-        self.modes[channel]=self.modes | MODE_CHARS[modechar]
+        assert(channel in self.modes)
+        self.modes[channel]=self.modes[channel] | MODE_CHARS[modechar]
 
     def removeMode(self, channel, modechar):
         """ remove the usermode specified by the char modchar on channel
             @ivar channel: the channel where the mode is removed
             @ivar modechar: the char corrosponding to the mode (i.e. "o")
         """
+        channel=channel.lower()
         assert(channel in self.channels)
         assert(modechar in MODE_CHARS)
         self.modes[channel]=self.modes ^ MODE_CHARS[modechar]
 
     def getModeSign(self, channel):
+        channel=channel.lower()
         assert(channel in self.channels)
         ret_sign=""
         for sign in MODE_SIGNS:

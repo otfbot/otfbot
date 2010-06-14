@@ -160,22 +160,19 @@ class Plugin(chatMod.chatMod):
         self.log(channel, "-!- " + user.split("!")[0] + " [" + user.split("!")[1] + "] has left " + channel)
 
     def userQuit(self, user, quitMessage):
-        userlists = self.bot.getChannelUserDict()
-        for channel in userlists:
-            if user.split("!")[0] in userlists[channel]:
-                self.log(channel, "-!- " + user.split("!")[0] + " [" + user.split("!")[1] + "] has quit [" + quitMessage + "]")
+        user=self.bot.user_list[user]
+        for channel in user.getChannels():
+            self.log(channel, "-!- " + user.nickname + " [" + user.user + "@" + user.host + "] has quit [" + quitMessage + "]")
 
     def topicUpdated(self, user, channel, newTopic):
         #TODO: first invoced on join. This should not be logged
         self.log(channel, "-!- " + user + " changed the topic of " + channel + " to: " + newTopic)
 
     def userRenamed(self, oldname, newname):
-        #TODO: This can not handle different channels right
-        #TODO: usertracking should now be possible via bot.userlist
-        userlists = self.bot.getChannelUserDict()
-        for channel in userlists:
-            if newname in userlists[channel]:
-                self.log(channel, "-!- " + oldname + " is now known as " + newname)
+        for user in self.bot.user_list.values():
+            if user.nickname.lower() == oldname.lower():
+                for channel in user.getChannels():
+                    self.log(channel, "-!- " + oldname + " is now known as " + newname)
 
     def stop(self):
         for channel in self.channels:
