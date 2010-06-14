@@ -31,7 +31,7 @@ import string
 import time
 
 from otfbot.lib.pluginSupport import pluginSupport
-from otfbot.lib.user import IrcUser
+from otfbot.lib.user import IrcUser, MODE_CHARS, MODE_SIGNS
 
 
 class botService(service.MultiService):
@@ -197,10 +197,7 @@ class Bot(pluginSupport, irc.IRCClient):
         lps = self.config.get("linesPerSecond", "2", "main", self.network)
         self.lineRate = 1.0 / float(lps)
 
-        # all users known to the bot, nick => IrcUser
-        self.userlist = {}
-        # usertracking, channel=>{User => level}
-        self.users = {}
+        self.user_list={} #nick!user@host -> IRCUser
 
         # my usermmodess
         self.mymodes = {}
@@ -218,6 +215,18 @@ class Bot(pluginSupport, irc.IRCClient):
         scheduler = self.root.getServiceNamed('scheduler')
         scheduler.callPeriodic(60, self._check_sendLastLine)
 
+    def getUsers(self, channel=None):
+        """ Get a list of users in channel
+            @rtype: dict
+            @return: a list of users
+        """
+        ret=[]
+        if not channel:
+            return self.user_list.values()
+        for user in self.user_list:
+            if self.user_list[user].hasChannel(channel):
+                ret.append(self.user_list[user])
+        return ret
     def _check_sendLastLine(self):
         timeout = self.config.get("timeout", 120, "main", self.network)
         if time.time() - self.lastLine > timeout:
@@ -266,13 +275,6 @@ class Bot(pluginSupport, irc.IRCClient):
             @return: a dict with the channelnames as keys
         """
         return self.users
-
-    def getUsers(self, channel):
-        """ Get a list of users in channel
-            @rtype: dict
-            @return: a list of users
-        """
-        return self.getChannelUserDict()[channel]
 
     def getFactory(self):
         """ get the factory
@@ -412,7 +414,6 @@ class Bot(pluginSupport, irc.IRCClient):
         channel = channel.lower()
         self.logger.info("joined " + channel)
         self.channels.append(channel)
-        self.users[channel] = {}
         self.channelmodes[channel] = {}
         self.sendLine("WHO %s" % channel)
         self._apirunner("joined", {"channel": channel})
@@ -427,8 +428,10 @@ class Bot(pluginSupport, irc.IRCClient):
         channel = channel.lower()
         self.logger.info("left " + channel)
         self._apirunner("left", {"channel": channel})
-        del self.users[channel]
-        del self.channelmodes[channel]
+        for user in self.user_list:
+            if self.user_list[user].hasChannel(channel):
+                #if we do not know you're there, then you aren't there
+                self.user_list[user].removeChannel(channel)
         self.channels.remove(channel)
         # disable the channel for the next start of the bot
         self.config.set("enabled", "False", "main", self.network, channel)
@@ -561,16 +564,15 @@ class Bot(pluginSupport, irc.IRCClient):
             # track usermodes
             for i in range(0, len(modes)):
                 # is a usermode
-                if modes[i] in self.rev_modchars:
+                if modes[i] in MODE_CHARS:
                     # user is known to bot
-                    if args[i] in self.userlist:
+                    assert(args[i] in self.user_list)
+                    if args[i] in self.user_list:
                         # user in channel
-                        if self.userlist[args[i]] in self.users[chan]:
-                            s = (-1 + 2 * set) * self.rev_modchars[modes[i]]
-                            # TODO: do this with some fancy bit-manipulation
-                            self.users[chan][self.userlist[args[i]]] += s
+                        if set:
+                            self.user_list[args[i]].setMode(chan, modes[i])
                         else:
-                            self.logger.info(user + " not in " + chan)
+                            self.user_list[args[i]].removeMode(chan, modes[i])
                     else:
                         self.logger.info(user + " not known to me")
                 else: # channelmodes
@@ -605,7 +607,10 @@ class Bot(pluginSupport, irc.IRCClient):
         self.channels.remove(channel)
         # disable the channel for the next start of the bot
         self.config.set("enabled", False, "main", self.network, channel)
-        del(self.users[channel])
+        for user in self.user_list:
+            if self.user_list[user].hasChannel(channel):
+                #if we do not know you're there, then you aren't there
+                self.user_list[user].removeChannel(channel)
 
     def userKicked(self, kickee, channel, kicker, message):
         """ called by twisted,
@@ -614,7 +619,8 @@ class Bot(pluginSupport, irc.IRCClient):
         channel = channel.lower()
         self._apirunner("userKicked", {"kickee": kickee, "channel": channel,
                                        "kicker": kicker, "message": message})
-        del self.users[channel][self.userlist[kickee]]
+        self.user_list[kickee].removeChannel(channel)
+        #TODO: remove user, if len( .getChannels())==0?
 
     def userJoined(self, user, channel):
         """ called by twisted,
@@ -623,12 +629,12 @@ class Bot(pluginSupport, irc.IRCClient):
         channel = channel.lower()
         nick = user.split("!")[0]
         us = user.split("@", 1)[0].split("!")[1]
-        if nick in self.userlist:
-            u = self.userlist[nick]
+        if user in self.user_list:
+            u = self.user_list[user]
         else:
             u = IrcUser(nick, us, user.split("@")[1], nick, self)
-            self.userlist[nick] = u
-        self.users[channel][u] = 0
+            self.user_list[user]=u
+        u.addChannel(channel)
         self._apirunner("userJoined", {"user": user, "channel": channel})
 
     def userLeft(self, user, channel):
@@ -638,18 +644,15 @@ class Bot(pluginSupport, irc.IRCClient):
         channel = channel.lower()
         nick = user.split("!")[0]
         self._apirunner("userLeft", {"user": user, "channel": channel})
-        del self.users[channel][self.userlist[nick]]
+        self.user_list[user].removeChannel(channel)
+        #TODO: remove user, if len( .getChannels())==0?
 
     def userQuit(self, user, quitMessage):
         """ called by twisted,
             if a C{user} quits
         """
         self._apirunner("userQuit", {"user": user, "quitMessage": quitMessage})
-        nick = user.split("!")[0]
-        for c in self.users:
-            if self.userlist[nick] in self.users[c]:
-                del self.users[c][self.userlist[nick]]
-        del self.userlist[nick]
+        del(self.user_list[user])
 
     def yourHost(self, info):
         """ called by twisted
@@ -666,21 +669,17 @@ class Bot(pluginSupport, irc.IRCClient):
         self._apirunner("ctcpQuery", {"user": user, "channel": channel,
                 "messages": messages})
 
-    def userRenamed(self, oldname, new):
+    def userRenamed(self, oldname, newname):
         """ called by twisted,
             if a user changed his nick
         """
         self._apirunner("userRenamed", {"oldname": oldname, "newname": new})
-        for chan in self.users:
-            if oldname in self.users[chan]:
-                self.users[chan][new] = self.users[chan][oldname]
-                del self.users[chan][oldname]
-        if oldname in self.userlist:
-            self.userlist[new] = self.userlist[oldname]
-            del self.userlist[oldname]
-            self.userlist[new].nick = new
-        else:
-            self.logger.error("Renaming user not in userlist")
+        for user in self.user_list:
+            if self.user_list[user].nick.lower()==oldname.lower():
+                u=self.user_list[user]
+                del(self.user_list[user])
+                u.nick=newname
+                self.user_list[u.getHostMask()]=u
 
     def topicUpdated(self, user, channel, newTopic):
         """ called by twisted
@@ -698,38 +697,38 @@ class Bot(pluginSupport, irc.IRCClient):
         (t, channel, user, host, server, nick, modes, hopsrealname) = params
         channel = channel.lower()
         (hops, realname) = hopsrealname.split(" ", 1)
-        if nick in self.userlist:
-            u = self.userlist[nick]
-            u.user = user
-            u.host = host
-            u.realname = realname
+        mask="%s!%s@%s"%(nick, user, host)
+        if mask in self.user_list:
+            self.user_list[mask].realname=realname
         else:
             u = IrcUser(nick, user, host, realname, self)
-            self.userlist[nick] = u
-        if modes[-1] in self.rev_modcharvals:
+            self.user_list[mask] = u
+        if modes[-1] in MODE_CHARS:
             s = modes[-1]
         else:
             s = " "
-        self.users[channel][u] = self.rev_modcharvals[s]
+        self.user_list[mask].addChannel(channel)
+        self.user_list[mask].setMode(channel, s)
+        self._apirunner("irc_RPL_WHOREPLY", {"channel": channel, "user": mask, "server": server, "realname": realname})
 
-    def irc_RPL_USERHOST(self, prefix, params):
-        for rpl in params[1].strip().split(" "):
-            tmp = rpl.split('=', 1)
-            if len(tmp) == 2:
-                (nick, hostmask) = tmp
-            else:
-                if not self.nickname == rpl:
-                    msgs = "Error parsing RPL_USERHOST: %s, %s"
-                    self.logger.warning(msgs % (prefix, params))
-                continue
-            nick = nick.replace("*", "")
-            hm = hostmask.split('@', 1)
-            if nick in self.userlist:
-                self.userlist[nick].user = hm[0][1:]
-                self.userlist[nick].host = hm[1]
-            else:
-                msgs = 'received RPL_USERHOST for "%s", who is not in list'
-                self.logger.warning(msgs % nick)
+    #def irc_RPL_USERHOST(self, prefix, params):
+    #    for rpl in params[1].strip().split(" "):
+    #        tmp = rpl.split('=', 1)
+    #        if len(tmp) == 2:
+    #            (nick, hostmask) = tmp
+    #        else:
+    #            if not self.nickname == rpl:
+    #                msgs = "Error parsing RPL_USERHOST: %s, %s"
+    #                self.logger.warning(msgs % (prefix, params))
+    #            continue
+    #        nick = nick.replace("*", "")
+    #        hm = hostmask.split('@', 1)
+    #        if nick in self.userlist:
+    #            self.userlist[nick].user = hm[0][1:]
+    #            self.userlist[nick].host = hm[1]
+    #        else:
+    #            msgs = 'received RPL_USERHOST for "%s", who is not in list'
+    #            self.logger.warning(msgs % nick)
 
     def irc_INVITE(self, prefix, params):
         """ called by twisted,
