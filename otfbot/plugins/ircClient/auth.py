@@ -42,7 +42,6 @@ class Plugin(chatMod.chatMod):
 
     def __init__(self, bot):
         self.bot = bot
-        self.users = {}
 
     def query(self, user, channel, msg):
         """
