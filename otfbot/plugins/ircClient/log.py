@@ -162,7 +162,7 @@ class Plugin(chatMod.chatMod):
     def userQuit(self, user, quitMessage):
         user=self.bot.user_list[user]
         for channel in user.getChannels():
-            self.log(channel, "-!- " + user.nickname + " [" + user.user + "@" + user.host + "] has quit [" + quitMessage + "]")
+            self.log(channel, "-!- " + user.nick + " [" + user.user + "@" + user.host + "] has quit [" + quitMessage + "]")
 
     def topicUpdated(self, user, channel, newTopic):
         #TODO: first invoced on join. This should not be logged
