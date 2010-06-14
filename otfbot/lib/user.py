@@ -74,12 +74,36 @@ class IrcUser(object):
         self.host = host
         self.avatar = None
         self.realname = realname
+        self.channels = set()
 
     def getBotuser(self):
         return self.avatar
 
+    def setBotuser(self, avatar):
+        self.avatar = avatar
+
     def hasBotuser(self):
         return self.avatar != None
+
+    def setChannels(self, channels):
+        """ set the channels list to the set given as parameter
+            @ivar channels: the channellist
+        """
+        self.channels = set(channels)
+
+    def addChannel(self, channel):
+        """ add a channel to the list of channels of the user
+            @ivar channel: the channel to add
+        """
+        assert type(channel) == str
+        self.channels.add(channel)
+
+    def removeChannel(self, channel):
+        """ remove a channel from the list of channels
+            @ivar channel: the channel to remove
+        """
+        assert(channel in self.channels)
+        self.channels.remove(channel)
 
     def getHostMask(self):
         return self.nick + "!" + self.user + "@" + self.host
