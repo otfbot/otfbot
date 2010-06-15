@@ -78,6 +78,16 @@ class botService(service.MultiService):
             #self.commandList[name].append(" ".join(tmp))
             #self.commandList[name].append(" ".join(namespace)) 
 
+    def register_ctl_command(self, service, f, namespace=None, name=None):
+        """ register control command for service service """
+        if self:
+            if namespace is None:
+                namespace = []
+            if not type(namespace) == list:
+                namespace = [namespace, ]
+            namespace.insert(0, service.name)
+            self.register_command(f, namespace, name)
+
     def handle_command(self, string):
         s=string.split(" ")
         #print self.commandList
