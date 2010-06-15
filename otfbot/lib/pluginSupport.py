@@ -41,18 +41,18 @@ class pluginSupport:
         self.plugins = {}
         #XXX: the dependency should be more explicit?
         self.config = root.getServiceNamed('config')
+        self.controlservice = self.root.getServiceNamed('control')
+        #self.register_pluginsupport_commands()
 
     def _getClassName(self, clas):
         return clas.__name__[15:] #cut off "otfbot.plugins."
 
     def register_pluginsupport_commands(self):
-        # Make sure to have this method!
-        if not "register_ctl_command" in dir(self):
-            self.register_ctl_command = lambda x, y, z: None
-        self.register_ctl_command(self.startPlugin)
-        self.register_ctl_command(self.stopPlugin)
-        self.register_ctl_command(self.restartPlugin)
-        self.register_ctl_command(lambda: self.plugins.keys(),
+        if self.hasattr("register_ctl_command"):
+            self.register_ctl_command(self.startPlugin)
+            self.register_ctl_command(self.stopPlugin)
+            self.register_ctl_command(self.restartPlugin)
+            self.register_ctl_command(lambda: self.plugins.keys(),
                                                     name="listPlugins")
 
     def depends(self, dependency, description=""):
