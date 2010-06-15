@@ -45,10 +45,16 @@ class pluginSupport:
     def _getClassName(self, clas):
         return clas.__name__[15:] #cut off "otfbot.plugins."
 
+    def startService(self):
+        self.controlservice = self.root.getServiceNamed('control')
+        self.register_pluginsupport_commands()
+
     def register_pluginsupport_commands(self):
         # Make sure to have this method!
-        if not "register_ctl_command" in dir(self):
+        if not self.controlservice:
             self.register_ctl_command = lambda x, y, z: None
+        else:
+            self.register_ctl_command = lambda x, y, z: self.controlservice.register_ctl_command(self, x, y, z)
         self.register_ctl_command(self.startPlugin)
         self.register_ctl_command(self.stopPlugin)
         self.register_ctl_command(self.restartPlugin)
