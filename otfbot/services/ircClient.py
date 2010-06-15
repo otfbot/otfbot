@@ -191,7 +191,6 @@ class Bot(pluginSupport, irc.IRCClient):
         self.password = self.config.get('password', None, 'main', self.network)
         self.nickname = self.config.get("nickname", "OtfBot", 'main', self.network)
         self.nickname = unicode(self.nickname).encode("iso-8859-1")
-        self.hostmask=""
         tmp = self.config.getChannels(self.network)
         if tmp:
             self.channels = tmp
@@ -392,7 +391,6 @@ class Bot(pluginSupport, irc.IRCClient):
         """ called by twisted,
             when we signed on the IRC-Server
         """
-        self.logger.debug(self.nickname)
         self.logger.info("signed on " + self.network + " as " + self.nickname)
         channelstojoin = self.channels
         self.channels = []
@@ -748,8 +746,7 @@ class Bot(pluginSupport, irc.IRCClient):
         """ Overridden to get the full hostmask """
         nick = string.split(prefix, '!')[0]
         channel = params[-1]
-        if nick.lower() == self.nickname.lower():
-            self.hostmask=prefix
+        if nick == self.nickname:
             self.joined(channel)
         else:
             self.userJoined(prefix, channel)
@@ -758,7 +755,7 @@ class Bot(pluginSupport, irc.IRCClient):
         """ Overridden to get the full hostmask """
         nick = string.split(prefix, '!')[0]
         channel = params[0]
-        if nick.lower() == self.nickname.lower():
+        if nick == self.nickname:
             self.left(channel)
         else:
             self.userLeft(prefix, channel)
