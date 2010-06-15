@@ -200,19 +200,19 @@ class Bot(pluginSupport, irc.IRCClient):
         self.lineRate = 1.0 / float(lps)
 
         self.user_list={} #nick!user@host -> IRCUser
-
         # my usermmodess
         self.mymodes = {}
         # modes for channels
         self.channelmodes = {}
         self.serversupports = {}
 
-        self.logger.info("Starting new Botinstance")
 
+        self.logger.info("Starting new Botinstance")
         self.startPlugins()
         self.register_my_commands()
-        self.register_pluginsupport_commands()
+        self.startTimeoutDetection()
 
+    def startTimeoutDetection(self):
         self.lastLine = time.time()
         scheduler = self.root.getServiceNamed('scheduler')
         scheduler.callPeriodic(60, self._check_sendLastLine)
@@ -229,6 +229,7 @@ class Bot(pluginSupport, irc.IRCClient):
             if self.user_list[user].hasChannel(channel):
                 ret.append(self.user_list[user])
         return ret
+
     def _check_sendLastLine(self):
         timeout = self.config.get("timeout", 120, "main", self.network)
         if time.time() - self.lastLine > timeout:
@@ -237,6 +238,8 @@ class Bot(pluginSupport, irc.IRCClient):
         return True
 
     def register_ctl_command(self, f, namespace=None, name=None):
+        if not self.controlservice:
+            return
         if namespace is None:
             namespace = []
         if not type(namespace) == list:
@@ -270,13 +273,6 @@ class Bot(pluginSupport, irc.IRCClient):
         if plugin:
             for callback in dir(plugin):
                 self.registerCallback(plugin, callback)
-
-    def getChannelUserDict(self):
-        """ Get a dict with userslists
-            @rtype: dict
-            @return: a dict with the channelnames as keys
-        """
-        return self.users
 
     def getFactory(self):
         """ get the factory
