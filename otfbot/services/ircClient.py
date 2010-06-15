@@ -42,31 +42,22 @@ class botService(service.MultiService):
         self.parent = parent
         service.MultiService.__init__(self)
 
-    def registerControl(self):
+    def startService(self):
         self.controlservice = self.root.getServiceNamed('control')
+        self.logger = logging.getLogger(self.name)
+        self.config = self.root.getServiceNamed('config')
         if not self.controlservice:
             logger.warning("cannot register control-commands as " +
                             "no control-service is available")
         else:
-            self.controlservice.register_ctl_command(self, self.connect)
-            self.controlservice.register_ctl_command(self, self.disconnect)
-            self.controlservice.register_ctl_command(self, lambda: self.namedServices.keys(),
+            self.register_ctl_command(self.connect)
+            self.register_ctl_command(self.disconnect)
+            self.register_ctl_command(lambda: self.namedServices.keys(),
                                       name="list")
-    def startService(self):
-        self.logger = logging.getLogger(self.name)
-        self.config = self.root.getServiceNamed('config')
-        try:
-            self.registerControl()
-            self.connectAll()
-            service.MultiService.startService(self)
-            pluginSuppore.startService(self)
-        except Exception, e:
-            self.logger.debug(repr(e))
-
-    def connectAll(self):
         for network in self.config.getNetworks():
             if self.config.getBool('enabled', 'True', 'main', network):
                 self.connect(network)
+        service.MultiService.startService(self)
 
     def connect(self, network):
         f = BotFactory(self.root, self, network)
@@ -92,6 +83,15 @@ class botService(service.MultiService):
             return "Disconnected from " + network
         else:
             return "Not connected to " + network
+
+    def register_ctl_command(self, f, namespace=None, name=None):
+        if self.controlservice:
+            if namespace is None:
+                namespace = []
+            if not type(namespace) == list:
+                namespace = [namespace, ]
+            namespace.insert(0, self.name)
+            self.controlservice.register_command(f, namespace, name)
 
 
 class BotFactory(protocol.ReconnectingClientFactory):
@@ -211,6 +211,7 @@ class Bot(pluginSupport, irc.IRCClient):
 
         self.startPlugins()
         self.register_my_commands()
+        self.register_pluginsupport_commands()
 
         self.lastLine = time.time()
         scheduler = self.root.getServiceNamed('scheduler')
@@ -245,16 +246,14 @@ class Bot(pluginSupport, irc.IRCClient):
 
     def register_my_commands(self):
         #TODO: fill this list up
-        if "controlservice" in dir(self) and self.controlservice:
-            self.logger.debug("control is there")
-            self.controlservice.register_ctl_command(self.join)
-            self.controlservice.register_ctl_command(self.leave, name="part")
-            self.controlservice.register_ctl_command(self.getUsers)
-            self.controlservice.register_ctl_command(self.setNick, name="rename")
-            self.controlservice.register_ctl_command(lambda: self.channels, name="listchannels")
-            self.controlservice.register_ctl_command(self.kick)
-            self.controlservice.register_ctl_command(self.sendmsg, name="say")
-            self.controlservice.register_ctl_command(self.ping)
+        self.register_ctl_command(self.join)
+        self.register_ctl_command(self.leave, name="part")
+        self.register_ctl_command(self.getUsers)
+        self.register_ctl_command(self.setNick, name="rename")
+        self.register_ctl_command(lambda: self.channels, name="listchannels")
+        self.register_ctl_command(self.kick)
+        self.register_ctl_command(self.sendmsg, name="say")
+        self.register_ctl_command(self.ping)
 
     def startPlugins(self):
         pluginSetting = self.pluginSupportName + "Plugins"
