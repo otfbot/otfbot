@@ -52,10 +52,9 @@ class Plugin(chatMod.chatMod):
             locale.setlocale(locale.LC_ALL, "")
         # saves the hour, to detect daychanges
         self.day = self.ts("%d")
-        #for c in self.bot.channels:
-        #    self.setNetwork()
-        #    self.joined(c)
-        self.setNetwork()
+        for c in self.bot.channels:
+            self.setNetwork()
+            self.joined(c)
 
     def timemap(self):
         return {'y': self.ts("%Y"), 'm': self.ts("%m"), 'd': self.ts("%d")}
@@ -111,10 +110,10 @@ class Plugin(chatMod.chatMod):
             os.makedirs(os.path.dirname(file))
         self.files[string.lower(channel)] = open(file, "a")
         self.log(channel, "--- Log opened " + self.ts("%a %b %d %H:%M:%S %Y"), False)
-        self.log(channel, "-!- " + self.bot.nickname + " [" + self.bot.hostmask.split("!")[1] + "] has joined " + channel)
+        self.log(channel, "-!- " + self.bot.nickname + " [" + self.bot.nickname + "@hostmask] has joined " + channel) #TODO: real Hostmask
 
     def left(self, channel):
-        self.log(channel, "-!- " + self.bot.nickname + "[" + self.bot.hostmask.split("!")[1] + "] has left " + channel)
+        self.log(channel, "-!- " + self.bot.nickname + "[" + self.bot.nickname + "@hostmask] has left " + channel)
         del self.channels[string.lower(channel)]
         self.files[string.lower(channel)].close()
 
