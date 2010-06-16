@@ -143,17 +143,6 @@ class BotFactory(protocol.ReconnectingClientFactory):
 #        self.service.disownServiceParent()
 #        self.service.stopService()
 
-
-class creatingDict(dict):
-    """helper class: a dict, which adds unknown keys with value 0 on access"""
-
-    def __getitem__(self, item):
-        if not item in self:
-            self[item] = 0
-            print "created non-existant key %s" % repr(item)
-        return dict.__getitem__(self, item)
-
-
 class Bot(pluginSupport, irc.IRCClient):
     """ The Protocol of our IRC-Bot
         @ivar plugins: contains references to all plugins, which are loaded
@@ -192,12 +181,8 @@ class Bot(pluginSupport, irc.IRCClient):
         self.nickname = self.config.get("nickname", "OtfBot", 'main', self.network)
         self.nickname = unicode(self.nickname).encode("iso-8859-1")
         self.hostmask=""
-        tmp = self.config.getChannels(self.network)
-        if tmp:
-            self.channels = tmp
-
-        lps = self.config.get("linesPerSecond", "2", "main", self.network)
-        self.lineRate = 1.0 / float(lps)
+        self.channels = self.config.getChannels(self.network) or []
+        self.lineRate = 1.0 / float(self.config.get("linesPerSecond", "2", "main", self.network))
 
         self.user_list={} #nick!user@host -> IRCUser
         # my usermmodess
@@ -205,7 +190,6 @@ class Bot(pluginSupport, irc.IRCClient):
         # modes for channels
         self.channelmodes = {}
         self.serversupports = {}
-
 
         self.logger.info("Starting new Botinstance")
         self.startPlugins()
@@ -358,7 +342,6 @@ class Bot(pluginSupport, irc.IRCClient):
             line = self.encode_line(line, encoding, fallback)
             self.describe(channel, line)
             self.action(self.nickname, channel, line)
-            time.sleep(0.5)
 
     # Callbacks
     def connectionMade(self):
@@ -488,7 +471,6 @@ class Bot(pluginSupport, irc.IRCClient):
                 options = ""
             self._apirunner("command", {"user": user, "channel": channel,
                                        "command": command, "options": options})
-            #return
 
         #FIXME: iirc the first line had a problem, if the bot got a nickchange
         #       from network and self.nickname != real nickname. the forced
