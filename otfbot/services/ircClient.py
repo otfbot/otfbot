@@ -291,12 +291,8 @@ class Bot(pluginSupport, irc.IRCClient):
         """
         level = 0
         for plugin in self.plugins.values():
-            try:
-                retval = plugin.auth(user)
-                if retval > level:
-                    level = retval
-            except AttributeError:
-                pass
+            if plugin.hasattr("auth"):
+                level=max(plugin.auth(user), level)
         return level
 
     def encode_line(self, line, encoding, fallback):
