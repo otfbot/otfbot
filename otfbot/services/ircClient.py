@@ -43,6 +43,13 @@ class botService(service.MultiService):
         service.MultiService.__init__(self)
 
     def startService(self):
+        """ 
+        start the service
+
+        registers control-commands, connects to the configured networks
+        and then calls MultiService.startService
+
+        """
         self.controlservice = self.root.getServiceNamed('control')
         self.logger = logging.getLogger(self.name)
         self.config = self.root.getServiceNamed('config')
@@ -60,6 +67,12 @@ class botService(service.MultiService):
         service.MultiService.startService(self)
 
     def connect(self, network):
+        """
+            connect to the network
+            @ivar network: the name of the network to connect to as used in the config
+
+            gets the servername and port from config, and then connects to the network.
+        """
         f = BotFactory(self.root, self, network)
         sname = self.config.get("server", "localhost", "main", network)
         port = int(self.config.get('port', 6667, 'main', network))
@@ -78,6 +91,7 @@ class botService(service.MultiService):
         self.addService(serv)
 
     def disconnect(self, network):
+        """ disconnect from a network """
         if network in self.namedServices:
             self.removeService(self.namedServices[network])
             return "Disconnected from " + network
@@ -109,9 +123,15 @@ class BotFactory(protocol.ReconnectingClientFactory):
         return "<BotFactory for network %s>" % self.network
 
     def startedConnecting(self, connector):
+        """ callback invoced when connecting is started. logs it. """
         self.logger.info("Started to connect")
 
     def clientConnectionLost(self, connector, reason):
+        """ 
+        callback invoced when connection is lost.
+
+        tries to reconnect or disconnects cleanly.
+        """
         self.protocol = None
         self.service.protocol = None
         if not reason.check(error.ConnectionDone):
@@ -142,16 +162,6 @@ class BotFactory(protocol.ReconnectingClientFactory):
 #        self.logger.info("Got Signal to stop factory, stopping service")
 #        self.service.disownServiceParent()
 #        self.service.stopService()
-
-
-class creatingDict(dict):
-    """helper class: a dict, which adds unknown keys with value 0 on access"""
-
-    def __getitem__(self, item):
-        if not item in self:
-            self[item] = 0
-            print "created non-existant key %s" % repr(item)
-        return dict.__getitem__(self, item)
 
 
 class Bot(pluginSupport, irc.IRCClient):
@@ -213,12 +223,13 @@ class Bot(pluginSupport, irc.IRCClient):
         self.startTimeoutDetection()
 
     def startTimeoutDetection(self):
+        """ initialize the timeout-detection scheduler-call """
         self.lastLine = time.time()
         scheduler = self.root.getServiceNamed('scheduler')
         scheduler.callPeriodic(60, self._check_sendLastLine)
 
     def getUsers(self, channel=None):
-        """ Get a list of users in channel
+        """ Get a list of users in channel (or all channels if channel=None)
             @rtype: dict
             @return: a list of users
         """
@@ -300,6 +311,12 @@ class Bot(pluginSupport, irc.IRCClient):
         return level
 
     def encode_line(self, line, encoding, fallback):
+        """
+            encode a line, trying to use encoding, falling back to fallback
+            @ivar line: the line to encode
+            @ivar encoding: the assumed encoding (i.e. UTF-8)
+            @ivar fallback: a safe fallback (i.e. iso-8859-15)
+        """
         enc = self.config.get("encoding", "UTF-8", "main")
         try:
             line = unicode(line, encoding).encode(enc)
