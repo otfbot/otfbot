@@ -296,7 +296,7 @@ class Bot(pluginSupport, irc.IRCClient):
         """
         level = 0
         for plugin in self.plugins.values():
-            if plugin.hasattr("auth"):
+            if hasattr(plugin, "auth"):
                 level=max(plugin.auth(user), level)
         return level
 
