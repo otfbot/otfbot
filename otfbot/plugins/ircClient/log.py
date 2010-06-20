@@ -52,9 +52,10 @@ class Plugin(chatMod.chatMod):
             locale.setlocale(locale.LC_ALL, "")
         # saves the hour, to detect daychanges
         self.day = self.ts("%d")
-        for c in self.bot.channels:
-            self.setNetwork()
-            self.joined(c)
+        #for c in self.bot.channels:
+        #    self.setNetwork()
+        #    self.joined(c)
+        self.setNetwork()
 
     def timemap(self):
         return {'y': self.ts("%Y"), 'm': self.ts("%m"), 'd': self.ts("%d")}
@@ -110,10 +111,10 @@ class Plugin(chatMod.chatMod):
             os.makedirs(os.path.dirname(file))
         self.files[string.lower(channel)] = open(file, "a")
         self.log(channel, "--- Log opened " + self.ts("%a %b %d %H:%M:%S %Y"), False)
-        self.log(channel, "-!- " + self.bot.nickname + " [" + self.bot.nickname + "@hostmask] has joined " + channel) #TODO: real Hostmask
+        self.log(channel, "-!- " + self.bot.nickname + " [" + self.bot.hostmask.split("!")[1] + "] has joined " + channel)
 
     def left(self, channel):
-        self.log(channel, "-!- " + self.bot.nickname + "[" + self.bot.nickname + "@hostmask] has left " + channel)
+        self.log(channel, "-!- " + self.bot.nickname + "[" + self.bot.hostmask.split("!")[1] + "] has left " + channel)
         del self.channels[string.lower(channel)]
         self.files[string.lower(channel)].close()
 
@@ -160,21 +161,19 @@ class Plugin(chatMod.chatMod):
         self.log(channel, "-!- " + user.split("!")[0] + " [" + user.split("!")[1] + "] has left " + channel)
 
     def userQuit(self, user, quitMessage):
-        userlists = self.bot.getChannelUserDict()
-        for channel in userlists:
-            if user.split("!")[0] in userlists[channel]:
-                self.log(channel, "-!- " + user.split("!")[0] + " [" + user.split("!")[1] + "] has quit [" + quitMessage + "]")
+        user=self.bot.user_list[user]
+        for channel in user.getChannels():
+            self.log(channel, "-!- " + user.nick + " [" + user.user + "@" + user.host + "] has quit [" + quitMessage + "]")
 
     def topicUpdated(self, user, channel, newTopic):
         #TODO: first invoced on join. This should not be logged
         self.log(channel, "-!- " + user + " changed the topic of " + channel + " to: " + newTopic)
 
     def userRenamed(self, oldname, newname):
-        #TODO: This can not handle different channels right
-        userlists = self.bot.getChannelUserDict()
-        for channel in userlists:
-            if newname in userlists[channel]:
-                self.log(channel, "-!- " + oldname + " is now known as " + newname)
+        for user in self.bot.user_list.values():
+            if user.nickname.lower() == oldname.lower():
+                for channel in user.getChannels():
+                    self.log(channel, "-!- " + oldname + " is now known as " + newname)
 
     def stop(self):
         for channel in self.channels:

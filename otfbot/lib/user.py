@@ -51,7 +51,22 @@ class BotUser(service.User):
     def __repr__(self):
         return "<BotUser %s>" % self.name
 
-
+MODE_CHARS = {
+    ' ': 0,
+    'v': 1,
+    'h': 2,
+    'o': 4,
+    'a': 8,
+    'q': 16
+}
+MODE_SIGNS={
+    0: ' ',
+    1: '+',
+    2: 'h',
+    4: '@',
+    8: '!',
+    16: '&'
+}
 class IrcUser(object):
     """ Represents the connection of a L{BotUser} via IRC
 
@@ -74,15 +89,86 @@ class IrcUser(object):
         self.host = host
         self.avatar = None
         self.realname = realname
+        self.channels = set()
+        self.modes = {} #dict channel -> modes
 
     def getBotuser(self):
         return self.avatar
 
+    def setBotuser(self, avatar):
+        self.avatar = avatar
+
     def hasBotuser(self):
         return self.avatar != None
 
+    def setNick(self, nick):
+        self.nick = nick
+
+    def setChannels(self, channels):
+        """ set the channels list to the set given as parameter
+            @ivar channels: the channellist
+        """
+        self.channels = set([channel.lower() for channel in channels])
+        for channel in channels:
+            self.modes[channel]=0
+
+    def getChannels(self):
+        """ get the channels list """
+        return self.channels
+
+    def addChannel(self, channel):
+        """ add a channel to the list of channels of the user
+            @ivar channel: the channel to add
+        """
+        assert type(channel) == str
+        self.channels.add(channel.lower())
+        self.modes[channel]=0
+
+    def hasChannel(self, channel):
+        return channel.lower() in self.channels
+
+    def removeChannel(self, channel):
+        """ remove a channel from the list of channels
+            @ivar channel: the channel to remove
+        """
+        channel=channel.lower()
+        assert(channel in self.channels)
+        self.channels.remove(channel)
+        self.modes.remove(channel)
+
+    def setMode(self, channel, modechar):
+        """ set the usermode specified by the char modchar on channel
+            @ivar channel: the channel where the mode is set
+            @ivar modechar: the char corrosponding to the mode (i.e. "o")
+        """
+        channel=channel.lower()
+        assert(channel in self.channels)
+        assert(modechar in MODE_CHARS)
+        assert(channel in self.modes)
+        self.modes[channel]=self.modes[channel] | MODE_CHARS[modechar]
+
+    def removeMode(self, channel, modechar):
+        """ remove the usermode specified by the char modchar on channel
+            @ivar channel: the channel where the mode is removed
+            @ivar modechar: the char corrosponding to the mode (i.e. "o")
+        """
+        channel=channel.lower()
+        assert(channel in self.channels)
+        assert(modechar in MODE_CHARS)
+        self.modes[channel]=self.modes ^ MODE_CHARS[modechar]
+
+    def getModeSign(self, channel):
+        channel=channel.lower()
+        assert(channel in self.channels)
+        ret_sign=""
+        for sign in MODE_SIGNS:
+            if self.modes[channel] & sign: #signs are ASCENDING in importance
+                ret_sign=MODE_SIGNS[sign]
+        return ret_sign
+
+
     def getHostMask(self):
-        return self.nick + "!" + self.user + "@" + self.host
+        return self.nick.lower() + "!" + self.user.lower() + "@" + self.host.lower()
 
     def __repr__(self):
         return "<IrcUser %s (%s)>" % (self.getHostMask(), self.name)
