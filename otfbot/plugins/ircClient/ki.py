@@ -204,8 +204,6 @@ class megahalResponder(responder):
 class Plugin(chatMod.chatMod):
     def __init__(self, bot):
         self.bot = bot
-        if hasattr(self.bot, "nickname"): #on reload, because "connectionMade" is not invoked for a reloaded ki plugin
-            self.lnickname = string.lower(self.bot.nickname)
 
     def start(self):
         self.channels = []
@@ -252,7 +250,7 @@ class Plugin(chatMod.chatMod):
             ## ignoreQuery should be set to True if you're using auth.
             ## Else the ki also saves your username and password and maybe posts it in public!
             user = user.split("!")[0]
-            if user[0:len(self.lnickname)] == self.lnickname:
+            if user[0:len(self.bot.nickname.lower())] == self.bot.nickname.lower():
                 return
             if user.lower() == self.bot.nickname.lower() or string.lower(user) in self.bot.config.get("ignore", [], "ki", self.bot.network):
                 return
@@ -289,7 +287,7 @@ class Plugin(chatMod.chatMod):
         if number < chance:
             israndom = 1
         #bot answers if it hears its name
-        ishighlighted = self.lnickname in string.lower(msg)
+        ishighlighted = self.bot.nickname.lower() in string.lower(msg)
             
 
         #test, if it starts with user:
@@ -308,7 +306,7 @@ class Plugin(chatMod.chatMod):
 
         if reply:
             #reply=re.sub(" "+self.bot.nickname, " "+user, reply) #more secure to match only the name
-            reply = re.sub(self.lnickname, user, str(reply), re.I) 
+            reply = re.sub(self.bot.nickname.lower(), user, str(reply), re.I) 
             for key in self.wordpairs.keys():
                 reply = re.sub(key, self.wordpairs[key], reply, re.I)
             
@@ -326,8 +324,6 @@ class Plugin(chatMod.chatMod):
                 #self.bot.sendmsg(channel, user+": "+reply, "UTF-8")
                 self.bot.root.getServiceNamed('scheduler').callLater(delay, self.bot.sendmsg, channel, user + ": " + reply, "UTF-8")
 
-    def connectionMade(self):
-        self.lnickname = string.lower(self.bot.nickname)
     def connectionLost(self, reason):
         self.responder.cleanup()
 
