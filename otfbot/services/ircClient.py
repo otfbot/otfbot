@@ -294,6 +294,7 @@ class Bot(pluginSupport, irc.IRCClient):
             @rtype: int
             @return: the level of access rights (0 = nothing, 10 = everything)
         """
+        user=user.lower()
         level = 0
         for plugin in self.plugins.values():
             if hasattr(plugin, "auth"):
@@ -470,6 +471,7 @@ class Bot(pluginSupport, irc.IRCClient):
                         after !command (e.g. "!command foo")
         @type options: string"""
         channel = channel.lower()
+        user=user.lower()
         self._apirunner("command", {"user": user, "channel": channel,
                                     "command": command, "options": options})
 
@@ -485,6 +487,7 @@ class Bot(pluginSupport, irc.IRCClient):
             @type msg: string
         """
         channel = channel.lower()
+        user=user.lower()
         try:
             char = msg[0].decode('UTF-8').encode('UTF-8')
         except UnicodeDecodeError:
@@ -530,6 +533,7 @@ class Bot(pluginSupport, irc.IRCClient):
             @type msg: string
         """
         channel = channel.lower()
+        user=user.lower()
         self._apirunner("noticed", {"user": user,
                                     "channel": channel, "msg": msg})
 
@@ -545,6 +549,7 @@ class Bot(pluginSupport, irc.IRCClient):
             @type msg: string
         """
         channel = channel.lower()
+        user=user.lower()
         self._apirunner("action", {"user": user, "channel": channel,
                                    "msg": message})
 
@@ -631,6 +636,7 @@ class Bot(pluginSupport, irc.IRCClient):
             if a C{user} joined the C{channel}
         """
         channel = channel.lower()
+        user=user.lower()
         nick = user.split("!")[0]
         us = user.split("@", 1)[0].split("!")[1]
         if user in self.user_list:
@@ -646,6 +652,7 @@ class Bot(pluginSupport, irc.IRCClient):
             if a C{user} left the C{channel}
         """
         channel = channel.lower()
+        user=user.lower()
         nick = user.split("!")[0]
         self._apirunner("userLeft", {"user": user, "channel": channel})
         self.user_list[user].removeChannel(channel)
@@ -655,6 +662,7 @@ class Bot(pluginSupport, irc.IRCClient):
         """ called by twisted,
             if a C{user} quits
         """
+        user=user.lower()
         self._apirunner("userQuit", {"user": user, "quitMessage": quitMessage})
         del(self.user_list[user])
 
@@ -670,6 +678,7 @@ class Bot(pluginSupport, irc.IRCClient):
             if a C{user} sent a ctcp query
         """
         channel = channel.lower()
+        user=user.lower()
         self._apirunner("ctcpQuery", {"user": user, "channel": channel,
                 "messages": messages})
 
@@ -690,6 +699,7 @@ class Bot(pluginSupport, irc.IRCClient):
             if the topic was updated
         """
         channel = channel.lower()
+        user=user.lower()
         self._apirunner("topicUpdated", {"user": user,
                 "channel": channel, "newTopic": newTopic})
 
@@ -701,7 +711,7 @@ class Bot(pluginSupport, irc.IRCClient):
         (t, channel, user, host, server, nick, modes, hopsrealname) = params
         channel = channel.lower()
         (hops, realname) = hopsrealname.split(" ", 1)
-        mask="%s!%s@%s"%(nick, user, host)
+        mask=("%s!%s@%s"%(nick, user, host)).lower()
         if mask in self.user_list:
             self.user_list[mask].realname=realname
         else:
