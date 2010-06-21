@@ -636,8 +636,8 @@ class Bot(pluginSupport, irc.IRCClient):
             if a C{user} joined the C{channel}
         """
         channel = channel.lower()
-        user=user.lower()
         nick = user.split("!")[0]
+        user=user.lower()
         us = user.split("@", 1)[0].split("!")[1]
         if user in self.user_list:
             u = self.user_list[user]
