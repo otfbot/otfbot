@@ -161,7 +161,18 @@ class Plugin(chatMod.chatMod):
         self.log(channel, "-!- " + user.split("!")[0] + " [" + user.split("!")[1] + "] has left " + channel)
 
     def userQuit(self, user, quitMessage):
-        user=self.bot.user_list[user]
+        #user is known with current hostmask
+        if user in self.bot.user_list:
+            user=self.bot.user_list[user]
+        #hostmask changed (vHost function of some IRCDs)
+        #or nicktracking did not work as expected
+        #but even lower(nick) should be unique per network
+        else:
+            for user_object in self.bot.getUsers():
+                if user_object.nick.lower() == user.split("!")[0].lower():
+                    user=user_object
+                    break
+
         for channel in user.getChannels():
             self.log(channel, "-!- " + user.nick + " [" + user.user + "@" + user.host + "] has quit [" + quitMessage + "]")
 
