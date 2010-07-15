@@ -676,7 +676,7 @@ class Bot(pluginSupport, irc.IRCClient):
         """ called by twisted,
             if a user changed his nick
         """
-        self._apirunner("userRenamed", {"oldname": oldname, "newname": new})
+        self._apirunner("userRenamed", {"oldname": oldname, "newname": newname})
         for user in self.user_list:
             if self.user_list[user].nick.lower()==oldname.lower():
                 u=self.user_list[user]
