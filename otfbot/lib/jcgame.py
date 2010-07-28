@@ -13,9 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-# 
-# (c) 2005 - 2010 by Alexander Schier
 #
+# (c) 2005 - 2010 by Alexander Schier
 
 import random
 import unittest
@@ -24,6 +23,8 @@ CARD_1000 = "1"
 CARD_2000 = "2"
 CARD_5000 = "5"
 CARD_ZERO = "Z"
+
+
 class Messages:
     NEW_GAME = "Neues Spiel gestartet. Zum teilnehmen !ich sagen."
     USER_JOINED = "%s spielt jetzt mit."
@@ -46,18 +47,26 @@ class Messages:
     PAYBACK = "%s zahlt %s000 an %s."
     LOSE_PAYBACK = "%s muesste %s000 zahlen, hat aber nur Karten im Wert von %s000. Seine/Ihre restlichen Karten bekommt %s."
     LOSE = "%s hat verloren und scheidet aus dem Spiel aus."
+
     def get(self, msg_id):
         """simple dummy function for when the constants contain the final string"""
         return msg_id
+
+
 class DoesNotHaveException(Exception):
     pass
+
+
 class User:
+
     def __init__(self, nick):
         self.nick = nick
         self.cards = {'1': 4, '2': 2, '5': 1, 'Z': 2}
+
     def getCards(self, cards):
         for card in cards.keys():
             self.cards[card] += cards[card]
+
     def giveCards(self, cards):
         for card in cards.keys():
             if self.cards[card] < cards[card]:
@@ -65,21 +74,27 @@ class User:
                 raise DoesNotHaveException(card)
         for card in cards.keys():
             self.cards[card] -= cards[card]
+
     def __str__(self):
         return self.__unicode__()
+
     def __unicode__(self):
         return self.nick
+
     def __eq__(self, other):
         if type(other) == str:
             return self.nick == other
         return self.nick == other.nick
 
+
 class userTestCase(unittest.TestCase):
+
     def testGive(self):
         self.user = User("user")
         self.user.giveCards({'1': 1, 'Z': 2})
         self.assertEquals(self.user.cards['1'], 3)
         self.assertEquals(self.user.cards['Z'], 0)
+
     def testGiveDoesNotHave(self):
         raised_exception = False
         self.user = User("user")
@@ -89,6 +104,7 @@ class userTestCase(unittest.TestCase):
             self.assertEquals(e.message, 'Z')
             raised_exception = True
         self.assertTrue(raised_exception)
+
     def testGetCards(self):
         self.user = User("user")
         self.user.getCards({'1': 5})
@@ -112,11 +128,14 @@ def string2cards(input):
 def string2worth(input):
     cards = string2cards(input)
     return worth(cards)
+
 def worth(cards):
     return cards['1'] + 2 * cards['2'] + 5 * cards['5']
+
 def string2numCards(input):
     cards = string2cards(input)
     return cards['1'] + cards['2'] + cards['5'] + cards['Z']
+
 def char2word(char):
     if char == "1":
         return "1000er"
@@ -128,24 +147,31 @@ def char2word(char):
         return "Zero Mille"
 
 class helpersTestCase(unittest.TestCase):
+
     def testString2Worth(self):
         self.assertEquals(string2worth("1Z5Z2"), 8)
+
     def testString2Cards(self):
         self.assertEquals(string2cards("1Z5Z2"), {'1': 1, '2': 1, '5': 1, 'Z': 2})
+
     def testString2Worth(self):
         self.assertEquals(string2worth("1Z5Z2"), 8)
 
 class State:
+
     def __init__(self, game):
         self.game = game
+
     def input(self, user, command, options):
         pass
 
 class PaybackState(State):
+
     def __init__(self, game, debt):
         self.game = game
         self.debt = debt
         self.defect_choice = False
+
     def input(self, user, command, options):
         if user == self.game.userlist[self.game.current_user] and command == "zahl":
             if self.debt > string2worth(options):
@@ -171,10 +197,12 @@ class PaybackState(State):
 
 
 class LostState(State):
+
     def __init__(self, game, player, last_cards_to):
         self.game = game
         self.player = self.game.userlist[self.game.userlist.index(player)]
         self.last_cards_to = self.game.userlist[self.game.userlist.index(last_cards_to)]
+
     def input(self, user, command, options):
         self.last_cards_to.getCards(self.player.cards) #give the remaining cards to the victim
         self.game.remove(self.player)
@@ -189,6 +217,7 @@ class LostState(State):
         return ret
 
 class LostTestCase(unittest.TestCase):
+
     def testLastPlayerLose(self):
         self.game = Game()
         self.game.current_user = 3 #user4
@@ -202,6 +231,7 @@ class LostTestCase(unittest.TestCase):
         self.assertEquals(output, [(self.game.messages.get(Messages.LOSE) % "user4", True)])
         self.assertEquals(self.game.userlist[0].cards['1'], 8) #user1 gets the cards
         self.assertEquals(self.game.current_user, 0) #next user, index 0
+
     def testFirstPlayerLose(self):
         self.game = Game()
         self.game.current_user = 0 #user1
@@ -217,6 +247,7 @@ class LostTestCase(unittest.TestCase):
         self.assertEquals([str(user) for user in self.game.userlist], ["user2", "user3", "user4"])
         self.assertEquals(self.game.userlist[2].cards['1'], 8) #user4 at index 3 gets the cards
         self.assertEquals(self.game.current_user, 0) #next user, now the index 0
+
     def testMiddlePlayerLose(self):
         self.game = Game()
         self.game.current_user = 2 #user3 at index 2
@@ -234,11 +265,13 @@ class LostTestCase(unittest.TestCase):
         self.assertEquals(self.game.current_user, 1) #user3 now at index 1
 
 class PayedState(State):
+
     def __init__(self, game, cards):
         self.game = game
         self.cards = cards
         self.defect_dice = False #fake dice
         self.defect_choice = False
+
     def input(self, user, command, options):
         if user == self.game.userlist[self.game.current_user]:
             if command == "nimm" or command == "NEXT_COMMAND":
@@ -276,9 +309,11 @@ class PayedState(State):
                 return ret
 
 class NeedToPayState(State):
+
     def __init__(self, game, already_payed={'1': 0, '2': 0, '5': 0, 'Z': 0}):
         self.game = game
         self.cards = already_payed
+
     def input(self, user, command, options):
         if self.game.victim == user:
             if command == "zahl":
@@ -298,6 +333,7 @@ class NeedToPayState(State):
                     return [(self.game.messages.get(Messages.DOES_NOT_HAVE_ENOUGH) % (how_many, which, self.game.victim.cards[which], which), False)]
 
 class SelectPlayerState(State):
+
     def input(self, user, command, options):
         self.game.current_user = (self.game.current_user + 1) % len(self.game.userlist)
         #self.game.execute_next=True
@@ -313,6 +349,7 @@ class SelectPlayerState(State):
         ]
 
 class WaitingForPlayersState(State):
+
     def input(self, user, command, options):
         if command == "ich":
             self.game.userlist.append(User(user))
@@ -329,11 +366,13 @@ class WaitingForPlayersState(State):
                 return self.game.messages.get(Messages.CANNOT_START)
 
 class PregameState(State):
+
     def input(self, user, command, options):
         if command == "newgame":
             self.game.setState(WaitingForPlayersState(self.game))
             return self.game.messages.get(Messages.NEW_GAME)
 class Game:
+
     def __init__(self):
         self.state = PregameState(self)
         self.messages = Messages()
@@ -343,6 +382,7 @@ class Game:
         self.current_user = -1
         self.carlotta_cards = ['5', '2', '2', '1', '1', 'Z']
         self.execute_next = False
+
     def input(self, user, command, options=""):
         message = self.state.input(user, command, options)
         if type(message) == str:
@@ -354,6 +394,7 @@ class Game:
             return message + self.input(user, "NEXT_COMMAND", "NEXT_OPTIONS") #call to the next state
         else:
             return message
+
     def remove(self, user):
         if self.userlist.index(user) < self.current_user:
             self.current_user -= 1 #the index shrinks by one, if the removed user was over the current user
@@ -364,6 +405,7 @@ class Game:
         self.state = state
 
 class gameTestCase(unittest.TestCase):
+
     def setUp(self):
         self.game = Game()
         #self.game.setState(PregameState(self.game))
@@ -371,28 +413,34 @@ class gameTestCase(unittest.TestCase):
         self.nick = "user1"
         self.nick2 = "userX"
         self.nick3 = "userGamma"
+
     def assertPublicOutput(self, output, correct_output):
         if type(correct_output) != list:
             correct_output = [(correct_output, True)]
         for index in range(len(correct_output)):
             #print output[index]
             self.assertEquals(output[index], correct_output[index])
+
     def testNewgame(self):
         self.assertPublicOutput(self.game.input(self.nick, "newgame"), self.messages.get(Messages.NEW_GAME))
         self.assertTrue(len(self.game.userlist) == 0, self.game.userlist)
         self.assertEquals(self.game.state.__class__, WaitingForPlayersState)
+
     def testJoin(self):
         self.testNewgame()
         self.assertPublicOutput(self.game.input(self.nick, "ich"), self.messages.get(Messages.USER_JOINED) % self.nick)
         self.assertPublicOutput(self.game.input(self.nick2, "ich"), self.messages.get(Messages.USER_JOINED) % self.nick2)
+
     def testPart(self):
         self.testJoin()
         self.assertPublicOutput(self.game.input(self.nick2, "remove"), self.messages.get(Messages.USER_PARTED) % self.nick2)
         self.assertTrue(not self.nick2 in self.game.userlist)
+
     def testCannotStart(self):
         self.testPart()
         self.assertPublicOutput(self.game.input(self.nick, "startgame"), self.messages.get(Messages.CANNOT_START))
         self.assertEquals(self.game.state.__class__, WaitingForPlayersState)
+
     def testStart(self):
         self.testJoin()
         self.assertTrue(self.nick in self.game.userlist and self.nick2 in self.game.userlist, self.game.userlist)
@@ -405,6 +453,7 @@ class gameTestCase(unittest.TestCase):
                 ]
         )
         self.assertEquals(self.game.state.__class__, NeedToPayState)
+
     def testPayment(self):
         self.testStart()
         self.assertEquals(self.game.input(self.nick2, "zahl", "55555"),
@@ -416,6 +465,7 @@ class gameTestCase(unittest.TestCase):
         self.assertEquals(self.game.victim.cards['Z'], 1)
         self.assertEquals(self.game.victim.cards['2'], 1)
         self.assertEquals(self.game.state.__class__, PayedState)
+
     def testAccept(self):
         self.testPayment()
         self.assertPublicOutput(self.game.input(self.nick, "nimm"), [
@@ -429,6 +479,7 @@ class gameTestCase(unittest.TestCase):
         self.assertEquals(self.game.userlist[self.game.userlist.index(self.nick)].cards['2'], 3)
         self.assertEquals(self.game.userlist[self.game.userlist.index(self.nick)].cards['Z'], 3)
         self.assertEquals(self.game.state.__class__, NeedToPayState) # Game skipped over SelectPlayerState
+
     def testDoubt_correct(self):
         self.testPayment()
         self.game.state.defect_dice = 2
@@ -444,6 +495,7 @@ class gameTestCase(unittest.TestCase):
             (self.messages.get(Messages.VICTIM_CHOOSEN % self.nick), True)
         ])
         self.assertEquals(self.game.state.__class__, NeedToPayState) #Game skipped over SelectPlayerState
+
     def testDoubt_toolittle(self):
         self.testPayment()
         self.game.state.defect_dice = 3
@@ -456,6 +508,7 @@ class gameTestCase(unittest.TestCase):
         self.assertEquals(self.game.state.__class__, NeedToPayState) #not skipped, but an additional payment is needed
         self.assertEquals(self.game.state.cards['Z'], 1)
         self.assertEquals(self.game.state.cards['2'], 1)
+
     def testDoubt_toomuch(self):
         self.testPayment()
         self.game.state.defect_dice = 1
@@ -465,6 +518,7 @@ class gameTestCase(unittest.TestCase):
             (self.messages.get(Messages.MONEY_TOOMUCH) % (2, self.nick), True),
         ])
         self.assertEquals(self.game.state.__class__, PaybackState)
+
     def testPayback(self):
         self.testDoubt_toomuch()
         self.game.state.defect_choice = "Z"
@@ -490,6 +544,7 @@ class gameTestCase(unittest.TestCase):
 
         #restore old state
         self.carlotta_cards = ['5', '2', '2', '1', '1', 'Z']
+
     def testDoubt_toomuch_lose(self):
         self.testPayment()
         self.game.state.defect_dice = 1

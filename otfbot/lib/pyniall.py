@@ -16,7 +16,8 @@
 #
 # (c) 2008 - 2010 by Alexander Schier
 
-import random, yaml
+import random
+import yaml
 
 class pyNiall:
     def __init__(self):
