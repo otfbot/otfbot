@@ -396,6 +396,7 @@ class Bot(pluginSupport, irc.IRCClient):
         """
         self.logger.debug(self.nickname)
         self.logger.info("signed on " + self.network + " as " + self.nickname)
+        self._apirunner("signedOn")
         channelstojoin = self.channels
         self.channels = []
         for channel in channelstojoin:
@@ -408,7 +409,6 @@ class Bot(pluginSupport, irc.IRCClient):
                                             unicode(pw).encode("iso-8859-1"))
                 else:
                     self.join(unicode(channel).encode("iso-8859-1"))
-        self._apirunner("signedOn")
 
     def joined(self, channel):
         """ called by twisted,
