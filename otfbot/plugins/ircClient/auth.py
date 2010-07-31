@@ -64,14 +64,14 @@ class Plugin(chatMod.chatMod):
             else:
                 self.bot.sendmsg(nick, "Usage: identify [user] pass")
                 return
-            if not nick in self.bot.userlist:
+            if not user in self.bot.user_list:
                 u = IrcUser(user.split("!")[0],
                           user.split("!", 1)[1].split("@")[0],
                           user.split("!", 1)[1].split("@")[1],
                           user.split("!")[0], self.bot)
-                self.bot.userlist[nick] = u
+                self.bot.user_list[user] = u
 
-            d = portal.login(cred, self.bot.userlist[nick], IUser)
+            d = portal.login(cred, self.bot.user_list[user], IUser)
             msg = "Successfully logged in as %s"
             d.addCallback(lambda args: self.bot.sendmsg(nick, msg % args[1].name))
             fail = "Login failed: %s"
@@ -81,8 +81,7 @@ class Plugin(chatMod.chatMod):
         """
         Returns the access-level of the given user.
         """
-        user = user.split("!")[0]
-        if self.bot.userlist[user].avatar is not None:
+        if self.bot.user_list[user].avatar is not None:
             return 10
         else:
             return 0
