@@ -712,25 +712,6 @@ class Bot(pluginSupport, irc.IRCClient):
         self.user_list[mask].setMode(channel, s)
         self._apirunner("irc_RPL_WHOREPLY", {"channel": channel, "user": mask, "server": server, "realname": realname})
 
-    #def irc_RPL_USERHOST(self, prefix, params):
-    #    for rpl in params[1].strip().split(" "):
-    #        tmp = rpl.split('=', 1)
-    #        if len(tmp) == 2:
-    #            (nick, hostmask) = tmp
-    #        else:
-    #            if not self.nickname == rpl:
-    #                msgs = "Error parsing RPL_USERHOST: %s, %s"
-    #                self.logger.warning(msgs % (prefix, params))
-    #            continue
-    #        nick = nick.replace("*", "")
-    #        hm = hostmask.split('@', 1)
-    #        if nick in self.userlist:
-    #            self.userlist[nick].user = hm[0][1:]
-    #            self.userlist[nick].host = hm[1]
-    #        else:
-    #            msgs = 'received RPL_USERHOST for "%s", who is not in list'
-    #            self.logger.warning(msgs % nick)
-
     def irc_INVITE(self, prefix, params):
         """ called by twisted,
             if the bot was invited
