@@ -24,27 +24,31 @@ React to !commands with text from a commands.txt file
 
 from otfbot.lib import chatMod
 from otfbot.lib import functions
+from otfbot.lib.pluginSupport import getRegisterCallbackDecorator
 
 import string
 import re
 import random
 import os
 
+registerCallback=getRegisterCallbackDecorator("commands")
 
 class Plugin(chatMod.chatMod):
-
     def __init__(self, bot):
         self.bot = bot
         self.channels = []
         self.mtime = 0
 
+    @registerCallback
     def connectionMade(self):
         self.start()
 
+    @registerCallback
     def joined(self, channel):
         filename = self.bot.config.getPath("file", datadir, "commands.txt", "commands", self.bot.network, channel)
         self.commands[channel] = functions.loadProperties(filename, True)
 
+    @registerCallback
     def command(self, user, channel, command, options):
         user = user.split("!")[0] #only nick
         if self.bot.config.getBool("autoReload", True, "commands", self.bot.network, channel):
@@ -66,6 +70,7 @@ class Plugin(chatMod.chatMod):
                     enc = self.bot.config.get("fileencoding", "iso-8859-15", "commands", self.bot.network, channel)
                     self.bot.sendme(channel, answer, enc)
 
+    @registerCallback
     def start(self):
         self.register_ctl_command(self.reload)
         self.commands = {}
@@ -76,6 +81,7 @@ class Plugin(chatMod.chatMod):
         for chan in self.bot.channels:
             self.joined(chan)
 
+    @registerCallback
     def reload(self):
         self.start()
         return "reloaded commands"
