@@ -17,8 +17,8 @@
 # (c) 2008 by Alexander Schier
 #
 
-from otfbot.lib.jcgame import Game
 from otfbot.lib import chatMod
+from game import Game
 
 
 class Plugin(chatMod.chatMod):
