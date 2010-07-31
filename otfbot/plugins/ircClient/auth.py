@@ -81,6 +81,9 @@ class Plugin(chatMod.chatMod):
         """
         Returns the access-level of the given user.
         """
+        if not user in self.bot.user_list:
+            self.logger.warning("User %s not in user_list!")
+            return 0
         if self.bot.user_list[user].avatar is not None:
             return 10
         else:
