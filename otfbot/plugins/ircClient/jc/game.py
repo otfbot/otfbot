@@ -26,17 +26,20 @@ CARD_ZERO = "Z"
 
 
 class Messages:
-    NEW_GAME = "Neues Spiel gestartet. Zum teilnehmen !ich sagen."
+    NEW_GAME = "Neues Spiel gestartet. Zum teilnehmen !ich sagen. Zum starten !startgame."
     USER_JOINED = "%s spielt jetzt mit."
     USER_PARTED = "%s spielt jetzt nicht mehr mit."
     CANNOT_START = "Mindestens 2 Spieler noetig"
     GAME_STARTED = "Spiel gestartet."
     YOUR_TURN = "%s ist dran. Ich wuerfle fuer ihn einen Gegner aus ..."
     VICTIM_CHOOSEN = "%s zahl deine Schulden!"
+    YOU_NEED_TO_PAY = 'Du musst %s deine Schulden bezahlen. Sag z.B "zahl 1Z" um 1000 + 1x Zero zu legen.'
     DOES_NOT_HAVE_ENOUGH = "Du moechtest %sx %s legen, du hast aber nur %sx %s!"
-    PAYED = "%s hat %s Karten auf den Tisch gelegt."
+    PAYED = "%s hat %s Karten auf den Tisch gelegt. !nimm oder !zweifel"
     ACCEPT = "%s akzeptiert die Zahlung."
     GOT = "Du hast %sx 5000, %sx 2000, %sx 1000 und %s Blueten bekommen."
+    YOU_HAVE = "Du hast %sx 5000, %sx 2000, %sx 1000 und %s Blueten."
+    YOU_DO_NOT_PLAY = "Du spielst gar nicht mit."
     DOUBT = "%s zweifelt dass da genug Geld liegt um deine Schulden zu begleichen."
     DICE = "%s wuerfelt, und das Ergebnis ist %s"
     MONEY_CORRECT = "Das Geld stimmt genau!"
@@ -47,6 +50,7 @@ class Messages:
     PAYBACK = "%s zahlt %s000 an %s."
     LOSE_PAYBACK = "%s muesste %s000 zahlen, hat aber nur Karten im Wert von %s000. Seine/Ihre restlichen Karten bekommt %s."
     LOSE = "%s hat verloren und scheidet aus dem Spiel aus."
+    NOTHING_PAID = "Du musst mindestens eine Karte legen."
 
     def get(self, msg_id):
         """simple dummy function for when the constants contain the final string"""
@@ -54,6 +58,8 @@ class Messages:
 
 
 class DoesNotHaveException(Exception):
+    pass
+class NothingPaidException(Exception):
     pass
 
 
@@ -175,10 +181,10 @@ class PaybackState(State):
     def input(self, user, command, options):
         if user == self.game.userlist[self.game.current_user] and command == "zahl":
             if self.debt > string2worth(options):
-                return ("Du musst Karten im Gesammtwert von %s000 geben." % self.debt, False)
+                return [("Du musst Karten im Gesammtwert von %s000 geben." % self.debt, False)]
             if self.debt <= string2worth(options):
                 try:
-                    ret = [(self.game.messages.get(Messages.PAYBACK) % (self.game.userlist[self.game.current_user], string2worth(options), self.game.victim), True)]
+                    ret = [(self.game.messages.get(Messages.PAYBACK) % (self.game.userlist[self.game.current_user], string2worth(options), self.game.victim.nick), True)]
                     self.game.userlist[self.game.current_user].giveCards(string2cards(options))
                     if len(self.game.carlotta_cards) > 0:
                         carlotta_card = random.choice(self.game.carlotta_cards)
@@ -193,7 +199,7 @@ class PaybackState(State):
                     self.game.setState(SelectPlayerState(self.game))
                     return ret
                 except DoesNotHaveException, e:
-                    return ("Du hast versucht eine %s karte zu legen, die du nicht hast." % char2word(e.message), False)
+                    return [("Du hast versucht eine %s karte zu legen, die du nicht hast." % char2word(e.message), False)]
 
 
 class LostState(State):
@@ -264,7 +270,7 @@ class LostTestCase(unittest.TestCase):
         self.assertEquals(self.game.userlist[2].cards['1'], 8) #user4 at index 3 gets the cards
         self.assertEquals(self.game.current_user, 1) #user3 now at index 1
 
-class PayedState(State):
+class PaidState(State):
 
     def __init__(self, game, cards):
         self.game = game
@@ -294,13 +300,14 @@ class PayedState(State):
                     self.game.execute_next = True #execute this state again, with NEXT_COMMAND
                 elif money < dice:
                     ret += [(self.game.messages.get(Messages.MONEY_TOOLITTLE), True)]
-                    ret += [(self.game.messages.get(Messages.VICTIM_CHOOSEN % self.game.victim), True)]
+                    ret += [(self.game.messages.get(Messages.VICTIM_CHOOSEN % self.game.victim.nick), True)]
+                    ret += [(self.game.messages.get(Messages.YOU_NEED_TO_PAY % user), self.game.victim.nick)]
                     self.game.setState(NeedToPayState(self.game, self.cards))
                 elif dice < money:
                     ret += [(self.game.messages.get(Messages.MONEY_TOOMUCH) % (money, self.game.userlist[self.game.current_user]), True)]
                     if worth(self.game.userlist[self.game.current_user].cards) < worth(self.cards):
                         #LOSE
-                        ret += [(self.game.messages.get(Messages.LOSE_PAYBACK) % (self.game.userlist[self.game.current_user], worth(self.cards), worth(self.game.userlist[self.game.current_user].cards), self.game.victim), True)]
+                        ret += [(self.game.messages.get(Messages.LOSE_PAYBACK) % (self.game.userlist[self.game.current_user], worth(self.cards), worth(self.game.userlist[self.game.current_user].cards), self.game.victim.nick), True)]
                         self.game.execute_next = True
                         self.game.setState(LostState(self.game, self.game.userlist[self.game.current_user], self.game.victim))
                         return ret
@@ -319,18 +326,24 @@ class NeedToPayState(State):
             if command == "zahl":
                 try:
                     cards2 = string2cards(options)
+                    if cards2['1'] == 0 and cards2['2'] == 0 and cards2['5'] == 0 and cards2['Z'] == 0:
+                        raise NothingPaidException
                     self.game.victim.giveCards(cards2) #subtract the cards from the victim
                     #add to already_payed cards
                     cards2['1'] += self.cards['1']
                     cards2['2'] += self.cards['2']
                     cards2['5'] += self.cards['5']
                     cards2['Z'] += self.cards['Z']
-                    self.game.setState(PayedState(self.game, cards2)) #put them into the state
-                    return self.game.messages.get(Messages.PAYED % (user, string2numCards(options)))
+                    self.game.setState(PaidState(self.game, cards2)) #put them into the state
+                    #return self.game.messages.get(Messages.PAYED % (user, string2numCards(options)))
+                    return [(self.game.messages.get(Messages.PAYED % (user, string2numCards(options))), True)]
                 except DoesNotHaveException, e:
                     which = e.message
                     how_many = cards2[e.message]
                     return [(self.game.messages.get(Messages.DOES_NOT_HAVE_ENOUGH) % (how_many, which, self.game.victim.cards[which], which), False)]
+                except NothingPaidException:
+                    return [(self.game.messages.get(Messages.NOTHING_PAID), False)]
+
 
 class SelectPlayerState(State):
 
@@ -345,7 +358,8 @@ class SelectPlayerState(State):
         self.game.setState(NeedToPayState(self.game))
         return [
             (self.game.messages.get(Messages.YOUR_TURN % self.game.userlist[self.game.current_user]), True),
-            (self.game.messages.get(Messages.VICTIM_CHOOSEN % self.game.victim), True)
+            (self.game.messages.get(Messages.VICTIM_CHOOSEN % self.game.victim.nick), True),
+            (self.game.messages.get(Messages.YOU_NEED_TO_PAY % self.game.userlist[self.game.current_user]), self.game.victim.nick)
         ]
 
 class WaitingForPlayersState(State):
@@ -384,16 +398,27 @@ class Game:
         self.execute_next = False
 
     def input(self, user, command, options=""):
-        message = self.state.input(user, command, options)
-        if type(message) == str:
-            message = [(message, True)]
-        elif message == None:
-            message = []
-        if self.execute_next:
-            self.execute_next = False
-            return message + self.input(user, "NEXT_COMMAND", "NEXT_OPTIONS") #call to the next state
+        if command == "karten":
+            u=None
+            for u2 in self.userlist:
+                if str(u2)==user:
+                    u=u2
+            if not u:
+                return [(self.messages.get(Messages.YOU_DO_NOT_PLAY), False)]
+            else:
+                return [(self.messages.get(Messages.YOU_HAVE) % (u.cards['5'], u.cards['2'], u.cards['1'], u.cards['Z']), False)]
+            self.logger.debug(user)
         else:
-            return message
+            message = self.state.input(user, command, options)
+            if type(message) == str:
+                message = [(message, True)]
+            elif message == None:
+                message = []
+            if self.execute_next:
+                self.execute_next = False
+                return message + self.input(user, "NEXT_COMMAND", "NEXT_OPTIONS") #call to the next state
+            else:
+                return message
 
     def remove(self, user):
         if self.userlist.index(user) < self.current_user:
@@ -449,7 +474,8 @@ class gameTestCase(unittest.TestCase):
                 [
                 (self.messages.get(Messages.GAME_STARTED), True),
                 (self.messages.get(Messages.YOUR_TURN % self.nick), True),
-                (self.messages.get(Messages.VICTIM_CHOOSEN % self.nick2), True)
+                (self.messages.get(Messages.VICTIM_CHOOSEN % self.nick2), True),
+                (self.game.messages.get(Messages.YOU_NEED_TO_PAY % self.nick), self.nick2)
                 ]
         )
         self.assertEquals(self.game.state.__class__, NeedToPayState)
@@ -464,7 +490,7 @@ class gameTestCase(unittest.TestCase):
         self.assertPublicOutput(self.game.input(self.nick2, "zahl", "2Z"), self.messages.get(Messages.PAYED % (self.nick2, 2)))
         self.assertEquals(self.game.victim.cards['Z'], 1)
         self.assertEquals(self.game.victim.cards['2'], 1)
-        self.assertEquals(self.game.state.__class__, PayedState)
+        self.assertEquals(self.game.state.__class__, PaidState)
 
     def testAccept(self):
         self.testPayment()
@@ -474,7 +500,8 @@ class gameTestCase(unittest.TestCase):
 
             #next state, just to finish the test
             (self.messages.get(Messages.YOUR_TURN) % self.nick2, True),
-            (self.messages.get(Messages.VICTIM_CHOOSEN % self.nick), True)
+            (self.messages.get(Messages.VICTIM_CHOOSEN % self.nick), True),
+            (self.game.messages.get(Messages.YOU_NEED_TO_PAY % self.nick2), self.nick)
         ])
         self.assertEquals(self.game.userlist[self.game.userlist.index(self.nick)].cards['2'], 3)
         self.assertEquals(self.game.userlist[self.game.userlist.index(self.nick)].cards['Z'], 3)
@@ -492,7 +519,8 @@ class gameTestCase(unittest.TestCase):
 
             #next state, just to finish the test
             (self.messages.get(Messages.YOUR_TURN) % self.nick2, True),
-            (self.messages.get(Messages.VICTIM_CHOOSEN % self.nick), True)
+            (self.messages.get(Messages.VICTIM_CHOOSEN % self.nick), True),
+            (self.game.messages.get(Messages.YOU_NEED_TO_PAY % self.nick2), self.nick)
         ])
         self.assertEquals(self.game.state.__class__, NeedToPayState) #Game skipped over SelectPlayerState
 
@@ -503,7 +531,8 @@ class gameTestCase(unittest.TestCase):
             (self.messages.get(Messages.DOUBT) % self.nick, True),
             (self.messages.get(Messages.DICE) % (self.nick, 3), True),
             (self.messages.get(Messages.MONEY_TOOLITTLE), True),
-            (self.messages.get(Messages.VICTIM_CHOOSEN) % self.nick2, True)
+            (self.messages.get(Messages.VICTIM_CHOOSEN) % self.nick2, True),
+            (self.game.messages.get(Messages.YOU_NEED_TO_PAY % self.nick), self.nick2)
         ])
         self.assertEquals(self.game.state.__class__, NeedToPayState) #not skipped, but an additional payment is needed
         self.assertEquals(self.game.state.cards['Z'], 1)
@@ -561,6 +590,7 @@ class gameTestCase(unittest.TestCase):
             (self.messages.get(Messages.LOSE) % self.nick, True),
             (self.messages.get(Messages.YOUR_TURN % self.nick3), True),
             (self.messages.get(Messages.VICTIM_CHOOSEN % self.nick2), True)
+            (self.game.messages.get(Messages.YOU_NEED_TO_PAY % self.nick), self.nick2)
         ])
         self.assertEquals(self.game.state.__class__, NeedToPayState)
 

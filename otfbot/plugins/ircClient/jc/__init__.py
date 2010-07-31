@@ -28,21 +28,26 @@ class Plugin(chatMod.chatMod):
 
     def start(self):
         self.game = Game()
+        self.game.logger=self.logger
         self.gamechannel = ""
 
     def query(self, user, channel, msg):
         if " " in msg:
             (command, options) = msg.split(" ", 1)
             self.command(user, self.gamechannel, command, options)
+        else:
+            self.command(user, self.gamechannel, msg, "")
 
     def command(self, user, channel, command, options):
         user = user.split("!")[0]
         if command == "newgame":
             self.gamechannel = channel
-        if command in ['nimm', 'zweifel', 'ich', 'remove', 'newgame', 'startgame', 'zahl']:
+        if command in ['nimm', 'zweifel', 'ich', 'remove', 'newgame', 'startgame', 'zahl', 'karten']:
             lines = self.game.input(user, command, options)
             for line in lines:
                 if line[1] == True:
                     self.bot.sendmsg(channel, line[0])
-                else:
+                elif line[1] == False:
                     self.bot.sendmsg(user, line[0])
+                elif type(line[1]) == str:
+                    self.bot.sendmsg(line[1], line[0])
