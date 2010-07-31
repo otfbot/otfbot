@@ -29,6 +29,7 @@ from twisted.words.protocols import irc
 import logging
 import string
 import time
+from threading import Lock
 
 from otfbot.lib.pluginSupport import pluginSupport
 from otfbot.lib.user import IrcUser, MODE_CHARS, MODE_SIGNS
@@ -250,6 +251,7 @@ class Bot(pluginSupport, irc.IRCClient):
 
         self.syncing_channels=[] #list of channels, which still wait for ENDOFWHO
         self.callback_queue=[] #list of callbacks waiting for ENDOFWHO, structure: [([channels], (function, args, kwargs))]
+        self.sync_lock=Lock()
 
         self.logger.info("Starting new Botinstance")
         self.startPlugins()
@@ -778,6 +780,7 @@ class Bot(pluginSupport, irc.IRCClient):
         self.syncing_channels.remove(channel) #we are no longer blocking callbacks
         self.logger.debug("ENDOFWHO(%s) - %s callbacks possibly waiting"%(channel, len(self.callback_queue)))
 
+        self.sync_lock.acquire()
         #invoce callbacks formerly blocked until the channel is synced
         execute_now=[]
         for callback in self.callback_queue:
@@ -791,6 +794,7 @@ class Bot(pluginSupport, irc.IRCClient):
             func(self, *args, **kwargs)
         for callback in execute_now:
             self.callback_queue.remove(callback)
+        self.sync_lock.release()
         self.logger.debug("ENDOFWHO(%s) - %s waiting callbacks executed"%(channel, count))
 
 
