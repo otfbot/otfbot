@@ -589,8 +589,8 @@ class gameTestCase(unittest.TestCase):
             (self.messages.get(Messages.LOSE_PAYBACK) % (self.nick, 2, 1, self.nick2), True),
             (self.messages.get(Messages.LOSE) % self.nick, True),
             (self.messages.get(Messages.YOUR_TURN % self.nick3), True),
-            (self.messages.get(Messages.VICTIM_CHOOSEN % self.nick2), True)
-            (self.game.messages.get(Messages.YOU_NEED_TO_PAY % self.nick), self.nick2)
+            (self.messages.get(Messages.VICTIM_CHOOSEN % self.nick2), True),
+            (self.game.messages.get(Messages.YOU_NEED_TO_PAY % self.nick3), self.nick2)
         ])
         self.assertEquals(self.game.state.__class__, NeedToPayState)
 
