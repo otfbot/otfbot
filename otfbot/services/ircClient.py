@@ -57,7 +57,7 @@ def syncedChannel(argnum=None):
 
 def syncedChannelRaw(func):
     def callSynced(self, *args, **kwargs):
-        channel = kwargs['params'][1]
+        channel = args[1][1]
         if channel in self.syncing_channels:
             self.callback_queue.append(([channel], (func, args, kwargs)))
         else:
@@ -753,6 +753,7 @@ class Bot(pluginSupport, irc.IRCClient):
         """
             "<channel> <user> <host> <server> <nick> <H|G>[*][@|+] :<hopcount> <real name>"
         """
+        self.logger.debug(params)
         # modes: H = Here, G = Gone, r=registerd, B=Bot
         (t, channel, user, host, server, nick, modes, hopsrealname) = params
         channel = channel.lower()
