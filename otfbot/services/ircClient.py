@@ -167,8 +167,6 @@ class Bot(pluginSupport, irc.IRCClient):
     """ The Protocol of our IRC-Bot
         @ivar plugins: contains references to all plugins, which are loaded
         @type plugins: list
-        @ivar users: contains a dict of all users in the channels we are in
-        @type users: dict
         @ivar channels: all channels we are currently in
         @type channels: list
         @ivar network: the name of the network we are connected to
