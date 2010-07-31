@@ -777,19 +777,20 @@ class Bot(pluginSupport, irc.IRCClient):
         (nickname, channel, message) = params
         self.syncing_channels.remove(channel) #we are no longer blocking callbacks
         self.logger.debug("ENDOFWHO(%s) - %s callbacks possibly waiting"%(channel, len(self.callback_queue)))
+
         #invoce callbacks formerly blocked until the channel is synced
-        #self.logger.debug(self.callback_queue)
-        count=0
-        to_remove=[]
+        execute_now=[]
         for callback in self.callback_queue:
             (channels, (func, args, kwargs))=callback
             if len(set(channels).intersection(set(self.syncing_channels))) == 0: #no channel is blocking this callback
-                func(self, *args, **kwargs)
-                to_remove.append(callback)
-                count+=1
-        #if we would remove it in the loop above, the loop iterator does not cycle through all elements
-        for trm in to_remove:
-            self.callback_queue.remove(trm)
+                execute_now.append(callback) #avoid race conditions on the callback_queue
+
+        count=len(execute_now)
+        for callback in execute_now:
+            (channels, (func, args, kwargs))=callback
+            func(self, *args, **kwargs)
+        for callback in execute_now:
+            self.callback_queue.remove(callback)
         self.logger.debug("ENDOFWHO(%s) - %s waiting callbacks executed"%(channel, count))
 
 
