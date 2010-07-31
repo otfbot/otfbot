@@ -37,7 +37,6 @@ class Plugin(chatMod.chatMod):
         self.modes["dehalfop"] = {"char": "h", "set": 0}
 
     def command(self, user, channel, command, options):
-        user = user.split("!")[0]
         if self.bot.auth(user) > 2 and command in self.modes.keys():
             if options != "":
                 self.bot.mode(channel, self.modes[command]["set"], self.modes[command]["char"], None, options)
