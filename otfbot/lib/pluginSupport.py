@@ -22,6 +22,13 @@ import sys
 import traceback
 
 
+def getRegisterCallbackDecorator(module, priority=10):
+    def decorator(func):
+        func.is_callback=True
+        func.priority=priority
+        return func
+    return decorator
+
 class pluginSupport:
     """
     inherit from this class to enable support for plugins
@@ -93,7 +100,7 @@ class pluginSupport:
                 return c
         pkg = self.pluginSupportPath.replace("/", ".") + "." + name
         try:
-            cls = __import__(pkg, fromlist=['*'])
+            cls = __import__(pkg, fromlist=['*'], globals={'service': self})
             cls.datadir = self.config.get("datadir", "data")
             cls.datadir += "/" + self._getClassName(cls)
             self.classes.append(cls)
@@ -171,6 +178,9 @@ class pluginSupport:
                 if hasattr(mod, "start"):
                     mod.start()
                 self.plugins[self._getClassName(pluginClass)] = mod
+                for func in dir(mod):
+                    if hasattr(getattr(mod, func), "is_callback"):
+                        self.registerCallback(mod, func, priority=getattr(mod, func).priority)
             except Exception, e:
                 self.logerror(self.logger, self._getClassName(pluginClass), e)
                 # exception occured (e.g. dependency missing
