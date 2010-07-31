@@ -434,7 +434,6 @@ class Bot(pluginSupport, irc.IRCClient):
         """ called by twisted,
             when we signed on the IRC-Server
         """
-        self.logger.debug(self.nickname)
         self.logger.info("signed on " + self.network + " as " + self.nickname)
         self._apirunner("signedOn")
         channelstojoin = self.channels
@@ -753,7 +752,6 @@ class Bot(pluginSupport, irc.IRCClient):
         """
             "<channel> <user> <host> <server> <nick> <H|G>[*][@|+] :<hopcount> <real name>"
         """
-        self.logger.debug(params)
         # modes: H = Here, G = Gone, r=registerd, B=Bot
         (t, channel, user, host, server, nick, modes, hopsrealname) = params
         channel = channel.lower()
@@ -782,13 +780,16 @@ class Bot(pluginSupport, irc.IRCClient):
         #invoce callbacks formerly blocked until the channel is synced
         #self.logger.debug(self.callback_queue)
         count=0
+        to_remove=[]
         for callback in self.callback_queue:
             (channels, (func, args, kwargs))=callback
-            still_blocked=False
-            if len(set(channels).intersection(self.syncing_channels)) == 0: #no channel is blocking this callback
+            if len(set(channels).intersection(set(self.syncing_channels))) == 0: #no channel is blocking this callback
                 func(self, *args, **kwargs)
-                self.callback_queue.remove(callback)
+                to_remove.append(callback)
                 count+=1
+        #if we would remove it in the loop above, the loop iterator does not cycle through all elements
+        for trm in to_remove:
+            self.callback_queue.remove(trm)
         self.logger.debug("ENDOFWHO(%s) - %s waiting callbacks executed"%(channel, count))
 
 
