@@ -17,6 +17,10 @@
 # (c) 2008 by Thomas Wiegart
 #
 
+"""
+    Periodically checks a subversion repository for new revisions and posts them
+"""
+
 HAS_PYSVN=True
 try:
     import pysvn
@@ -26,17 +30,18 @@ except ImportError:
 from otfbot.lib import chatMod
 
 class Plugin(chatMod.chatMod):
+    """ svn plugin """
     def __init__(self,bot):
         """
-        Config has to look like this:
-        svn.repositories.samplesvn.checkinterval: 30 (in Minutes!)
-        svn.repositories.samplesvn.url: svn://url.to.your/svn
+           Config has to look like this:
+           svn.repositories.samplesvn.checkinterval: 30 (in Minutes!)
+           svn.repositories.samplesvn.url: svn://url.to.your/svn
+           
+           and then do this in your channel-config:
+           samplenetwork.'#samplechannel'.svn.repros: samplesvn
         
-        and then do this in your channel-config:
-        samplenetwork.'#samplechannel'.svn.repros: samplesvn
-        
-        and the bot will post updates of samplesvn in your channel.
-        You can specify more repros just by appending them seperated with a comma.
+           and the bot will post updates of samplesvn in your channel.
+           You can specify more repros just by appending them seperated with a comma.
         """
         self.bot = bot
         if not HAS_PYSVN:
@@ -77,6 +82,9 @@ class Plugin(chatMod.chatMod):
             self.callIds[i].cancel()
             self.logger.info("Canceled callLater '" + i + "'")
     def svncheck(self, url, interval, channels, name, lastrevision=0):
+        """
+            checks the repository for updates and post a message if something changed
+        """
         try:
             data = pysvn.Client().log(url,limit=1)[0].data
             rev = data['revision'].number
