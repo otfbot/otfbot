@@ -20,15 +20,25 @@
 import time
 from otfbot.lib import chatMod
 
+"""
+    Remind the user after X minutes, displaying a message
+"""
 
 class Plugin(chatMod.chatMod):
+    """ reminder plugin """
     def __init__(self, bot):
         self.bot=bot
         self.messages={}
+        self.bot.depends_on_service('scheduler', 'without scheduler the reminder-plugin cannot work')
 
     def remind(self):
+        """
+            called at every time where a reminder is set.
+            will send all reminders at given time to the appropriate channels.
+        """
+
         when=int((time.time())/60)
-        messages=[]
+        messages = []
         if when in self.messages:
             messages=self.messages[when]
             del self.messages[when]
@@ -37,17 +47,23 @@ class Plugin(chatMod.chatMod):
             self.bot.sendmsg(message[0], message[1]+": Reminder: "+message[2])
 
     def command(self, user, channel, command, options):
+        """
+            react on !remindme 
+
+            add new reminders with !remindme (float) (string), i.e. !remindme 5.0 coffee is ready
+        """
         if command == "remindme":
-            user=user.split("!")[0]
-            options=options.split(" ", 1)
+            nick = user.split("!")[0]
+            options = options.split(" ", 1)
+            wait = 0.0
             try:
                 wait=float(options[0])
             except ValueError:
-                self.bot.sendmsg(channel, user.split("!")[0]+": invalid number format \""+options[0]+"\".")
+                self.bot.sendmsg(channel, nick+": invalid number format \""+options[0]+"\".")
                 return
-            text=str(options[1])
+            text = str(options[1])
             
-            when=int((time.time()+wait*60)/60) #when will this be executed? (minutes since 1.1.1970 ;-))
+            when = int( (time.time() + wait * 60)/60 ) #when will this be executed? (minutes since 1.1.1970 ;-), as float, converted to seconds from now)
             if when in self.messages:
                 self.messages[when].append([channel, user, text])
             else:
