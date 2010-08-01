@@ -18,7 +18,7 @@
 #
 
 """
-    Marvin from the Hitchhiker's Guide to the Galaxy
+    complain like Marvin from the Hitchhiker's Guide to the Galaxy
 """
 from otfbot.lib import chatMod
 from otfbot.lib import functions
@@ -34,7 +34,7 @@ class Plugin(chatMod.chatMod):
 
     def msg(self, user, channel, msg):
         """
-            Lets marvin rant with the propability specified in marvin.percent in the config
+            Let marvin complain with the propability specified in marvin.percent in the config
         """
         #if channel == self.bot.nickname:
         #if msg[0]=="!" or msg[:len(self.bot.nickname)]==self.bot.nickname:
