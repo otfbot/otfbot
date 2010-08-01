@@ -16,6 +16,8 @@
 #
 # (c) 2005 - 2010 by Alexander Schier
 
+""" implements the JC-Game. """
+
 import random
 import unittest
 
@@ -26,6 +28,7 @@ CARD_ZERO = "Z"
 
 
 class Messages:
+    """ Stores the Game-Messages, so they can be translated """
     NEW_GAME = "Neues Spiel gestartet. Zum teilnehmen !ich sagen. Zum starten !startgame."
     USER_JOINED = "%s spielt jetzt mit."
     USER_PARTED = "%s spielt jetzt nicht mehr mit."
@@ -58,22 +61,37 @@ class Messages:
 
 
 class DoesNotHaveException(Exception):
+    """ Exception for when a user tries to spend money he does not have """
     pass
 class NothingPaidException(Exception):
+    """ Exception for when a user trys to pay nothing at all """
     pass
 
 
 class User:
-
+    """ user object """
     def __init__(self, nick):
+        """ set nick and give the user the initial cards """
         self.nick = nick
         self.cards = {'1': 4, '2': 2, '5': 1, 'Z': 2}
 
     def getCards(self, cards):
+        """
+            add cards to the user cards
+
+            @param cards: a dict with cardtype->num_cards
+            @type cards: dict
+        """
         for card in cards.keys():
             self.cards[card] += cards[card]
 
     def giveCards(self, cards):
+        """
+            substract the cards from the user cards, if the user has them. throws an exception else.
+
+            @param cards: a dict with cardtype->num_cards
+            @type cards: dict
+        """
         for card in cards.keys():
             if self.cards[card] < cards[card]:
                 #if the exception occurs, no money is given!
@@ -82,12 +100,15 @@ class User:
             self.cards[card] -= cards[card]
 
     def __str__(self):
+        """ returns the nick """
         return self.__unicode__()
 
     def __unicode__(self):
+        """ returns the nick """
         return self.nick
 
     def __eq__(self, other):
+        """ makes the user comparable with a string, equal if nick matches the string """
         if type(other) == str:
             return self.nick == other
         return self.nick == other.nick
