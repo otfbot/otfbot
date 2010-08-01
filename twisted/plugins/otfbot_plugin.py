@@ -50,6 +50,12 @@ class Options(usage.Options):
     optParameters = [["config", "c", "otfbot.yaml", "Location of configfile"]]
 
 
+class MyMultiService(service.MultiService):
+    def getServiceNamed(self, name):
+        if not name in self.namedServices:
+            return None
+        return self.namedServices[name]
+
 class MyServiceMaker(object):
     implements(IServiceMaker, IPlugin)
     tapname = "otfbot"
@@ -57,7 +63,7 @@ class MyServiceMaker(object):
     options = Options
 
     def makeService(self, options):
-        application = service.MultiService()
+        application = MyMultiService()
         application.version = version._version
 
         cfgS = configService.loadConfig(options['config'], "plugins/*/*.yaml")
