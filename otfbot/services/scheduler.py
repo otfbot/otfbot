@@ -55,6 +55,8 @@ class botService(service.MultiService):
             @param kwargs: the keyworded arguments for the function
             @type kwargs: dict
             @note: add the possibility to give a *args-tuple (need to know how to merge two tuples)
+
+            if the function returns a value which evaluates to False, the periodic call will be canceled
         """
         def func(delay,function,**kwargs):
             args=(delay,function)
