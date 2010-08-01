@@ -52,7 +52,7 @@ class Plugin(chatMod.chatMod):
         if command == "remindmein":
             options = options.split(" ", 1)
             if not len(options) == 2:
-                self.bot.sendmsg(channel, user+": ERROR: You need to specify a time and a reminder text!")
+                self.bot.sendmsg(channel, user+": ERROR: You need to specify a number of minutes and a reminder text!")
                 return
             try:
                 wait=float(options[0])
