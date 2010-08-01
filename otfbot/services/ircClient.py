@@ -618,7 +618,6 @@ class Bot(pluginSupport, irc.IRCClient):
                 # is a usermode
                 if modes[i] in MODE_CHARS:
                     # user is known to bot
-                    assert(args[i] in self.user_list)
                     if args[i] in self.user_list:
                         # user in channel
                         if set:
