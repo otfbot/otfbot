@@ -17,7 +17,7 @@
 # (c) 2010 by Alexander Schier
 
 """
-    Calculate some statistics, as peak usercount.
+    Calculate some statistics, like peak usercount.
 """
 import time
 from otfbot.lib import chatMod
