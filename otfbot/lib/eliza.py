@@ -17,6 +17,8 @@
 # (c) 2005 - 2010 by Alexander Schier
 #
 
+""" a simple eliza ki implementation with regular expressions """
+
 import random
 import re
 
