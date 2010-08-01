@@ -17,6 +17,11 @@
 # (c) 2007 - 2010 Robert Weidlich
 #
 
+"""
+    control service, allowing admins to control the bot (i.e. via irc or tcpclient) i
+
+    this service implements the control architecture, not the access methods.
+"""
 
 import logging, logging.handlers, time, inspect
 

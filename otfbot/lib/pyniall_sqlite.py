@@ -16,6 +16,8 @@
 #
 # (c) 2008 - 2010 by Alexander Schier
 
+""" a simple markov-chain ki implementation with sqlite backend """
+
 import random, sqlite, os
 
 class pyNiall:

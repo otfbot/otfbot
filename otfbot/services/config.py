@@ -19,6 +19,8 @@
 # (c) 2008 by Robert Weidlich
 #
 
+""" configuration service """
+
 import sys
 import os
 import logging

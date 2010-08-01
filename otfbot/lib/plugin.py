@@ -18,6 +18,7 @@
 # (c) 2009 - 2010 by Robert Weidlich
 #
 
+""" plugin interface for pluginSupport services """
 
 class Plugin:
     """ Basic plugin for services inside OTFBot
