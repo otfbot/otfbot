@@ -20,8 +20,10 @@
 
 """ scheduler service (a simple wrapper around reactor.callLater, i.e. providing a callPeriodic function) """
 
+import logging
 from twisted.application import service
 from twisted.internet import reactor
+from datetime import datetime
 
 class botService(service.MultiService):
     name="scheduler"
@@ -29,6 +31,7 @@ class botService(service.MultiService):
         self.root=root
         self.parent=parent
         service.MultiService.__init__(self)
+        self.logger = logging.getLogger(self.name)
     """Wrapper class for the scheduling functions of twisted.internet.reactor.ReactorTime"""
     def callLater(self,time,function,*args,**kwargs):
         """ executes C{function} after C{time} seconds with arguments C{*args} and keyword arguments C{**kwargs}
@@ -66,3 +69,23 @@ class botService(service.MultiService):
                 reactor.callLater(delay,func,*args,**kwargs)
         args=(delay,function)
         reactor.callLater(delay,func,*args,**kwargs)
+
+    def callAtDatetime(self,dt,function,*args,**kwargs):
+        """ executes C{function} at datetime C{dt} with arguments C{*args} and keyword arguments C{**kwargs}
+            @param dt: datetime object with the time when to execute C{function}
+            @type dt: datetime
+            @param function: the function to call
+            @type function: callable
+            @param *args: arguments for the function
+            @type *args: tuple
+            @param **kwargs: keyworded arguments for the function
+            @type **kwargs: dict
+        """
+        delta = dt - datetime.now()
+        if(delta.days < 0): # We only need to check for the days, not for anything else (see datetime.timedelta)
+            self.logger.debug("botService scheduler: callAtDate was called with a date from the past")
+            return False
+        # Calculate the total number of seconds. In Python 2.7 we have datetime.timedelta.total_seconds(),
+        # but we want to keep backwards compatibility
+        delay = (delta.microseconds + (delta.seconds + delta.days * 24 * 3600) * 10**6) / 10**6
+        return reactor.callLater(delay,function,*args,**kwargs)
