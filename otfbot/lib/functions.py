@@ -38,7 +38,7 @@ def loadProperties(propertiesFile, ambiguous=False):
     properties = {}
     if propertiesFile == "":
         return {}
-    try:
+    if os.path.exists(propertiesFile):
         propFile = open(propertiesFile, "r")
         content = propFile.read()
         propFile.close()
@@ -55,7 +55,7 @@ def loadProperties(propertiesFile, ambiguous=False):
                         properties[pair[0]].append(pair[1])
                     else:
                         properties[pair[0]] = pair[1]
-    except IOError:
+    else:
         #print "loadProperties: Creating", propertiesFile
         if (not os.path.isdir(os.path.dirname(propertiesFile))):
             os.makedirs(os.path.dirname(propertiesFile))
@@ -77,15 +77,14 @@ def loadList(listFile):
     if listFile == "":
         return []
     list = []
-    try:
+    if os.path.exists(listFile):
         file = open(listFile, "r")
         content = file.read()
         file.close()
         for word in content.split("\n"):
             if word != "" and word[0] != '#':
                 list.append(word)
-    except IOError:
-        #print "loadList: Creating", listFile
+    else:
         if (not os.path.isdir(os.path.dirname(listFile))):
             os.makedirs(os.path.dirname(listFile))
         file = open(listFile, "w")
