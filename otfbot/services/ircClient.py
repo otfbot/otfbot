@@ -756,7 +756,6 @@ class Bot(pluginSupport, irc.IRCClient):
         self._apirunner("topicUpdated", {"user": user,
                 "channel": channel, "newTopic": newTopic})
 
-    @syncedChannelRaw
     def irc_RPL_WHOREPLY(self, prefix, params):
         """
             "<channel> <user> <host> <server> <nick> <H|G>[*][@|+] :<hopcount> <real name>"
