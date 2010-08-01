@@ -17,6 +17,9 @@
 # (c) 2005, 2006 by Alexander Schier
 #
 
+"""
+    Marvin from the Hitchhiker's Guide to the Galaxy
+"""
 from otfbot.lib import chatMod
 from otfbot.lib import functions
 
@@ -24,11 +27,15 @@ import random
 
 
 class Plugin(chatMod.chatMod):
+    """ marvin plugin """
 
     def __init__(self, bot):
         self.bot = bot
 
     def msg(self, user, channel, msg):
+        """
+            Lets marvin rant with the propability specified in marvin.percent in the config
+        """
         #if channel == self.bot.nickname:
         #if msg[0]=="!" or msg[:len(self.bot.nickname)]==self.bot.nickname:
         if (msg[0] == "!" or self.bot.nickname in msg) and len(self.marvin):
@@ -39,8 +46,14 @@ class Plugin(chatMod.chatMod):
                 self.bot.sendmsg(channel, random.choice(self.marvin), enc)
 
     def start(self):
+        """
+            Loads the phrases from the data dir
+        """
         fn = self.bot.config.getPath("file", datadir, "marvin.txt", "marvin")
         self.marvin = functions.loadList(fn)
 
     def reload(self):
+        """
+            Reloads the phrases from the datadir
+        """
         self.start()
