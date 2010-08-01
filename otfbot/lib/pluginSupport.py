@@ -18,6 +18,8 @@
 # (c) 2009 - 2010 by Robert Weidlich
 #
 
+""" baseclass for MultiServices, which should support plugins """
+
 import sys
 import traceback
 

@@ -18,6 +18,8 @@
 # (c) 2008 by Alexander Schier
 #
 
+""" scheduler service (a simple wrapper around reactor.callLater, i.e. providing a callPeriodic function) """
+
 from twisted.application import service
 from twisted.internet import reactor
 
