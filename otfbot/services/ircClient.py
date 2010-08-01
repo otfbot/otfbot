@@ -632,7 +632,7 @@ class Bot(pluginSupport, irc.IRCClient):
                         else:
                             u.removeMode(chan, modes[i])
                     else:
-                        self.logger.info(args[i] + " not known to me")
+                        self.logger.error(args[i] + " not known to me")
                 else: # channelmodes
                     am = self.supported.getFeature('CHANMODES')['addressModes']
                     if modes[i] in am: # channel modes with lists
