@@ -17,21 +17,26 @@
 # (c) 2008 by Alexander Schier
 #
 
+""" Johnny-Controletti-like game about money, debt and counterfeited money """
+
 from otfbot.lib import chatMod
 from game import Game
 
 
 class Plugin(chatMod.chatMod):
+    """ jc game plugin """
 
     def __init__(self, bot):
         self.bot = bot
 
     def start(self):
+        """ initialize the vars of the plugin """
         self.game = Game()
         self.game.logger=self.logger
         self.gamechannel = ""
 
     def query(self, user, channel, msg):
+        """ parse query lines into commands. "command bla" will be treated like "!command bla" in public """
         if " " in msg:
             (command, options) = msg.split(" ", 1)
             self.command(user, self.gamechannel, command, options)
