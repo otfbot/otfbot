@@ -277,6 +277,12 @@ class Bot(pluginSupport, irc.IRCClient):
                 ret.append(self.user_list[user])
         return ret
 
+    def getUserByNick(self, nick):
+        for user in self.user_list.values():
+            if user.nick.lower() == nick.lower():
+                return user
+        return None
+
     def _check_sendLastLine(self):
         timeout = self.config.get("timeout", 120, "main", self.network)
         if time.time() - self.lastLine > timeout:
@@ -618,12 +624,13 @@ class Bot(pluginSupport, irc.IRCClient):
                 # is a usermode
                 if modes[i] in MODE_CHARS:
                     # user is known to bot
-                    if args[i] in self.user_list:
+                    u=self.getUserByNick(args[i])
+                    if u:
                         # user in channel
                         if set:
-                            self.user_list[args[i]].setMode(chan, modes[i])
+                            u.setMode(chan, modes[i])
                         else:
-                            self.user_list[args[i]].removeMode(chan, modes[i])
+                            u.removeMode(chan, modes[i])
                     else:
                         self.logger.info(args[i] + " not known to me")
                 else: # channelmodes
@@ -732,12 +739,13 @@ class Bot(pluginSupport, irc.IRCClient):
             if a user changed his nick
         """
         self._apirunner("userRenamed", {"oldname": oldname, "newname": newname})
-        for user in self.user_list:
-            if self.user_list[user].nick.lower()==oldname.lower():
-                u=self.user_list[user]
-                del(self.user_list[user])
-                u.nick=newname
-                self.user_list[u.getHostMask()]=u
+        user=self.getUserByNick(oldname)
+        if user.getHostMask() in self.user_list:
+            del (self.user_list[user.getHostMask()])
+        else:
+            self.logger.warning("%s not found in user_list!"%user.getHostMask())
+        user.setNick(newname)
+        self.user_list[user.getHostMask()]=user
 
     @syncedChannel(argnum=1)
     def topicUpdated(self, user, channel, newTopic):

@@ -182,7 +182,7 @@ class Plugin(chatMod.chatMod):
 
     def userRenamed(self, oldname, newname):
         for user in self.bot.user_list.values():
-            if user.nickname.lower() == oldname.lower():
+            if user.nick.lower() == oldname.lower():
                 for channel in user.getChannels():
                     self.log(channel, "-!- " + oldname + " is now known as " + newname)
 
