@@ -64,7 +64,7 @@ class DoesNotHaveException(Exception):
     """ Exception for when a user tries to spend money he does not have """
     pass
 class NothingPaidException(Exception):
-    """ Exception for when a user trys to pay nothing at all """
+    """ Exception for when a user tries to pay nothing at all """
     pass
 
 
@@ -185,11 +185,13 @@ class helpersTestCase(unittest.TestCase):
         self.assertEquals(string2worth("1Z5Z2"), 8)
 
 class State:
-
+    """ a state, which provides an input-method, and transits to other states on certain events """
     def __init__(self, game):
+        """ initializes the state """
         self.game = game
 
     def input(self, user, command, options):
+        """ parses command and options from user into a game action """
         pass
 
 class PaybackState(State):
