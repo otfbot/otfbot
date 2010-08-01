@@ -67,9 +67,6 @@ class Plugin(chatMod.chatMod):
     def userJoined(self, user, channel):
         self._recalc_peak(channel)
 
-    def irc_RPL_WHOREPLY(self, channel, user, server, realname):
-        self._recalc_peak(channel)
-
     def _recalc_peak(self, channel):
         if self.peak[channel]<len(self.bot.getUsers(channel)):
             self.peak[channel]=len(self.bot.getUsers(channel))

@@ -470,7 +470,7 @@ class Bot(pluginSupport, irc.IRCClient):
         self.channelmodes[channel] = {}
         self.sendLine("WHO %s" % channel)
         self.syncing_channels.append(channel) #we are waiting for all WHOREPLYs and ENDOFWHO before executing further callbacks
-        self._apirunner("joined", {"channel": channel})
+        #joined callback will be fired in irc_RPL_ENDOFWHO
         self.config.set("enabled", True, "main", self.network, channel)
 
     @syncedChannel(argnum=0)
@@ -783,26 +783,33 @@ class Bot(pluginSupport, irc.IRCClient):
             end of WHO replies by the server
         """
         (nickname, channel, message) = params
-        self.syncing_channels.remove(channel) #we are no longer blocking callbacks
-        self.logger.debug("ENDOFWHO(%s) - %s callbacks possibly waiting"%(channel, len(self.callback_queue)))
+        if channel in self.syncing_channels:
+            self.syncing_channels.remove(channel) #we are no longer blocking callbacks
+            self.logger.debug("ENDOFWHO(%s) - %s callbacks possibly waiting"%(channel, len(self.callback_queue)))
 
-        self.sync_lock.acquire()
-        #invoce callbacks formerly blocked until the channel is synced
-        execute_now=[]
-        for callback in self.callback_queue:
-            (channels, (func, args, kwargs))=callback
-            if len(set(channels).intersection(set(self.syncing_channels))) == 0: #no channel is blocking this callback
-                execute_now.append(callback) #avoid race conditions on the callback_queue
+            self.sync_lock.acquire()
+            #invoce callbacks formerly blocked until the channel is synced
+            execute_now=[]
+            for callback in self.callback_queue:
+                (channels, (func, args, kwargs))=callback
+                if len(set(channels).intersection(set(self.syncing_channels))) == 0: #no channel is blocking this callback
+                    execute_now.append(callback) #avoid race conditions on the callback_queue
 
-        count=len(execute_now)
-        for callback in execute_now:
-            (channels, (func, args, kwargs))=callback
-            func(self, *args, **kwargs)
-        for callback in execute_now:
-            self.callback_queue.remove(callback)
-        self.sync_lock.release()
-        self.logger.debug("ENDOFWHO(%s) - %s waiting callbacks executed"%(channel, count))
-
+            count=len(execute_now)
+            for callback in execute_now:
+                (channels, (func, args, kwargs))=callback
+                func(self, *args, **kwargs)
+            for callback in execute_now:
+                self.callback_queue.remove(callback)
+            self.sync_lock.release()
+            self.logger.debug("ENDOFWHO(%s) - %s waiting callbacks executed"%(channel, count))
+            self._apirunner("joined", {"channel": channel})
+        else:
+            #i.e. when the bot did a WHO on some string
+            #and not in self.joined, so this channel is not currently syncing
+            #and there are no delayed callbacks
+            pass
+        self._apirunner("irc_RPL_ENDOFWHO", {"channel": channel})
 
     @syncedChannelRaw
     def irc_INVITE(self, prefix, params):
