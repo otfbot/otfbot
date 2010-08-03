@@ -223,11 +223,13 @@ class Bot(pluginSupport, irc.IRCClient):
     modcharvals = {16: '!', 8: '@', 4: '%', 2: '+', 0: ' '}
 
     def __init__(self, root, parent):
-        pluginSupport.__init__(self, root, parent)
+        self.root = root
+        self.parent = parent
         self.config = root.getServiceNamed('config')
         self.network = self.parent.network
         self.ircClient = self.parent.parent
         self.logger = logging.getLogger(self.network)
+        pluginSupport.__init__(self, root, parent)
         if self.config.getBool('answerToCTCPVersion', True, 'main', self.network):
             self.versionName = "OTFBot"
             self.versionNum = root.version.short()
