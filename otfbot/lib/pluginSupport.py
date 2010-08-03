@@ -119,10 +119,10 @@ class pluginSupport:
         """ register the control commands """
         if hasattr(self, "register_ctl_command"):
             self.register_ctl_command(self.startPlugin)
-            #self.register_ctl_command(self.stopPlugin)
-            #self.register_ctl_command(self.restartPlugin)
-            #self.register_ctl_command(lambda: self.plugins.keys(),
-            #                                        name="listPlugins")
+            self.register_ctl_command(self.stopPlugin)
+            self.register_ctl_command(self.restartPlugin)
+            self.register_ctl_command(lambda: self.plugins.keys(),
+                                                    name="listPlugins")
 
     def depends(self, dependency, description=""):
         """raises a DependencyMissing exception for dependency"""
