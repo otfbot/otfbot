@@ -307,6 +307,9 @@ class pluginSupport:
     def reloadPlugins(self):
         """
             reload all plugins
+
+            it first reloads all plugin classes, then it stops the plugins
+            and starts them again using the new version of the class
         """
         for chatPlugin in self.classes:
             self.reloadPluginClass(chatPlugin)
@@ -325,7 +328,7 @@ class pluginSupport:
         """
             stop a plugin named pluginName
 
-            @param pluginName: plugin name in form service.plugin
+            @param pluginName: plugin name
             @type pluginName: string
         """
         pkg = self.pluginSupportPath.replace("/", ".") + "." + pluginName #otfbot.plugins.service.plugin
@@ -344,32 +347,52 @@ class pluginSupport:
         del(chatPlugin)
 
     class WontStart(Exception):
-        """Exception thrown by plugins, which cannot start"""
+        """
+            Exception thrown by plugins, which cannot start
+
+            a reason can be given in the exception message
+        """
         pass
 
     class DependencyMissing(Exception):
-        """thrown, if a dependency is missing"""
+        """
+            thrown, if a dependency is missing
+        """
 
         def __init__(self, dependency, description):
+            """
+                @param dependency: which dependency is missing (plain text, not only packagenames)
+                @type dependency: string
+                @param description: description of the missing dependency, why its missing and how it can be obtained
+                @type description: string
+            """
             self.dependency = dependency
             self.description = description
             msg = "%s missing. %s" % (dependency, description)
             Exception.__init__(self, msg)
 
     class ModuleMissing(DependencyMissing):
-        """through if a module is missing"""
+        """
+            thrown if a module is missing
+        """
         pass
 
     class ServiceMissing(DependencyMissing):
-        """through if a service is missing"""
+        """
+            thrown if a service is missing
+        """
         pass
 
     class PluginMissing(DependencyMissing):
-        """through if a plugin is missing"""
+        """
+            thrown if a plugin is missing
+        """
         pass
 
     def logerror(self, logger, plugin, exception):
-        """ format a exception nicely and pass it to the logger
+        """
+            format a exception nicely and pass it to the logger
+
             @param logger: the logger instance to use
             @param plugin: the plugin in which the exception occured
             @type plugin: string
