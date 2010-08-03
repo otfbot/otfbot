@@ -23,7 +23,7 @@
 """
 
 from twisted.application import internet, service
-from twisted.application.service import IServiceMaker
+from twisted.application.service import IServiceMaker, IService
 from twisted.plugin import IPlugin
 from twisted.python import log, usage
 from twisted.python import versions as twversions
