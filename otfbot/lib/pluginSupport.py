@@ -121,6 +121,7 @@ class pluginSupport:
             self.register_ctl_command(self.startPlugin)
             self.register_ctl_command(self.stopPlugin)
             self.register_ctl_command(self.restartPlugin)
+            self.register_ctl_command(self.reloadPlugins)
             self.register_ctl_command(lambda: self.plugins.keys(),
                                                     name="listPlugins")
 
@@ -181,7 +182,7 @@ class pluginSupport:
         for c in self.classes:
             if c.__name__ == name:
                 return c
-        pkg = self.pluginSupportPath.replace("/", ".") + "." + name
+        pkg = self.pluginSupportPath.replace("/", ".") + "." + name #otfbot.plugins.service.plugin
         try:
             cls = __import__(pkg, fromlist=['*'], globals={'service': self})
             cls.datadir = self.config.get("datadir", "data")
@@ -189,8 +190,9 @@ class pluginSupport:
             self.classes.append(cls)
             self.logger.debug("Imported plugin " + self._getClassName(cls))
             return self.classes[-1]
-        except ImportError:
+        except ImportError, e:
             self.logger.warning("Cannot import plugin " + name)
+            self.logger.debug(str(e))
             return None
 
     def callbackRegistered(self, module, callbackname):
@@ -296,7 +298,9 @@ class pluginSupport:
 
     def restartPlugin(self, pluginName):
         """stop and start again a plugin"""
-        if pluginName in self.plugins.keys():
+        #pkg = self.pluginSupportPath.replace("/", ".") + "." + pluginName #otfbot.plugins.service.plugin
+        #pluginName =  #servive.plugin
+        if self.pluginSupportName+"."+pluginName in self.plugins.keys():
             self.stopPlugin(pluginName)
             self.startPlugin(pluginName)
 
@@ -307,13 +311,14 @@ class pluginSupport:
         for chatPlugin in self.classes:
             self.reloadPluginClass(chatPlugin)
         for chatPlugin in self.plugins.values():
-            self.restartPlugin(chatPlugin.name)
+            self.restartPlugin(chatPlugin.name.split(".")[-1]) #only plugin name
 
     def stopPlugins(self):
         """
             stop all Plugins
         """
         for chatPlugin in self.plugins.values():
+            self.logger.debug(chatPlugin.__name__)
             self.stopPlugin(chatPlugin.name)
 
     def stopPlugin(self, pluginName):
@@ -323,6 +328,8 @@ class pluginSupport:
             @param pluginName: plugin name in form service.plugin
             @type pluginName: string
         """
+        pkg = self.pluginSupportPath.replace("/", ".") + "." + pluginName #otfbot.plugins.service.plugin
+        pluginName = pkg.replace("otfbot.plugins.", "") #servive.plugin
         if not pluginName in self.plugins.keys():
             return
         chatPlugin = self.plugins[pluginName]
