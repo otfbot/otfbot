@@ -784,11 +784,11 @@ class Bot(pluginSupport, irc.IRCClient):
         """
         (nickname, channel, message) = params
         if channel in self.syncing_channels:
-            self.syncing_channels.remove(channel) #we are no longer blocking callbacks
             self.logger.debug("ENDOFWHO(%s) - %s callbacks possibly waiting"%(channel, len(self.callback_queue)))
 
             self.sync_lock.acquire()
             #invoce callbacks formerly blocked until the channel is synced
+            self.syncing_channels.remove(channel) #we are no longer blocking callbacks
             execute_now=[]
             for callback in self.callback_queue:
                 (channels, (func, args, kwargs))=callback
@@ -799,9 +799,10 @@ class Bot(pluginSupport, irc.IRCClient):
             for callback in execute_now:
                 (channels, (func, args, kwargs))=callback
                 func(self, *args, **kwargs)
+            self.sync_lock.release() #the shared resource is the syncing_channels and callback_queue var, not the callbacks themself
+
             for callback in execute_now:
                 self.callback_queue.remove(callback)
-            self.sync_lock.release()
             self.logger.debug("ENDOFWHO(%s) - %s waiting callbacks executed"%(channel, count))
             self._apirunner("joined", {"channel": channel})
         else:
