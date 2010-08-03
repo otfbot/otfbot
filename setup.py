@@ -12,6 +12,7 @@ setup(name='otfbot',
      url="http://www.otfbot.org/",
      download_url="http://www.otfbot.org/files/otfbot-%s.tar.gz" % version._version.base(),
      license="GPLv2",
+     install_requires=["twisted >=9.0.0", "yaml"],
      packages=[
         'otfbot',
         'otfbot.services',
