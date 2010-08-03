@@ -224,14 +224,24 @@ class pluginSupport:
             self.callbacks[callbackname].append((module, priority))
             self.callbacks[callbackname].sort(cmp=lambda a, b: b[1] - a[1])
 
+    def unregisterAllCallbacks(self, module):
+        """ unregister all callbacks for a module """
+        for callbackname in self.callbacks.keys():
+            try:
+                self.unregisterCallback(module, callbackname)
+            except Exception, e:
+                self.logger.debug(repr(e))
+
     def unregisterCallback(self, module, callbackname):
         """unregister a callback for a module"""
         if callbackname not in self.callbacks:
             return
-        for index in len(self.callbacks[callbackname]):
-            if self.callbacks[callbackname][0] == module:
-                self.callbacks[callbackdname].remove(
-                                        self.callbacks[callbackname][index])
+        toremove=[]
+        for index in range(len(self.callbacks[callbackname])):
+            if self.callbacks[callbackname][index][0] == module:
+                toremove.append(self.callbacks[callbackname][index])
+        for callback in toremove:
+            self.callbacks[callbackname].remove(callback)
 
     def startPlugins(self):
         """
@@ -307,7 +317,12 @@ class pluginSupport:
             self.stopPlugin(chatPlugin.name)
 
     def stopPlugin(self, pluginName):
-        """stop a plugin named pluginName"""
+        """
+            stop a plugin named pluginName
+
+            @param pluginName: plugin name in form service.plugin
+            @type pluginName: string
+        """
         if not pluginName in self.plugins.keys():
             return
         chatPlugin = self.plugins[pluginName]
@@ -316,6 +331,8 @@ class pluginSupport:
             chatPlugin.stop()
         except Exception, e:
             self.logerror(self.logger, chatPlugin.name, e)
+
+        self.unregisterAllCallbacks(chatPlugin)
         del(self.plugins[pluginName])
         del(chatPlugin)
 
