@@ -229,10 +229,7 @@ class pluginSupport:
     def unregisterAllCallbacks(self, module):
         """ unregister all callbacks for a module """
         for callbackname in self.callbacks.keys():
-            try:
-                self.unregisterCallback(module, callbackname)
-            except Exception, e:
-                self.logger.debug(repr(e))
+            self.unregisterCallback(module, callbackname)
 
     def unregisterCallback(self, module, callbackname):
         """unregister a callback for a module"""
