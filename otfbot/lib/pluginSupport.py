@@ -89,6 +89,12 @@ class pluginSupport:
     pluginSupportPath = "[UNSET]"
 
     def __init__(self, root, parent):
+        """
+            sets root and parent, and stores references to config and control service in vars
+
+            @param root: the application object of the bot
+            @param parent: the parent object of the service (typically the application, too)
+        """
         self.root = root
         self.parent = parent
         self.callbacks = {}
@@ -97,18 +103,26 @@ class pluginSupport:
         #XXX: the dependency should be more explicit?
         self.config = root.getServiceNamed('config')
         self.controlservice = self.root.getServiceNamed('control')
-        #self.register_pluginsupport_commands()
+        if self.controlservice:
+            self._register_pluginsupport_commands()
 
     def _getClassName(self, clas):
+        """
+            get the classname of a plugin by cutting off otfbot.plugins.
+
+            @param clas: the class (as variable, not string!)
+            @returns the classname (i.e. ircClient.example)
+        """
         return clas.__name__[15:] #cut off "otfbot.plugins."
 
-    def register_pluginsupport_commands(self):
-        if self.hasattr("register_ctl_command"):
+    def _register_pluginsupport_commands(self):
+        """ register the control commands """
+        if hasattr(self, "register_ctl_command"):
             self.register_ctl_command(self.startPlugin)
-            self.register_ctl_command(self.stopPlugin)
-            self.register_ctl_command(self.restartPlugin)
-            self.register_ctl_command(lambda: self.plugins.keys(),
-                                                    name="listPlugins")
+            #self.register_ctl_command(self.stopPlugin)
+            #self.register_ctl_command(self.restartPlugin)
+            #self.register_ctl_command(lambda: self.plugins.keys(),
+            #                                        name="listPlugins")
 
     def depends(self, dependency, description=""):
         """raises a DependencyMissing exception for dependency"""
@@ -116,8 +130,13 @@ class pluginSupport:
 
     def depends_on_module(self, dependency, description=""):
         """
-            try to import a module, raise a ModuleException,
+            try to import a module, raise a ModuleMissing Exception
             if it cannot be loaded
+
+            @param dependency: the module name (as string!)
+            @type dependency: string
+            @param description: optional Description why it is needed and how it can be optained
+            @type description: string
         """
         try:
             return __import__(dependency)
@@ -128,6 +147,11 @@ class pluginSupport:
         """
             depend on a service, raise an ServiceMissing Exception,
             if its not available/enabled/loaded
+
+            @param dependency: the service name
+            @type dependency: string
+            @param description: optional Description why it is needed and how it can be optained
+            @type description: string
         """
         if not self.root.getServiceNamed(dependency):
             raise self.ServiceMissing(dependency, description)
@@ -136,11 +160,22 @@ class pluginSupport:
         """
             depend on another plugin, raise a PluginMissing
             xception, if its not enabled
+
+            @param dependency: the plugin name
+            @type dependency: string
+            @param description: optional Description why it is needed and how it can be optained
+            @type description: string
         """
         if not dependency in self.plugins:
             raise self.PluginMissing(dependency, description)
 
     def importPlugin(self, name):
+        """
+            import a plugin
+
+            @param name: the name of the plugin
+            @type name: string
+        """
         if not self.classes:
             self.classes = []
         for c in self.classes:
@@ -162,6 +197,11 @@ class pluginSupport:
         """
             test, if a module has already registered a callback
             for callbackname
+
+            @param module: the name of the module
+            @type module: string
+            @param callbackname: the callbackname
+            @param callbackname: string
         """
         if callbackname not in self.callbacks:
             return False
@@ -210,6 +250,9 @@ class pluginSupport:
 
         start a plugin, by importing pluginSupportName.pluginName,
         instancing the plugin and calling its start() function
+
+        @param pluginName: the name of the plugin
+        @type pluginName: string
         """
         pluginClass = self.importPlugin(pluginName)
         if not pluginClass:
@@ -249,7 +292,7 @@ class pluginSupport:
 
     def reloadPlugins(self):
         """
-            call this to reload all plugins
+            reload all plugins
         """
         for chatPlugin in self.classes:
             self.reloadPluginClass(chatPlugin)
