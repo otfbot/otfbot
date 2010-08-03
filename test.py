@@ -4,7 +4,7 @@ from optparse import OptionParser
 parser = OptionParser()
 (options, args)=parser.parse_args()
 if len(args) != 1:
-    print "usage: test.py someMod"
+    print "usage: test.py otfbot.service.plugins.somePlugin"
     sys.exit(1)
 
 import doctest
