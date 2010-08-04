@@ -52,6 +52,8 @@ class Plugin(chatMod.chatMod):
         #            the parameters wrong? so it will show the foreign nick,
         #            but prefix the message with <botnick>
         for server in self.bot.root.getServiceNamed('ircServer').services:
+            if not hasattr(server.kwargs['factory'], "p"): #no instance
+                return
             server = server.kwargs['factory'].p
             if not server.connected:
                 return
