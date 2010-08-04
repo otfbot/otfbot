@@ -41,7 +41,9 @@ class Plugin(chatMod.chatMod):
         if channel=="#control":
             msg=params[1]
             response=self.server.root.getServiceNamed("control").handle_command(msg)
-            if not type(response)==list:
+            if not response:
+                return
+            elif not type(response)==list:
                 response=[response]
             for resp in response:
                 for line in resp.split("\n"):
