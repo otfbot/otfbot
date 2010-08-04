@@ -116,8 +116,25 @@ class botService(service.MultiService):
                 args.reverse()
             return "Usage: "+f.__name__+ " "+" ".join(args)                
         
-    def help(self):
-        return "Available commands: "+", ".join(self._get_cmd_for_subtree(self.commandTree))
+    def help(self, *args):
+        commandTree=self.commandTree
+        for element in args:
+            self.logger.debug(element)
+            if element in commandTree and type(commandTree[element]) == dict:
+                commandTree=commandTree[element]
+            elif element in commandTree:
+                return commandTree[element].__doc__
+            else:
+                return repr(commendTree[element]) #fallback
+
+        namespace=" ".join(args)+" "
+        topics=[]
+        for topic in commandTree.keys():
+            if type(commandTree[topic])==dict:
+                topics.append("%s%s ..."%(namespace, topic))
+            else:
+                topics.append("%s%s"%(namespace, topic))
+        return "Available help commands(... means the command has subcommands): "+", ".join(topics)
     
     def _get_cmd_for_subtree(self, dict):
         r = []
