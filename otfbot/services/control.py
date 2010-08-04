@@ -86,7 +86,6 @@ class botService(service.MultiService):
 
     def handle_command(self, string):
         s=string.split(" ")
-        #print self.commandList
         if not type(s) == list:
             s=[s,]
         if s[0] in self.commandList:
@@ -110,10 +109,15 @@ class botService(service.MultiService):
         try:
             return f(*args)
         except TypeError:
-            args=inspect.getargspec(f)[0]
+            (args, _, _, defaults)=inspect.getargspec(f)
             if hasattr(f,'im_self'):
+                args=args[1:]
+            if defaults:
                 args.reverse()
-                args.pop()
+                defaults=list(defaults)
+                defaults.reverse()
+                for i in range(len(defaults)):
+                    args[i]+="(default="+str(defaults[i])+")"
                 args.reverse()
             return "Usage: "+f.__name__+ " "+" ".join(args)                
         
