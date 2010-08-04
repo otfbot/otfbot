@@ -419,7 +419,7 @@ class pluginSupport:
             msg = 'Plugin "%s" will not start because "%s".'
             logger.info(msg % (plugin, str(exception)))
             return
-        logger.error("Exception in Plugin " + plugin + ": " + repr(exception))
+        logger.error("Exception in " + plugin + ": " + repr(exception))
         tb_list = traceback.format_tb(sys.exc_info()[2])[1:]
         for entry in tb_list:
             for line in entry.strip().split("\n"):
