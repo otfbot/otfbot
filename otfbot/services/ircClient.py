@@ -122,9 +122,11 @@ class botService(service.MultiService):
                                       factory=f, contextFactory=s)
             repr = "<IRC Connection with SSL to %s:%s>"
             serv.__repr__ = lambda: repr % (sname, port)
+            serv.factory=f
         else:
             serv = internet.TCPClient(host=sname, port=port, factory=f)
             serv.__repr__ = lambda: "<IRC Connection to %s:%s>" % (sname, port)
+            serv.factory=f
         f.service = serv
         serv.setName(network)
         serv.parent = self
