@@ -40,6 +40,9 @@ class Plugin(chatMod.chatMod):
         channel=params[0]
         if channel=="#control":
             msg=params[1]
+            for server in self.server.factory.instances:
+                self.logger.debug(self.server.getHostmask())
+                server.privmsg(self.server.getHostmask(), "#control", msg)
             response=self.server.root.getServiceNamed("control").handle_command(msg)
             if not response:
                 return
