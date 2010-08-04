@@ -631,6 +631,8 @@ class Bot(pluginSupport, irc.IRCClient):
             if a usermode was changed
         """
         chan = chan.lower()
+        if chan == self.nickname.lower():
+            return #TODO: we do not do anything with our usermodes, yet
         mstr = "mode change: user %s channel %s set %s modes %s args %s"
         # self.logger.debug(mstr % (user, chan, set, modes, args))
         if len(modes) != len(args):
