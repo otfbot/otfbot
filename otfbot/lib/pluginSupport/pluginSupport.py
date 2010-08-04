@@ -22,16 +22,7 @@
 
 import sys
 import traceback
-from plugin import Plugin
-
-
-def getRegisterCallbackDecorator(module, priority=10):
-    def decorator(func):
-        func.is_callback=True
-        func.priority=priority
-        return func
-    return decorator
-
+from plugin import *
 
 
 class pluginSupport:

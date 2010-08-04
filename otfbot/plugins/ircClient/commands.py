@@ -24,14 +24,12 @@ React to !commands with text from a commands.txt file
 
 from otfbot.lib import chatMod
 from otfbot.lib import functions
-from otfbot.lib.pluginSupport import getRegisterCallbackDecorator
+from otfbot.lib.pluginSupport.decorators import registerCallback
 
 import string
 import re
 import random
 import os
-
-registerCallback=getRegisterCallbackDecorator("commands")
 
 class Plugin(chatMod.chatMod):
     def __init__(self, bot):
