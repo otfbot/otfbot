@@ -277,8 +277,7 @@ class Bot(pluginSupport, irc.IRCClient):
             else:
                 self.irc_unknown(prefix, command, params)
         except Exception, e:
-            pass
-            #self.logerror(self.logger, self.pluginSupportName, e)
+            self.logerror(self.logger, self.pluginSupportName, e)
             
 
 
