@@ -42,8 +42,7 @@ class Plugin(chatMod.chatMod):
         self.bot.depends_on_service("ircServer")
 
     def msg(self, user, channel, msg):
-        for server in self.bot.root.getServiceNamed('ircServer').services:
-            server = server.kwargs['factory'].p
+        for server in self.bot.root.getServiceNamed('ircServer').services[0].factory.instances:
             if server.connected:
                 server.sendmsg(user, "#" + self.network + "-" + channel, msg)
 

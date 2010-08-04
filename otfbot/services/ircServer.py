@@ -29,6 +29,11 @@ import logging, traceback, sys, time, glob
 from otfbot.lib import chatMod
 from otfbot.lib.pluginSupport import pluginSupport
 
+class MyTCPServer(internet.TCPServer):
+    def __init__(self, *args, **kwargs):
+        self.factory=kwargs['factory']
+        internet.TCPServer.__init__(self, *args, **kwargs)
+
 class botService(service.MultiService):
     name="ircServer"
     def __init__(self, root, parent):
@@ -40,7 +45,7 @@ class botService(service.MultiService):
         port=int(self.config.get("port", "6667", "server"))
         interface=interface=self.config.get("interface", "127.0.0.1", "server")
         factory=ircServerFactory(self.root, self)
-        serv=internet.TCPServer(port=port, factory=factory, interface=interface)
+        serv=MyTCPServer(port=port, factory=factory, interface=interface)
         self.addService(serv)
         service.MultiService.startService(self)  
 
@@ -107,9 +112,11 @@ class ircServerFactory(protocol.ServerFactory):
         self.config=root.getServiceNamed('config')
 
         self.protocol=Server
+        self.instances=[]
     def buildProtocol(self, addr):
-        self.p=self.protocol(self.root, self)
-        self.p.factory=self
-        return self.p
+        p=self.protocol(self.root, self)
+        p.factory=self
+        self.instances.append(p)
+        return p
     def stopFactory(self):
         pass
