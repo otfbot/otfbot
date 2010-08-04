@@ -47,6 +47,7 @@ class botService(service.MultiService):
         self.register_command(self.help)
         #FIXME: does not really fit here
         self.register_command(reactor.stop)
+        self.register_command(self.getlog)
 
     """ Add a command to the control service
             @type f: callable
@@ -119,7 +120,6 @@ class botService(service.MultiService):
     def help(self, *args):
         commandTree=self.commandTree
         for element in args:
-            self.logger.debug(element)
             if element in commandTree and type(commandTree[element]) == dict:
                 commandTree=commandTree[element]
             elif element in commandTree:
@@ -127,7 +127,9 @@ class botService(service.MultiService):
             else:
                 return repr(commendTree[element]) #fallback
 
-        namespace=" ".join(args)+" "
+        namespace=" ".join(args)
+        if namespace != "":
+            namespace+=" "
         topics=[]
         for topic in commandTree.keys():
             if type(commandTree[topic])==dict:
@@ -136,31 +138,18 @@ class botService(service.MultiService):
                 topics.append("%s%s"%(namespace, topic))
         return "Available help commands(... means the command has subcommands): "+", ".join(topics)
     
-    def _get_cmd_for_subtree(self, dict):
-        r = []
-        for k, v in dict.iteritems():
-            if callable(v):
-                r.append(k)
-            else:
-                sr = self._get_cmd_for_subtree(v)
-                for ee in sr:
-                    r.append(k+" "+ee)
-        return r
-    
-    def _cmd_log_get(self, argument):
-        index=1
-        num=3
-        if len(argument):
-            args=argument.split(" ")
-            if len(args)==2:
-                try:
-                    index=int(args[1])
-                except ValueError:
-                    pass
-            try:
-                num=min(int(args[0]), 10)
-            except ValueError:
-                pass
+    def getlog(self, numlines=3, offset=0):
+        """
+            get the n most recent loglines, of specify an offset to get earlier lines
+        """
+        try:
+            index=1+int(offset)
+        except ValueError:
+            index=1
+        try:
+            num=int(numlines)
+        except ValueError:
+            num=3
         for loghandler in logging.getLogger('').handlers:
             if loghandler.__class__ == logging.handlers.MemoryHandler:
                 messages=[]
