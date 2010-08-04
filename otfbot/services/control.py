@@ -109,17 +109,22 @@ class botService(service.MultiService):
         try:
             return f(*args)
         except TypeError:
-            (args, _, _, defaults)=inspect.getargspec(f)
-            if hasattr(f,'im_self'):
-                args=args[1:]
-            if defaults:
-                args.reverse()
-                defaults=list(defaults)
-                defaults.reverse()
-                for i in range(len(defaults)):
-                    args[i]+="(default="+str(defaults[i])+")"
-                args.reverse()
-            return "Usage: "+f.__name__+ " "+" ".join(args)                
+            return "Usage: "+self._get_useage(f)
+
+    def _get_useage(self, f):
+        """ get a usage info for function f """
+        (args, _, _, defaults)=inspect.getargspec(f)
+        if hasattr(f,'im_self'):
+            args=args[1:]
+        if defaults:
+            args.reverse()
+            defaults=list(defaults)
+            defaults.reverse()
+            for i in range(len(defaults)):
+                args[i]+="(default="+str(defaults[i])+")"
+            args.reverse()
+        return f.__name__+ " "+" ".join(args)                
+
         
     def help(self, *args):
         commandTree=self.commandTree
@@ -127,7 +132,7 @@ class botService(service.MultiService):
             if element in commandTree and type(commandTree[element]) == dict:
                 commandTree=commandTree[element]
             elif element in commandTree:
-                return commandTree[element].__doc__
+                return commandTree[element].__doc__+"\n"+self._get_useage(commandTree[element])
             else:
                 return repr(commendTree[element]) #fallback
 
