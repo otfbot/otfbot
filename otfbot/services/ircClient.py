@@ -262,6 +262,26 @@ class Bot(pluginSupport, irc.IRCClient):
         self.register_my_commands()
         self.startTimeoutDetection()
 
+    def handleCommand(self, command, prefix, params):
+        """ 
+        same as twisteds, only with reasonable logging in case of exceptions
+ 
+        Determine the function to call for the given command and call it with
+        the given arguments.
+        """
+        #XXX: we need to keep this in sync with twisteds version, in case it changes!
+        method = getattr(self, "irc_%s" % command, None)
+        try: 
+            if method is not None:
+                method(prefix, params)
+            else:
+                self.irc_unknown(prefix, command, params)
+        except Exception, e:
+            pass
+            #self.logerror(self.logger, self.pluginSupportName, e)
+            
+
+
     def startTimeoutDetection(self):
         """ initialize the timeout-detection scheduler-call """
         self.lastLine = time.time()
