@@ -134,7 +134,7 @@ class IrcUser(object):
         channel=channel.lower()
         assert(channel in self.channels)
         self.channels.remove(channel)
-        self.modes.remove(channel)
+        del self.modes[channel]
 
     def setMode(self, channel, modechar):
         """ set the usermode specified by the char modchar on channel
