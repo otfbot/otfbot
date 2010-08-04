@@ -36,6 +36,7 @@ def sendNames(server, network, channel):
 
 class Plugin(chatMod.chatMod):
     def __init__(self, server):
+        server.depends_on_service("ircClient")
         self.server=server
         self.mychannels=[]
         self.first=True
