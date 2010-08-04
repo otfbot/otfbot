@@ -157,7 +157,7 @@ class pluginSupport:
         if not self.root.getServiceNamed(dependency):
             raise self.ServiceMissing(dependency, description)
 
-    def depends_on_plugin(dependency, description=""):
+    def depends_on_plugin(dependency, description="", service=""):
         """
             depend on another plugin, raise a PluginMissing
             xception, if its not enabled
@@ -167,7 +167,15 @@ class pluginSupport:
             @param description: optional Description why it is needed and how it can be optained
             @type description: string
         """
-        if not dependency in self.plugins:
+        if service == "":
+            service=self.pluginSupportName
+        plugins = self.config.get(
+                    service + "Plugins",
+                    [], "main", set_default=False)
+
+        pluginsDisabled = self.config.get("pluginsDisabled", [], "main")
+
+        if not dependency in plugins or service+"."+dependency in pluginsDisabled:
             raise self.PluginMissing(dependency, description)
 
     def importPlugin(self, name):
@@ -246,12 +254,21 @@ class pluginSupport:
         """
             initializes all known plugins
         """
+        #first we load the classes and __init__ the plugins
         plugins = self.config.get(
                     self.pluginSupportName + "Plugins",
                     [], "main", set_default=False)
         for plginName in plugins:
             if not plginName in self.config.get("pluginsDisabled", [], "main"):
                 self.startPlugin(plginName)
+
+        #then we call .start(), guaranteeing that all other enabled plugins are loaded
+        #so start may depend on other plugins, make your dependency explicit with 
+        #depends_on_plugin in __init__ to prevent otfbot from loading the plugin, if the
+        #dependency is not satisfied
+        for mod in self.plugins.values():
+            if hasattr(mod, "start"):
+                mod.start()
 
     def startPlugin(self, pluginName):
         """
@@ -275,8 +292,6 @@ class pluginSupport:
                 mod.config = self.config
                 if hasattr(self, "network"): #needed for reload!
                     mod.network = self.network
-                if hasattr(mod, "start"):
-                    mod.start()
                 self.plugins[self._getClassName(pluginClass)] = mod
                 for func in dir(mod):
                     if hasattr(getattr(mod, func), "is_callback"):
