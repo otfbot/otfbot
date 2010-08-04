@@ -109,7 +109,7 @@ class botService(service.MultiService):
         try:
             return f(*args)
         except TypeError:
-            return "Usage: "+self._get_usege(f)
+            return "Usage: "+self._get_usage(f)
 
     def _get_usage(self, f):
         """ get a usage info for function f """
