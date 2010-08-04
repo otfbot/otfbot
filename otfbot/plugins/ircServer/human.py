@@ -28,12 +28,11 @@ from otfbot.lib import chatMod
 import string
 
 def sendNames(server, network, channel):
-    getClient=lambda network: server.root.getServiceNamed('ircClient').namedServices[network].kwargs['factory'].protocol
+    getClient=lambda network: server.root.getServiceNamed('ircClient').namedServices[network].factory.protocol
 
     if network in server.root.getServiceNamed('ircClient').namedServices.keys():
-        #names=[server.root.getServiceNamed('ircClient').namedServices[network].kwargs['factory'].protocol.users[channel][nickname]['modchar'].strip()+nickname for nickname in getClient(network).users[channel].keys()]
         ircClient=server.root.getServiceNamed('ircClient')
-        users=ircClient.namedServices[network].kwargs['factory'].protocol.getUsers(channel)
+        users=ircClient.namedServices[network].factory.protocol.getUsers(channel)
         names=[user.nick for user in users]
         server.names(server.name, "#"+network+"-"+channel, names)
 
