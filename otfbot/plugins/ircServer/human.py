@@ -31,7 +31,10 @@ def sendNames(server, network, channel):
     getClient=lambda network: server.root.getServiceNamed('ircClient').namedServices[network].kwargs['factory'].protocol
 
     if network in server.root.getServiceNamed('ircClient').namedServices.keys():
-        names=[server.root.getServiceNamed('ircClient').namedServices[network].kwargs['factory'].protocol.users[channel][nickname]['modchar'].strip()+nickname for nickname in getClient(network).users[channel].keys()]
+        #names=[server.root.getServiceNamed('ircClient').namedServices[network].kwargs['factory'].protocol.users[channel][nickname]['modchar'].strip()+nickname for nickname in getClient(network).users[channel].keys()]
+        ircClient=server.root.getServiceNamed('ircClient')
+        users=ircClient.namedServices[network].kwargs['factory'].protocol.getUsers(channel)
+        names=[user.nick for user in users]
         server.names(server.name, "#"+network+"-"+channel, names)
 
 class Plugin(chatMod.chatMod):
@@ -55,8 +58,9 @@ class Plugin(chatMod.chatMod):
             bot=self.getClient(network)
             for channel in bot.channels:
                 self.server.join(self.server.getHostmask(), "#"+network+"-"+channel)
-                if channel in bot.users.keys():
-                    sendNames(self.server, network, channel)
+                #if channel in bot.users.keys():
+                #    sendNames(self.server, network, channel)
+                sendNames(self.server, network, channel)
                 self.mychannels.append("#"+network+"-"+channel)
     def irc_PRIVMSG(self, prefix, params):
         if params[0][0]=="#":
