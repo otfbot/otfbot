@@ -28,7 +28,7 @@ from otfbot.lib import chatMod
 
 def sendNames(server, network, channel):
     # same as in serverpart!
-    getClient = lambda network: server.root.getServiceNamed('ircClient').getServiceNamed(network).protocol
+    getClient = lambda network: server.root.getServiceNamed('ircClient').getServiceNamed(network).kwargs['factory'].protocol
 
     if network in server.root.getServiceNamed('ircClient').namedServices.keys():
         names = [server.root.getServiceNamed('ircClient').namedServices[network].protocol.users[channel][nickname]['modchar'].strip() + nickname for nickname in getClient(network).users[channel].keys()]
@@ -43,7 +43,7 @@ class Plugin(chatMod.chatMod):
 
     def msg(self, user, channel, msg):
         for server in self.bot.root.getServiceNamed('ircServer').services:
-            server = server.kwargs['factory'].protocol
+            server = server.kwargs['factory'].p
             if server.connected:
                 server.sendmsg(user, "#" + self.network + "-" + channel, msg)
 
@@ -53,7 +53,7 @@ class Plugin(chatMod.chatMod):
         #            the parameters wrong? so it will show the foreign nick,
         #            but prefix the message with <botnick>
         for server in self.bot.root.getServiceNamed('ircServer').services:
-            server = server.kwargs['factory'].protocol
+            server = server.kwargs['factory'].p
             if not server.connected:
                 return
             if user.lower() == self.bot.nickname.lower():

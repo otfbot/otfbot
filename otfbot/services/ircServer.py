@@ -85,6 +85,8 @@ class Server(IRCUser, pluginSupport):
         self._apirunner("irc_%s"%command, {'prefix': prefix, 'params': params})
     def connectionMade(self):
         self._apirunner("connectionMade")
+        self.logger.info("connection made")
+        self.connected=True
     def connectionLost(self, reason):
         self.connected=False
     def getHostmask(self):
@@ -107,7 +109,6 @@ class ircServerFactory(protocol.ServerFactory):
         self.protocol=Server
     def buildProtocol(self, addr):
         self.p=self.protocol(self.root, self)
-        self.p.connected=True
         self.p.factory=self
         return self.p
     def stopFactory(self):
