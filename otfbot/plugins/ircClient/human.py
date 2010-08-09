@@ -28,7 +28,7 @@ from otfbot.lib import chatMod
 
 def sendNames(server, network, channel):
     # same as in serverpart!
-    getClient = lambda network: server.root.getServiceNamed('ircClient').getServiceNamed(network).kwargs['factory'].protocol
+    getClient = lambda network: server.root.getServiceNamed('ircClient').getServiceNamed(network).factory.protocol
 
     if network in server.root.getServiceNamed('ircClient').namedServices.keys():
         names = [server.root.getServiceNamed('ircClient').namedServices[network].protocol.users[channel][nickname]['modchar'].strip() + nickname for nickname in getClient(network).users[channel].keys()]
@@ -42,7 +42,7 @@ class Plugin(chatMod.chatMod):
         self.bot.depends_on_service("ircServer")
 
     def msg(self, user, channel, msg):
-        for server in self.bot.root.getServiceNamed('ircServer').services[0].factory.instances:
+        for server in self.bot.root.getServiceNamed('ircServer').services[0].factory.parent.instances:
             if server.connected:
                 server.sendmsg(user, "#" + self.network + "-" + channel, msg)
 
@@ -52,9 +52,9 @@ class Plugin(chatMod.chatMod):
         #            the parameters wrong? so it will show the foreign nick,
         #            but prefix the message with <botnick>
         for server in self.bot.root.getServiceNamed('ircServer').services:
-            if not hasattr(server.kwargs['factory'], "p"): #no instance
+            if not hasattr(server.factory, "p"): #no instance
                 return
-            server = server.kwargs['factory'].p
+            server = server.factory.p
             if not server.connected:
                 return
             if user.lower() == self.bot.nickname.lower():
@@ -65,6 +65,6 @@ class Plugin(chatMod.chatMod):
 
     def irc_RPL_ENDOFNAMES(self, prefix, params):
         for server in self.bot.root.getServiceNamed('ircServer').services:
-            server = server.kwargs['factory'].protocol
+            server = server.factory.p
             if server.connected:
                 sendNames(server, self.network, params[1])

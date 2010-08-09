@@ -47,7 +47,7 @@ class Plugin(chatMod.chatMod):
             self.server.sendMessage(irc.RPL_WELCOME, ":connected to OTFBot IRC", prefix="localhost")
             self.server.sendMessage(irc.RPL_YOURHOST, ":Your host is %(serviceName)s, running version %(serviceVersion)s" % {"serviceName": self.server.transport.server.getHost(),"serviceVersion": "VERSION"},prefix="localhost")
             self.server.sendMessage(irc.RPL_MOTD, ":Welcome to the Bot-Control-Server", prefix="localhost")
-            self.first=False
+            self.server.loggedon=True
 
     @callback
     def irc_QUIT(self, prefix, params):

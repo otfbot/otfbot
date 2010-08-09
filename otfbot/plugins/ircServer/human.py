@@ -56,6 +56,8 @@ class Plugin(chatMod.chatMod):
     def irc_NICK(self, prefix, params):
         if not self.first:
             return
+        if not self.server.loggedon: #some error occured, i.e. nicknameinuse
+            return
         self.first=False
         for network in self.getClientNames():
             bot=self.getClient(network)
