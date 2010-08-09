@@ -51,8 +51,10 @@ class botService(service.MultiService):
 
 
 class Server(IRCUser, pluginSupport):
+
     pluginSupportName="ircServer"
     pluginSupportPath="otfbot/plugins/ircServer"
+
     def __init__(self, root, parent):
         pluginSupport.__init__(self, root, parent)
 
@@ -88,24 +90,31 @@ class Server(IRCUser, pluginSupport):
         #    log.deferr()
         ###we use _apirunner instead###
         self._apirunner("irc_%s"%command, {'prefix': prefix, 'params': params})
+
     def connectionMade(self):
         self._apirunner("connectionMade")
         self.logger.info("connection made")
         self.connected=True
+
     def connectionLost(self, reason):
         self.connected=False
+
     def getHostmask(self):
         return "%s!%s@%s"%(self.name, self.user, self.hostname)
+
     def sendmsg(self, user, channel, msg):
         if self.connected:
             self.privmsg(user, channel, msg)
+
     def stop(self):
         self._apirunner("stop")
         for mod in self.plugins.keys():
             del(self.plugins[mod])
         self.plugins={}
 
+
 class ircServerFactory(protocol.ServerFactory):
+
     def __init__(self, root, parent):
         self.root=root
         self.parent=parent
@@ -113,10 +122,9 @@ class ircServerFactory(protocol.ServerFactory):
 
         self.protocol=Server
         self.instances=[]
+
     def buildProtocol(self, addr):
         p=self.protocol(self.root, self)
         p.factory=self
         self.instances.append(p)
         return p
-    def stopFactory(self):
-        pass
