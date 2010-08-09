@@ -58,7 +58,7 @@ class Server(IRCUser, pluginSupport):
 
         self.name="nickname"
         self.user="user"
-        self.firstnick=True
+        self.loggedon=False
         self.logger=logging.getLogger("server")
         self.classes=[]
         self.config=root.getServiceNamed('config')
