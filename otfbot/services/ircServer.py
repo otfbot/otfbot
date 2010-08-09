@@ -31,7 +31,9 @@ from otfbot.lib.pluginSupport import pluginSupport
 
 class MyTCPServer(internet.TCPServer):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, root, parent, *args, **kwargs):
+        self.root=root
+        self.parent=parent
         self.factory=kwargs['factory']
         internet.TCPServer.__init__(self, *args, **kwargs)
 
@@ -50,7 +52,7 @@ class botService(service.MultiService):
         port=int(self.config.get("port", "6667", "server"))
         interface=interface=self.config.get("interface", "127.0.0.1", "server")
         factory=ircServerFactory(self.root, self)
-        serv=MyTCPServer(port=port, factory=factory, interface=interface)
+        serv=MyTCPServer(self.root, self, port=port, factory=factory, interface=interface)
         self.addService(serv)
         service.MultiService.startService(self)  
 
@@ -95,6 +97,7 @@ class Server(IRCUser, pluginSupport):
 
     def connectionLost(self, reason):
         self.connected=False
+        self.parent.instances.remove(self)
 
     def getHostmask(self):
         return "%s!%s@%s"%(self.name, self.user, self.hostname)
