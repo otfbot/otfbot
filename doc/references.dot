@@ -1,26 +1,53 @@
 digraph references {
-    label="structure of parent / root links"
     "otfbot.tac" -> application
-    application -> service1 [label="services[0]"]
-    application -> service2 [label="services[1]"]
-    service1 -> application [label="root",style="dashed"]
-    service1 -> application [label="parent",style="dashed"]
-    service2 -> application [label="root",style="dashed"]
-    service2 -> application [label="parent",style="dashed"]
-    plugins1_1[label="plugin 1"]
-    plugins1_2[label="plugin 2"]
-    plugins2_1[label="plugin 1"]
-    plugins2_2[label="plugin 2"]
-    service1 -> plugins1_1 [label="plugins[0]"]
-    service1 -> plugins1_2 [label="plugins[1]"]
-    service2 -> plugins2_1 [label="plugins[0]"]
-    service2 -> plugins2_2 [label="plugins[1]"]
-    plugins1_1 -> service1 [label="parent",style="dashed"]
-    plugins1_1 -> application [label="root",style="dashed"]
-    plugins1_2 -> service1 [label="parent",style="dashed"]
-    plugins1_2 -> application [label="root",style="dashed"]
-    plugins2_1 -> service2 [label="parent",style="dashed"]
-    plugins2_1 -> application [label="root",style="dashed"]
-    plugins2_2 -> service2 [label="parent",style="dashed"]
-    plugins2_2 -> application [label="root",style="dashed"]
+    application
+    //abstract
+    subgraph cluster_abstract_example{
+        label="abstract example for the parent, root structure"
+        application -> service1 [label="services[0]"]
+        application -> service2 [label="services[1]"]
+        service1 -> application [label="root",style="dashed"]
+        service1 -> application [label="parent",style="dashed"]
+        service2 -> application [label="root",style="dashed"]
+        service2 -> application [label="parent",style="dashed"]
+        plugins1_1[label="plugin 1"]
+        plugins1_2[label="plugin 2"]
+        plugins2_1[label="plugin 1"]
+        plugins2_2[label="plugin 2"]
+        service1 -> plugins1_1 [label="plugins[0]"]
+        service1 -> plugins1_2 [label="plugins[1]"]
+        service2 -> plugins2_1 [label="plugins[0]"]
+        service2 -> plugins2_2 [label="plugins[1]"]
+        plugins1_1 -> service1 [label="parent",style="dashed"]
+        plugins1_1 -> application [label="root",style="dashed"]
+        plugins1_2 -> service1 [label="parent",style="dashed"]
+        plugins1_2 -> application [label="root",style="dashed"]
+        plugins2_1 -> service2 [label="parent",style="dashed"]
+        plugins2_1 -> application [label="root",style="dashed"]
+        plugins2_2 -> service2 [label="parent",style="dashed"]
+        plugins2_2 -> application [label="root",style="dashed"]
+    }
+    //concrete
+    subgraph cluster_concrete {
+        label="concrete names"
+        ircServerService [label="ircServer.botService"]
+        ircClientService [label="ircClient.botService"]
+        application -> ircServerService [label="namedServices['ircServer']"]
+        ircServerService -> MyTCPServer [label="services[0]"]
+        Server [label="ircServer.Server"]
+        ircServerService -> Server[label="instances[i]"]
+        Server -> human[label="plugins[i]"]
+        application -> ircClientService[label="namedServices['ircClient']"]
+        application -> ircClientService[label="services[i]"]
+        ircConnection[label="internet.TCPClient"]
+        ircClientService-> ircConnection[label="namedServices['the network name']"]
+        ircFactory [label="ircClient.BotFactory"]
+        ircConnection-> ircFactory [label="factory"]
+        ircBot[label="ircClient.Bot"]
+        ircConnection-> ircBot [label="protocol"]
+        ircFactory -> ircBot [label="protocol"]
+        ircPlugin [label="commands"]
+        ircBot -> ircPlugin [label="plugins[i]"]
+
+    }
 }
