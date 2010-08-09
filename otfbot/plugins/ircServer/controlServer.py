@@ -20,6 +20,7 @@
 from twisted.internet import reactor
 
 from otfbot.lib import chatMod
+from otfbot.lib.pluginSupport.decorators import callback
 
 import time
 
@@ -31,11 +32,15 @@ class Plugin(chatMod.chatMod):
         self.server=server
         self.first=True
         #self.control=controlInterface.controlInterface(self.server.root.getServiceNamed("control"))
+
+    @callback
     def irc_NICK(self, prefix, params):
         if self.first:
             self.server.join(self.server.getHostmask(), "#control")
             self.server.privmsg(self.server.getHostmask(), "#control", "Welcome to the OTFBot control channel. Type \"help\" for help ;).")
             self.server.names(self.server.name, "#control", ['OtfBot', self.server.name])
+
+    @callback
     def irc_PRIVMSG(self, prefix, params):
         channel=params[0]
         if channel=="#control":
