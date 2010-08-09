@@ -106,7 +106,7 @@ class pluginSupport:
         if not self.root.getServiceNamed(dependency):
             raise self.ServiceMissing(dependency, description)
 
-    def depends_on_plugin(dependency, description="", service=""):
+    def depends_on_plugin(self, dependency, description="", service=""):
         """
             depend on another plugin, raise a PluginMissing
             xception, if its not enabled
@@ -115,6 +115,8 @@ class pluginSupport:
             @type dependency: string
             @param description: optional Description why it is needed and how it can be optained
             @type description: string
+            @param service: the service under which the plugin runs
+            @type service: string
         """
         if service == "":
             service=self.pluginSupportName
