@@ -72,7 +72,7 @@ class Plugin(chatMod.chatMod):
             raise self.bot.WontStart("it doesn't have any ircClient.svn-push \
                                       plugins connected to it")
 
-    @registerCallback
+    @callback
     def lineReceived(self, line):
         """
             Called when a line is received. Check if the commands are for this
