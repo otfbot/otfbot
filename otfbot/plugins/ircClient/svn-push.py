@@ -78,7 +78,6 @@ class Plugin(chatMod.chatMod):
                                   self.bot.network +
                                   ". Please check your config file.")
         self.svnclient = pysvn.Client()
-        self.buildResults = ['green', 'yellow', 'red']
 
         # mIRC (and other clients) variables
         self.mirc_bold = chr(2)
@@ -120,20 +119,13 @@ class Plugin(chatMod.chatMod):
             @param commit: The commit revision
             @type commit: int
             @param result: The result of the build process.
-                           See self.buildResults
+                           This can contain anything you want.
             @type result: string
         """
-        if result in self.buildResults:
-            if result == "green":
-                resultmsg = "All green"
-            if result == "yellow":
-                resultmsg = "Yellow!"
-            if result == "red":
-                resultmsg = "Red!"
-            log = self.getRev(url, commit)
-            for channel in self.channels:
-                self.bot.sendmsg(channel,
-                                 self.mirc_bold +
-                                 "r" + str(log['revision'].number) +
-                                 self.mirc_bold + " build result: " +
-                                 resultmsg)
+        log = self.getRev(url, commit)
+        for channel in self.channels:
+            self.bot.sendmsg(channel,
+                             self.mirc_bold +
+                             "r" + str(log['revision'].number) +
+                             self.mirc_bold + " build result: " +
+                             result)
