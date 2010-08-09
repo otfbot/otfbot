@@ -103,6 +103,10 @@ class Server(IRCUser, pluginSupport):
         if self.connected:
             self.privmsg(user, channel, msg)
 
+    def action(self, user, channel, msg):
+        if self.connected:
+            self.sendLine(":%s PRIVMSG %s :ACTION %s"%(user, channel, msg))
+
     def stop(self):
         self._apirunner("stop")
         for mod in self.plugins.keys():
