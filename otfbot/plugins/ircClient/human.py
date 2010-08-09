@@ -46,6 +46,15 @@ class Plugin(chatMod.chatMod):
             if server.connected:
                 server.sendmsg(user, "#" + self.network + "-" + channel, msg)
 
+    def action(self, user, channel, msg):
+        for server in self.bot.root.getServiceNamed('ircServer').services[0].factory.parent.instances:
+            if server.connected:
+                sign="#"
+                if channel[0]!="#": #action in a query
+                    sign=""
+                server.action(user, sign + self.network + "-" + channel, msg)
+
+
     def query(self, user, channel, msg):
         #TODO FIXME: this is a workaround. the external irc client does not
         #            recognize own messages from queries (xchat) or are just
