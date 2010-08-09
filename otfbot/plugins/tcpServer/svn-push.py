@@ -22,7 +22,7 @@
     ircClient plugin "svn-push" to notify it of new commits
 """
 
-from otfbot.lib.pluginSupport.decorators import registerCallback
+from otfbot.lib.pluginSupport.decorators import callback
 from otfbot.lib import chatMod
 import logging
 
