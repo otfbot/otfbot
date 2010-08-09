@@ -38,7 +38,7 @@ class Plugin(chatMod.chatMod):
 
     @callback_with_priority(100)
     def irc_NICK(self, prefix, params):
-        for server in self.server.factory.instances:
+        for server in self.server.parent.instances:
             if server.name==params[0] and server != self.server:
                 self.server.sendMessage(irc.ERR_NICKNAMEINUSE, "nickname already in use", prefix="localhost")
                 return
