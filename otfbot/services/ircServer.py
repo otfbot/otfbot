@@ -30,16 +30,21 @@ from otfbot.lib import chatMod
 from otfbot.lib.pluginSupport import pluginSupport
 
 class MyTCPServer(internet.TCPServer):
+
     def __init__(self, *args, **kwargs):
         self.factory=kwargs['factory']
         internet.TCPServer.__init__(self, *args, **kwargs)
 
 class botService(service.MultiService):
+
     name="ircServer"
+
     def __init__(self, root, parent):
         self.root=root
         self.parent=parent
+        self.instances=[]
         service.MultiService.__init__(self)
+
     def startService(self):
         self.config=self.root.getServiceNamed('config')
         port=int(self.config.get("port", "6667", "server"))
@@ -114,6 +119,9 @@ class Server(IRCUser, pluginSupport):
 
 
 class ircServerFactory(protocol.ServerFactory):
+    """
+        Factory building Server instaces, used by twisted
+    """
 
     def __init__(self, root, parent):
         self.root=root
@@ -121,10 +129,13 @@ class ircServerFactory(protocol.ServerFactory):
         self.config=root.getServiceNamed('config')
 
         self.protocol=Server
-        self.instances=[]
 
     def buildProtocol(self, addr):
-        p=self.protocol(self.root, self)
-        p.factory=self
-        self.instances.append(p)
+        """ 
+            builds the protocol and appends the instance to parent.intances
+
+            @returns the instance
+        """
+        p=self.protocol(self.root, self.parent)
+        self.parent.instances.append(p)
         return p
