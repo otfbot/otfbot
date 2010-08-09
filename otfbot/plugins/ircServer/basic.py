@@ -19,21 +19,24 @@
 #
 
 from otfbot.lib import chatMod
-from otfbot.lib.pluginSupport.decorators import registerCallbackWithPriority
+from otfbot.lib.pluginSupport.decorators import callback, callback_with_priority
 from twisted.words.protocols import irc
 
 class Plugin(chatMod.chatMod):
     def __init__(self, server):
         self.server=server
 
-    #def irc_USER(self, prefix, params):
+    @callback
     def irc_PING(self, prefix, params):
         self.server.sendMessage("PONG", ":"+params[0])
+
+    @callback
     def irc_USER(self, prefix, params):
         self.server.user=params[0]
         self.server.hostname=params[2]
         self.server.realname=params[3]
-    @registerCallbackWithPriority(100)
+
+    @callback_with_priority(100)
     def irc_NICK(self, prefix, params):
         for server in self.server.factory.instances:
             if server.name==params[0] and server != self.server:
@@ -45,5 +48,7 @@ class Plugin(chatMod.chatMod):
             self.server.sendMessage(irc.RPL_YOURHOST, ":Your host is %(serviceName)s, running version %(serviceVersion)s" % {"serviceName": self.server.transport.server.getHost(),"serviceVersion": "VERSION"},prefix="localhost")
             self.server.sendMessage(irc.RPL_MOTD, ":Welcome to the Bot-Control-Server", prefix="localhost")
             self.first=False
+
+    @callback
     def irc_QUIT(self, prefix, params):
         self.server.connected=False
