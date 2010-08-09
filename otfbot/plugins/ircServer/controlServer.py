@@ -24,8 +24,6 @@ from otfbot.lib.pluginSupport.decorators import callback
 
 import time
 
-#from lib import controlInterface
-
 
 class Plugin(chatMod.chatMod):
     def __init__(self, server):
@@ -36,6 +34,8 @@ class Plugin(chatMod.chatMod):
     @callback
     def irc_NICK(self, prefix, params):
         if self.first:
+            if not self.server.loggedon: #some error occured, i.e. nickname in use
+                return
             self.server.join(self.server.getHostmask(), "#control")
             self.server.privmsg(self.server.getHostmask(), "#control", "Welcome to the OTFBot control channel. Type \"help\" for help ;).")
             self.server.names(self.server.name, "#control", ['OtfBot', self.server.name])
