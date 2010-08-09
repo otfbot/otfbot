@@ -78,7 +78,6 @@ class Plugin(chatMod.chatMod):
             Called when a line is received. Check if the commands are for this
             plugin and call ircClient.svn-push when this is the case
         """
-        self.logger.debug("line received: "+line)
         plugin = line.split(" ", 1)
         if plugin[0].lower() == "svn":
             command = line.split(" ", 4)
@@ -92,16 +91,22 @@ class Plugin(chatMod.chatMod):
                                  " with the revision " + str(commit))
                 for plugin in self.plugins:
                     plugin.commit(repo, commit)
-            command = line.split(" ", 5)
+
+            command = line.split(" ", 4)
             if len(command) == 5 and command[1].lower() == "buildresult":
                 # result of automatic compilation (buildbot etc)
+                # the last argument can be multiple words
                 repo = command[2]
                 try:
                     commit = int(command[3])
                 except ValueError:
                     self.logger.warn("Revision number not integer!")
+                    return 1
                 # build result of the compilation.
                 # The ircClient plugin cares about input validation here
                 result = command[4]
+
+                self.logger.info("New buildresult on " + repo + " r" +
+                                 str(commit) + ": " + result)
                 for plugin in self.plugins:
                     plugin.buildResult(repo, commit, result)
