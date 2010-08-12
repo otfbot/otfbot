@@ -22,6 +22,7 @@ Post Headlines and Links from a Newsfeed
 """
 
 from otfbot.lib import chatMod, urlutils
+from otfbot.lib.pluginSupport.decorators import callback
 
 import time
 
@@ -73,6 +74,7 @@ class Plugin(chatMod.chatMod):
 
         self.addSource(feedUrl, channel, feedMinWait, feedMaxWait, feedWaitFactor, feedPostMax)
 
+    @callback
     def joined(self, channel):
         numFeeds = int(self.bot.config.get("numFeeds", 0, "feed", self.bot.network, channel))
         if numFeeds > 0:
@@ -148,12 +150,14 @@ class Plugin(chatMod.chatMod):
         newWait = self.getWaitTime(curWait, minWait, maxWait, factor, had_new)
         self.callIDs[url] = self.bot.root.getServiceNamed('scheduler').callLater(newWait * 60, self.postNewsLoop, channel, url, newWait, minWait, maxWait, factor, feedPostMax) #recurse
 
+    @callback
     def connectionLost(self, reason):
         self.stop()
 
     def stop(self):
         self.end = 1
 
+    @callback
     def command(self, user, channel, command, options):
         if self.bot.auth(user) >= 10:
             if command == "refresh":

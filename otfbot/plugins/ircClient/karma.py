@@ -22,6 +22,7 @@
 """
 
 from otfbot.lib import chatMod
+from otfbot.lib.pluginSupport.decorators import callback
 
 import pickle
 import os
@@ -69,12 +70,15 @@ class Plugin(chatMod.chatMod):
         pickle.dump(self.karmas[channel], karmafile)
         karmafile.close()
 
+    @callback
     def joined(self, channel):
         self.loadKarma(channel)
 
+    @callback
     def left(self, channel):
         self.saveKarma(channel)
 
+    @callback
     def command(self, user, channel, command, options):
         up = False
         what = None

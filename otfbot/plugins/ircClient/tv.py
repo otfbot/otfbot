@@ -29,9 +29,11 @@ except ImportError:
     HAS_PYXMLTV=False
 
 from otfbot.lib import chatMod, urlutils
+from otfbot.lib.pluginSupport.decorators import callback
 import time, sys, os
 
 class Plugin(chatMod.chatMod):
+
     def __init__(self,bot):
         self.bot = bot
         if not HAS_PYXMLTV:
@@ -52,6 +54,7 @@ class Plugin(chatMod.chatMod):
         for i in standardsender.split(","):
             self.standardsender.append(i.lower().replace(" ",""))
     
+    @callback
     def command(self, user, channel, command, options):
         user = user.split("!")[0]
         public = 0

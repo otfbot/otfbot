@@ -344,11 +344,6 @@ class Bot(pluginSupport, irc.IRCClient):
 
     def startPlugin(self, pluginName):
         plugin = pluginSupport.startPlugin(self, pluginName)
-        #TODO: this is only a workaround until the plugins
-        #      register their callbacks
-        if plugin:
-            for callback in dir(plugin):
-                self.registerCallback(plugin, callback)
 
     def getFactory(self):
         """ get the factory

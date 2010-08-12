@@ -27,6 +27,7 @@ import time
 import os
 from time import gmtime
 from time import strftime
+from otfbot.lib.pluginSupport.decorators import callback
 
 
 class Plugin(chatMod.chatMod):
@@ -58,6 +59,7 @@ class Plugin(chatMod.chatMod):
                 return True
         return False
 
+    @callback
     def command(self, user, channel, command, options):
         sender = user.split("!")[0]
 

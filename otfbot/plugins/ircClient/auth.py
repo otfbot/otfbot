@@ -29,6 +29,7 @@ from twisted.words.iwords import IUser
 from otfbot.lib import chatMod
 from otfbot.lib.user import BotUser
 from otfbot.lib.user import IrcUser
+from otfbot.lib.pluginSupport.decorators import callback
 
 
 class Plugin(chatMod.chatMod):
@@ -43,6 +44,7 @@ class Plugin(chatMod.chatMod):
     def __init__(self, bot):
         self.bot = bot
 
+    @callback
     def query(self, user, channel, msg):
         """
         Uses the auth-service to identify a user.
@@ -77,6 +79,7 @@ class Plugin(chatMod.chatMod):
             fail = "Login failed: %s"
             d.addErrback(lambda failure: self.bot.sendmsg(nick, fail % failure.getErrorMessage()))
 
+    @callback
     def auth(self, user):
         """
         Returns the access-level of the given user.

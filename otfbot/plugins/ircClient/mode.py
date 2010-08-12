@@ -22,6 +22,7 @@
 """
 
 from otfbot.lib import chatMod
+from otfbot.lib.pluginSupport.decorators import callback
 
 
 class Plugin(chatMod.chatMod):
@@ -36,6 +37,7 @@ class Plugin(chatMod.chatMod):
         self.modes["halfop"] = {"char": "h", "set": 1}
         self.modes["dehalfop"] = {"char": "h", "set": 0}
 
+    @callback
     def command(self, user, channel, command, options):
         if self.bot.auth(user) > 2 and command in self.modes.keys():
             if options != "":

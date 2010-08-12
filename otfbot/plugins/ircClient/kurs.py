@@ -24,6 +24,7 @@
 from otfbot.lib import chatMod
 from otfbot.lib import functions
 from otfbot.lib import urlutils
+from otfbot.lib.pluginSupport.decorators import callback
 
 import string
 import re
@@ -41,6 +42,7 @@ class Plugin(chatMod.chatMod):
         self.time = time.time()
         self.commands = ["kurs", "wkn"]
 
+    @callback
     def command(self, user, channel, command, options):
         nick = user.split("!")[0]
         if command in self.commands and 0 < (time.time() - self.time) < 5:
