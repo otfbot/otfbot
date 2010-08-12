@@ -22,6 +22,7 @@
 """
 
 from otfbot.lib import chatMod
+from otfbot.lib.pluginSupport.decorators import callback
 
 
 class Plugin(chatMod.chatMod):
@@ -41,6 +42,7 @@ class Plugin(chatMod.chatMod):
                 networkService = ircClient.getServiceNamed(target_network)
                 networkService.protocol.sendmsg(target_channel, message)
 
+    @callback
     def msg(self, user, channel, msg):
         nick = user.split("!")[0]
         if nick.lower() == self.bot.nickname.lower():
@@ -50,36 +52,45 @@ class Plugin(chatMod.chatMod):
             nick = "%s%s\x0F" % (color, nick)
         self._sendToMirror(channel, "< %s> %s" % (nick, msg))
 
+    @callback
     def action(self, user, channel, msg):
         self._sendToMirror(channel, "* %s %s " % (user.split("!")[0], msg))
 
+    @callback
     def kickedFrom(self, channel, kicker, message):
         self._sendToMirror(channel, "%s was kicked from %s by %s [%s]" % (self.bot.nickname, channel, kicker, message))
 
+    @callback
     def userKicked(self, kickee, channel, kicker, message):
         self._sendToMirror(channel, "%s was kicked from %s by %s [%s]" % (kickee, channel, kicker, message))
 
+    @callback
     def userJoined(self, user, channel):
         self._sendToMirror(channel, "%s has joined %s" % (user.split("!")[0], channel))
 
+    @callback
     def userLeft(self, user, channel):
         self._sendToMirror(channel, "%s has left %s" % (user.split("!")[0], channel))
 
+    @callback
     def userQuit(self, user, quitMessage):
         for (network, channel) in self.bot.config.has("mirrorto", "mirror")[2]:
             if self.network == network:
                 self._sendToMirror(channel, "%s has quit [%s]" % (user.split("!")[0], quitMessage))
 
+    @callback
     def userRenamed(self, oldname, newname):
         for (network, channel) in self.bot.config.has("mirrorto", "mirror")[2]:
             if self.network == network:
                 self._sendToMirror(channel, "%s is now known as %s" % (oldname, newname))
 
+    @callback
     def modeChanged(self, user, channel, set, modes, args):
         sign = "+"
         if not set:
             sign = "-"
         self._sendToMirror(channel, "mode/" + channel + " [" + sign + modes + " " + " ".join(args) + "] by " + user)
 
+    @callback
     def joined(self, channel):
         self._sendToMirror(channel, "joined %s" % channel)

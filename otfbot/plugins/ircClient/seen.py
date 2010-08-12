@@ -19,8 +19,10 @@
 
 import pickle,time,os
 from otfbot.lib import chatMod
+from otfbot.lib.pluginSupport.decorators import callback
 
 class Plugin(chatMod.chatMod):
+
     def __init__(self, bot):
         self.bot = bot
         try:
@@ -35,16 +37,19 @@ class Plugin(chatMod.chatMod):
             self.userdata = [{}]
         self.bot.root.getServiceNamed('scheduler').callLater(60, self.save_data) #TODO: call this only on exit
         
+    @callback
     def joined(self,channel):
         try:
             self.userdata[0][channel]
         except KeyError:
             self.userdata[0][channel] = {}
     
+    @callback
     def msg(self, user, channel, msg):
         if channel[0] == "#":
             self.userdata[0][channel][user.split("!")[0].lower()] = {'msg':msg, 'time':time.time()}
     
+    @callback
     def command(self, user, channel, command, options):
         if command == "seen":
             try:

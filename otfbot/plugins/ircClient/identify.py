@@ -23,6 +23,7 @@ Identify the Bot to a nickserv, if the botnick is registered
 """
 
 from otfbot.lib import chatMod
+from otfbot.lib.pluginSupport.decorators import callback
 
 
 class Plugin(chatMod.chatMod):
@@ -31,6 +32,7 @@ class Plugin(chatMod.chatMod):
         self.bot = bot
         self.sent_identification = False
 
+    @callback
     def signedOn(self):
         self.identify()
 
@@ -44,10 +46,12 @@ class Plugin(chatMod.chatMod):
             self.logger.info("setting usermode +b")
             self.bot.mode(self.bot.nickname, 1, "B")
 
+    @callback
     def noticed(self, user, channel, msg):
         user = user.split("!")[0]
         if (user.lower() == "nickserv" and self.sent_identification):
             self.logger.debug(user + ": " + msg)
 
+    @callback
     def connectionLost(self, reason):
         self.sent_identification = False

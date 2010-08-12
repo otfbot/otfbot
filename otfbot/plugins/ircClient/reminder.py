@@ -19,6 +19,7 @@
 
 import time
 from otfbot.lib import chatMod
+from otfbot.lib.pluginSupport.decorators import callback
 from datetime import datetime
 
 """
@@ -33,6 +34,7 @@ class Plugin(chatMod.chatMod):
         self.bot.depends_on_service('scheduler', 'without scheduler the reminder-plugin cannot work')
         self.scheduler = self.bot.root.getServiceNamed('scheduler')
 
+    @callback
     def remind(self, user, channel, message):
         """
             called at every time where a reminder is set.
@@ -41,6 +43,7 @@ class Plugin(chatMod.chatMod):
 
         self.bot.sendmsg(channel, user+": Reminder: "+message)
 
+    @callback
     def command(self, user, channel, command, options):
         """
             react on !remindme 

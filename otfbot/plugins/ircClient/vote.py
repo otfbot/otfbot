@@ -22,6 +22,7 @@ cast a vote with !votecast question and collect answers
 """
 
 from otfbot.lib import chatMod
+from otfbot.lib.pluginSupport.decorators import callback
 
 
 class Plugin(chatMod.chatMod):
@@ -30,6 +31,7 @@ class Plugin(chatMod.chatMod):
         self.bot.depends_on_service("scheduler")
         self.votes={}
 
+    @callback
     def command(self, user, channel, command, options):
         if command == "newvote":
             if not channel in self.votes:
@@ -52,6 +54,7 @@ class Plugin(chatMod.chatMod):
                     self.votes[channel][2]+=1
                 elif options.lower() in ["whatever", "egal"]:
                     self.votes[channel][3]+=1
+
     def voteend(self, channel):
         self.bot.sendmsg(channel, "Vote: %s"%self.votes[channel][0])
         self.bot.sendmsg(channel, "Ja: %s, Nein: %s, Egal: %s"%(self.votes[channel][1], self.votes[channel][2], self.votes[channel][3]))

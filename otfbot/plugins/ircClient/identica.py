@@ -22,6 +22,7 @@
 """
 
 from otfbot.lib import chatMod
+from otfbot.lib.pluginSupport.decorators import callback
 
 LIB = True
 try:
@@ -39,6 +40,7 @@ class Plugin(chatMod.chatMod):
                     "http://media.commandline.org.uk/code/identi.txt to "+
                     "lib/identi.py to use identica")
 
+    @callback
     def command(self, user, channel, command, options):
         if not LIB:
             return
