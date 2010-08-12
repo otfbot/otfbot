@@ -20,11 +20,14 @@
 
 import random
 from otfbot.lib import chatMod
+from otfbot.lib.pluginSupport.decorators import callback
 
 class Game:
+
     def __init__(self):
         self.myStones=[]
         self.yourStones=[]
+
     def drawField(self):
         ret=""
         for y in range(3):
@@ -38,11 +41,13 @@ class Game:
                     ret+=str(pos) + " "
             ret+="\n"
         return ret
+
     def move(self, num):
         if not num in self.myStones and not num in self.yourStones:
             self.yourStones+=[num]
             return True
         return False
+
     def neighbours(self, pos):
         return {
             1: [2,4],
@@ -54,6 +59,7 @@ class Game:
             7: [4,5,8],
             8: [7,4,5,9,6],
             9: [8,6]}[pos]
+
     def winningField(self, stone, stone2, fields):
         print stone, stone2, fields
         for field in fields:
@@ -69,6 +75,7 @@ class Game:
             if stoneset == set([3,5,7]):
                 return field
         return None
+
     def kiMove(self):
         stones=[1,2,3,4,5,6,7,8,9]
         for s in self.myStones:
@@ -117,6 +124,7 @@ class Game:
     COMPUTER_WIN=2
     DRAW_GAME=3
     STILL_PLAYING=4
+
     def checkWin(self, lastStone):
         if lastStone in self.myStones:
             for stone2 in self.neighbours(lastStone):
@@ -143,6 +151,7 @@ class Plugin(chatMod.chatMod):
         self.bot=bot
         self.game=Game()
 
+    @callback
     def command(self, user, channel, command, options):
         if command == "tictactoe" or command=="xo":
             if options == "":

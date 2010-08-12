@@ -22,6 +22,7 @@
 """
 
 from otfbot.lib import chatMod
+from otfbot.lib.pluginSupport.decorators import callback
 
 import random
 import datetime
@@ -53,6 +54,7 @@ class Plugin(chatMod.chatMod):
     def __init__(self, bot):
         self.bot = bot
 
+    @callback
     def command(self, user, channel, command, options):
         if command == "ddate":
             dt = datetime.datetime.now()

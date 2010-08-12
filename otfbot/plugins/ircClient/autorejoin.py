@@ -22,6 +22,7 @@ Rejoin, if kicked. (note: this is often a bad idea!)
 """
 
 from otfbot.lib import chatMod
+from otfbot.lib.pluginSupport.decorators import callback
 
 
 class Plugin(chatMod.chatMod):
@@ -29,6 +30,7 @@ class Plugin(chatMod.chatMod):
     def __init__(self, bot):
         self.bot = bot
 
+    @callback
     def kickedFrom(self, channel, kicker, message):
         if int(self.bot.config.get("enabled", False, "autorejoin", self.bot.network, channel)):
             self.bot.join(channel)

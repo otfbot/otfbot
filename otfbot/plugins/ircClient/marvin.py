@@ -22,6 +22,7 @@
 """
 from otfbot.lib import chatMod
 from otfbot.lib import functions
+from otfbot.lib.pluginSupport.decorators import callback
 
 import random
 
@@ -32,6 +33,7 @@ class Plugin(chatMod.chatMod):
     def __init__(self, bot):
         self.bot = bot
 
+    @callback
     def msg(self, user, channel, msg):
         """
             Let marvin complain with the propability specified in marvin.percent in the config

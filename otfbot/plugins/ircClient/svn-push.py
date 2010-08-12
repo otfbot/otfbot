@@ -25,6 +25,7 @@
 
 import logging
 from otfbot.lib import chatMod
+from otfbot.lib.pluginSupport.decorators import callback
 
 HAS_PYSVN = True
 try:
