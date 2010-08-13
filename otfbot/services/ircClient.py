@@ -699,7 +699,7 @@ class Bot(pluginSupport, irc.IRCClient):
         channel = channel.lower()
         self._apirunner("userKicked", {"kickee": kickee, "channel": channel,
                                        "kicker": kicker, "message": message})
-        self.user_list[kickee].removeChannel(channel)
+        user=self.getUserByNick(kickee).removeChannel(channel)
         #TODO: remove user, if len( .getChannels())==0?
 
     @syncedChannel(argnum=1)
