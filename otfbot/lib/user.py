@@ -155,7 +155,8 @@ class IrcUser(object):
         channel=channel.lower()
         assert(channel in self.channels)
         assert(modechar in MODE_CHARS)
-        self.modes[channel]=self.modes[channel] ^ MODE_CHARS[modechar]
+        all_set=reduce(lambda x,y:x+y, MODE_CHARS.values()) #binary: 11...11
+        self.modes[channel]=self.modes[channel] & (all_set ^ MODE_CHARS[modechar]) #1..1 ^ modechar = 1..101..1
 
     def getModeSign(self, channel):
         channel=channel.lower()
