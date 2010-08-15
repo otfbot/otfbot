@@ -18,7 +18,7 @@
 #
 
 """
-Provides a user registry and authentication
+    Provides a user registry and authentication
  
 """
 
@@ -48,14 +48,27 @@ class YamlWordsRealm(InMemoryWordsRealm):
         reactor.callInThread(self.load)
             
     def userFactory(self, name):
+        """
+            create a new User
+
+            @param name: the name of the new user
+            @type name: string
+            @returns: a BotUser object
+        """
         return BotUser(name)
 
     def addUser(self, user):
+        """
+            adds a user to userlist
+        """
         super(YamlWordsRealm, self).addUser(user)
         reactor.callInThread(self.save)
    
     def addGroup(self, group):
-        super(YamlWordsRealm, self).addGroup(user)
+        """
+            adds a group
+        """
+        super(YamlWordsRealm, self).addGroup(group)
         reactor.callInThread(self.save)        
 
     def requestAvatarId(self, creds):
@@ -91,11 +104,17 @@ class YamlWordsRealm(InMemoryWordsRealm):
             return defer.fail(error.UnauthorizedLogin())
 
     def save(self):
+        """
+            writes the userlist to a yaml file
+        """
         file=open(self.file, "w")
         file.write(yaml.dump_all([self.users,self.groups], default_flow_style=False))
         file.close()
 
     def load(self):
+        """
+            loads the userlist from a yaml file
+        """
         try:
             f=open(self.file, "r")
             file_h=yaml.load_all(f)
@@ -107,6 +126,9 @@ class YamlWordsRealm(InMemoryWordsRealm):
             self.groups={}
 
 class botService(service.MultiService, portal.Portal):
+    """
+        auth service class providing authentification against a userlist
+    """
     name="auth"
     def __init__(self, root, parent):
         self.root=root
@@ -116,6 +138,9 @@ class botService(service.MultiService, portal.Portal):
         # TODO: write a custom Realm        
 
     def startService(self):
+        """
+            starts the service and loads the userlist
+        """
         print "auth service started"
         self.config=self.root.getServiceNamed('config')
         self.realm = YamlWordsRealm("userdb",self.config.get("datadir","data")+"/userdb.yaml")
