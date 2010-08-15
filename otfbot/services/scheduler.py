@@ -26,13 +26,15 @@ from twisted.internet import reactor
 from datetime import datetime
 
 class botService(service.MultiService):
+    """Wrapper class for the scheduling functions of twisted.internet.reactor.ReactorTime"""
     name="scheduler"
+
     def __init__(self, root, parent):
         self.root=root
         self.parent=parent
         service.MultiService.__init__(self)
         self.logger = logging.getLogger(self.name)
-    """Wrapper class for the scheduling functions of twisted.internet.reactor.ReactorTime"""
+
     def callLater(self,time,function,*args,**kwargs):
         """ executes C{function} after C{time} seconds with arguments C{*args} and keyword arguments C{**kwargs}
             @param time: seconds to wait before executing C{function}
@@ -45,6 +47,7 @@ class botService(service.MultiService):
             @type **kwargs: dict
         """
         return reactor.callLater(time,function,*args,**kwargs)
+
     def cancelCallLater(self, callID):
         """ cancel a delayed call
             @param callID: the call to cancel (id returned in callLater)

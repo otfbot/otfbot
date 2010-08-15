@@ -18,11 +18,11 @@
 # (c) 2009 - 2010 by Robert Weidlich
 #
 
-""" Objects to represent users
+"""
+    Objects to represent users
 """
 
 from twisted.words import service
-
 import hashlib
 
 
@@ -39,9 +39,24 @@ class BotUser(service.User):
         self.name = name
 
     def setPasswd(self, passwd):
+        """
+            update the password
+
+            takes a string as password and stores the hash.
+
+            @param passwd: the new password.
+            @type passwd: string
+        """
         self.password = self._hashpw(passwd)
 
     def checkPasswd(self, passwd):
+        """
+            checks if the password for the user equals passwd
+
+            @param passwd: input password
+            @type passwd: string
+            @returns: true if the password was correct
+        """
         return self._hashpw(passwd) == self.password
 
     def _hashpw(self, pw):
@@ -51,6 +66,8 @@ class BotUser(service.User):
     def __repr__(self):
         return "<BotUser %s>" % self.name
 
+
+#signs are ascending in importance!
 MODE_CHARS = {
     ' ': 0,
     'v': 1,
