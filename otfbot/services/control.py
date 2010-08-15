@@ -49,11 +49,12 @@ class botService(service.MultiService):
         self.register_command(reactor.stop)
         self.register_command(self.getlog)
 
-    """ Add a command to the control service
-            @type f: callable
-            @param f: the callable to be called, when the command is issued
-    """
     def register_command(self, f, namespace=None, name=None):
+        """ Add a command to the control service
+                @type f: callable
+                @param f: the callable to be called, when the command is issued
+        """
+
         if name is None:
             name=f.__name__
         if not namespace:
@@ -85,6 +86,12 @@ class botService(service.MultiService):
             #self.commandList[name].append(" ".join(namespace)) 
 
     def handle_command(self, string):
+        """
+            parse the commandstring and handle the command
+
+            the string is parsed into commands, and they are searched in the commandList-tree
+            the function returns an answerstring or that the command was ambigious
+        """
         s=string.split(" ")
         if not type(s) == list:
             s=[s,]
@@ -106,6 +113,9 @@ class botService(service.MultiService):
                 cur=cur[n]
                 
     def _exec(self, f, args):
+        """
+            execute function f with *args or return a usage info if the arguments were wrong (too much/too little)
+        """
         try:
             return f(*args)
         except TypeError:
@@ -127,6 +137,9 @@ class botService(service.MultiService):
 
         
     def help(self, *args):
+        """
+            get help information for arguments *args (parsed strings from a command, i.e. "ircClient", "disconnect")
+        """
         commandTree=self.commandTree
         for element in args:
             if element in commandTree and type(commandTree[element]) == dict:
@@ -174,6 +187,10 @@ class botService(service.MultiService):
         return "reloaded config from file"
 
     def _cmd_config_set(self, argument):
+        """
+            set a configvalue.
+            syntax for argument: [network=net] [channel=chan] module.setting newvalue
+        """
         #how this works:
         #args[x][:8] is checked for network= or channel=. channel= must come after network=
         #args[x][8:] is the network/channelname without the prefix
@@ -204,6 +221,9 @@ class botService(service.MultiService):
             return "config set [network=networkname] [channel=#somechannel] setting value"
 
     def _cmd_config_get(self, argument):
+        """
+            get a configvalue
+        """
         if len(argument)==0:
             return "config get setting [network] [channel]"
         args=argument.split(" ")
