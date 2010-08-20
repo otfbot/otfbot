@@ -53,9 +53,8 @@ class Plugin(chatMod.chatMod):
             in all of the channels your bot is in.
             Both configuration settings are of the "list" type
         """
-        if not HAS_PYSVN:
-            self.bot.depends("pysvn python module")
         self.bot = bot
+        self.bot.depends_on_module("pysvn")
         self.logger = logging.getLogger("server")
         self.ircClient = self.bot.root.getServiceNamed("ircClient")
 
