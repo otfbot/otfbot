@@ -331,7 +331,10 @@ class pluginSupport:
             """
             self.dependency = dependency
             self.description = description
-            msg = "%s missing. %s" % (dependency, description)
+            if description:
+                msg = "%s missing. %s" % (dependency, description)
+            else:
+                msg = "%s missing" % dependency
             Exception.__init__(self, msg)
 
     class ModuleMissing(DependencyMissing):
