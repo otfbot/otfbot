@@ -35,7 +35,7 @@ class Plugin(chatMod.chatMod):
             f.close()
         except IOError:
             self.userdata = [{}]
-        self.bot.root.getServiceNamed('scheduler').callLater(60, self.save_data) #TODO: call this only on exit
+        self.bot.root.getServiceNamed('scheduler').callPeriodic(60, self.save_data) #TODO: call this only on exit
         
     @callback
     def joined(self,channel):
@@ -66,4 +66,3 @@ class Plugin(chatMod.chatMod):
         f = file(datadir + "/users", "wb")
         pickle.dump(self.userdata, f)
         f.close()
-        self.bot.root.getServiceNamed('scheduler').callLater(60, self.save_data)
