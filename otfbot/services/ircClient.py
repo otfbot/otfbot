@@ -34,6 +34,8 @@ from threading import Lock
 from otfbot.lib.pluginSupport import pluginSupport
 from otfbot.lib.user import IrcUser, MODE_CHARS, MODE_SIGNS
 
+class Meta:
+    depends=['auth', 'control', 'scheduler']
 
 def syncedChannel(argnum=None):
     def decorator(func):
