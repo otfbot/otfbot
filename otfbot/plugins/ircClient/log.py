@@ -180,13 +180,11 @@ class Plugin(chatMod.chatMod):
         #or nicktracking did not work as expected
         #but even lower(nick) should be unique per network
         else:
-            for user_object in self.bot.getUsers():
-                if user_object.nick.lower() == user.split("!")[0].lower():
-                    user=user_object
-                    break
+            user=self.bot.getUserByNick(user.split("!")[0])
 
-        for channel in user.getChannels():
-            self.log(channel, "-!- " + user.nick + " [" + user.user + "@" + user.host + "] has quit [" + quitMessage + "]")
+        if user:
+            for channel in user.getChannels():
+                self.log(channel, "-!- " + user.nick + " [" + user.user + "@" + user.host + "] has quit [" + quitMessage + "]")
 
     @callback
     def topicUpdated(self, user, channel, newTopic):
