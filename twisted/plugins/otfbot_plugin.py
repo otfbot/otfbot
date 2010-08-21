@@ -130,6 +130,12 @@ class MyServiceMaker(object):
             service_classes[service_name] = __import__(pkg, fromlist=['botService'])
             corelogger.info("imported %s"%pkg)
 
+        for service_name in service_names:
+            if hasattr(service_classes[service_name], 'Meta') \
+            and hasattr(service_classes[service_name].Meta, 'depends') \
+            and len(set(service_classes[service_name].Meta.depends).intersection(service_names)) != len(service_classes[service_name].Meta.depends):
+                corelogger.error("service %s cannot be loaded because some dependencies are misssing")
+
         max_count = len(service_names)+1 #if n services cannot be started after n iterations, the dependencies contain a loop
         while len(service_names): #while not all dependencies are resolved (break if max_count is reached)
             corelogger.debug("resolving dependencies, max_count=%d"%max_count)
