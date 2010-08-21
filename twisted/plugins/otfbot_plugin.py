@@ -133,8 +133,10 @@ class MyServiceMaker(object):
         for service_name in service_names:
             if hasattr(service_classes[service_name], 'Meta') \
             and hasattr(service_classes[service_name].Meta, 'depends') \
-            and len(set(service_classes[service_name].Meta.depends).intersection(service_names)) != len(service_classes[service_name].Meta.depends):
-                corelogger.error("service %s cannot be loaded because some dependencies are misssing")
+            and not set(service_classes[service_name].Meta.depends).issubset(service_names):
+                corelogger.error("service %s cannot be loaded because some dependencies are misssing: %s"%(service_name, 
+                    list(set(service_classes[service_name].Meta.depends) - set(service_names))))
+                sys.exit(1)
 
         max_count = len(service_names)+1 #if n services cannot be started after n iterations, the dependencies contain a loop
         while len(service_names): #while not all dependencies are resolved (break if max_count is reached)
