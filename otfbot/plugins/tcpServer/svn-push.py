@@ -92,8 +92,8 @@ class Plugin(chatMod.chatMod):
                 for plugin in self.plugins:
                     plugin.commit(repo, commit)
 
-            command = line.split(" ", 4)
-            if len(command) == 5 and command[1].lower() == "buildresult":
+            command = line.split(" ", 5)
+            if len(command) == 6 and command[1].lower() == "buildresult":
                 # result of automatic compilation (buildbot etc)
                 # the last argument can be multiple words
                 repo = command[2]
@@ -102,11 +102,18 @@ class Plugin(chatMod.chatMod):
                 except ValueError:
                     self.logger.warn("Revision number not integer!")
                     return 1
+
+                # shall the ircClient plugin say who to blame for the commit?
+                if command[4] == "1":
+                    blame = True
+                else:
+                    blame = False
+
                 # build result of the compilation.
                 # The ircClient plugin cares about input validation here
-                result = command[4]
+                result = command[5]
 
                 self.logger.info("New buildresult on " + repo + " r" +
-                                 str(commit) + ": " + result)
+                                 str(commit) + ": " + result + " blame=" + str(blame))
                 for plugin in self.plugins:
-                    plugin.buildResult(repo, commit, result)
+                    plugin.buildResult(repo, commit, blame, result)
