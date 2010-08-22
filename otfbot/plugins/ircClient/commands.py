@@ -68,7 +68,6 @@ class Plugin(chatMod.chatMod):
                     enc = self.bot.config.get("fileencoding", "iso-8859-15", "commands", self.bot.network, channel)
                     self.bot.sendme(channel, answer, enc)
 
-    @callback
     def start(self):
         self.register_ctl_command(self.reload)
         self.commands = {}
@@ -79,7 +78,6 @@ class Plugin(chatMod.chatMod):
         for chan in self.bot.channels:
             self.joined(chan)
 
-    @callback
     def reload(self):
         self.start()
         return "reloaded commands"

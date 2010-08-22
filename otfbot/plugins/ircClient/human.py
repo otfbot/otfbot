@@ -24,6 +24,7 @@
 """
 
 from otfbot.lib import chatMod
+from otfbot.lib.pluginSupport.decorators import callback
 
 
 def sendNames(server, network, channel):
@@ -41,6 +42,7 @@ class Plugin(chatMod.chatMod):
         self.bot = bot
         self.bot.depends_on_service("ircServer")
 
+    @callback
     def msg(self, user, channel, msg):
         for server in self.bot.root.getServiceNamed('ircServer').services[0].factory.parent.instances:
             if server.connected:
@@ -55,6 +57,7 @@ class Plugin(chatMod.chatMod):
                 server.action(user, sign + self.network + "-" + channel, msg)
 
 
+    @callback
     def query(self, user, channel, msg):
         #TODO FIXME: this is a workaround. the external irc client does not
         #            recognize own messages from queries (xchat) or are just
@@ -72,6 +75,7 @@ class Plugin(chatMod.chatMod):
                 #server.sendmsg(self.network+"-"+user, self.bot.server.name, msg)
                 server.sendmsg(self.network + "-" + user, server.name, "< %s> " % user.split("!")[0] + msg)
 
+    @callback
     def irc_RPL_ENDOFNAMES(self, prefix, params):
         for server in self.bot.root.getServiceNamed('ircServer').services:
             server = server.factory.p

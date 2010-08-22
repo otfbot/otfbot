@@ -34,6 +34,8 @@ from threading import Lock
 from otfbot.lib.pluginSupport import pluginSupport
 from otfbot.lib.user import IrcUser, MODE_CHARS, MODE_SIGNS
 
+class Meta:
+    depends=['auth', 'control', 'scheduler']
 
 def syncedChannel(argnum=None):
     def decorator(func):
@@ -344,11 +346,6 @@ class Bot(pluginSupport, irc.IRCClient):
 
     def startPlugin(self, pluginName):
         plugin = pluginSupport.startPlugin(self, pluginName)
-        #TODO: this is only a workaround until the plugins
-        #      register their callbacks
-        if plugin:
-            for callback in dir(plugin):
-                self.registerCallback(plugin, callback)
 
     def getFactory(self):
         """ get the factory
@@ -704,7 +701,7 @@ class Bot(pluginSupport, irc.IRCClient):
         channel = channel.lower()
         self._apirunner("userKicked", {"kickee": kickee, "channel": channel,
                                        "kicker": kicker, "message": message})
-        self.user_list[kickee].removeChannel(channel)
+        user=self.getUserByNick(kickee).removeChannel(channel)
         #TODO: remove user, if len( .getChannels())==0?
 
     @syncedChannel(argnum=1)
@@ -740,7 +737,17 @@ class Bot(pluginSupport, irc.IRCClient):
             if a C{user} quits
         """
         self._apirunner("userQuit", {"user": user, "quitMessage": quitMessage})
-        del(self.user_list[user])
+        if user in self.user_list:
+            del(self.user_list[user])
+        else:
+            nick=user.split("!")[0]
+            self.logerror("%s not found in user_list, trying to delete by nick %s"%(user, nick))
+            user=self.getUserByNick(nick)
+            if not user:
+                self.logerror("nick %s not found in user_list!")
+                return
+            if user.getHostMask() in self.user_list:
+                del(self.user_list[user.getHostMask()])
 
     def yourHost(self, info):
         """ called by twisted

@@ -1,0 +1,25 @@
+# Last Modified: Mon Aug 16 16:07:27 2010
+#include <tunables/global>
+
+/usr/bin/twistd {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/python>
+  #include <abstractions/user-tmp>
+
+  network inet stream,
+
+  deny / r,
+  deny /etc/default/apport r,
+
+  owner /path/to/otfbot/ r,
+  owner /path/to/otfbot/** r,
+  owner /path/to/otfbot/data/** rwk,
+  owner /path/to/otfbot/error.log rw,
+  owner /path/to/otfbot/otfbot.yaml w,
+  owner /home/allo/projekte/otfbot/twistd.pid rw,
+  /usr/bin/ r,
+  /usr/bin/python2.6 ix,
+  /usr/bin/twistd r,
+
+}

@@ -22,6 +22,7 @@
 """
 
 from otfbot.lib import chatMod
+from otfbot.lib.pluginSupport.decorators import callback
 
 import time
 
@@ -37,6 +38,7 @@ class Plugin(chatMod.chatMod):
             ret.append(connection.kwargs['factory'].protocol)
         return ret
 
+    @callback
     def irc_unknown(self, prefix, command, params):
         if command == "PONG":
             for server in self.getServers():

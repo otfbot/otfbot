@@ -22,8 +22,10 @@
 import time
 from otfbot.lib import chatMod
 from otfbot.lib import functions
+from otfbot.lib.pluginSupport.decorators import callback
 
 class Plugin(chatMod.chatMod):
+
     def __init__(self, bot):
         self.bot=bot
         self.peak={}
@@ -32,6 +34,7 @@ class Plugin(chatMod.chatMod):
         self.new_lines = {}
         self.timestamp = {}
 
+    @callback
     def msg(self, user, channel, msg):
         self.calcLPM(channel)
         self.new_lines[channel][-1] += 1
@@ -57,6 +60,7 @@ class Plugin(chatMod.chatMod):
             self.linesperminute[channel] = 0
         return self.linesperminute[channel]
 
+    @callback
     def joined(self, channel):
         if not channel in self.peak:
             self.peak[channel]=len(self.bot.getUsers(channel))
@@ -64,6 +68,7 @@ class Plugin(chatMod.chatMod):
             self.peak_date[channel]=time.strftime("%d.%m.%Y %H:%M")
         self._recalc_peak(channel)
 
+    @callback
     def userJoined(self, user, channel):
         self._recalc_peak(channel)
 
@@ -72,6 +77,7 @@ class Plugin(chatMod.chatMod):
             self.peak[channel]=len(self.bot.getUsers(channel))
             self.peak_date[channel]=time.strftime("%d.%m.%Y %H:%M")
 
+    @callback
     def command(self, user, channel, command, options):
         if command == "peak":
             self.bot.sendmsg(channel, "Maximale Nutzerzahl (%s) erreicht am %s"%(self.peak[channel], self.peak_date[channel]))
