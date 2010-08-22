@@ -21,3 +21,31 @@ Services and plugins should work independently of their starting order
   depend on other services being instanced (__init__) but not started
   (startService) in their startService method.
 - Plugins may depend on other Plugins, but not in their constructor
+
+HowTo ...
+---------
+- get a reference ...
+  - to the application object / your parent
+    every service / plugin gets in __init__ root (application) and parent (its parent).
+    save it into a class variable
+  - to a service
+    root.getServiceNamed('name')
+  - to a ircClient plugin
+    ircClientService.namedService['networkname'].protocol.plugins[i]
+  - to a ircServer plugin
+    ircServerService.instances[i].plugins[j]
+- let a service depend on another service to be loaded
+add Meta info to the file:
+class Meta:
+    depends=['otherservice']
+- let a plugin depend on a service/python module/other plugin
+use the pluginSupport.depends_on_... methods in __init__. if it fails, the plugin will not be instanced.
+i.e.
+
+def __init__(self, bot):
+    self.bot=bot
+    self.bot.depends_on_module("pysvn", "without pysvn i'm useless")
+
+caveat: if you use depend_on_plugin in init, it only checks if the other plugin will be loaded.
+the other plugin is guaranted to be instanced when your plugin gets the .start() callback, but maybe the
+other plugin did not yet get the .start() callback.

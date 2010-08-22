@@ -22,6 +22,7 @@
 """
 
 from otfbot.lib import chatMod
+from otfbot.lib.pluginSupport.decorators import callback
 
 
 class Plugin(chatMod.chatMod):
@@ -39,6 +40,7 @@ class Plugin(chatMod.chatMod):
         self.bot = bot
         self.control = {}
 
+    @callback
     def query(self, user, channel, msg):
         nick = user.split("!")[0]
         if user in self.control and msg == "endcontrol":
@@ -53,6 +55,7 @@ class Plugin(chatMod.chatMod):
                 output = "None"
             self.bot.sendmsg(nick, output)
 
+    @callback
     def command(self, user, channel, command, options):
         if self.bot.auth(user) > 0:
             cmd = []
@@ -75,6 +78,7 @@ class Plugin(chatMod.chatMod):
                 emsg = "Could not reload %s: No such Plugin" % options.strip()
                 self.bot.sendmsg(channel, emsg)
 
+    @callback
     def invitedTo(self, channel, inviter):
         self.logger.info("I was invited to " + channel + " by " + inviter)
         if self.bot.auth(inviter) > 0:

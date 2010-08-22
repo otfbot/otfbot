@@ -25,6 +25,7 @@
 
 from otfbot.lib import chatMod
 from otfbot.lib import urlutils
+from otfbot.lib.pluginSupport.decorators import callback
 
 
 class Plugin(chatMod.chatMod):
@@ -34,6 +35,7 @@ class Plugin(chatMod.chatMod):
     def __init__(self, bot):
         self.bot = bot
 
+    @callback
     def command(self, user, channel, command, options):
         response = ""
         headers = None
