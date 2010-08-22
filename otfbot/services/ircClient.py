@@ -741,13 +741,11 @@ class Bot(pluginSupport, irc.IRCClient):
             del(self.user_list[user])
         else:
             nick=user.split("!")[0]
-            self.logerror("%s not found in user_list, trying to delete by nick %s"%(user, nick))
             user=self.getUserByNick(nick)
-            if not user:
-                self.logerror("nick %s not found in user_list!")
+            if not user or not user.getHostMask() in self.user_list:
+                logger.debug("user with nick %s quit, but was not in user_list"%nick)
                 return
-            if user.getHostMask() in self.user_list:
-                del(self.user_list[user.getHostMask()])
+            del(self.user_list[user.getHostMask()])
 
     def yourHost(self, info):
         """ called by twisted
