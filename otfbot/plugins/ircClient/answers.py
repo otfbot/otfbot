@@ -26,6 +26,7 @@ import re
 
 from otfbot.lib import chatMod
 from otfbot.lib import functions
+from otfbot.lib.pluginSupport.decorators import callback
 
 
 class Plugin(chatMod.chatMod):
@@ -38,9 +39,11 @@ class Plugin(chatMod.chatMod):
         self.encoding = self.bot.config.get("fileencoding", "iso-8859-15", "answer")
         self.reload()
 
+    @callback
     def action(self, user, channel, msg):
         return self.msg(user, channel, msg)
 
+    @callback
     def msg(self, user, channel, msg):
         user = user.split("!")[0] # only nick
         if channel in self.bot.channels: #Do not respond to server messages

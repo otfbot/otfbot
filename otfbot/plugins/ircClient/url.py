@@ -23,8 +23,10 @@ import urllib2, re, string
 from HTMLParser import HTMLParser, HTMLParseError
 
 from otfbot.lib import chatMod, urlutils
+from otfbot.lib.pluginSupport.decorators import callback
 
 class Plugin(chatMod.chatMod):
+
     def __init__(self, bot):
         self.bot = bot
         self.parser = titleExtractor()
@@ -33,6 +35,7 @@ class Plugin(chatMod.chatMod):
         self.autoPreview=self.bot.config.get("autopreview", False, "url", self.bot.network)
         self.lasturl=""
 
+    @callback
     def command(self, user, channel, command, options):
         response = ""
         self.parser= titleExtractor()

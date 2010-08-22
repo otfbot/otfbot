@@ -30,6 +30,7 @@ from twisted.application import internet, service
 from twisted.internet.defer import Deferred
 
 import yaml
+from copy import deepcopy
 
 
 class configService(service.Service):
@@ -107,13 +108,13 @@ class configService(service.Service):
             if channel in self.network_options[network]:
                 if option in self.network_options[network][channel]:
                     #1) choice: channel specific
-                    return self.network_options[network][channel][option]
+                    return deepcopy(self.network_options[network][channel][option])
             if option in self.network_options[network]:
                 #2) choice: network specific
-                return self.network_options[network][option]
+                return deepcopy(self.network_options[network][option])
         if option in self.generic_options:
             #3) choice: general key
-            return self.generic_options[option]
+            return deepcopy(self.generic_options[option])
 
         # if we did not return above, we need to check if the
         # default should be written to config and return the default

@@ -22,6 +22,7 @@ search on youtube with !youtube search phrase
 """
 
 from otfbot.lib import chatMod, urlutils
+from otfbot.lib.pluginSupport.decorators import callback
 import logging
 import urllib
 
@@ -31,6 +32,8 @@ class Plugin(chatMod.chatMod):
         self.bot = bot
         self.logger = logging.getLogger("youtube")
         self.feedparser=self.bot.depends_on_module("feedparser")
+
+    @callback
     def command(self, user, channel, command, options):
         if command=="youtube" and options:
             parsed=self.feedparser.parse("http://gdata.youtube.com/feeds/base/videos?q=%s&client=ytapi-youtube-search&alt=rss&v=2"%urllib.quote(options))

@@ -22,6 +22,7 @@
 """
 
 from otfbot.lib import chatMod
+from otfbot.lib.pluginSupport.decorators import callback
 
 import time
 
@@ -31,6 +32,7 @@ class Plugin(chatMod.chatMod):
     def __init__(self, bot):
         self.bot = bot
 
+    @callback
     def command(self, user, channel, command, options):
         #http://avila.star-shine.ch/astro/berechnungen.html
         known_fullmoon_date = 915245340 #seconds since 1970

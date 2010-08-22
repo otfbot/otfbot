@@ -22,6 +22,7 @@
 """
 
 from otfbot.lib import chatMod
+from otfbot.lib.pluginSupport.decorators import callback
 
 import urllib2
 import re
@@ -68,6 +69,7 @@ class Plugin(chatMod.chatMod):
         self.bot = bot
         self.config = bot.root.getServiceNamed("config")
 
+    @callback
     def command(self, user, channel, command, options):
         if not self.config:
             self.bot.sendmsg(channel, "I have no config and want to cry.")

@@ -18,11 +18,13 @@
 #
 
 from otfbot.lib import chatMod
+from otfbot.lib.pluginSupport.decorators import callback
 
 class Plugin(chatMod.chatMod):
     def __init__(self, bot):
         self.bot=bot
 
+    @callback
     def command(self, user, channel, command, options):
         if command == "version":
                 self.bot.sendmsg(channel, self.bot.root.version.short())

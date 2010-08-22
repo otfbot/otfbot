@@ -1,0 +1,27 @@
+digraph references {
+    "otfbot.tac" -> application
+    application
+    label="abstract example for the parent, root structure"
+    application -> service1 [label="services[0]"]
+    application -> service2 [label="services[1]"]
+    service1 -> application [label="root",style="dashed"]
+    service1 -> application [label="parent",style="dashed"]
+    service2 -> application [label="root",style="dashed"]
+    service2 -> application [label="parent",style="dashed"]
+    plugins1_1[label="plugin 1"]
+    plugins1_2[label="plugin 2"]
+    plugins2_1[label="plugin 1"]
+    plugins2_2[label="plugin 2"]
+    service1 -> plugins1_1 [label="plugins[0]"]
+    service1 -> plugins1_2 [label="plugins[1]"]
+    service2 -> plugins2_1 [label="plugins[0]"]
+    service2 -> plugins2_2 [label="plugins[1]"]
+    plugins1_1 -> service1 [label="parent",style="dashed"]
+    plugins1_1 -> application [label="root",style="dashed"]
+    plugins1_2 -> service1 [label="parent",style="dashed"]
+    plugins1_2 -> application [label="root",style="dashed"]
+    plugins2_1 -> service2 [label="parent",style="dashed"]
+    plugins2_1 -> application [label="root",style="dashed"]
+    plugins2_2 -> service2 [label="parent",style="dashed"]
+    plugins2_2 -> application [label="root",style="dashed"]
+}

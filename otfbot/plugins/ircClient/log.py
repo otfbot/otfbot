@@ -23,6 +23,7 @@
 """
 
 from otfbot.lib import chatMod
+from otfbot.lib.pluginSupport.decorators import callback
 
 import time
 import string
@@ -101,6 +102,7 @@ class Plugin(chatMod.chatMod):
         file.write(self.ts() + " " + mystring + "\n")
         file.close()
 
+    @callback
     def joined(self, channel):
         self.channels[string.lower(channel)] = 1
         #self.files[string.lower(channel)]=open(string.lower(channel)+".log", "a")
@@ -113,11 +115,13 @@ class Plugin(chatMod.chatMod):
         self.log(channel, "--- Log opened " + self.ts("%a %b %d %H:%M:%S %Y"), False)
         self.log(channel, "-!- " + self.bot.nickname + " [" + self.bot.hostmask.split("!")[1] + "] has joined " + channel)
 
+    @callback
     def left(self, channel):
         self.log(channel, "-!- " + self.bot.nickname + "[" + self.bot.hostmask.split("!")[1] + "] has left " + channel)
         del self.channels[string.lower(channel)]
         self.files[string.lower(channel)].close()
 
+    @callback
     def msg(self, user, channel, msg):
         user = user.split("!")[0]
         modesign = " " #self.bot.users[channel][user]['modchar']
@@ -127,6 +131,7 @@ class Plugin(chatMod.chatMod):
             #modesign=self.bot.users[channel][user]['modchar']
             self.log(channel, "<" + modesign + user + "> " + msg)
 
+    @callback
     def query(self, user, channel, msg):
         user = user.split("!")[0]
         if user == self.bot.nickname:
@@ -134,16 +139,19 @@ class Plugin(chatMod.chatMod):
         else:
             self.logPrivate(user, "<" + user + "> " + msg)
 
+    @callback
     def noticed(self, user, channel, msg):
         if user != "":
             #self.logger.info(str(user+" : "+channel+" : "+msg))
             self.logPrivate(user.split("!")[0], "< " + user.split("!")[0] + "> " + msg)
 
+    @callback
     def action(self, user, channel, msg):
         #self.logger.debug(user+channel+msg)
         user = user.split("!")[0]
         self.log(channel, " * " + user + " " + msg)
 
+    @callback
     def modeChanged(self, user, channel, set, modes, args):
         user = user.split("!")[0]
         sign = "+"
@@ -151,15 +159,19 @@ class Plugin(chatMod.chatMod):
             sign = "-"
         self.log(channel, "-!- mode/" + channel + " [" + sign + modes + " " + string.join(args, " ") + "] by " + user)
 
+    @callback
     def userKicked(self, kickee, channel, kicker, message):
         self.log(channel, "-!- " + kickee + " was kicked from " + channel + " by " + kicker + " [" + message + "]")
 
+    @callback
     def userJoined(self, user, channel):
         self.log(channel, "-!- " + user.split("!")[0] + " [" + user.split("!")[1] + "] has joined " + channel)
 
+    @callback
     def userLeft(self, user, channel):
         self.log(channel, "-!- " + user.split("!")[0] + " [" + user.split("!")[1] + "] has left " + channel)
 
+    @callback
     def userQuit(self, user, quitMessage):
         #user is known with current hostmask
         if user in self.bot.user_list:
@@ -168,18 +180,18 @@ class Plugin(chatMod.chatMod):
         #or nicktracking did not work as expected
         #but even lower(nick) should be unique per network
         else:
-            for user_object in self.bot.getUsers():
-                if user_object.nick.lower() == user.split("!")[0].lower():
-                    user=user_object
-                    break
+            user=self.bot.getUserByNick(user.split("!")[0])
 
-        for channel in user.getChannels():
-            self.log(channel, "-!- " + user.nick + " [" + user.user + "@" + user.host + "] has quit [" + quitMessage + "]")
+        if user:
+            for channel in user.getChannels():
+                self.log(channel, "-!- " + user.nick + " [" + user.user + "@" + user.host + "] has quit [" + quitMessage + "]")
 
+    @callback
     def topicUpdated(self, user, channel, newTopic):
         #TODO: first invoced on join. This should not be logged
         self.log(channel, "-!- " + user + " changed the topic of " + channel + " to: " + newTopic)
 
+    @callback
     def userRenamed(self, oldname, newname):
         for user in self.bot.user_list.values():
             if user.nick.lower() == oldname.lower():
@@ -191,6 +203,7 @@ class Plugin(chatMod.chatMod):
             self.log(channel, "--- Log closed " + self.ts("%a %b %d %H:%M:%S %Y"), False)
             self.files[channel].close()
 
+    @callback
     def connectionMade(self):
         self.setNetwork()
 
