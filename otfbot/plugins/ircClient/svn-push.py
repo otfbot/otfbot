@@ -109,7 +109,7 @@ class Plugin(chatMod.chatMod):
                              self.mirc_bold + "): " +
                              log['message'])
 
-    def buildResult(self, url, commit, result):
+    def buildResult(self, url, commit, blame, result):
         """
             Called from the tcpServer plugin when a build result
             needs to be posted
@@ -123,6 +123,8 @@ class Plugin(chatMod.chatMod):
             @type result: string
         """
         log = self.getRev(url, commit)
+        if blame:
+            result = result + " (" + self.mirc_green + log['author'] + self.mirc_no_color  + " commited)"
         for channel in self.channels:
             self.bot.sendmsg(channel,
                              self.mirc_bold +
