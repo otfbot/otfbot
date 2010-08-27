@@ -149,7 +149,8 @@ class IrcUser(object):
             @ivar channel: the channel to remove
         """
         channel=channel.lower()
-        assert(channel in self.channels)
+        if not channel in self.channels:
+            return
         self.channels.remove(channel)
         del self.modes[channel]
 
