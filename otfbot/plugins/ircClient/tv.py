@@ -81,7 +81,7 @@ class Plugin(chatMod.chatMod):
 				self.bot.sendmsg(user," !tv <uhrzeit> <sendername> <- zeigt das Programm fuer <uhrzeit> auf <sendername> an.")
 				self.bot.sendmsg(user," !tv <sendername> <- zeigt das aktuelle Programm auf <sendername>.")
 				self.bot.sendmsg(user," !tv liststations <- zeigt alle verfuegbaren Sender an.")
-				self.bot.sendmsg(user," !tvsearch <begriff> <- sucht auf allen Sendern nach <begriff>.")
+				self.bot.sendmsg(user," !tvsearch <begriff> <- sucht auf allen Sendern nach <begriff>. Optional kann noch der Sender, auf dem gesucht werden soll, als letztes Wort angehaengt werden.")
 				self.bot.sendmsg(user," Wenn die Ausgabe nicht im Query, sondern im Channel erfolgen soll: 'public' ans Ende des Kommandos anhaengen (nicht moeglich mit Option 'all').")
 			elif len(o) != 0 and o[0].lower() == "liststations":
 				stations = []
@@ -143,7 +143,11 @@ class Plugin(chatMod.chatMod):
 						else:
 							self.bot.sendmsg(channel,unicode(str(chr(2)) + i['station'][0] + str(chr(2)) + " (" + str(i['start'][8:10]) + ":" + str(i['start'][10:12]) + "-" + str(i['stop'][8:10]) + ":" + str(i['stop'][10:12]) + "): " + i['title']).encode("utf8"))
 		elif command.lower() == "tvsearch":
-			result = self.tv.search(options)
+			o = options.split(" ")
+			if not self.tv.get_station(o[len(options.split(" ")) -1]): ##ueberprueft, ob letztes wort sendername ist
+				result = self.tv.search(options)
+			else:
+				result = self.tv.search(" ".join(o[:-1]))
 			t_result = self.parse_programm(result)
 			result = []
 			ltime = time.localtime()
@@ -157,7 +161,11 @@ class Plugin(chatMod.chatMod):
 				else:
 					m = str(ltime[4])
 				if int(i['stop'][4:12]) > int(str(ltime[1]) + str(ltime[2]) + h + m):
-					result.append(i)
+					if not self.tv.get_station(o[len(options.split(" ")) -1]):
+						result.append(i)
+					else:
+						if i['station'][0].lower().replace(" ","") == o[len(options.split(" ")) -1].lower():
+							result.append(i)
 			for i in result[:3]:
 				if i['language'] != "":
 					self.bot.sendmsg(channel,unicode(str(chr(2)) + i['station'][0] + str(chr(2)) + " (" + str(i['start'][6:8]) + "." + str(i['start'][4:6]) + "., " + str(i['start'][8:10]) + ":" + str(i['start'][10:12]) + "-" + str(i['stop'][8:10]) + ":" + str(i['stop'][10:12]) + "): " + i['title'] + " (" + i['language'] + ")").encode("utf8"))
