@@ -269,6 +269,10 @@ class Plugin(chatMod.chatMod):
                 self.bot.root.getServiceNamed('scheduler').callLater(delay, self.bot.sendmsg, user, reply, "UTF-8")
 
     @callback
+    def action(self, user, channel, msg):
+        msg(user,channel,msg)
+    
+    @callback
     def msg(self, user, channel, msg):
         user = user.split("!")[0].lower()
         if not user in self.nicklist:
