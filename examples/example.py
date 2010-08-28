@@ -65,8 +65,8 @@ class Plugin(chatMod.chatMod):
             + ' channel=' + repr(channel) + ' msg=' + repr(msg) + '.')
 
     def action(self, user, channel, msg):
-        self.logger.debug('Callback action called with user='
-            + repr(user) + ' channel=' + repr(channel) + ' msg=' + repr(msg) + '.')
+        self.logger.debug('Callback action called with user=' + repr(user) +
+            ' channel=' + repr(channel) + ' msg=' + repr(msg) + '.')
 
     def modeChanged(self, user, channel, set, modes, args):
         self.logger.debug('Callback modeChanged called with user=' + repr(user)
@@ -74,12 +74,14 @@ class Plugin(chatMod.chatMod):
             + repr(modes) + ' args=' + repr(args) + '.')
 
     def kickedFrom(self, channel, kicker, message):
-        self.logger.debug('Callback kickedFrom called with channel=' + repr(channel)
-            + ' kicker=' + repr(kicker) + ' message=' + repr(message) + '.')
+        self.logger.debug('Callback kickedFrom called with channel=' +
+            repr(channel) + ' kicker=' + repr(kicker) + ' message=' +
+            repr(message) + '.')
 
     def userKicked(self, kickee, channel, kicker, message):
-        self.logger.debug('Callback userKicked called with kickee=' + repr(kickee)
-            + ' channel=' + repr(channel) + ' kicker=' + repr(kicker) + ' message=' + repr(message) + '.')
+        self.logger.debug('Callback userKicked called with kickee='
+            + repr(kickee) + ' channel=' + repr(channel) + ' kicker='
+            + repr(kicker) + ' message=' + repr(message) + '.')
 
     def userJoined(self, user, channel):
         self.logger.debug('Callback userJoined called with user='
@@ -90,22 +92,30 @@ class Plugin(chatMod.chatMod):
             + repr(user) + ' channel=' + repr(channel) + '.')
 
     def userLeft(self, user, channel):
-        self.logger.debug('Callback userLeft called with user=' + repr(user) + ' channel=' + repr(channel) + '.')
+        self.logger.debug('Callback userLeft called with user=' + repr(user)
+            + ' channel=' + repr(channel) + '.')
 
     def userQuit(self, user, quitMessage):
-        self.logger.debug('Callback userQuit called with user=' + repr(user) + ' quitMessage=' + repr(quitMessage) + '.')
+        self.logger.debug('Callback userQuit called with user=' + repr(user)
+            + ' quitMessage=' + repr(quitMessage) + '.')
 
     def yourHost(self, info):
-        self.logger.debug('Callback yourHost called with info=' + repr(info) + '.')
+        self.logger.debug('Callback yourHost called with info=' +
+            repr(info) + '.')
 
     def userRenamed(self, oldname, newname):
-        self.logger.debug('Callback userRenamed called with oldname=' + repr(oldname) + ' newname=' + repr(newname) + '.')
+        self.logger.debug('Callback userRenamed called with oldname='
+            + repr(oldname) + ' newname=' + repr(newname) + '.')
 
     def topicUpdated(self, user, channel, newTopic):
-        self.logger.debug('Callback topicUpdated called with user=' + repr(user) + ' channel=' + repr(channel) + ' newTopic=' + repr(newTopic) + '.')
+        self.logger.debug('Callback topicUpdated called with user='
+            + repr(user) + ' channel=' + repr(channel)
+            + ' newTopic=' + repr(newTopic) + '.')
 
     def irc_unknown(self, prefix, command, params):
-        self.logger.debug('Callback irc_unknown called with prefix=' + repr(prefix) + ' command=' + repr(command) + ' params=' + repr(params) + '.')
+        self.logger.debug('Callback irc_unknown called with prefix='
+            + repr(prefix) + ' command=' + repr(command) + ' params='
+            + repr(params) + '.')
 
     def stop(self):
         self.logger.debug('Callback stop called.')
@@ -117,10 +127,14 @@ class Plugin(chatMod.chatMod):
         self.logger.debug('Callback start called.')
 
     def sendLine(self, line):
-        self.logger.debug('Callback sendLine called with line=' + repr(line) + '.')
+        self.logger.debug('Callback sendLine called with line='
+            + repr(line) + '.')
 
     def lineReceived(self, line):
-        self.logger.debug('Callback lineReceived called with line=' + repr(line) + '.')
+        self.logger.debug('Callback lineReceived called with line='
+            + repr(line) + '.')
 
     def ctcpQuery(self, user, channel, messages):
-        self.logger.debug('Callback ctcpQuery called with user=' + repr(user) + ' channel=' + repr(channel) + ' messages=' + repr(messages) + '.')
+        self.logger.debug('Callback ctcpQuery called with user=' + repr(user)
+            + ' channel=' + repr(channel) + ' messages='
+            + repr(messages) + '.')

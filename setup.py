@@ -10,7 +10,8 @@ setup(name='otfbot',
      author='Alexander Schier, Robert Weidlich, Thomas Wiegart',
      author_email='otfbot-dev@list.otfbot.org',
      url="http://www.otfbot.org/",
-     download_url="http://www.otfbot.org/files/otfbot-%s.tar.gz" % version._version.base(),
+     download_url="http://www.otfbot.org/files/otfbot-%s.tar.gz"
+        % version._version.base(),
      license="GPLv2",
      install_requires=["twisted >=9.0.0", "yaml"],
      packages=[
@@ -20,9 +21,10 @@ setup(name='otfbot',
         'otfbot.plugins.ircClient',
         'otfbot.lib',
         'twisted.plugins',
-	],
+    ],
     package_data={
-            'twisted': ['plugins/otfbot_plugin.py', 'plugins/genconfig_plugin.py'],
+            'twisted': ['plugins/otfbot_plugin.py',
+                'plugins/genconfig_plugin.py'],
             'otfbot.plugins.ircClient': ['*.yaml'],
     },
     classifiers=[
@@ -36,5 +38,4 @@ setup(name='otfbot',
         "Programming Language :: Python :: 2.6",
         "Topic :: Communications :: Chat :: Internet Relay Chat",
         "Topic :: Games/Entertainment"
-    ]
-)
+    ])
