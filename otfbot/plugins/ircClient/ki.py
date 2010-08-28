@@ -270,7 +270,7 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def action(self, user, channel, msg):
-        msg(user,channel,msg)
+        self.msg(user,channel,msg)
     
     @callback
     def msg(self, user, channel, msg):
