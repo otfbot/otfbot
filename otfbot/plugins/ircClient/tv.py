@@ -59,6 +59,7 @@ class Plugin(chatMod.chatMod):
 	def command(self, user, channel, command, options):
 		user = user.split("!")[0]
 		public = 0
+		alle = 0
 		filterstandard = 0
 		programm = []
 		ltime = time.localtime()
@@ -68,15 +69,20 @@ class Plugin(chatMod.chatMod):
 			if o[len(options.split(" ")) -1] == "public":
 				public = 1
 				o.remove("public")
+			if o[len(options.split(" ")) -1] == "all":
+				alle = 1
+				public = 0
+				o.remove("all")
 			if options == "":
 				o = []
 			if len(o) != 0 and o[0].lower() == "help":
-				self.bot.sendmsg(user," !tv <- Zeigt das aktuelle TV-Programm an.")
-				self.bot.sendmsg(user," !tv <uhrzeit> <- Zeigt das Programm fuer <uhrzeit> (hh:mm) an.")
+				self.bot.sendmsg(user," !tv <- Zeigt das aktuelle TV-Programm an. An dieses Kommando kann 'all' angehaengt werden, dann werden alle bekannten Sender ausgegeben.")
+				self.bot.sendmsg(user," !tv <uhrzeit> <- Zeigt das Programm fuer <uhrzeit> (hh:mm) an. An dieses Kommando kann 'all' angehaengt werden, dann werden alle bekannten Sender ausgegeben.")
 				self.bot.sendmsg(user," !tv <uhrzeit> <sendername> <- zeigt das Programm fuer <uhrzeit> auf <sendername> an.")
 				self.bot.sendmsg(user," !tv <sendername> <- zeigt das aktuelle Programm auf <sendername>.")
 				self.bot.sendmsg(user," !tv liststations <- zeigt alle verfuegbaren Sender an.")
 				self.bot.sendmsg(user," !tvsearch <begriff> <- sucht auf allen Sendern nach <begriff>.")
+				self.bot.sendmsg(user," Wenn die Ausgabe nicht im Query, sondern im Channel erfolgen soll: 'public' ans Ende des Kommandos anhaengen (nicht moeglich mit Option 'all').")
 			elif len(o) != 0 and o[0].lower() == "liststations":
 				stations = []
 				for i in self.tv.stations:
@@ -92,7 +98,7 @@ class Plugin(chatMod.chatMod):
 						return 0
 					programm = self.tv.get_programm_at_time(o1 + "00")
 					#programm = self.parse_programm(programm)
-					filterstandard = 1
+					filterstandard = not alle
 				except ValueError:
 					if not self.tv.get_station(o1) and o1 != "help":
 						self.bot.sendmsg(channel,"Station not found! See !tv help")
@@ -120,7 +126,7 @@ class Plugin(chatMod.chatMod):
 			else:
 				programm = self.tv.get_programm_now()
 				programm = self.parse_programm(programm)
-				filterstandard = 1
+				filterstandard = not alle
 			for i in programm:
 				if filterstandard == 1 and i['station'][0].lower().replace(" ","") not in self.standardsender:
 					pass
