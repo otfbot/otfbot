@@ -45,10 +45,14 @@ class Plugin(chatMod.chatMod):
 			self.logger.info("no allowed datasource choosen. availiable sources: 'otr' and 'xmltv'. See docs for more info.")
 		if not os.path.isdir(self.tvdatadir):
 			os.makedirs(self.tvdatadir)
-		standardsender = self.bot.config.get("standardsender","ard,zdf,rtl,sat.1,n24,pro7,vox","tv")
+		standardsender = self.bot.config.get("standardsender","ard,zdf,rtl,sat1,n24,pro7,vox","tv")
+		ignore = self.bot.config.get("ignoresender","9live,bibeltv,ukbbc4,ukbbc3,uswxtv,ukchannel4,uslivewell,uswfut,usports,ukbbc,nickelodeon,sixx,anixe,uswpix,yavido,tvpinfo,uswwor,deluxemusic,erf,ukitv,ukcbsaction,uswabc,tv5,bbcworld,gotv,tvpolonia,ukfive,usnjn,uswnyw,tvphistoria,uswnye,drdishtv,ukbbc2,ukfilm4,uswcbs,ktv,stv,cnbc,uswnju,tele5,imusic,uswnbc,usnjn2,ukitv3,ukitv4,ukitv2,tvpkultura,uke4","tv")
 		self.standardsender = []
 		for i in standardsender.split(","):
 			self.standardsender.append(i.lower().replace(" ",""))
+		self.ignoresender = []
+		for i in ignore.split(","):
+			self.ignoresender.append(i.lower().replace(" ",""))
 		self.download_data()
 	
 	@callback
@@ -76,7 +80,8 @@ class Plugin(chatMod.chatMod):
 			elif len(o) != 0 and o[0].lower() == "liststations":
 				stations = []
 				for i in self.tv.stations:
-					stations.append(self.tv.stations[i][0])
+					if self.tv.stations[i][0].lower().replace(" ","") not in self.ignoresender:
+						stations.append(self.tv.stations[i][0])
 				self.bot.sendmsg(channel,"bekannte Sender: " + ", ".join(stations))
 				return
 			if o1 != "public" and len(o) == 1:
@@ -165,7 +170,8 @@ class Plugin(chatMod.chatMod):
 					titel = i['title'][0][0]
 					language = i['title'][0][1]
 					station = self.tv.get_station_name(i['channel'])
-					output.append({'start':start,'stop':stop,'title':titel,'language':language,'station':station})
+					if station[0].lower().replace(" ","") not in self.ignoresender:
+						output.append({'start':start,'stop':stop,'title':titel,'language':language,'station':station})
 			except:
 				self.logger.info(sys.exc_info())
 		return output
