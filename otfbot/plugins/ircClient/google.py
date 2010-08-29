@@ -27,10 +27,12 @@ from otfbot.lib import chatMod
 from otfbot.lib import urlutils
 from otfbot.lib.pluginSupport.decorators import callback
 
+import re,os
 
 class Plugin(chatMod.chatMod):
     baseUrl = 'http://www.google.de/search?hl=de&q="%s"'
-    countRE = ".*<b>1</b> - <b>10</b>.*?<b>([0-9\.]*)</b>.*"
+    #countRE = ".*<b>1</b> - <b>10</b>.*?<b>([0-9\.]*)</b>.*"+
+    countRE = ".*resultStats>.*? ([0-9.]*)"
 
     def __init__(self, bot):
         self.bot = bot
@@ -40,26 +42,40 @@ class Plugin(chatMod.chatMod):
         response = ""
         headers = None
         if command == "googlefight":
-            words = options.split(":")
-            if len(words) == 2:
-                #TODO: blocking
-                data1 = urlutils.download(self.baseURL % words[0].replace(" ", "+"))
-                data2 = urlutils.download(self.baseURL % words[1].replace(" ", "+"))
-
-                count1 = "0"
-                count2 = "0"
-                match = re.match(self.countRE, data1, re.S)
-                if match:
-                    count1 = match.group(1)
-
-                match = re.match(elf.countRE, data2, re.S)
-                if match:
-                    count2 = match.group(1)
-
-                ansmsg = "Google Fight!: %s siegt ueber %s (%s zu %s Treffer)"
-                if(int(re.sub("\.", "", count1)) > int(re.sub("\.", "", count2))):
-                    self.bot.sendmsg(channel, ansmsg % (words[0], words[1], str(count1), count2))
-                else:
-                    self.bot.sendmsg(channel, ansmsg % (words[1], words[0], str(count2), count1))
+            self.words = options.split(":")
+            self.channel = channel
+            self.gotcallback1 = False
+            self.gotcallback2 = False
+            if len(self.words) == 2:
+                data1 = urlutils.download(self.baseUrl % self.words[0].replace(" ", "+"))
+                data2 = urlutils.download(self.baseUrl % self.words[1].replace(" ", "+"))
+                data1.addCallback(self.callback1)
+                data2.addCallback(self.callback2)
+                
             else:
                 self.bot.sendmsg(channel, "!googlefight wort1:wort2")
+    
+    def callback1(self,content):
+        self.callback1content = content
+        self.gotcallback1 = True
+        self.callback()
+    def callback2(self,content):
+        self.callback2content = content
+        self.gotcallback2 = True
+        self.callback()
+    
+    def callback(self):
+        if self.gotcallback1 and self.gotcallback2:
+            count1 = "0"
+            count2 = "0"
+            match = re.match(self.countRE, self.callback1content, re.S)
+            if match:
+                 count1 = match.group(1).replace(".","")
+            match = re.match(self.countRE, self.callback2content, re.S)
+            if match:
+                count2 = match.group(1).replace(".","")
+            ansmsg = "Google Fight!: %s siegt ueber %s (%s zu %s Treffer)"
+            if(int(re.sub("\.", "", count1)) > int(re.sub("\.", "", count2))):
+                self.bot.sendmsg(self.channel, ansmsg % (self.words[0], self.words[1], str(count1), count2))
+            else:
+                self.bot.sendmsg(self.channel, ansmsg % (self.words[1], self.words[0], str(count2), count1))
