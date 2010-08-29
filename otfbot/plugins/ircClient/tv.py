@@ -45,16 +45,21 @@ class Plugin(chatMod.chatMod):
 			self.logger.info("no allowed datasource choosen. availiable sources: 'otr' and 'xmltv'. See docs for more info.")
 		if not os.path.isdir(self.tvdatadir):
 			os.makedirs(self.tvdatadir)
-		standardsender = self.bot.config.get("standardsender","ard,zdf,rtl,sat.1,n24,pro7,vox","tv")
+		standardsender = self.bot.config.get("standardsender","ard,zdf,rtl,sat1,n24,pro7,vox","tv")
+		ignore = self.bot.config.get("ignoresender","9live,bibeltv,ukbbc4,ukbbc3,uswxtv,ukchannel4,uslivewell,uswfut,usports,ukbbc,nickelodeon,sixx,anixe,uswpix,yavido,tvpinfo,uswwor,deluxemusic,erf,ukitv,ukcbsaction,uswabc,tv5,bbcworld,gotv,tvpolonia,ukfive,usnjn,uswnyw,tvphistoria,uswnye,drdishtv,ukbbc2,ukfilm4,uswcbs,ktv,stv,cnbc,uswnju,tele5,imusic,uswnbc,usnjn2,ukitv3,ukitv4,ukitv2,tvpkultura,uke4","tv")
 		self.standardsender = []
 		for i in standardsender.split(","):
 			self.standardsender.append(i.lower().replace(" ",""))
+		self.ignoresender = []
+		for i in ignore.split(","):
+			self.ignoresender.append(i.lower().replace(" ",""))
 		self.download_data()
 	
 	@callback
 	def command(self, user, channel, command, options):
 		user = user.split("!")[0]
 		public = 0
+		alle = 0
 		filterstandard = 0
 		programm = []
 		ltime = time.localtime()
@@ -64,19 +69,25 @@ class Plugin(chatMod.chatMod):
 			if o[len(options.split(" ")) -1] == "public":
 				public = 1
 				o.remove("public")
+			if o[len(options.split(" ")) -1] == "all":
+				alle = 1
+				public = 0
+				o.remove("all")
 			if options == "":
 				o = []
 			if len(o) != 0 and o[0].lower() == "help":
-				self.bot.sendmsg(user," !tv <- Zeigt das aktuelle TV-Programm an.")
-				self.bot.sendmsg(user," !tv <uhrzeit> <- Zeigt das Programm fuer <uhrzeit> (hh:mm) an.")
+				self.bot.sendmsg(user," !tv <- Zeigt das aktuelle TV-Programm an. An dieses Kommando kann 'all' angehaengt werden, dann werden alle bekannten Sender ausgegeben.")
+				self.bot.sendmsg(user," !tv <uhrzeit> <- Zeigt das Programm fuer <uhrzeit> (hh:mm) an. An dieses Kommando kann 'all' angehaengt werden, dann werden alle bekannten Sender ausgegeben.")
 				self.bot.sendmsg(user," !tv <uhrzeit> <sendername> <- zeigt das Programm fuer <uhrzeit> auf <sendername> an.")
 				self.bot.sendmsg(user," !tv <sendername> <- zeigt das aktuelle Programm auf <sendername>.")
 				self.bot.sendmsg(user," !tv liststations <- zeigt alle verfuegbaren Sender an.")
-				self.bot.sendmsg(user," !tvsearch <begriff> <- sucht auf allen Sendern nach <begriff>.")
+				self.bot.sendmsg(user," !tvsearch <begriff> <- sucht auf allen Sendern nach <begriff>. Optional kann noch der Sender, auf dem gesucht werden soll, als letztes Wort angehaengt werden.")
+				self.bot.sendmsg(user," Wenn die Ausgabe nicht im Query, sondern im Channel erfolgen soll: 'public' ans Ende des Kommandos anhaengen (nicht moeglich mit Option 'all').")
 			elif len(o) != 0 and o[0].lower() == "liststations":
 				stations = []
 				for i in self.tv.stations:
-					stations.append(self.tv.stations[i][0])
+					if self.tv.stations[i][0].lower().replace(" ","") not in self.ignoresender:
+						stations.append(self.tv.stations[i][0])
 				self.bot.sendmsg(channel,"bekannte Sender: " + ", ".join(stations))
 				return
 			if o1 != "public" and len(o) == 1:
@@ -87,7 +98,7 @@ class Plugin(chatMod.chatMod):
 						return 0
 					programm = self.tv.get_programm_at_time(o1 + "00")
 					#programm = self.parse_programm(programm)
-					filterstandard = 1
+					filterstandard = not alle
 				except ValueError:
 					if not self.tv.get_station(o1) and o1 != "help":
 						self.bot.sendmsg(channel,"Station not found! See !tv help")
@@ -115,7 +126,7 @@ class Plugin(chatMod.chatMod):
 			else:
 				programm = self.tv.get_programm_now()
 				programm = self.parse_programm(programm)
-				filterstandard = 1
+				filterstandard = not alle
 			for i in programm:
 				if filterstandard == 1 and i['station'][0].lower().replace(" ","") not in self.standardsender:
 					pass
@@ -132,7 +143,11 @@ class Plugin(chatMod.chatMod):
 						else:
 							self.bot.sendmsg(channel,unicode(str(chr(2)) + i['station'][0] + str(chr(2)) + " (" + str(i['start'][8:10]) + ":" + str(i['start'][10:12]) + "-" + str(i['stop'][8:10]) + ":" + str(i['stop'][10:12]) + "): " + i['title']).encode("utf8"))
 		elif command.lower() == "tvsearch":
-			result = self.tv.search(options)
+			o = options.split(" ")
+			if not self.tv.get_station(o[len(options.split(" ")) -1]): ##ueberprueft, ob letztes wort sendername ist
+				result = self.tv.search(options)
+			else:
+				result = self.tv.search(" ".join(o[:-1]))
 			t_result = self.parse_programm(result)
 			result = []
 			ltime = time.localtime()
@@ -146,7 +161,11 @@ class Plugin(chatMod.chatMod):
 				else:
 					m = str(ltime[4])
 				if int(i['stop'][4:12]) > int(str(ltime[1]) + str(ltime[2]) + h + m):
-					result.append(i)
+					if not self.tv.get_station(o[len(options.split(" ")) -1]):
+						result.append(i)
+					else:
+						if i['station'][0].lower().replace(" ","") == o[len(options.split(" ")) -1].lower():
+							result.append(i)
 			for i in result[:3]:
 				if i['language'] != "":
 					self.bot.sendmsg(channel,unicode(str(chr(2)) + i['station'][0] + str(chr(2)) + " (" + str(i['start'][6:8]) + "." + str(i['start'][4:6]) + "., " + str(i['start'][8:10]) + ":" + str(i['start'][10:12]) + "-" + str(i['stop'][8:10]) + ":" + str(i['stop'][10:12]) + "): " + i['title'] + " (" + i['language'] + ")").encode("utf8"))
@@ -165,7 +184,8 @@ class Plugin(chatMod.chatMod):
 					titel = i['title'][0][0]
 					language = i['title'][0][1]
 					station = self.tv.get_station_name(i['channel'])
-					output.append({'start':start,'stop':stop,'title':titel,'language':language,'station':station})
+					if station[0].lower().replace(" ","") not in self.ignoresender:
+						output.append({'start':start,'stop':stop,'title':titel,'language':language,'station':station})
 			except:
 				self.logger.info(sys.exc_info())
 		return output
