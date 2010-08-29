@@ -147,7 +147,10 @@ class botService(service.MultiService):
             elif element in commandTree:
                 return commandTree[element].__doc__+"\n"+self._get_usage(commandTree[element])
             else:
-                return repr(commendTree[element]) #fallback
+                if element in commandTree:
+                    return repr(commandTree[element]) #fallback
+                else:
+                    return "unknown command"
 
         namespace=" ".join(args)
         if namespace != "":
