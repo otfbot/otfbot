@@ -22,6 +22,7 @@
 """
 
 from otfbot.lib import chatMod
+from otfbot.lib.pluginSupport.decorators import callback
 
 import random
 import re
@@ -53,11 +54,13 @@ class Plugin(chatMod.chatMod):
         "Cannot predict now (Kann es jetzt nicht vorhersagen)",
         "Ask again later (Frag spaeter nochmal)"]
 
+    @callback
     def msg(self, user, channel, msg):
         if self.bot.config.getBool("autoAnswer", False, "eightball", self.network, channel):
             if re.match("[a-z][^\.\?!:;]*\?", msg.lower()):
                 self.bot.sendmsg(channel, random.choice(self.answers))
 
+    @callback
     def command(self, user, channel, command, options):
         # only if the user asked something.
         if command.lower() in ["8ball", "eightball"] and options != "":

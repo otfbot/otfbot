@@ -18,20 +18,30 @@
 # (c) 2009 by Alexander Schier
 #
 
+"""
+    Sends quotes and proverbs to the channel
+"""
 
 from otfbot.lib import chatMod
+from otfbot.lib.pluginSupport.decorators import callback
 
 import urllib2
 import re
 
 
 class Plugin(chatMod.chatMod):
+    """ quotesfromweb plugin """
     quoteurl = "http://www.all4quotes.com/quote/rss/quotes/"
+
     def __init__(self,bot):
         self.bot = bot
         self.feedparser = self.bot.depends_on_module("feedparser")
     
+    @callback
     def command(self, user, channel, command, options):
+        """
+            Handels the commands !zitat, !sprichwort and !proverb and posts appropriate phrases in the channel
+        """
         if command.lower() == "zitat":
             zitat=self.feedparser.parse(self.quoteurl)
             zitat=zitat['entries'][0]

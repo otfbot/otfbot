@@ -18,14 +18,18 @@
 # (c) 2009 - 2010 by Robert Weidlich
 #
 
+""" module for providing a plugin-infrastructure to a twisted MultiService """
+
 import sys
 import traceback
+from plugin import *
 
 
 class pluginSupport:
     """
-    inherit from this class to enable support for plugins
+    baseclass for MultiServices, which should support plugins
 
+    to use pluginSupport to support service plugins,
     you need to inherit from this class, and set pluginSupportName
     and pluginSupportPath, you need to inherit from
     L{twisted.application.service.MultiService}, too
@@ -34,6 +38,12 @@ class pluginSupport:
     pluginSupportPath = "[UNSET]"
 
     def __init__(self, root, parent):
+        """
+            sets root and parent, and stores references to config and control service in vars
+
+            @param root: the application object of the bot
+            @param parent: the parent object of the service (typically the application, too)
+        """
         self.root = root
         self.parent = parent
         self.callbacks = {}
@@ -42,16 +52,25 @@ class pluginSupport:
         #XXX: the dependency should be more explicit?
         self.config = root.getServiceNamed('config')
         self.controlservice = self.root.getServiceNamed('control')
-        #self.register_pluginsupport_commands()
+        if self.controlservice:
+            self._register_pluginsupport_commands()
 
     def _getClassName(self, clas):
+        """
+            get the classname of a plugin by cutting off otfbot.plugins.
+
+            @param clas: the class (as variable, not string!)
+            @returns the classname (i.e. ircClient.example)
+        """
         return clas.__name__[15:] #cut off "otfbot.plugins."
 
-    def register_pluginsupport_commands(self):
-        if self.hasattr("register_ctl_command"):
+    def _register_pluginsupport_commands(self):
+        """ register the control commands """
+        if hasattr(self, "register_ctl_command"):
             self.register_ctl_command(self.startPlugin)
             self.register_ctl_command(self.stopPlugin)
             self.register_ctl_command(self.restartPlugin)
+            self.register_ctl_command(self.reloadPlugins)
             self.register_ctl_command(lambda: self.plugins.keys(),
                                                     name="listPlugins")
 
@@ -61,8 +80,13 @@ class pluginSupport:
 
     def depends_on_module(self, dependency, description=""):
         """
-            try to import a module, raise a ModuleException,
+            try to import a module, raise a ModuleMissing Exception
             if it cannot be loaded
+
+            @param dependency: the module name (as string!)
+            @type dependency: string
+            @param description: optional Description why it is needed and how it can be optained
+            @type description: string
         """
         try:
             return __import__(dependency)
@@ -73,40 +97,72 @@ class pluginSupport:
         """
             depend on a service, raise an ServiceMissing Exception,
             if its not available/enabled/loaded
+
+            @param dependency: the service name
+            @type dependency: string
+            @param description: optional Description why it is needed and how it can be optained
+            @type description: string
         """
         if not self.root.getServiceNamed(dependency):
             raise self.ServiceMissing(dependency, description)
 
-    def depends_on_plugin(dependency, description=""):
+    def depends_on_plugin(self, dependency, description="", service=""):
         """
             depend on another plugin, raise a PluginMissing
             xception, if its not enabled
+
+            @param dependency: the plugin name
+            @type dependency: string
+            @param description: optional Description why it is needed and how it can be optained
+            @type description: string
+            @param service: the service under which the plugin runs
+            @type service: string
         """
-        if not dependency in self.plugins:
+        if service == "":
+            service=self.pluginSupportName
+        plugins = self.config.get(
+                    service + "Plugins",
+                    [], "main", set_default=False)
+
+        pluginsDisabled = self.config.get("pluginsDisabled", [], "main")
+
+        if not dependency in plugins or service+"."+dependency in pluginsDisabled:
             raise self.PluginMissing(dependency, description)
 
     def importPlugin(self, name):
+        """
+            import a plugin
+
+            @param name: the name of the plugin
+            @type name: string
+        """
         if not self.classes:
             self.classes = []
         for c in self.classes:
             if c.__name__ == name:
                 return c
-        pkg = self.pluginSupportPath.replace("/", ".") + "." + name
+        pkg = self.pluginSupportPath.replace("/", ".") + "." + name #otfbot.plugins.service.plugin
         try:
-            cls = __import__(pkg, fromlist=['*'])
+            cls = __import__(pkg, fromlist=['*'], globals={'service': self})
             cls.datadir = self.config.get("datadir", "data")
             cls.datadir += "/" + self._getClassName(cls)
             self.classes.append(cls)
             self.logger.debug("Imported plugin " + self._getClassName(cls))
             return self.classes[-1]
-        except ImportError:
+        except ImportError, e:
             self.logger.warning("Cannot import plugin " + name)
+            self.logger.debug(str(e))
             return None
 
     def callbackRegistered(self, module, callbackname):
         """
             test, if a module has already registered a callback
             for callbackname
+
+            @param module: the name of the module
+            @type module: string
+            @param callbackname: the callbackname
+            @param callbackname: string
         """
         if callbackname not in self.callbacks:
             return False
@@ -129,19 +185,27 @@ class pluginSupport:
             self.callbacks[callbackname].append((module, priority))
             self.callbacks[callbackname].sort(cmp=lambda a, b: b[1] - a[1])
 
+    def unregisterAllCallbacks(self, module):
+        """ unregister all callbacks for a module """
+        for callbackname in self.callbacks.keys():
+            self.unregisterCallback(module, callbackname)
+
     def unregisterCallback(self, module, callbackname):
         """unregister a callback for a module"""
         if callbackname not in self.callbacks:
             return
-        for index in len(self.callbacks[callbackname]):
-            if self.callbacks[callbackname][0] == module:
-                self.callbacks[callbackdname].remove(
-                                        self.callbacks[callbackname][index])
+        toremove=[]
+        for index in range(len(self.callbacks[callbackname])):
+            if self.callbacks[callbackname][index][0] == module:
+                toremove.append(self.callbacks[callbackname][index])
+        for callback in toremove:
+            self.callbacks[callbackname].remove(callback)
 
     def startPlugins(self):
         """
             initializes all known plugins
         """
+        #first we load the classes and __init__ the plugins
         plugins = self.config.get(
                     self.pluginSupportName + "Plugins",
                     [], "main", set_default=False)
@@ -149,12 +213,23 @@ class pluginSupport:
             if not plginName in self.config.get("pluginsDisabled", [], "main"):
                 self.startPlugin(plginName)
 
+        #then we call .start(), guaranteeing that all other enabled plugins are loaded
+        #so start may depend on other plugins, make your dependency explicit with 
+        #depends_on_plugin in __init__ to prevent otfbot from loading the plugin, if the
+        #dependency is not satisfied
+        for mod in self.plugins.values():
+            if hasattr(mod, "start"):
+                mod.start()
+
     def startPlugin(self, pluginName):
         """
         start the plugin named pluginName
 
         start a plugin, by importing pluginSupportName.pluginName,
         instancing the plugin and calling its start() function
+
+        @param pluginName: the name of the plugin
+        @type pluginName: string
         """
         pluginClass = self.importPlugin(pluginName)
         if not pluginClass:
@@ -168,9 +243,10 @@ class pluginSupport:
                 mod.config = self.config
                 if hasattr(self, "network"): #needed for reload!
                     mod.network = self.network
-                if hasattr(mod, "start"):
-                    mod.start()
                 self.plugins[self._getClassName(pluginClass)] = mod
+                for func in dir(mod):
+                    if hasattr(getattr(mod, func), "is_callback"):
+                        self.registerCallback(mod, func, priority=getattr(mod, func).priority)
             except Exception, e:
                 self.logerror(self.logger, self._getClassName(pluginClass), e)
                 # exception occured (e.g. dependency missing
@@ -185,28 +261,41 @@ class pluginSupport:
 
     def restartPlugin(self, pluginName):
         """stop and start again a plugin"""
-        if pluginName in self.plugins.keys():
+        #pkg = self.pluginSupportPath.replace("/", ".") + "." + pluginName #otfbot.plugins.service.plugin
+        #pluginName =  #servive.plugin
+        if self.pluginSupportName+"."+pluginName in self.plugins.keys():
             self.stopPlugin(pluginName)
             self.startPlugin(pluginName)
 
     def reloadPlugins(self):
         """
-            call this to reload all plugins
+            reload all plugins
+
+            it first reloads all plugin classes, then it stops the plugins
+            and starts them again using the new version of the class
         """
         for chatPlugin in self.classes:
             self.reloadPluginClass(chatPlugin)
         for chatPlugin in self.plugins.values():
-            self.restartPlugin(chatPlugin.name)
+            self.restartPlugin(chatPlugin.name.split(".")[-1]) #only plugin name
 
     def stopPlugins(self):
         """
             stop all Plugins
         """
         for chatPlugin in self.plugins.values():
+            self.logger.debug(chatPlugin.__name__)
             self.stopPlugin(chatPlugin.name)
 
     def stopPlugin(self, pluginName):
-        """stop a plugin named pluginName"""
+        """
+            stop a plugin named pluginName
+
+            @param pluginName: plugin name
+            @type pluginName: string
+        """
+        pkg = self.pluginSupportPath.replace("/", ".") + "." + pluginName #otfbot.plugins.service.plugin
+        pluginName = pkg.replace("otfbot.plugins.", "") #servive.plugin
         if not pluginName in self.plugins.keys():
             return
         chatPlugin = self.plugins[pluginName]
@@ -215,36 +304,61 @@ class pluginSupport:
             chatPlugin.stop()
         except Exception, e:
             self.logerror(self.logger, chatPlugin.name, e)
+
+        self.unregisterAllCallbacks(chatPlugin)
         del(self.plugins[pluginName])
         del(chatPlugin)
 
     class WontStart(Exception):
-        """Exception thrown by plugins, which cannot start"""
+        """
+            Exception thrown by plugins, which cannot start
+
+            a reason can be given in the exception message
+        """
         pass
 
     class DependencyMissing(Exception):
-        """thrown, if a dependency is missing"""
+        """
+            thrown, if a dependency is missing
+        """
 
         def __init__(self, dependency, description):
+            """
+                @param dependency: which dependency is missing (plain text, not only packagenames)
+                @type dependency: string
+                @param description: description of the missing dependency, why its missing and how it can be obtained
+                @type description: string
+            """
             self.dependency = dependency
             self.description = description
-            msg = "%s missing. %s" % (dependency, description)
+            if description:
+                msg = "%s missing. %s" % (dependency, description)
+            else:
+                msg = "%s missing" % dependency
             Exception.__init__(self, msg)
 
     class ModuleMissing(DependencyMissing):
-        """through if a module is missing"""
+        """
+            thrown if a module is missing
+        """
         pass
 
     class ServiceMissing(DependencyMissing):
-        """through if a service is missing"""
+        """
+            thrown if a service is missing
+        """
         pass
 
     class PluginMissing(DependencyMissing):
-        """through if a plugin is missing"""
+        """
+            thrown if a plugin is missing
+        """
         pass
 
     def logerror(self, logger, plugin, exception):
-        """ format a exception nicely and pass it to the logger
+        """
+            format a exception nicely and pass it to the logger
+
             @param logger: the logger instance to use
             @param plugin: the plugin in which the exception occured
             @type plugin: string
@@ -259,7 +373,7 @@ class pluginSupport:
             msg = 'Plugin "%s" will not start because "%s".'
             logger.info(msg % (plugin, str(exception)))
             return
-        logger.error("Exception in Plugin " + plugin + ": " + repr(exception))
+        logger.error("Exception in " + plugin + ": " + repr(exception))
         tb_list = traceback.format_tb(sys.exc_info()[2])[1:]
         for entry in tb_list:
             for line in entry.strip().split("\n"):

@@ -29,10 +29,51 @@ from twisted.words.protocols import irc
 import logging
 import string
 import time
+from threading import Lock
 
 from otfbot.lib.pluginSupport import pluginSupport
 from otfbot.lib.user import IrcUser, MODE_CHARS, MODE_SIGNS
 
+class Meta:
+    depends=['auth', 'control', 'scheduler']
+
+def syncedChannel(argnum=None):
+    def decorator(func):
+        def callSynced(self, *args, **kwargs):
+            if 'channel' in kwargs:
+                channel = kwargs['channel']
+            elif argnum:
+                channel=args[argnum]
+            else:
+                channel="" #this should never happen
+                self.logger.error("Decorator has no channel property!")
+
+            #self.logger.debug("callSynced, arguments: "+str(args))
+            if channel in self.syncing_channels:
+                #self.logger.debug("delaying callback, arguments: %s"%str(args))
+                self.callback_queue.append(([channel], (func, args, kwargs)))
+            else:
+                #self.logger.debug("NOT delaying callback, arguments: %s"%str(args))
+                func(self, *args, **kwargs)
+        return callSynced
+    return decorator
+
+def syncedChannelRaw(func):
+    def callSynced(self, *args, **kwargs):
+        channel = args[1][1]
+        if channel in self.syncing_channels:
+            self.callback_queue.append(([channel], (func, args, kwargs)))
+        else:
+            func(self, *args, **kwargs)
+    return callSynced
+
+def syncedAll(func):
+    def callSynced(self, *args, **kwargs):
+        if len(self.syncing_channels):
+            self.callback_queue.append((self.syncing_channels, (func, args, kwargs)))
+        else:
+            func(self, *args, **kwargs)
+    return callSynced
 
 class botService(service.MultiService):
     name = "ircClient"
@@ -41,6 +82,7 @@ class botService(service.MultiService):
         self.root = root
         self.parent = parent
         service.MultiService.__init__(self)
+
 
     def startService(self):
         """ 
@@ -82,9 +124,11 @@ class botService(service.MultiService):
                                       factory=f, contextFactory=s)
             repr = "<IRC Connection with SSL to %s:%s>"
             serv.__repr__ = lambda: repr % (sname, port)
+            serv.factory=f
         else:
             serv = internet.TCPClient(host=sname, port=port, factory=f)
             serv.__repr__ = lambda: "<IRC Connection to %s:%s>" % (sname, port)
+            serv.factory=f
         f.service = serv
         serv.setName(network)
         serv.parent = self
@@ -167,8 +211,6 @@ class Bot(pluginSupport, irc.IRCClient):
     """ The Protocol of our IRC-Bot
         @ivar plugins: contains references to all plugins, which are loaded
         @type plugins: list
-        @ivar users: contains a dict of all users in the channels we are in
-        @type users: dict
         @ivar channels: all channels we are currently in
         @type channels: list
         @ivar network: the name of the network we are connected to
@@ -185,11 +227,13 @@ class Bot(pluginSupport, irc.IRCClient):
     modcharvals = {16: '!', 8: '@', 4: '%', 2: '+', 0: ' '}
 
     def __init__(self, root, parent):
-        pluginSupport.__init__(self, root, parent)
+        self.root = root
+        self.parent = parent
         self.config = root.getServiceNamed('config')
         self.network = self.parent.network
         self.ircClient = self.parent.parent
         self.logger = logging.getLogger(self.network)
+        pluginSupport.__init__(self, root, parent)
         if self.config.getBool('answerToCTCPVersion', True, 'main', self.network):
             self.versionName = "OTFBot"
             self.versionNum = root.version.short()
@@ -211,10 +255,33 @@ class Bot(pluginSupport, irc.IRCClient):
         self.channelmodes = {}
         self.serversupports = {}
 
+        self.syncing_channels=[] #list of channels, which still wait for ENDOFWHO
+        self.callback_queue=[] #list of callbacks waiting for ENDOFWHO, structure: [([channels], (function, args, kwargs))]
+        self.sync_lock=Lock()
+
         self.logger.info("Starting new Botinstance")
         self.startPlugins()
         self.register_my_commands()
         self.startTimeoutDetection()
+
+    def handleCommand(self, command, prefix, params):
+        """ 
+        same as twisteds, only with reasonable logging in case of exceptions
+ 
+        Determine the function to call for the given command and call it with
+        the given arguments.
+        """
+        #XXX: we need to keep this in sync with twisteds version, in case it changes!
+        method = getattr(self, "irc_%s" % command, None)
+        try: 
+            if method is not None:
+                method(prefix, params)
+            else:
+                self.irc_unknown(prefix, command, params)
+        except Exception, e:
+            self.logerror(self.logger, self.pluginSupportName, e)
+            
+
 
     def startTimeoutDetection(self):
         """ initialize the timeout-detection scheduler-call """
@@ -234,6 +301,12 @@ class Bot(pluginSupport, irc.IRCClient):
             if self.user_list[user].hasChannel(channel):
                 ret.append(self.user_list[user])
         return ret
+
+    def getUserByNick(self, nick):
+        for user in self.user_list.values():
+            if user.nick.lower() == nick.lower():
+                return user
+        return None
 
     def _check_sendLastLine(self):
         timeout = self.config.get("timeout", 120, "main", self.network)
@@ -263,21 +336,16 @@ class Bot(pluginSupport, irc.IRCClient):
         self.register_ctl_command(self.sendmsg, name="say")
         self.register_ctl_command(self.ping)
 
-    def startPlugins(self):
-        pluginSetting = self.pluginSupportName + "Plugins"
-        plugins = self.config.get(pluginSetting, [], "main", set_default=False)
-        disabled = self.config.get("pluginsDisabled", [], "main", self.network)
-        for pluginName in plugins:
-            if not pluginName in disabled:
-                self.startPlugin(pluginName)
+    #def startPlugins(self):
+    #    pluginSetting = self.pluginSupportName + "Plugins"
+    #    plugins = self.config.get(pluginSetting, [], "main", set_default=False)
+    #    disabled = self.config.get("pluginsDisabled", [], "main", self.network)
+    #    for pluginName in plugins:
+    #        if not pluginName in disabled:
+    #            self.startPlugin(pluginName)
 
     def startPlugin(self, pluginName):
         plugin = pluginSupport.startPlugin(self, pluginName)
-        #TODO: this is only a workaround until the plugins
-        #      register their callbacks
-        if plugin:
-            for callback in dir(plugin):
-                self.registerCallback(plugin, callback)
 
     def getFactory(self):
         """ get the factory
@@ -394,8 +462,8 @@ class Bot(pluginSupport, irc.IRCClient):
         """ called by twisted,
             when we signed on the IRC-Server
         """
-        self.logger.debug(self.nickname)
         self.logger.info("signed on " + self.network + " as " + self.nickname)
+        self._apirunner("signedOn")
         channelstojoin = self.channels
         self.channels = []
         for channel in channelstojoin:
@@ -408,8 +476,8 @@ class Bot(pluginSupport, irc.IRCClient):
                                             unicode(pw).encode("iso-8859-1"))
                 else:
                     self.join(unicode(channel).encode("iso-8859-1"))
-        self._apirunner("signedOn")
 
+    #this MUST NOT be decorated with synced! This starts the WHO request, syncing the callback would block the bot
     def joined(self, channel):
         """ called by twisted,
             if we joined a channel
@@ -421,9 +489,11 @@ class Bot(pluginSupport, irc.IRCClient):
         self.channels.append(channel)
         self.channelmodes[channel] = {}
         self.sendLine("WHO %s" % channel)
-        self._apirunner("joined", {"channel": channel})
+        self.syncing_channels.append(channel) #we are waiting for all WHOREPLYs and ENDOFWHO before executing further callbacks
+        #joined callback will be fired in irc_RPL_ENDOFWHO
         self.config.set("enabled", True, "main", self.network, channel)
 
+    @syncedChannel(argnum=0)
     def left(self, channel):
         """ called by twisted,
             if we left a channel
@@ -473,6 +543,7 @@ class Bot(pluginSupport, irc.IRCClient):
         self._apirunner("command", {"user": user, "channel": channel,
                                     "command": command, "options": options})
 
+    @syncedChannel(argnum=1)
     def privmsg(self, user, channel, msg):
         """ called by twisted,
             if we received a message
@@ -511,6 +582,7 @@ class Bot(pluginSupport, irc.IRCClient):
         # to be called for messages in channels
         self._apirunner("msg", {"user": user, "channel": channel, "msg": msg})
 
+    @syncedChannelRaw
     def irc_unknown(self, prefix, command, params):
         """ called by twisted
             for every line that has no own callback
@@ -518,6 +590,7 @@ class Bot(pluginSupport, irc.IRCClient):
         self._apirunner("irc_unknown", {"prefix": prefix, "command": command,
                                         "params": params})
 
+    @syncedChannel(argnum=1)
     def noticed(self, user, channel, msg):
         """ called by twisted,
             if we got a notice
@@ -533,6 +606,7 @@ class Bot(pluginSupport, irc.IRCClient):
         self._apirunner("noticed", {"user": user,
                                     "channel": channel, "msg": msg})
 
+    @syncedChannel(argnum=1)
     def action(self, user, channel, message):
         """ called by twisted,
             if we received a action
@@ -548,12 +622,14 @@ class Bot(pluginSupport, irc.IRCClient):
         self._apirunner("action", {"user": user, "channel": channel,
                                    "msg": message})
 
+    @syncedChannel(argnum=1)
     def modeChanged(self, user, chan, set, modes, args):
         """ called by twisted
             if a usermode was changed
         """
         chan = chan.lower()
-        user = user.lower()
+        if chan == self.nickname.lower():
+            return #TODO: we do not do anything with our usermodes, yet
         mstr = "mode change: user %s channel %s set %s modes %s args %s"
         # self.logger.debug(mstr % (user, chan, set, modes, args))
         if len(modes) != len(args):
@@ -570,15 +646,15 @@ class Bot(pluginSupport, irc.IRCClient):
                 # is a usermode
                 if modes[i] in MODE_CHARS:
                     # user is known to bot
-                    assert(args[i] in self.user_list)
-                    if args[i] in self.user_list:
+                    u=self.getUserByNick(args[i])
+                    if u:
                         # user in channel
                         if set:
-                            self.user_list[args[i]].setMode(chan, modes[i])
+                            u.setMode(chan, modes[i])
                         else:
-                            self.user_list[args[i]].removeMode(chan, modes[i])
+                            u.removeMode(chan, modes[i])
                     else:
-                        self.logger.info(user + " not known to me")
+                        self.logger.error(args[i] + " not known to me")
                 else: # channelmodes
                     am = self.supported.getFeature('CHANMODES')['addressModes']
                     if modes[i] in am: # channel modes with lists
@@ -600,6 +676,7 @@ class Bot(pluginSupport, irc.IRCClient):
                                         "set": set, "modes": modes,
                                         "args": [str(arg) for arg in args]})
 
+    @syncedChannel(argnum=0)
     def kickedFrom(self, channel, kicker, message):
         """ called by twisted,
             if the bot was kicked
@@ -616,6 +693,7 @@ class Bot(pluginSupport, irc.IRCClient):
                 #if we do not know you're there, then you aren't there
                 self.user_list[user].removeChannel(channel)
 
+    @syncedChannel(argnum=1)
     def userKicked(self, kickee, channel, kicker, message):
         """ called by twisted,
             if a user was kicked
@@ -623,9 +701,10 @@ class Bot(pluginSupport, irc.IRCClient):
         channel = channel.lower()
         self._apirunner("userKicked", {"kickee": kickee, "channel": channel,
                                        "kicker": kicker, "message": message})
-        self.user_list[kickee].removeChannel(channel)
+        user=self.getUserByNick(kickee).removeChannel(channel)
         #TODO: remove user, if len( .getChannels())==0?
 
+    @syncedChannel(argnum=1)
     def userJoined(self, user, channel):
         """ called by twisted,
             if a C{user} joined the C{channel}
@@ -641,6 +720,7 @@ class Bot(pluginSupport, irc.IRCClient):
         u.addChannel(channel)
         self._apirunner("userJoined", {"user": user, "channel": channel})
 
+    @syncedChannel(argnum=1)
     def userLeft(self, user, channel):
         """ called by twisted,
             if a C{user} left the C{channel}
@@ -651,12 +731,21 @@ class Bot(pluginSupport, irc.IRCClient):
         self.user_list[user].removeChannel(channel)
         #TODO: remove user, if len( .getChannels())==0?
 
+    @syncedAll
     def userQuit(self, user, quitMessage):
         """ called by twisted,
             if a C{user} quits
         """
         self._apirunner("userQuit", {"user": user, "quitMessage": quitMessage})
-        del(self.user_list[user])
+        if user in self.user_list:
+            del(self.user_list[user])
+        else:
+            nick=user.split("!")[0]
+            user=self.getUserByNick(nick)
+            if not user or not user.getHostMask() in self.user_list:
+                logger.debug("user with nick %s quit, but was not in user_list"%nick)
+                return
+            del(self.user_list[user.getHostMask()])
 
     def yourHost(self, info):
         """ called by twisted
@@ -665,6 +754,7 @@ class Bot(pluginSupport, irc.IRCClient):
         #self.logger.debug(str(info))
         self._apirunner("yourHost", {"info": info})
 
+    @syncedChannel(argnum=1)
     def ctcpUnknownQuery(self, user, channel, messages):
         """ called by twisted,
             if a C{user} sent a ctcp query
@@ -673,18 +763,21 @@ class Bot(pluginSupport, irc.IRCClient):
         self._apirunner("ctcpQuery", {"user": user, "channel": channel,
                 "messages": messages})
 
+    @syncedAll
     def userRenamed(self, oldname, newname):
         """ called by twisted,
             if a user changed his nick
         """
-        self._apirunner("userRenamed", {"oldname": oldname, "newname": new})
-        for user in self.user_list:
-            if self.user_list[user].nick.lower()==oldname.lower():
-                u=self.user_list[user]
-                del(self.user_list[user])
-                u.nick=newname
-                self.user_list[u.getHostMask()]=u
+        self._apirunner("userRenamed", {"oldname": oldname, "newname": newname})
+        user=self.getUserByNick(oldname)
+        if user.getHostMask() in self.user_list:
+            del (self.user_list[user.getHostMask()])
+        else:
+            self.logger.warning("%s not found in user_list!"%user.getHostMask())
+        user.setNick(newname)
+        self.user_list[user.getHostMask()]=user
 
+    @syncedChannel(argnum=1)
     def topicUpdated(self, user, channel, newTopic):
         """ called by twisted
             if the topic was updated
@@ -701,7 +794,7 @@ class Bot(pluginSupport, irc.IRCClient):
         (t, channel, user, host, server, nick, modes, hopsrealname) = params
         channel = channel.lower()
         (hops, realname) = hopsrealname.split(" ", 1)
-        mask="%s!%s@%s"%(nick, user, host)
+        mask=("%s!%s@%s"%(nick, user, host))
         if mask in self.user_list:
             self.user_list[mask].realname=realname
         else:
@@ -715,25 +808,41 @@ class Bot(pluginSupport, irc.IRCClient):
         self.user_list[mask].setMode(channel, s)
         self._apirunner("irc_RPL_WHOREPLY", {"channel": channel, "user": mask, "server": server, "realname": realname})
 
-    #def irc_RPL_USERHOST(self, prefix, params):
-    #    for rpl in params[1].strip().split(" "):
-    #        tmp = rpl.split('=', 1)
-    #        if len(tmp) == 2:
-    #            (nick, hostmask) = tmp
-    #        else:
-    #            if not self.nickname == rpl:
-    #                msgs = "Error parsing RPL_USERHOST: %s, %s"
-    #                self.logger.warning(msgs % (prefix, params))
-    #            continue
-    #        nick = nick.replace("*", "")
-    #        hm = hostmask.split('@', 1)
-    #        if nick in self.userlist:
-    #            self.userlist[nick].user = hm[0][1:]
-    #            self.userlist[nick].host = hm[1]
-    #        else:
-    #            msgs = 'received RPL_USERHOST for "%s", who is not in list'
-    #            self.logger.warning(msgs % nick)
+    def irc_RPL_ENDOFWHO(self, prefix, params):
+        """
+            end of WHO replies by the server
+        """
+        (nickname, channel, message) = params
+        if channel in self.syncing_channels:
+            self.logger.debug("ENDOFWHO(%s) - %s callbacks possibly waiting"%(channel, len(self.callback_queue)))
 
+            self.sync_lock.acquire()
+            #invoce callbacks formerly blocked until the channel is synced
+            self.syncing_channels.remove(channel) #we are no longer blocking callbacks
+            execute_now=[]
+            for callback in self.callback_queue:
+                (channels, (func, args, kwargs))=callback
+                if len(set(channels).intersection(set(self.syncing_channels))) == 0: #no channel is blocking this callback
+                    execute_now.append(callback) #avoid race conditions on the callback_queue
+
+            count=len(execute_now)
+            for callback in execute_now:
+                (channels, (func, args, kwargs))=callback
+                func(self, *args, **kwargs)
+            self.sync_lock.release() #the shared resource is the syncing_channels and callback_queue var, not the callbacks themself
+
+            for callback in execute_now:
+                self.callback_queue.remove(callback)
+            self.logger.debug("ENDOFWHO(%s) - %s waiting callbacks executed"%(channel, count))
+            self._apirunner("joined", {"channel": channel})
+        else:
+            #i.e. when the bot did a WHO on some string
+            #and not in self.joined, so this channel is not currently syncing
+            #and there are no delayed callbacks
+            pass
+        self._apirunner("irc_RPL_ENDOFWHO", {"channel": channel})
+
+    @syncedChannelRaw
     def irc_INVITE(self, prefix, params):
         """ called by twisted,
             if the bot was invited

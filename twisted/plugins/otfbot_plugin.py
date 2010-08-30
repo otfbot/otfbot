@@ -23,7 +23,7 @@
 """
 
 from twisted.application import internet, service
-from twisted.application.service import IServiceMaker
+from twisted.application.service import IServiceMaker, IService
 from twisted.plugin import IPlugin
 from twisted.python import log, usage
 from twisted.python import versions as twversions
@@ -50,6 +50,12 @@ class Options(usage.Options):
     optParameters = [["config", "c", "otfbot.yaml", "Location of configfile"]]
 
 
+class MyMultiService(service.MultiService):
+    def getServiceNamed(self, name):
+        if not name in self.namedServices:
+            return None
+        return self.namedServices[name]
+
 class MyServiceMaker(object):
     implements(IServiceMaker, IPlugin)
     tapname = "otfbot"
@@ -57,7 +63,7 @@ class MyServiceMaker(object):
     options = Options
 
     def makeService(self, options):
-        application = service.MultiService()
+        application = MyMultiService()
         application.version = version._version
 
         cfgS = configService.loadConfig(options['config'], "plugins/*/*.yaml")
@@ -115,15 +121,46 @@ class MyServiceMaker(object):
         corelogger.info(" " * (34 - len(_v)) + _v)
 
         service_names = cfgS.get("services", [], "main")
-        service_classes = []
+        service_classes = {}
         service_instances = []
+
         for service_name in service_names:
             #corelogger.info("starting Service %s" % service_name)
             pkg = "otfbot.services." + service_name
-            service_classes.append(__import__(pkg, fromlist=['botService']))
-            srv = service_classes[-1].botService(application, application)
-            srv.setServiceParent(application)
-            service_instances.append(srv)
+            service_classes[service_name] = __import__(pkg, fromlist=['botService'])
+            corelogger.info("imported %s"%pkg)
+
+        for service_name in service_names:
+            if hasattr(service_classes[service_name], 'Meta') \
+            and hasattr(service_classes[service_name].Meta, 'depends') \
+            and not set(service_classes[service_name].Meta.depends).issubset(service_names):
+                corelogger.error("service %s cannot be loaded because some dependencies are misssing: %s"%(service_name, 
+                    list(set(service_classes[service_name].Meta.depends) - set(service_names))))
+                sys.exit(1)
+
+        max_count = len(service_names)+1 #if n services cannot be started after n iterations, the dependencies contain a loop
+        while len(service_names): #while not all dependencies are resolved (break if max_count is reached)
+            corelogger.debug("resolving dependencies, max_count=%d"%max_count)
+            started=[]
+            for service_name in service_names:
+                #no Meta class, no dependency-list or all dependencies resolved
+                if not hasattr(service_classes[service_name], 'Meta') \
+                    or not hasattr(service_classes[service_name].Meta, 'depends') \
+                    or not len(set(service_classes[service_name].Meta.depends).intersection(service_names)) \
+                :
+
+                    srv = service_classes[service_name].botService(application, application)
+                    srv.setServiceParent(application)
+                    service_instances.append(srv)
+                    started.append(service_name)
+                    corelogger.info("started service %s"%service_name)
+            
+            for s in started: #remove from TO-START list
+                service_names.remove(s)
+            max_count -= 1
+            if max_count == 0:
+                corelogger.error("Dependencies could not be resolved.")
+                break
 
         return application
 

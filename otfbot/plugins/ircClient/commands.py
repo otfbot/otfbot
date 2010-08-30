@@ -24,27 +24,29 @@ React to !commands with text from a commands.txt file
 
 from otfbot.lib import chatMod
 from otfbot.lib import functions
+from otfbot.lib.pluginSupport.decorators import callback
 
 import string
 import re
 import random
 import os
 
-
 class Plugin(chatMod.chatMod):
-
     def __init__(self, bot):
         self.bot = bot
         self.channels = []
         self.mtime = 0
 
+    @callback
     def connectionMade(self):
         self.start()
 
+    @callback
     def joined(self, channel):
         filename = self.bot.config.getPath("file", datadir, "commands.txt", "commands", self.bot.network, channel)
         self.commands[channel] = functions.loadProperties(filename, True)
 
+    @callback
     def command(self, user, channel, command, options):
         user = user.split("!")[0] #only nick
         if self.bot.config.getBool("autoReload", True, "commands", self.bot.network, channel):

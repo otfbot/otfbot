@@ -16,6 +16,8 @@
 #
 # (c) 2008 - 2010 by Alexander Schier
 
+""" a simple markov-chain ki implementation with sqlite backend """
+
 import random, sqlite, os
 
 class pyNiall:
@@ -26,6 +28,16 @@ class pyNiall:
         self.cur = self.db.cursor()
 
     def _addRelation(self, word1, word2):
+        """
+            adds a relation between word1 and word2
+
+            add a relation, that word1 can be followed by word2
+
+            @param word1: the first word
+            @type word1: string
+            @param word2: the second word
+            @type word2: string
+        """
         self.cur.execute("SELECT id FROM words WHERE word=%s", [word1])
         index1 = self.cur.fetchall()[0][0]
 
@@ -48,6 +60,12 @@ class pyNiall:
             self.cur.execute("UPDATE relations SET ranking=%s WHERE word1_id=%s AND word2_id=%s", (ranking + 1, index1, index2))
 
     def _addEndRelation(self, word):
+        """
+            adds a relation, that a sentence can end with word
+
+            @param word: the word
+            @type word: string
+        """
         self.cur.execute("SELECT id FROM words WHERE word=%s", [word])
         index = self.cur.fetchall()[0][0]
 
@@ -61,13 +79,24 @@ class pyNiall:
 
     def _rankWord(self, word):
         """
-        rank a word by length and probability
+            rank a word by length and probability
+
+            @param word: the word
+            @type word: string
+            @rtype: float
         """
         rank = 0
         length = len(word)
         return self._getWordRank(word) + length * 0.7
 
     def _getWordRank(self, word):
+        """
+            rank a word by propabiltity of occurance
+
+            @param word: the word
+            @type word: string
+            @rtype: float
+        """
         self.cur.execute("SELECT id FROM words WHERE word=%s", word)
         id = self.cur.fetchall()
         if not id or not id[0]:
@@ -81,6 +110,16 @@ class pyNiall:
         return rank
 
     def _createRandomSentence(self, index, sentence, forward=True):
+        """
+            recursive function to create a random sentence
+
+            @param index: database-index of the last/first word
+            @type index: int
+            @param sentence: the sentence so far
+            @type sentence: string
+            @param forward: append or prepend? forward=True appends to the sentence
+            @type forward: bool
+        """
         candidates = []
         if forward:
             self.cur.execute("SELECT word2_id, ranking FROM relations WHERE word1_id=%s", [index])
@@ -115,6 +154,16 @@ class pyNiall:
             return self._createRandomSentence(newindex, word + " " + sentence, False).strip()
     
     def _createReply(self, msg):
+        """
+            reply to a message
+
+            use msg to create an appropriate reply.
+            first the function tries to identify the most important word of msg.
+            then it grows the answer forward and backwards around the word
+
+            @param msg: the msg to reply to
+            @type msg: string
+        """
         words = msg.strip().split(" ")
         bestword = None
         bestwordrank = 0
@@ -136,6 +185,14 @@ class pyNiall:
 
 
     def learn(self, msg):
+        """
+            learn the words from msg
+
+            learns the new words from msg, and the new relations between the words.
+
+            @param msg: the message
+            @type msg: string
+        """
         words = msg.split(" ")
         oldword = ">"
         for word in words:
@@ -147,13 +204,28 @@ class pyNiall:
             self._addEndRelation(oldword)
 
     def reply(self, msg):
+        """
+            learn msg and find a reply to it
+
+            @param msg: the message
+            @type msg: string
+        """
         self.learn(msg)
         return self._createReply(msg).strip()
     def cleanup(self):
+        """
+            cleanup method to commit all unwritten entries to the database
+        """
         self.db.commit()
         #self.db.close()
 
 def init_db(name):
+    """
+        creates a new DB for use with this lib
+
+        @param name: the (file)name of the DB
+        @type name: string
+    """
     db = sqlite.connect(name)
     cur = db.cursor()
     cur.execute('CREATE TABLE words (id INTEGER PRIMARY KEY, word VARCHAR(255))')

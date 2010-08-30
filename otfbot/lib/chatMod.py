@@ -20,7 +20,7 @@
 """ contains a abstract class for a Bot-module """
 
 
-from plugin import Plugin
+from pluginSupport import Plugin
 
 
 class chatMod(Plugin):

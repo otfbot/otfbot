@@ -23,6 +23,7 @@
 
 from otfbot.lib import chatMod
 from otfbot.lib import functions
+from otfbot.lib.pluginSupport.decorators import callback
 
 import re
 
@@ -43,6 +44,7 @@ class Plugin(chatMod.chatMod):
         """
         self.badwords = functions.loadList(self.badwordsFile)
 
+    @callback
     def msg(self, user, channel, msg):
         nick = user.split("!")[0]
         for word in self.badwords:

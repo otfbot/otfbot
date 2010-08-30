@@ -17,6 +17,11 @@
 # (c) 2007 - 2010 Robert Weidlich
 #
 
+"""
+    control service, allowing admins to control the bot (i.e. via irc or tcpclient) i
+
+    this service implements the control architecture, not the access methods.
+"""
 
 import logging, logging.handlers, time, inspect
 
@@ -42,12 +47,14 @@ class botService(service.MultiService):
         self.register_command(self.help)
         #FIXME: does not really fit here
         self.register_command(reactor.stop)
+        self.register_command(self.getlog)
 
-    """ Add a command to the control service
-            @type f: callable
-            @param f: the callable to be called, when the command is issued
-    """
     def register_command(self, f, namespace=None, name=None):
+        """ Add a command to the control service
+                @type f: callable
+                @param f: the callable to be called, when the command is issued
+        """
+
         if name is None:
             name=f.__name__
         if not namespace:
@@ -79,8 +86,13 @@ class botService(service.MultiService):
             #self.commandList[name].append(" ".join(namespace)) 
 
     def handle_command(self, string):
+        """
+            parse the commandstring and handle the command
+
+            the string is parsed into commands, and they are searched in the commandList-tree
+            the function returns an answerstring or that the command was ambigious
+        """
         s=string.split(" ")
-        #print self.commandList
         if not type(s) == list:
             s=[s,]
         if s[0] in self.commandList:
@@ -101,44 +113,68 @@ class botService(service.MultiService):
                 cur=cur[n]
                 
     def _exec(self, f, args):
+        """
+            execute function f with *args or return a usage info if the arguments were wrong (too much/too little)
+        """
         try:
             return f(*args)
         except TypeError:
-            args=inspect.getargspec(f)[0]
-            if hasattr(f,'im_self'):
-                args.reverse()
-                args.pop()
-                args.reverse()
-            return "Usage: "+f.__name__+ " "+" ".join(args)                
+            return "Usage: "+self._get_usage(f)
+
+    def _get_usage(self, f):
+        """ get a usage info for function f """
+        (args, _, _, defaults)=inspect.getargspec(f)
+        if hasattr(f,'im_self'):
+            args=args[1:]
+        if defaults:
+            args.reverse()
+            defaults=list(defaults)
+            defaults.reverse()
+            for i in range(len(defaults)):
+                args[i]+="(default="+str(defaults[i])+")"
+            args.reverse()
+        return f.__name__+ " "+" ".join(args)                
+
         
-    def help(self):
-        return "Available commands: "+", ".join(self._get_cmd_for_subtree(self.commandTree))
-    
-    def _get_cmd_for_subtree(self, dict):
-        r = []
-        for k, v in dict.iteritems():
-            if callable(v):
-                r.append(k)
+    def help(self, *args):
+        """
+            get help information for arguments *args (parsed strings from a command, i.e. "ircClient", "disconnect")
+        """
+        commandTree=self.commandTree
+        for element in args:
+            if element in commandTree and type(commandTree[element]) == dict:
+                commandTree=commandTree[element]
+            elif element in commandTree:
+                return commandTree[element].__doc__+"\n"+self._get_usage(commandTree[element])
             else:
-                sr = self._get_cmd_for_subtree(v)
-                for ee in sr:
-                    r.append(k+" "+ee)
-        return r
+                if element in commandTree:
+                    return repr(commandTree[element]) #fallback
+                else:
+                    return "unknown command"
+
+        namespace=" ".join(args)
+        if namespace != "":
+            namespace+=" "
+        topics=[]
+        for topic in commandTree.keys():
+            if type(commandTree[topic])==dict:
+                topics.append("%s%s ..."%(namespace, topic))
+            else:
+                topics.append("%s%s"%(namespace, topic))
+        return "Available help commands(... means the command has subcommands): "+", ".join(topics)
     
-    def _cmd_log_get(self, argument):
-        index=1
-        num=3
-        if len(argument):
-            args=argument.split(" ")
-            if len(args)==2:
-                try:
-                    index=int(args[1])
-                except ValueError:
-                    pass
-            try:
-                num=min(int(args[0]), 10)
-            except ValueError:
-                pass
+    def getlog(self, numlines=3, offset=0):
+        """
+            get the n most recent loglines, of specify an offset to get earlier lines
+        """
+        try:
+            index=1+int(offset)
+        except ValueError:
+            index=1
+        try:
+            num=int(numlines)
+        except ValueError:
+            num=3
         for loghandler in logging.getLogger('').handlers:
             if loghandler.__class__ == logging.handlers.MemoryHandler:
                 messages=[]
@@ -154,6 +190,10 @@ class botService(service.MultiService):
         return "reloaded config from file"
 
     def _cmd_config_set(self, argument):
+        """
+            set a configvalue.
+            syntax for argument: [network=net] [channel=chan] module.setting newvalue
+        """
         #how this works:
         #args[x][:8] is checked for network= or channel=. channel= must come after network=
         #args[x][8:] is the network/channelname without the prefix
@@ -184,6 +224,9 @@ class botService(service.MultiService):
             return "config set [network=networkname] [channel=#somechannel] setting value"
 
     def _cmd_config_get(self, argument):
+        """
+            get a configvalue
+        """
         if len(argument)==0:
             return "config get setting [network] [channel]"
         args=argument.split(" ")
