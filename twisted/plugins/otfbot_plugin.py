@@ -46,7 +46,12 @@ if twisted._version.version < required_version:
     os._exit(1)
 
 class Options(usage.Options):
-    optParameters = [["config", "c", "otfbot.yaml", "Location of configfile"]]
+    optParameters = [
+        ["config", "c", "otfbot.yaml", "Location of configfile"],
+    ]
+    optFlags = [
+        ["otfbot-version", "V", "display version and quit"],
+    ]
 
 
 class MyMultiService(service.MultiService):
@@ -118,6 +123,8 @@ class MyServiceMaker(object):
         corelogger.info(" \___/ |_| |_|   |____/ \___/ \__|")
         _v = "version %s" % application.version.short()
         corelogger.info(" " * (34 - len(_v)) + _v)
+        if options['otfbot-version']==True:
+            sys.exit(0)
 
         service_names = cfgS.get("services", [], "main")
         service_classes = {}
