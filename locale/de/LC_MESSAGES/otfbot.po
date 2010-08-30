@@ -3,15 +3,119 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
+"POT-Creation-Date: 2010-08-30 19:32+CEST\n"
+"PO-Revision-Date: \n"
+"Last-Translator: Alexander Schier <allo@laxu.de>\n"
+"Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 
+#: otfbot/plugins/ircClient/auth.py:59
+msgid "Error: could not get portal"
+msgstr "Fehler: Kann kein \"portal\" bekommen"
 
-#: ./otfbot/plugins/ircClient/math.py:39
+#: otfbot/plugins/ircClient/auth.py:67
+msgid "Usage: identify [user] pass"
+msgstr "Nutzung: identify [Username] Passwort"
+
+#: otfbot/plugins/ircClient/auth.py:77
+msgid "Successfully logged in as %s"
+msgstr "Erfolgreich eingelogged als %s"
+
+#: otfbot/plugins/ircClient/auth.py:80
+msgid "Login failed: %s"
+msgstr "Login fehlgeschlagen: %s"
+
+#: otfbot/plugins/ircClient/ddate.py:51
+msgid "Today is %s, the %d day of %s in the YOLD %d"
+msgstr "Heute ist %s, der %d. Tag des %s im JULD %d"
+
+#: otfbot/plugins/ircClient/eightBall.py:36
+msgid "Signs point to yes"
+msgstr "Zeichen deuten auf ja"
+
+#: otfbot/plugins/ircClient/eightBall.py:37
+msgid "Yes"
+msgstr "Ja"
+
+#: otfbot/plugins/ircClient/eightBall.py:38
+msgid "Without a doubt"
+msgstr "Ohne jeden Zweifel"
+
+#: otfbot/plugins/ircClient/eightBall.py:39
+msgid "As I see it, yes"
+msgstr "Soweit ich sehe, ja"
+
+#: otfbot/plugins/ircClient/eightBall.py:40
+msgid "Most likely"
+msgstr "Sehr wahrscheinlich"
+
+#: otfbot/plugins/ircClient/eightBall.py:41
+msgid "You may rely on it"
+msgstr "Du kannst dich darauf verlassen."
+
+#: otfbot/plugins/ircClient/eightBall.py:42
+msgid "Yes definitely"
+msgstr "Ja, definitiv"
+
+#: otfbot/plugins/ircClient/eightBall.py:43
+msgid "It is decidedly so"
+msgstr "Es ist entschieden so"
+
+#: otfbot/plugins/ircClient/eightBall.py:44
+msgid "Outlook good"
+msgstr "Gute Aussichten"
+
+#: otfbot/plugins/ircClient/eightBall.py:45
+msgid "It is certain"
+msgstr "Es ist sicher"
+
+#: otfbot/plugins/ircClient/eightBall.py:46
+msgid "My sources say no"
+msgstr "Meine Quellen sagen Nein"
+
+#: otfbot/plugins/ircClient/eightBall.py:47
+msgid "Very doubtful"
+msgstr "Sehr zweifelhaft"
+
+#: otfbot/plugins/ircClient/eightBall.py:48
+msgid "Don't count on it"
+msgstr "Zähl nicht drauf"
+
+#: otfbot/plugins/ircClient/eightBall.py:49
+msgid "Outlook not so good"
+msgstr "Keine guten Aussichten"
+
+#: otfbot/plugins/ircClient/eightBall.py:50
+msgid "My reply is no"
+msgstr "Meine Antwort ist Nein"
+
+#: otfbot/plugins/ircClient/eightBall.py:51
+msgid "Reply hazy, try again"
+msgstr "Antwort unklar, versuch es nocheinmal"
+
+#: otfbot/plugins/ircClient/eightBall.py:52
+msgid "Concentrate and ask again"
+msgstr "Konzentrier dich und frag nocheinmal"
+
+#: otfbot/plugins/ircClient/eightBall.py:53
+msgid "Better not tell you now"
+msgstr "Das sage ich dir jetzt lieber nicht"
+
+#: otfbot/plugins/ircClient/eightBall.py:54
+msgid "Cannot predict now"
+msgstr "Kann ich jetzt nicht vorhersagen"
+
+#: otfbot/plugins/ircClient/eightBall.py:55
+msgid "Ask again later"
+msgstr "Frag später nocheinmal"
+
+#: otfbot/plugins/ircClient/math.py:39
 msgid "rolls a die. The result is %i"
 msgstr "würfelt. Das Ergebnis ist: %i"
 
-#: ./otfbot/plugins/ircClient/math.py:43
+#: otfbot/plugins/ircClient/math.py:43
 msgid "rolls dice. The results are: "
 msgstr "würfelt. Die Ergebenisse sind: "
 
