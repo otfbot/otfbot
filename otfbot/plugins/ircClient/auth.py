@@ -56,7 +56,7 @@ class Plugin(chatMod.chatMod):
         if msg[0:9] == "identify ":
             portal = self.bot.root.getServiceNamed("auth")
             if not portal:
-                self.bot.sendmsg(nick, "Error: could not get portal")
+                self.bot.sendmsg(nick, _("Error: could not get portal"))
                 return
             msgs = msg.split(" ")
             if len(msgs) == 2:
@@ -64,7 +64,7 @@ class Plugin(chatMod.chatMod):
             elif len(msgs) == 3:
                 cred = UsernamePassword(msgs[1], msgs[2])
             else:
-                self.bot.sendmsg(nick, "Usage: identify [user] pass")
+                self.bot.sendmsg(nick, _("Usage: identify [user] pass"))
                 return
             if not user in self.bot.user_list:
                 u = IrcUser(user.split("!")[0],
@@ -74,10 +74,12 @@ class Plugin(chatMod.chatMod):
                 self.bot.user_list[user] = u
 
             d = portal.login(cred, self.bot.user_list[user], IUser)
-            msg = "Successfully logged in as %s"
-            d.addCallback(lambda args: self.bot.sendmsg(nick, msg % args[1].name))
-            fail = "Login failed: %s"
-            d.addErrback(lambda failure: self.bot.sendmsg(nick, fail % failure.getErrorMessage()))
+            msg = _("Successfully logged in as %s")
+            d.addCallback(lambda args: self.bot.sendmsg(nick, msg 
+                % args[1].name))
+            fail = _("Login failed: %s")
+            d.addErrback(lambda failure: self.bot.sendmsg(nick, fail 
+                % failure.getErrorMessage()))
 
     @callback
     def auth(self, user):

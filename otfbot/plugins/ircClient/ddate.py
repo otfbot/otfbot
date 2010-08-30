@@ -30,8 +30,10 @@ import calendar
 
 
 #http://rosettacode.org/wiki/Discordian_date
-DISCORDIAN_SEASONS = ["Chaos", "Discord", "Confusion", "Bureaucracy", "The Aftermath"]
-DISCORDIAN_WEEKDAYS=["Sweetmorn", "Boomtime", "Pungenday", "Prickle-Prickle", "Setting Orange"]
+DISCORDIAN_SEASONS = ["Chaos", "Discord", "Confusion", "Bureaucracy",
+    "The Aftermath"]
+DISCORDIAN_WEEKDAYS=["Sweetmorn", "Boomtime", "Pungenday", "Prickle-Prickle",
+    "Setting Orange"]
  
 def ddate(year, month, day):
     today = datetime.date(year, month, day)
@@ -46,7 +48,9 @@ def ddate(year, month, day):
         day_of_year -= 1 # Compensate for St. Tib's Day
  
     season, dday = divmod(day_of_year, 73)
-    return "Today is %s, the %d day of %s in the YOLD %d" % (DISCORDIAN_WEEKDAYS[weekday], dday + 1, DISCORDIAN_SEASONS[season], year + 1166)
+    return _("Today is %s, the %d day of %s in the YOLD %d") 
+        % (DISCORDIAN_WEEKDAYS[weekday], dday + 1, 
+        DISCORDIAN_SEASONS[season], year + 1166)
 
 
 class Plugin(chatMod.chatMod):
