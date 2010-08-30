@@ -50,6 +50,7 @@ class Plugin(chatMod.chatMod):
         Uses the auth-service to identify a user.
         If no username is given, the nickname is used.
         """
+        _=self.bot.get_gettext(channel)
         if user.lower() == self.bot.nickname.lower():
             return
         nick = user.split("!")[0]
