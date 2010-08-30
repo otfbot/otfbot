@@ -48,8 +48,8 @@ def ddate(year, month, day):
         day_of_year -= 1 # Compensate for St. Tib's Day
  
     season, dday = divmod(day_of_year, 73)
-    return _("Today is %s, the %d day of %s in the YOLD %d") 
-        % (DISCORDIAN_WEEKDAYS[weekday], dday + 1, 
+    return _("Today is %s, the %d day of %s in the YOLD %d") \
+        % (DISCORDIAN_WEEKDAYS[weekday], dday + 1, \
         DISCORDIAN_SEASONS[season], year + 1166)
 
 
