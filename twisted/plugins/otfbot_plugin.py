@@ -45,9 +45,6 @@ if twisted._version.version < required_version:
     print "Get %s or newer to run OTFBot" % required_version
     os._exit(1)
 
-import gettext
-gettext.install('otfbot', "locale")
-
 class Options(usage.Options):
     optParameters = [["config", "c", "otfbot.yaml", "Location of configfile"]]
 

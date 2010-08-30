@@ -32,6 +32,7 @@ class Plugin(chatMod.chatMod):
 
     def __init__(self, bot):
         self.bot = bot
+        _=self.bot.get_gettext()
         self.answers = [
         _("Signs point to yes"),
         _("Yes"),

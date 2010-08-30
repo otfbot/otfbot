@@ -36,7 +36,7 @@ DISCORDIAN_WEEKDAYS=["Sweetmorn", "Boomtime", "Pungenday", "Prickle-Prickle",
     "Setting Orange"]
  
 def ddate(year, month, day):
-    today = datetime.date(year, month, day)
+    today = datetime.date(year, month, day, _)
     is_leap_year = calendar.isleap(year)
     if is_leap_year and month == 2 and day == 29:
         return "St. Tib's Day, YOLD " + (year + 1166)
@@ -60,6 +60,7 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def command(self, user, channel, command, options):
+        _=self.bot.get_gettext(channel)
         if command == "ddate":
             dt = datetime.datetime.now()
-            self.bot.sendmsg(channel, ddate(dt.year, dt.month, dt.day))
+            self.bot.sendmsg(channel, ddate(dt.year, dt.month, dt.day, _))

@@ -34,6 +34,7 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def command(self, user, channel, command, options):
+        _=self.bot.get_gettext(channel)
         if command == "wuerfel" or command == "dice":
             if options == "":
                 answ = _("rolls a die. The result is %i") % random.randint(1, 6)
