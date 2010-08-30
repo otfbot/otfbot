@@ -1,0 +1,17 @@
+# Deutsche Übersetzung für Otfbot
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+
+#: ./otfbot/plugins/ircClient/math.py:39
+msgid "rolls a die. The result is %i"
+msgstr "würfelt. Das Ergebnis ist: %i"
+
+#: ./otfbot/plugins/ircClient/math.py:43
+msgid "rolls dice. The results are: "
+msgstr "würfelt. Die Ergebenisse sind: "
+
