@@ -24,6 +24,7 @@ import sys
 import os.path
 
 from twisted.python import versions
+from otfbot.lib.vername import ver2name
 
 
 class GitVersion(versions.Version):
@@ -61,7 +62,7 @@ class GitVersion(versions.Version):
         s = self.base()
         svnver = self._getSVNVersion()
         if svnver:
-            s += "+" + str(svnver)
+            s += "+" + str(svnver) + " (%s)"%ver2name(svnver)
         return s
 
 _version = GitVersion('OTFBot', 1, 0, 0)
