@@ -36,11 +36,11 @@ class Plugin(chatMod.chatMod):
     def command(self, user, channel, command, options):
         if command == "wuerfel" or command == "dice":
             if options == "":
-                answ = "wuerfelt. Das Ergebnis ist: %i" % random.randint(1, 6)
+                answ = _("rolls a die. The result is %i") % random.randint(1, 6)
                 self.bot.sendme(channel, answ)
             else:
                 num = 2
-                string = "wuerfelt. Die Ergebnisse sind: "
+                string = _("rolls dice. The results are: ")
                 try:
                     num = int(options)
                 except ValueError:
