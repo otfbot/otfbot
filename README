@@ -28,6 +28,8 @@ for ``feed``, ``youtube`` and ``zitat``, python-xmltv_ for ``tv``,
 ``pysvn`` for ``svn``, python bindings for megahal for ``ki`` or pywapi_
 for ``weather``.
 
+xmppClient needs wokkel_. Debian has a package python-wokkel for it.
+
 
 Setup
 -----
@@ -81,3 +83,4 @@ a mailing-list_ or by filing a bug into the bug-tracker_
 .. _pywapi: http://code.google.com/p/python-weather-api/
 .. _mailing-list: http://list.otfbot.org/mailman/listinfo/otfbot-dev
 .. _bug-tracker: http://www.otfbot.org/bugs/
+.. _wokkel: http://wokkel.ik.nu/downloads
