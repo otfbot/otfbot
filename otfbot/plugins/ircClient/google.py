@@ -39,6 +39,7 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def command(self, user, channel, command, options):
+        _=self.bot.get_gettext(channel)
         response = ""
         headers = None
         if command == "googlefight":
@@ -53,7 +54,7 @@ class Plugin(chatMod.chatMod):
                 data2.addCallback(self.callback2)
                 
             else:
-                self.bot.sendmsg(channel, "!googlefight wort1:wort2")
+                self.bot.sendmsg(channel, _("!googlefight word1:word2"))
     
     def callback1(self,content):
         self.callback1content = content
@@ -65,16 +66,17 @@ class Plugin(chatMod.chatMod):
         self.callback()
     
     def callback(self):
+        _=self.bot.get_gettext(channel)
         if self.gotcallback1 and self.gotcallback2:
             count1 = "0"
             count2 = "0"
             match = re.match(self.countRE, self.callback1content, re.S)
             if match:
-                 count1 = match.group(1).replace(".","")
+                 count1 = match.group(1)
             match = re.match(self.countRE, self.callback2content, re.S)
             if match:
-                count2 = match.group(1).replace(".","")
-            ansmsg = "Google Fight!: %s siegt ueber %s (%s zu %s Treffer)"
+                count2 = match.group(1)
+            ansmsg = _("Google Fight!: %s beats %s (%s to %s Hits)")
             if(int(re.sub("\.", "", count1)) > int(re.sub("\.", "", count2))):
                 self.bot.sendmsg(self.channel, ansmsg % (self.words[0], self.words[1], str(count1), count2))
             else:
