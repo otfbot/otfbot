@@ -23,11 +23,12 @@
 """
 
 from otfbot.lib.pluginSupport.decorators import callback
+from otfbot.lib.pluginSupport import plugin
 from otfbot.lib import chatMod
 import logging
 
 
-class Plugin(chatMod.chatMod):
+class Plugin(plugin.Plugin):
     """
         svn-push tcpServer plugin
 
