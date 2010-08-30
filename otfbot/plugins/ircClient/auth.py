@@ -29,6 +29,7 @@ from twisted.words.iwords import IUser
 from otfbot.lib import chatMod
 from otfbot.lib.user import BotUser
 from otfbot.lib.user import IrcUser
+from otfbot.lib.pluginSupport.decorators import callback
 
 
 class Plugin(chatMod.chatMod):
@@ -43,6 +44,7 @@ class Plugin(chatMod.chatMod):
     def __init__(self, bot):
         self.bot = bot
 
+    @callback
     def query(self, user, channel, msg):
         """
         Uses the auth-service to identify a user.
@@ -64,25 +66,28 @@ class Plugin(chatMod.chatMod):
             else:
                 self.bot.sendmsg(nick, "Usage: identify [user] pass")
                 return
-            if not nick in self.bot.userlist:
+            if not user in self.bot.user_list:
                 u = IrcUser(user.split("!")[0],
                           user.split("!", 1)[1].split("@")[0],
                           user.split("!", 1)[1].split("@")[1],
                           user.split("!")[0], self.bot)
-                self.bot.userlist[nick] = u
+                self.bot.user_list[user] = u
 
-            d = portal.login(cred, self.bot.userlist[nick], IUser)
+            d = portal.login(cred, self.bot.user_list[user], IUser)
             msg = "Successfully logged in as %s"
             d.addCallback(lambda args: self.bot.sendmsg(nick, msg % args[1].name))
             fail = "Login failed: %s"
             d.addErrback(lambda failure: self.bot.sendmsg(nick, fail % failure.getErrorMessage()))
 
+    @callback
     def auth(self, user):
         """
         Returns the access-level of the given user.
         """
-        user = user.split("!")[0]
-        if self.bot.userlist[user].avatar is not None:
+        if not user in self.bot.user_list:
+            self.logger.warning("User %s not in user_list!")
+            return 0
+        if self.bot.user_list[user].avatar is not None:
             return 10
         else:
             return 0

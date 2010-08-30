@@ -19,37 +19,68 @@
 
 import time
 from otfbot.lib import chatMod
+from otfbot.lib.pluginSupport.decorators import callback
+from datetime import datetime
 
+"""
+    Remind the user after X minutes, displaying a message
+"""
 
 class Plugin(chatMod.chatMod):
+    """ reminder plugin """
     def __init__(self, bot):
         self.bot=bot
         self.messages={}
+        self.bot.depends_on_service('scheduler', 'without scheduler the reminder-plugin cannot work')
+        self.scheduler = self.bot.root.getServiceNamed('scheduler')
 
-    def remind(self):
-        when=int((time.time())/60)
-        messages=[]
-        if self.messages.has_key(when):
-            messages=self.messages[when]
-            del self.messages[when]
+    @callback
+    def remind(self, user, channel, message):
+        """
+            called at every time where a reminder is set.
+            will send all reminders at given time to the appropriate channels.
+        """
 
-        for message in messages:
-            self.bot.sendmsg(message[0], message[1]+": Reminder: "+message[2])
+        self.bot.sendmsg(channel, user+": Reminder: "+message)
 
+    @callback
     def command(self, user, channel, command, options):
-        if command == "remindme":
-            user=user.split("!")[0]
-            options=options.split(" ", 1)
+        """
+            react on !remindme 
+
+            add new reminders with !remindme (float) (string), i.e. !remindme 5.0 coffee is ready
+        """
+        user = user.split("!")[0]
+
+        if command == "remindmein":
+            options = options.split(" ", 1)
+            if not len(options) == 2:
+                self.bot.sendmsg(channel, user+": ERROR: You need to specify a number of minutes and a reminder text!")
+                return
             try:
                 wait=float(options[0])
             except ValueError:
-                self.bot.sendmsg(channel, user.split("!")[0]+": invalid number format \""+options[0]+"\".")
+                self.bot.sendmsg(channel, user+": ERROR: invalid number format \""+options[0]+"\".")
                 return
-            text=str(options[1])
+            text = str(options[1])
             
-            when=int((time.time()+wait*60)/60) #when will this be executed? (minutes since 1.1.1970 ;-))
-            if self.messages.has_key(when):
-                self.messages[when].append([channel, user, text])
+            self.bot.sendmsg(channel, user+": I will remind you in "+str(wait)+" minutes")
+            self.scheduler.callLater(wait*60, self.remind, user, channel, text)
+
+        if command == "remindmeat":
+            options = options.split(" ", 2)
+            if len(options) == 3 and len(options[0].split("-")) == 3 and len(options[1].split(":")) == 2:
+                rdate = options[0].split("-")
+                rtime = options[1].split(":")
+                try:
+                    dt = datetime(int(rdate[0]),int(rdate[1]),int(rdate[2]),int(rtime[0]),int(rtime[1]))
+                except ValueError:
+                     self.bot.sendmsg(channel, user+": Syntax: !remindmeat YYY-MM-DD hh:mm <reminder text>")
+                     return
+                text = str(options[2])
+                if self.scheduler.callAtDatetime(dt, self.remind, user, channel, text) != False:
+                    self.bot.sendmsg(channel, user+": I will remind you at "+options[0]+" "+options[1])
+                else:
+                    self.bot.sendmsg(channel, user+": ERROR: You specified a date in the past")
             else:
-                self.messages[when]=[[channel, user, text]]
-            self.bot.root.getServiceNamed('scheduler').callLater(wait*60, self.remind)
+                self.bot.sendmsg(channel, user+": Syntax: !remindmeat YYY-MM-DD hh:mm <reminder text>")

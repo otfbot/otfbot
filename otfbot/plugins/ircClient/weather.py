@@ -30,6 +30,7 @@ from twisted.internet import defer
 import yaml
 
 from otfbot.lib import chatMod, functions, urlutils
+from otfbot.lib.pluginSupport.decorators import callback
 
 
 class CityCodeParser(xml.sax.handler.ContentHandler):
@@ -202,6 +203,7 @@ class Plugin(chatMod.chatMod):
         self.commands = ["wetter"]
         self.lastweather = {}
 
+    @callback
     def command(self, user, channel, command, options):
         nick = user.split("!")[0]
         if channel in self.commands and 0 < (time.time() - self.time) < 5:

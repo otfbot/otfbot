@@ -27,6 +27,7 @@ import urllib, urllib2, socket
 
 from otfbot.lib import chatMod, functions
 from otfbot.lib.eliza import eliza
+from otfbot.lib.pluginSupport.decorators import callback
 
 import yaml
 
@@ -243,8 +244,11 @@ class Plugin(chatMod.chatMod):
             self.responder = elizaResponder(self.bot, datadir)
         atexit.register(self.responder.cleanup)
 
+    @callback
     def joined(self, channel):
         self.channels.append(channel)
+
+    @callback
     def query(self, user, channel, msg):
         if not self.bot.config.get("ignoreQuery", True, "ki", self.bot.network):
             ## ignoreQuery should be set to True if you're using auth.
@@ -263,6 +267,12 @@ class Plugin(chatMod.chatMod):
             if number < chance:
                 #self.bot.sendmsg(user, reply, "UTF-8")
                 self.bot.root.getServiceNamed('scheduler').callLater(delay, self.bot.sendmsg, user, reply, "UTF-8")
+
+    @callback
+    def action(self, user, channel, msg):
+        self.msg(user,channel,msg)
+    
+    @callback
     def msg(self, user, channel, msg):
         user = user.split("!")[0].lower()
         if not user in self.nicklist:
@@ -324,6 +334,7 @@ class Plugin(chatMod.chatMod):
                 #self.bot.sendmsg(channel, user+": "+reply, "UTF-8")
                 self.bot.root.getServiceNamed('scheduler').callLater(delay, self.bot.sendmsg, channel, user + ": " + reply, "UTF-8")
 
+    @callback
     def connectionLost(self, reason):
         self.responder.cleanup()
 

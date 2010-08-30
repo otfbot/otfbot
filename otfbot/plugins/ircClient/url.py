@@ -23,30 +23,33 @@ import urllib2, re, string
 from HTMLParser import HTMLParser, HTMLParseError
 
 from otfbot.lib import chatMod, urlutils
+from otfbot.lib.pluginSupport.decorators import callback
 
 class Plugin(chatMod.chatMod):
+
     def __init__(self, bot):
         self.bot = bot
         self.parser = titleExtractor()
         self.autoTiny=self.bot.config.get("autotiny", False, "url", self.bot.network)
         self.autoTinyLength=int(self.bot.config.get("autoLength", "50", "url", self.bot.network))
         self.autoPreview=self.bot.config.get("autopreview", False, "url", self.bot.network)
-        self.autoServerinfo=self.bot.config.get("autoserverinfo", False, "url", self.bot.network)
         self.lasturl=""
 
+    @callback
     def command(self, user, channel, command, options):
         response = ""
         self.parser= titleExtractor()
         headers=None
         if "preview" in command:
+            if options == "":
+                options=self.lasturl
             d=urlutils.download(options, headers={'Accept':'text/html'})
             d.addCallback(self.processPreview, channel)
             d.addErrback(self.error, channel)
         if "tinyurl" in command:
-            if options!="":
-                d=urlutils.download("http://tinyurl.com/api-create.php?url="+options)
-            else:
-                d=urlutils.download("http://tinyurl.com/api-create.php?url="+self.lasturl)
+            if options == "":
+                options = self.lasturl
+            d=urlutils.download("http://tinyurl.com/api-create.php?url="+options)
             d.addCallback(self.processTiny, channel)
             d.addErrback(self.error, channel)
 
@@ -82,8 +85,6 @@ class Plugin(chatMod.chatMod):
                         self.lasturl=url
                 if self.autoPreview:
                     cmd+="+preview"
-                if self.autoServerinfo:
-                    cmd+="+serverinfo"
                 self.command(user, channel, cmd, url)
 
             
