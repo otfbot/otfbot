@@ -760,7 +760,7 @@ class Bot(pluginSupport, irc.IRCClient):
             nick=user.split("!")[0]
             user=self.getUserByNick(nick)
             if not user or not user.getHostMask() in self.user_list:
-                logger.debug("user with nick %s quit, but was not in user_list"%nick)
+                self.logger.debug("user with nick %s quit, but was not in user_list"%nick)
                 return
             del(self.user_list[user.getHostMask()])
 
