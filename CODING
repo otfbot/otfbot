@@ -49,3 +49,13 @@ def __init__(self, bot):
 caveat: if you use depend_on_plugin in init, it only checks if the other plugin will be loaded.
 the other plugin is guaranted to be instanced when your plugin gets the .start() callback, but maybe the
 other plugin did not yet get the .start() callback.
+
+- translate a plugin
+    - mark translatable strings with _(...)
+    - run pygettext . to get a messages.pot
+    - translate
+    - put messages.pot in locale/XY/LC_MESSAGES/otfbot.po
+    - use msgfmt otfbot.po to generate the binary translation file otfbot.mo
+    - make sure your $LANG/$LC_* environment variables are set correctly
+    - run the bot
+    - enjoy the translated messages
