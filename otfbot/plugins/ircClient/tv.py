@@ -224,6 +224,7 @@ class Plugin(chatMod.chatMod):
 				except OSError: #FileNotFound
 					complete = false
 			if not complete:
+				self.tv = None
 				self.bot.root.getServiceNamed('scheduler').callLater(30,self.processUpdatedData)
 				self.bot.logger.info("tvdata is not loaded completely yet. TV-Plugin will be aviable as it's loading is done.")
 			else:
