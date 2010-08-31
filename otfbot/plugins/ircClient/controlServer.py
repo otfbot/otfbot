@@ -31,6 +31,7 @@ class Plugin(chatMod.chatMod):
 
     def __init__(self, bot):
         self.bot = bot
+        self.bot.depends_on_service("ircServer")
 
     def getServers(self):
         ret = []
