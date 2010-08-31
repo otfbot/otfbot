@@ -30,6 +30,7 @@ import logging
 import string
 import time
 from threading import Lock
+import gettext
 
 from otfbot.lib.pluginSupport import pluginSupport
 from otfbot.lib.user import IrcUser, MODE_CHARS, MODE_SIGNS
@@ -254,6 +255,7 @@ class Bot(pluginSupport, irc.IRCClient):
         # modes for channels
         self.channelmodes = {}
         self.serversupports = {}
+        self.translations = {}
 
         self.syncing_channels=[] #list of channels, which still wait for ENDOFWHO
         self.callback_queue=[] #list of callbacks waiting for ENDOFWHO, structure: [([channels], (function, args, kwargs))]
@@ -387,6 +389,21 @@ class Bot(pluginSupport, irc.IRCClient):
             #self.logger.debug("Unicode Encode Error with String:"+str(msg))
             #use msg as is
         return line
+    def get_gettext(self, channel=None):
+        lang=self.config.get("language", None, "main", self.network, channel)
+        if not lang in self.translations and lang:
+            if gettext.find("otfbot", "locale", languages=[lang]):
+                self.translations[lang]=gettext.translation("otfbot", "locale", \
+                    languages=[lang])
+            else: #no language file found for requested language
+                lang=None
+        if lang:
+            def _(input):
+                return self.translations[lang].gettext(input)
+        else:
+            def _(input):
+                return input
+        return _
 
     def sendmsg(self, channel, msg, encoding="UTF-8", fallback="iso-8859-15"):
         """

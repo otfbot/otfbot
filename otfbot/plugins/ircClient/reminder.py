@@ -50,21 +50,22 @@ class Plugin(chatMod.chatMod):
 
             add new reminders with !remindme (float) (string), i.e. !remindme 5.0 coffee is ready
         """
+        _=self.bot.get_gettext(channel)
         user = user.split("!")[0]
 
         if command == "remindmein":
             options = options.split(" ", 1)
             if not len(options) == 2:
-                self.bot.sendmsg(channel, user+": ERROR: You need to specify a number of minutes and a reminder text!")
+                self.bot.sendmsg(channel, user+_(": ERROR: You need to specify a number of minutes and a reminder text!"))
                 return
             try:
                 wait=float(options[0])
             except ValueError:
-                self.bot.sendmsg(channel, user+": ERROR: invalid number format \""+options[0]+"\".")
+                self.bot.sendmsg(channel, user+_(": ERROR: invalid number format \"%s\".") %options[0])
                 return
             text = str(options[1])
             
-            self.bot.sendmsg(channel, user+": I will remind you in "+str(wait)+" minutes")
+            self.bot.sendmsg(channel, user+_(": I will remind you in %i minutes") % wait)
             self.scheduler.callLater(wait*60, self.remind, user, channel, text)
 
         if command == "remindmeat":
@@ -75,12 +76,12 @@ class Plugin(chatMod.chatMod):
                 try:
                     dt = datetime(int(rdate[0]),int(rdate[1]),int(rdate[2]),int(rtime[0]),int(rtime[1]))
                 except ValueError:
-                     self.bot.sendmsg(channel, user+": Syntax: !remindmeat YYY-MM-DD hh:mm <reminder text>")
+                     self.bot.sendmsg(channel, user+_(": Syntax: !remindmeat YYYY-MM-DD hh:mm <reminder text>"))
                      return
                 text = str(options[2])
                 if self.scheduler.callAtDatetime(dt, self.remind, user, channel, text) != False:
-                    self.bot.sendmsg(channel, user+": I will remind you at "+options[0]+" "+options[1])
+                    self.bot.sendmsg(channel, user+_(": I will remind you at %s %s") % (options[0],options[1]))
                 else:
-                    self.bot.sendmsg(channel, user+": ERROR: You specified a date in the past")
+                    self.bot.sendmsg(channel, user+_(": ERROR: You specified a date in the past"))
             else:
-                self.bot.sendmsg(channel, user+": Syntax: !remindmeat YYY-MM-DD hh:mm <reminder text>")
+                self.bot.sendmsg(channel, user+_(": Syntax: !remindmeat YYYY-MM-DD hh:mm <reminder text>"))

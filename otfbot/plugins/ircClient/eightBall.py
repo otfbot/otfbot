@@ -32,27 +32,28 @@ class Plugin(chatMod.chatMod):
 
     def __init__(self, bot):
         self.bot = bot
+        _=self.bot.get_gettext()
         self.answers = [
-        "Signs point to yes (Zeichen deuten auf ja)",
-        "Yes (Ja)",
-        "Without a doubt (Ohne einen Zweifel)",
-        "As I see it yes (Wie ich es sehe ja)",
-        "Most likely (Hoechstwahrscheinlich)",
-        "You may rely on it (Darauf kannst du dich verlassen)",
-        "Yes definitely (Definitiv ja)",
-        "It is decidedly so (Es ist entschieden so)",
-        "Outlook good (Gute Aussichten)",
-        "It is certain (Es ist sicher)",
-        "My sources say no (Meine Quellen sagen nein)",
-        "Very doubtful (Sehr zweifelhaft)",
-        "Don't count on it (Zaehl nicht drauf)",
-        "Outlook not so good (Nicht so gute Aussichten)",
-        "My reply is no (Meine Antwort ist nein)",
-        "Reply hazy, try again (Antwort unklar, versuchs nochmal)",
-        "Concentrate and ask again (Konzentriere dich und frag nochmal)",
-        "Better not tell you now (Ich sags dir jetzt lieber nicht)",
-        "Cannot predict now (Kann es jetzt nicht vorhersagen)",
-        "Ask again later (Frag spaeter nochmal)"]
+        _("Signs point to yes"),
+        _("Yes"),
+        _("Without a doubt"),
+        _("As I see it, yes"),
+        _("Most likely"),
+        _("You may rely on it"),
+        _("Yes definitely"),
+        _("It is decidedly so"),
+        _("Outlook good"),
+        _("It is certain"),
+        _("My sources say no"),
+        _("Very doubtful"),
+        _("Don't count on it"),
+        _("Outlook not so good"),
+        _("My reply is no"),
+        _("Reply hazy, try again"),
+        _("Concentrate and ask again"),
+        _("Better not tell you now"),
+        _("Cannot predict now"),
+        _("Ask again later")]
 
     @callback
     def msg(self, user, channel, msg):
