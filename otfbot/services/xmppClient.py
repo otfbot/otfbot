@@ -42,6 +42,10 @@ class botService(service.MultiService):
         try:
             myjid=self.config.get("jid", "", "main.xmppClient")
             password=self.config.get("password", "", "main.xmppClient")
+            if not (myjid and password):
+                self.logger.warn("please set main.xmppClient.jid"+\
+                    "and main.xmppClient.password")
+                return
             self.client = XMPPClient(jid.internJID(myjid+"/otfbot"), password)
             self.client.logTraffic = False
             self.protocol=Bot(root, self)
