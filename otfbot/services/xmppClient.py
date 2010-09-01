@@ -97,19 +97,44 @@ class Bot(MessageProtocol, pluginSupport):
         self._apirunner("onMessage", {'msg': msg})
         body=unicode(msg.body)
         if msg.body and not body[:5] == "?OTR:":
+            user=msg['from']
+            channel=msg['to']
+            #like in IRCClient XXX: common library function?
+            if body[0] == self.config.get("commandChar", "!", "main").encode("UTF-8"):
+                tmp = body[1:].split(" ", 1)
+                command = tmp[0]
+                if len(tmp) == 2:
+                    options = tmp[1]
+                else:
+                    options = ""
+                #user = user, channel = user, because most commands are
+                #answered in the channel, not to the user
+                try:
+                    self._apirunner("command", {"user": user, "channel": user,
+                        "command": command, "options": options})
+                except Exception, e:
+                    self.logger.error(e)
             self._apirunner("query", {'user': msg['from'],
                 'channel': msg['to'], 'msg': body})
 
     #ircClient compatiblity
-    def sendmsg(self, channel, msg, encoding=None, fallback=None):
-        #self.logger.debug("To: %s"%channel)
-        #self.logger.debug("From: %s"%(self.myjid+"/otfbot"))
-        #self.logger.debug(msg)
-        message=domish.Element((None, "message"))
-        message['to'] = channel
-        message['from'] = self.myjid+"/otfbot"
-        message['type'] = 'chat'
-        message.addElement('body', content=msg)
-        self.send(message)
+    def sendmsg(self, channel, msg, encoding="UTF-8", fallback="ISO-8859-1"):
+        try:
+            try:
+                msg=unicode(msg, encoding)
+            except UnicodeDecodeError, e:
+                self.logger.debug(e)
+                msg=unicode(msg, fallback)
+            self.logger.debug("To: %s"%channel)
+            self.logger.debug("From: %s"%(self.myjid+"/otfbot"))
+            self.logger.debug(msg)
+            message=domish.Element((None, "message"))
+            message['to'] = channel
+            message['from'] = self.myjid+"/otfbot"
+            message['type'] = 'chat'
+            message.addElement('body', content=msg)
+            self.send(message)
+        except Exception, e:
+            self.logger.error(e)
 
 
