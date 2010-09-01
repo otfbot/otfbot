@@ -17,10 +17,10 @@
 # (c) 2005 - 2010 by Alexander Schier
 #
 
-from otfbot.lib import chatMod
+from otfbot.lib.pluginSupport import plugin
 import logging
 
-class Plugin(chatMod.chatMod):
+class Plugin(plugin.Plugin):
     def __init__(self, wps):
         self.wps=wps
         wps.registerCallback(self, 'GET')
