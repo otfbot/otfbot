@@ -95,7 +95,7 @@ class Bot(MessageProtocol, pluginSupport):
 
     def onMessage(self, msg):
         self._apirunner("onMessage", {'msg': msg})
-        body=str(msg.body)
+        body=unicode(msg.body)
         if msg.body and not body[:5] == "?OTR:":
             self._apirunner("query", {'user': msg['from'],
                 'channel': msg['to'], 'msg': body})
