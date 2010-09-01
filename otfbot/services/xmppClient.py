@@ -17,6 +17,10 @@
 # (c) 2010 by Alexander Schier
 #
 
+"""
+    connect to a jabber account
+"""
+
 from twisted.application import service
 from wokkel.xmppim import MessageProtocol, AvailablePresence
 from twisted.words.protocols.jabber import jid
@@ -32,6 +36,9 @@ from otfbot.lib.pluginSupport import pluginSupport
 
 
 class botService(service.MultiService):
+    """
+        xmpp botService
+    """
     name = "xmppClient"
 
     def __init__(self, root, parent):
@@ -63,9 +70,19 @@ class botService(service.MultiService):
             self.logger.error(e)
 
 class Bot(MessageProtocol, pluginSupport):
+    """
+        xmppClient Bot protocol
+    """
+
     pluginSupportName="xmppClient"
     pluginSupportPath="otfbot/plugins/xmppClient"
     def __init__(self, root, parent):
+        """
+            initialize protocol
+
+            @param root: reference to the application object
+            @param parent: reference to the parent object
+        """
         self.root=root
         self.parent=parent
         self.logger=parent.logger
@@ -84,16 +101,30 @@ class Bot(MessageProtocol, pluginSupport):
             plugin.start()
 
     def connectionMade(self):
+        """
+            XMPP connection successfully established
+        """
         self.logger.debug("Connected!")
         # send initial presence
         self.send(AvailablePresence())
         self._apirunner("connectionMade", {})
 
     def connectionLost(self, reason):
+        """
+            connection lost
+
+            @param reason: string why the connection was lost
+            @type reason: str
+        """
         self.logger.debug("Disconnected")
         self._apirunner("connectionLost", {'reason': reason})
 
     def onMessage(self, msg):
+        """
+            XMPP message received
+
+            @param msg: the message
+        """
         self._apirunner("onMessage", {'msg': msg})
         body=unicode(msg.body)
         if msg.body and not body[:5] == "?OTR:":
@@ -119,15 +150,18 @@ class Bot(MessageProtocol, pluginSupport):
 
     #ircClient compatiblity
     def sendmsg(self, channel, msg, encoding="UTF-8", fallback="ISO-8859-1"):
+        """
+            sendmsg method simulating the ircClient.Bot.sendmsg method.
+            so some ircClient plugins will work with xmppClient
+        """
         try:
             try:
                 msg=unicode(msg, encoding)
             except UnicodeDecodeError, e:
-                self.logger.debug(e)
                 msg=unicode(msg, fallback)
-            self.logger.debug("To: %s"%channel)
-            self.logger.debug("From: %s"%(self.myjid+"/otfbot"))
-            self.logger.debug(msg)
+            #self.logger.debug("To: %s"%channel)
+            #self.logger.debug("From: %s"%(self.myjid+"/otfbot"))
+            #self.logger.debug(msg)
             message=domish.Element((None, "message"))
             message['to'] = channel
             message['from'] = self.myjid+"/otfbot"
