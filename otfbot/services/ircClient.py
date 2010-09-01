@@ -776,7 +776,7 @@ class Bot(pluginSupport, irc.IRCClient):
         """
         self._apirunner("userRenamed", {"oldname": oldname, "newname": newname})
         user=self.getUserByNick(oldname)
-        if user.getHostMask() in self.user_list:
+        if user and user.getHostMask() in self.user_list:
             del (self.user_list[user.getHostMask()])
         else:
             self.logger.warning("%s not found in user_list!"%user.getHostMask())
