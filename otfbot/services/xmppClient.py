@@ -28,6 +28,7 @@ from wokkel.client import XMPPClient
 from twisted.words.xish import domish
 
 import logging
+import gettext
 
 from otfbot.lib.pluginSupport import pluginSupport
 
@@ -95,6 +96,7 @@ class Bot(MessageProtocol, pluginSupport):
         #ircClient compatiblity
         self.nickname=self.myjid
         self.network="xmpp"
+        self.translations={}
         for pluginName in ircPlugins:
             plugin=self.startPlugin(pluginName,\
                 package="otfbot.plugins.ircClient")
@@ -138,6 +140,7 @@ class Bot(MessageProtocol, pluginSupport):
                     options = tmp[1]
                 else:
                     options = ""
+
                 #user = user, channel = user, because most commands are
                 #answered in the channel, not to the user
                 try:
@@ -171,4 +174,25 @@ class Bot(MessageProtocol, pluginSupport):
         except Exception, e:
             self.logger.error(e)
 
+    def get_gettext(self, channel=None):
+        """
+            return a gettext function for the configured language
+
+            @param channel: ignored, its just for compatibilty
+                            with ircClient plugins
+        """
+        lang=self.config.get("language", None, "main", self.network)
+        if not lang in self.translations and lang:
+            if gettext.find("otfbot", "locale", languages=[lang]):
+                self.translations[lang]=gettext.translation("otfbot", "locale", \
+                    languages=[lang])
+            else: #no language file found for requested language
+                lang=None
+        if lang:
+            def _(input):
+                return self.translations[lang].gettext(input)
+        else:
+            def _(input):
+                return input
+        return _
 
