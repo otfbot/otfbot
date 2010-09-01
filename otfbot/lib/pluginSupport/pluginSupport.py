@@ -129,7 +129,7 @@ class pluginSupport:
         if not dependency in plugins or service+"."+dependency in pluginsDisabled:
             raise self.PluginMissing(dependency, description)
 
-    def importPlugin(self, name):
+    def importPlugin(self, name, package=None):
         """
             import a plugin
 
@@ -141,7 +141,11 @@ class pluginSupport:
         for c in self.classes:
             if c.__name__ == name:
                 return c
-        pkg = self.pluginSupportPath.replace("/", ".") + "." + name #otfbot.plugins.service.plugin
+        if not package:
+            #otfbot.plugins.service
+            package=self.pluginSupportPath.replace("/", ".")
+        #otfbot.plugins.service.plugin
+        pkg = package + "." + name
         try:
             cls = __import__(pkg, fromlist=['*'], globals={'service': self})
             cls.datadir = self.config.get("datadir", "data")
