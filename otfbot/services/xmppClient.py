@@ -21,6 +21,7 @@ from twisted.application import service
 from wokkel.xmppim import MessageProtocol, AvailablePresence
 from twisted.words.protocols.jabber import jid
 from wokkel.client import XMPPClient
+from twisted.words.xish import domish
 
 import logging
 
@@ -38,15 +39,16 @@ class botService(service.MultiService):
         self.parent = parent
         self.logger = logging.getLogger("xmppClient")
         self.config = self.root.getServiceNamed('config')
+        self.config.set("enabled", False, "main", network="xmpp")
         service.MultiService.__init__(self)
         try:
-            myjid=self.config.get("jid", "", "main.xmppClient")
+            self.myjid=self.config.get("jid", "", "main.xmppClient")
             password=self.config.get("password", "", "main.xmppClient")
-            if not (myjid and password):
+            if not (self.myjid and password):
                 self.logger.warn("please set main.xmppClient.jid "+\
                     "and main.xmppClient.password")
                 return
-            self.client = XMPPClient(jid.internJID(myjid+"/otfbot"), password)
+            self.client = XMPPClient(jid.internJID(self.myjid+"/otfbot"), password)
             self.client.logTraffic = False
             self.protocol=Bot(root, self)
             self.protocol.setHandlerParent(self.client)
@@ -67,9 +69,19 @@ class Bot(MessageProtocol, pluginSupport):
         self.root=root
         self.parent=parent
         self.logger=parent.logger
+        self.myjid=parent.myjid
         pluginSupport.__init__(self, root, parent)
         MessageProtocol.__init__(self)
         self.startPlugins()
+        ircPlugins=self.config.get("xmppClientIRCPlugins", [], "main")
+
+        #ircClient compatiblity
+        self.nickname=self.myjid
+        self.network="xmpp"
+        for pluginName in ircPlugins:
+            plugin=self.startPlugin(pluginName,\
+                package="otfbot.plugins.ircClient")
+            plugin.start()
 
     def connectionMade(self):
         self.logger.debug("Connected!")
@@ -83,4 +95,21 @@ class Bot(MessageProtocol, pluginSupport):
 
     def onMessage(self, msg):
         self._apirunner("onMessage", {'msg': msg})
+        body=str(msg.body)
+        if msg.body and not body[:5] == "?OTR:":
+            self._apirunner("query", {'user': msg['from'],
+                'channel': msg['to'], 'msg': body})
+
+    #ircClient compatiblity
+    def sendmsg(self, channel, msg, encoding=None, fallback=None):
+        #self.logger.debug("To: %s"%channel)
+        #self.logger.debug("From: %s"%(self.myjid+"/otfbot"))
+        #self.logger.debug(msg)
+        message=domish.Element((None, "message"))
+        message['to'] = channel
+        message['from'] = self.myjid+"/otfbot"
+        message['type'] = 'chat'
+        message.addElement('body', content=msg)
+        self.send(message)
+
 
