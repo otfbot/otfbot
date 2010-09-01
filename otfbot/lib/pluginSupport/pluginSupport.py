@@ -205,7 +205,7 @@ class pluginSupport:
         for callback in toremove:
             self.callbacks[callbackname].remove(callback)
 
-    def startPlugins(self):
+    def startPlugins(self, package=None):
         """
             initializes all known plugins
         """
@@ -215,7 +215,7 @@ class pluginSupport:
                     [], "main", set_default=False)
         for plginName in plugins:
             if not plginName in self.config.get("pluginsDisabled", [], "main"):
-                self.startPlugin(plginName)
+                self.startPlugin(plginName, package=package)
 
         #then we call .start(), guaranteeing that all other enabled plugins are loaded
         #so start may depend on other plugins, make your dependency explicit with 
@@ -225,7 +225,7 @@ class pluginSupport:
             if hasattr(mod, "start"):
                 mod.start()
 
-    def startPlugin(self, pluginName):
+    def startPlugin(self, pluginName, package=None):
         """
         start the plugin named pluginName
 
@@ -235,7 +235,7 @@ class pluginSupport:
         @param pluginName: the name of the plugin
         @type pluginName: string
         """
-        pluginClass = self.importPlugin(pluginName)
+        pluginClass = self.importPlugin(pluginName, package=package)
         if not pluginClass:
             return None#import error, should already be logged in importPlugin
         if hasattr(pluginClass, "Plugin"):
