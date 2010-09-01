@@ -338,17 +338,6 @@ class Bot(pluginSupport, irc.IRCClient):
         self.register_ctl_command(self.sendmsg, name="say")
         self.register_ctl_command(self.ping)
 
-    #def startPlugins(self):
-    #    pluginSetting = self.pluginSupportName + "Plugins"
-    #    plugins = self.config.get(pluginSetting, [], "main", set_default=False)
-    #    disabled = self.config.get("pluginsDisabled", [], "main", self.network)
-    #    for pluginName in plugins:
-    #        if not pluginName in disabled:
-    #            self.startPlugin(pluginName)
-
-    def startPlugin(self, pluginName):
-        plugin = pluginSupport.startPlugin(self, pluginName)
-
     def getFactory(self):
         """ get the factory
             @rtype: BotFactory
