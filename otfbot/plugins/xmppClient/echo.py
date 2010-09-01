@@ -15,8 +15,10 @@ class Plugin(plugin.Plugin):
         if msg["type"] == 'chat' and hasattr(msg, "body") \
             and not str(msg.body)[0:4]=="?OTR":
 
-            self.logger.debug(str(msg.body))
             reply = domish.Element((None, "message"))
+            self.logger.debug("To: %s"%msg['from'])
+            self.logger.debug("From: %s"%msg['to'])
+            self.logger.debug("Message: %s"%str(msg.body))
             reply["to"] = msg["from"]
             reply["from"] = msg["to"]
             reply["type"] = 'chat'
