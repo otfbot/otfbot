@@ -35,8 +35,8 @@ DISCORDIAN_SEASONS = ["Chaos", "Discord", "Confusion", "Bureaucracy",
 DISCORDIAN_WEEKDAYS=["Sweetmorn", "Boomtime", "Pungenday", "Prickle-Prickle",
     "Setting Orange"]
  
-def ddate(year, month, day):
-    today = datetime.date(year, month, day, _)
+def ddate(year, month, day, _):
+    today = datetime.date(year, month, day)
     is_leap_year = calendar.isleap(year)
     if is_leap_year and month == 2 and day == 29:
         return "St. Tib's Day, YOLD " + (year + 1166)
