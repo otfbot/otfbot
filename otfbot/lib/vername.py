@@ -27,12 +27,12 @@ hex="0123456789abcdef" #hex alphabeth
 consonants=list((set(consonants) - set(vowels)) - set("cqvxy")) #16 consonants
 consonants.sort() #make it deterministic
 vowels.sort()
-#cross product b x b [('a', 'a'), ('a', 'e'), ...] len(b2)==25
+#cross product vowels x vowels [('a', 'a'), ('a', 'e'), ...] len(b2)==25
 vowels2=[(x,y) for x in vowels for y in vowels]
 vowels2.sort()
 
 assert len(consonants)==16, "consonants has len %d instead of 16"%len(consonants) 
-assert len(vowels)==5, "vowels has len %d instead of 16"%len(vowels) 
+assert len(vowels)==5, "vowels has len %d instead of 5"%len(vowels) 
 assert len(vowels2)==25, "vowels2 has len %d instead of 25"%len(vowels2)
 
 def ver2name(ver):
