@@ -195,4 +195,9 @@ class Bot(MessageProtocol, pluginSupport):
             def _(input):
                 return input
         return _
+    def register_ctl_command(self, *args, **kwargs):
+        """
+            dummy for compatiblity with ircClient plugins
+        """
+        pass
 
