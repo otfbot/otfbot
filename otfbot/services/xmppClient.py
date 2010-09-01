@@ -128,7 +128,7 @@ class Bot(MessageProtocol, pluginSupport):
             @param msg: the message
         """
         self._apirunner("onMessage", {'msg': msg})
-        body=unicode(msg.body)
+        body=unicode(msg.body).encode("UTF-8")
         if msg.body and not body[:5] == "?OTR:":
             user=msg['from']
             channel=msg['to']
