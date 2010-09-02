@@ -180,7 +180,7 @@ class configService(service.Service):
 
         for network in self.network_options.keys():
             for channel in self.network_options[network].keys():
-                if type(self.network_options[network][channel]) == type({}):
+                if type(self.network_options[network][channel]) == dict:
                     if option in self.network_options[network][channel].keys():
                         channels.append((network, channel))
         return (general, networks, channels)
@@ -241,13 +241,12 @@ class configService(service.Service):
         return ret
 
     def getChannels(self, network):
-        #TODO: Return only channels, which are active
         if network in self.network_options.keys():
             try:
                 options = self.network_options[network].keys()
                 ret = []
                 for option in options:
-                    if type(self.network_options[network][option]) == type({}):
+                    if type(self.network_options[network][option]) == dict:
                         ret.append(option)
                 return ret
             except AttributeError:
