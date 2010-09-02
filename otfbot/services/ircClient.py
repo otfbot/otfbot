@@ -31,6 +31,7 @@ import string
 import time
 from threading import Lock
 import gettext
+import traceback
 
 from otfbot.lib.pluginSupport import pluginSupport
 from otfbot.lib.user import IrcUser, MODE_CHARS, MODE_SIGNS
@@ -367,22 +368,25 @@ class Bot(pluginSupport, irc.IRCClient):
             @ivar fallback: a safe fallback (i.e. iso-8859-15)
         """
         enc = self.config.get("encoding", "UTF-8", "main")
-        try:
-            line = unicode(line, encoding).encode(enc)
-        except UnicodeDecodeError:
-            #self.logger.debug("Unicode Decode Error with String:"+str(msg))
-            #Try with Fallback encoding
-            line = unicode(line, fallback).encode(enc)
-        except UnicodeEncodeError:
-            pass
-            #self.logger.debug("Unicode Encode Error with String:"+str(msg))
-            #use msg as is
+        if not type(line) == unicode:
+            if self.config.getBool("debugUnicode", False):
+                self.logger.debug("output line is not an unicode object")
+                for l in traceback.format_stack(limit=6):
+                    for l2 in l.split("\n"):
+                        if l2.strip():
+                            self.logger.debug(l2)
+            try:
+                line = unicode(line, encoding)
+            except UnicodeDecodeError:
+                line = unicode(line, fallback, errors="replace")
+        line=line.encode(enc)
         return line
+
     def get_gettext(self, channel=None):
         lang=self.config.get("language", None, "main", self.network, channel)
         if not lang in self.translations and lang:
             if gettext.find("otfbot", "locale", languages=[lang]):
-                self.translations[lang]=gettext.translation("otfbot", "locale", \
+                self.translations[lang]=gettext.translation("otfbot", "locale",\
                     languages=[lang])
             else: #no language file found for requested language
                 lang=None
