@@ -481,7 +481,7 @@ class Bot(pluginSupport, irc.IRCClient):
                                    self.network, channel)):
                 pw = self.config.get("password", "", "main", \
                                      self.network, channel)
-                if (pw != ""):
+                if pw:
                     self.join(unicode(channel).encode("iso-8859-1"),
                                             unicode(pw).encode("iso-8859-1"))
                 else:
