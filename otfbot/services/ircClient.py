@@ -533,21 +533,17 @@ class Bot(pluginSupport, irc.IRCClient):
             self.rev_modcharvals = \
                     dict([(v, k) for (k, v) in self.modcharvals.iteritems()])
 
-    def command(self, user, channel, command, options):
-        """callback for !commands
-        @param user: the user, which issues the command
-        @type user: string
-        @param channel: the channel to which the message was sent or my
-                        nickname if it was a private message
-        @type channel: string
-        @param command: the !command without the !
-        @type command: string
-        @param options: eventual options specified
-                        after !command (e.g. "!command foo")
-        @type options: string"""
-        channel = channel.lower()
-        self._apirunner("command", {"user": user, "channel": channel,
-                                    "command": command, "options": options})
+    def toUnicode(self, str, network=None, channel=None):
+        """
+            convert a string to an unicode-object, trying to use the
+            encoding given in config, with fallback to iso-8859-15
+        """
+        try:
+            str=unicode(str, self.config.get("encoding", "UTF-8", "main",
+                network=network, channel=channel))
+        except UnicodeDecodeError:
+            str=unicode(str, "iso-8859-15", errors='replace')
+        return str
 
     @syncedChannel(argnum=1)
     def privmsg(self, user, channel, msg):
@@ -562,11 +558,10 @@ class Bot(pluginSupport, irc.IRCClient):
             @type msg: string
         """
         channel = channel.lower()
-        try:
-            char = msg[0].decode('UTF-8').encode('UTF-8')
-        except UnicodeDecodeError:
-            char = msg[0].decode('iso-8859-15').encode('UTF-8')
-        if char == self.config.get("commandChar", "!", "main").encode("UTF-8"):
+        msg=self.toUnicode(msg, self.network, channel)
+
+        char = msg[0]
+        if char == self.config.get("commandChar", "!", "main"):
             tmp = msg[1:].split(" ", 1)
             command = tmp[0]
             if len(tmp) == 2:
@@ -609,11 +604,12 @@ class Bot(pluginSupport, irc.IRCClient):
             @type msg: string
         """
         channel = channel.lower()
+        msg=self.toUnicode(msg, self.network, channel)
         self._apirunner("noticed", {"user": user,
                                     "channel": channel, "msg": msg})
 
     @syncedChannel(argnum=1)
-    def action(self, user, channel, message):
+    def action(self, user, channel, msg):
         """ called by twisted,
             if we received a action
             @param user: the user which send the action
@@ -625,8 +621,9 @@ class Bot(pluginSupport, irc.IRCClient):
             @type msg: string
         """
         channel = channel.lower()
+        msg=self.toUnicode(msg, self.network, channel)
         self._apirunner("action", {"user": user, "channel": channel,
-                                   "msg": message})
+                                   "msg": msg})
 
     @syncedChannel(argnum=1)
     def modeChanged(self, user, chan, set, modes, args):
