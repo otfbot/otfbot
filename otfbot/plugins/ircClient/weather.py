@@ -180,7 +180,7 @@ weathercodes = {
     39: "verstreute Gewitter", 40: "vereinzelte Schauer",
     41: "starker Schneefall", 42: "vereinzelt Schnee und Regen",
     43: "starker Schneefall", 44: "teils Bew\xf6lkt", 45: "Gewitter",
-    46: "Schneeschauer", 47: "vereinzelte Gewitte", 3200: "Unbekannt"}
+    46: "Schneeschauer", 47: "vereinzelte Gewitter", 3200: "Unbekannt"}
 
 
 def getDirection(deg):
@@ -207,7 +207,7 @@ class Plugin(chatMod.chatMod):
     def command(self, user, channel, command, options):
         nick = user.split("!")[0]
         if channel in self.commands and 0 < (time.time() - self.time) < 5:
-            self.bot.sendmsg(channel, "Wait a minute ...")
+            self.bot.sendmsg(channel, u"Wait a minute ...")
             return
         self.time = time.time()
         if command == "wetter":
@@ -219,7 +219,7 @@ class Plugin(chatMod.chatMod):
 
     def send_answer(self, c, channel):
         if len(c) < 1 or 'location' not in c:
-            self.bot.sendmsg(channel, "Keinen passenden Ort gefunden")
+            self.bot.sendmsg(channel, u"Keinen passenden Ort gefunden")
         else:
             answ = "Wetter f\xfcr " + str(c['location']['city'])
             if len(c['location']['country']) > 0:
@@ -232,4 +232,4 @@ class Plugin(chatMod.chatMod):
             answ += str(c['wind']['speed']) + str(c['units']['speed'])
             answ += " aus " + str(getDirection(int(c['wind']['direction'])))
             answ += ", Luftfeuchte: " + str(c['atmosphere']['humidity']) + "%"
-            self.bot.sendmsg(channel, answ, "UTF-8")
+            self.bot.sendmsg(channel, unicode(answ, "iso-8859-15"))
