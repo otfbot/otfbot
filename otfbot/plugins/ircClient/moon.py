@@ -49,16 +49,16 @@ class Plugin(chatMod.chatMod):
                         day = int(options[2])
                         ts = time.mktime((year, month, day, 0, 0, 0, 0, 0, 0))
                     except ValueError:
-                        self.bot.sendmsg(channel, _("Time format: XXXX-XX-XX"))
+                        self.bot.sendmsg(channel, _(u"Time format: XXXX-XX-XX"))
                         return
                 else:
-                    self.bot.sendmsg(channel,  _("Time format: XXXX-XX-XX"))
+                    self.bot.sendmsg(channel,  _(u"Time format: XXXX-XX-XX"))
                     return
         phase = (ts - known_fullmoon_date) / (60 * 60 * 24) / monthlength
         phase = phase - int(phase)
 
         if command == "fullmoon" or command == "vollmond":
-            self.bot.sendmsg(channel, _("Next fullmoon in %d days") % (
+            self.bot.sendmsg(channel, _(u"Next fullmoon in %d days") % (
                                             round((1 - phase) * monthlength)))
         elif command == "moon" or command == "mond":
             symbol = ""
@@ -88,4 +88,4 @@ class Plugin(chatMod.chatMod):
             else:
                 symbol = "[   D ]" #grosser Teil
                 name = _("waxing moon")
-            self.bot.sendmsg(channel, "%s %s" % (symbol, name))
+            self.bot.sendmsg(channel, u"%s %s" % (symbol, name))

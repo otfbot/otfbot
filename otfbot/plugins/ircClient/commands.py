@@ -63,10 +63,10 @@ class Plugin(chatMod.chatMod):
             if answer != "":
                 if answer[0] == ":":
                     enc = self.bot.config.get("fileencoding", "iso-8859-15", "commands", self.bot.network, channel)
-                    self.bot.sendmsg(channel, answer[1:], enc)
+                    self.bot.sendmsg(channel, unicode(answer[1:], enc))
                 else:
                     enc = self.bot.config.get("fileencoding", "iso-8859-15", "commands", self.bot.network, channel)
-                    self.bot.sendme(channel, answer, enc)
+                    self.bot.sendme(channel, unicode(answer, enc))
 
     def start(self):
         self.register_ctl_command(self.reload)
