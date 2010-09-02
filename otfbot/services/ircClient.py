@@ -392,7 +392,7 @@ class Bot(pluginSupport, irc.IRCClient):
                 lang=None
         if lang:
             def _(input):
-                return self.translations[lang].gettext(input)
+                return self.translations[lang].ugettext(input)
         else:
             def _(input):
                 return input
