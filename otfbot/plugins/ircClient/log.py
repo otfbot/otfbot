@@ -88,7 +88,7 @@ class Plugin(chatMod.chatMod):
             if timestamp:
                 logmsg = self.ts() + " " + logmsg
             #TODO: blocking
-            self.files[channel].write(logmsg)
+            self.files[channel].write(logmsg.encode("UTF-8"))
             self.files[channel].flush()
 
     def logPrivate(self, user, mystring):
@@ -99,7 +99,7 @@ class Plugin(chatMod.chatMod):
         if not os.path.exists(os.path.dirname(filename)):
             os.makedirs(os.path.dirname(filename))
         file = open(filename, "a")
-        file.write(self.ts() + " " + mystring + "\n")
+        file.write(self.ts() + " " + mystring.encode("UTF-8") + "\n")
         file.close()
 
     @callback
