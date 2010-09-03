@@ -688,6 +688,7 @@ class Bot(pluginSupport, irc.IRCClient):
         """ called by twisted,
             if the bot was kicked
         """
+        message=self.toUnicode(message, self.network)
         channel = channel.lower()
         self.logger.info("I was kicked from " + channel + " by " + kicker)
         self._apirunner("kickedFrom", {"channel": channel, "kicker": kicker,
@@ -705,6 +706,7 @@ class Bot(pluginSupport, irc.IRCClient):
         """ called by twisted,
             if a user was kicked
         """
+        message=self.toUnicode(message, self.network)
         channel = channel.lower()
         self._apirunner("userKicked", {"kickee": kickee, "channel": channel,
                                        "kicker": kicker, "message": message})
@@ -743,6 +745,7 @@ class Bot(pluginSupport, irc.IRCClient):
         """ called by twisted,
             if a C{user} quits
         """
+        quitMessage=self.toUnicode(quitMessage, self.network)
         self._apirunner("userQuit", {"user": user, "quitMessage": quitMessage})
         if user in self.user_list:
             del(self.user_list[user])
