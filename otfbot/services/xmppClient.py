@@ -167,6 +167,8 @@ class Bot(pluginSupport):
         if msg.body and not body[:5] == "?OTR:":
             user=msg['from']
             channel=msg['to']
+            self._apirunner("query", {'user': user,
+                'channel': channel, 'msg': body})
             #like in IRCClient XXX: common library function?
             if body[0] == self.config.get("commandChar", "!", "main").encode("UTF-8"):
                 tmp = body[1:].split(" ", 1)
@@ -183,8 +185,6 @@ class Bot(pluginSupport):
                         "command": command, "options": options})
                 except Exception, e:
                     self.logerror(self.logger, "xmppClient", e)
-            self._apirunner("query", {'user': user,
-                'channel': channel, 'msg': body})
 
     #ircClient compatiblity
     def sendmsg(self, channel, msg, encoding="UTF-8", fallback="ISO-8859-1"):
@@ -207,6 +207,10 @@ class Bot(pluginSupport):
             message['type'] = 'chat'
             message.addElement('body', content=msg)
             self.mP.send(message)
+            self._apirunner("privmsg", {'user': self.nickname, \
+                'channel': channel, 'msg': msg})
+            self._apirunner("query", {'user': self.nickname, \
+                'channel': channel, 'msg': msg})
         except Exception, e:
             self.logerror(self.logger, "xmppClient", e)
             tb_list = traceback.format_stack(limit=6)
