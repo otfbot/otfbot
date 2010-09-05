@@ -60,7 +60,9 @@ class botService(service.MultiService):
             self.client = XMPPClient(jid.internJID(self.myjid+"/otfbot"), password)
             self.client.logTraffic = False
             self.protocol=Bot(root, self)
-            self.protocol.setHandlerParent(self.client)
+            self.messageProtocol=myMessageProtocol(self.protocol)
+            self.messageProtocol.setHandlerParent(self.client)
+            self.protocol.mP=self.messageProtocol
             self.client.setServiceParent(self)
         except Exception, e:
             self.logger.error(e)
@@ -77,7 +79,18 @@ class botService(service.MultiService):
         else:
             self.logger.debug("I have no protocol and i want to cry")
 
-class Bot(MessageProtocol, pluginSupport):
+class myMessageProtocol(MessageProtocol):
+    def __init__(self, bot):
+        self.bot=bot
+        MessageProtocol.__init__(self)
+    def onMessage(self, *args, **kwargs):
+        self.bot.onMessage(*args, **kwargs)
+    def connectionMade(self):
+        self.bot.connectionMade()
+    def connectionLost(self, reason):
+        self.bot.connectionLost(reason)
+
+class Bot(pluginSupport):
     """
         xmppClient Bot protocol
     """
@@ -96,7 +109,6 @@ class Bot(MessageProtocol, pluginSupport):
         self.logger=parent.logger
         self.myjid=parent.myjid
         pluginSupport.__init__(self, root, parent)
-        MessageProtocol.__init__(self)
 
         #ircClient compatiblity
         self.nickname=self.myjid
@@ -120,7 +132,7 @@ class Bot(MessageProtocol, pluginSupport):
         """
         self.logger.debug("Connected!")
         # send initial presence
-        self.send(AvailablePresence())
+        self.mP.send(AvailablePresence())
         self._apirunner("connectionMade", {})
 
     def connectionLost(self, reason):
@@ -186,7 +198,7 @@ class Bot(MessageProtocol, pluginSupport):
             message['from'] = self.myjid+"/otfbot"
             message['type'] = 'chat'
             message.addElement('body', content=msg)
-            self.send(message)
+            self.mP.send(message)
         except Exception, e:
             self.logerror(self.logger, "xmppClient", e)
 
