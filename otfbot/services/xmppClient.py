@@ -66,7 +66,10 @@ class botService(service.MultiService):
             self.rosterClientProtocol=myRosterClientProtocol(self.protocol)
             self.rosterClientProtocol.setHandlerParent(self.client)
 
-            self.protocol.mP=self.messageProtocol
+            self.protocol.messageProtocol=self.messageProtocol
+            self.protocol.rosterClientProtocol=self.rosterClientProtocol
+            self.protocol.presenceClientProtocol=self.presenceClientProtocol
+
             self.client.setServiceParent(self)
         except Exception, e:
             self.logger.error(e)
@@ -81,7 +84,7 @@ class botService(service.MultiService):
         if self.protocol:
             self.protocol.serviceOnline(servicename)
         else:
-            self.logger.debug("I have no protocol and i want to cry")
+            self.logger.warn("I have no protocol and i want to cry")
 
 class myMessageProtocol(MessageProtocol):
     def __init__(self, bot):
@@ -109,22 +112,28 @@ class myRosterClientProtocol(RosterClientProtocol):
 
     def onRosterSet(self, item):
         pass
-        #self.bot.logger.debug(repr(item))
 
 class myPresenceClientProtocol(PresenceClientProtocol):
     def __init__(self, bot):
         self.bot=bot
         PresenceClientProtocol.__init__(self)
 
-    def _onPresence(self, presence):
-        #self.bot.logger.debug(repr(presence.getAttribute("type")))
-        PresenceClientProtocol._onPresence(presence)
+    def subscribeReceived(self, entity):
+        try:
+            self.subscribe(entity) #let them see our status
+            self.subscribed(entity) #request their status
+            self.presenceClientProtocol.update_presence() #send presence again
+        except Exception, e:
+            self.bot.logger.error(e)
 
-    def subscribedReceived(self, entity):
-        #self.bot.logger.debug("test")
-        self.subscribe(entity)
-        self.subscribed(entity)
-        self.update_presence()
+    def unsubscribeReceived(self, entity):
+        self.unsubscribe(entity) #deny our status, too
+
+    def update_presence(self):
+        self.send(AvailablePresence(statuses={
+            'C': 'at your service',
+            'de': 'stets zu Diensten'
+        }))
 
 class Bot(pluginSupport):
     """
@@ -164,12 +173,8 @@ class Bot(pluginSupport):
         """
             XMPP connection successfully established
         """
-        self.logger.debug("Connected!")
-        # send initial presence
-        self.mP.send(AvailablePresence(statuses={
-            'en': 'at your service',
-            'de': 'stets zu Diensten'
-        }))
+        self.logger.info("Connected!")
+        self.presenceClientProtoco.update_presence()
         self._apirunner("connectionMade", {})
 
     def connectionLost(self, reason):
@@ -179,11 +184,11 @@ class Bot(pluginSupport):
             @param reason: string why the connection was lost
             @type reason: str
         """
-        self.logger.debug("Disconnected %s"%str(reason))
+        self.logger.info("Disconnected %s"%str(reason))
         self._apirunner("connectionLost", {'reason': reason})
 
     def serviceOnline(self, servicename):
-        self.logger.debug("%s went online" % servicename)
+        #self.logger.debug("%s went online" % servicename)
         self.startPlugins()
 
     def onMessage(self, msg):
