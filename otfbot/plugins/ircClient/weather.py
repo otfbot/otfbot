@@ -232,4 +232,6 @@ class Plugin(chatMod.chatMod):
             answ += str(c['wind']['speed']) + str(c['units']['speed'])
             answ += " aus " + str(getDirection(int(c['wind']['direction'])))
             answ += ", Luftfeuchte: " + str(c['atmosphere']['humidity']) + "%"
-            self.bot.sendmsg(channel, unicode(answ, "iso-8859-15"))
+            if not type(answ)==unicode:
+                answ=unicode(answ, "iso-8859-1")
+            self.bot.sendmsg(channel, answ)
