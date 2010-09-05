@@ -122,7 +122,7 @@ class myPresenceClientProtocol(PresenceClientProtocol):
         try:
             self.subscribe(entity) #let them see our status
             self.subscribed(entity) #request their status
-            self.presenceClientProtocol.update_presence() #send presence again
+            self.update_presence() #send presence again
         except Exception, e:
             self.bot.logger.error(e)
 
@@ -132,6 +132,7 @@ class myPresenceClientProtocol(PresenceClientProtocol):
     def update_presence(self):
         self.send(AvailablePresence(statuses={
             'C': 'at your service',
+            'en': 'at your service',
             'de': 'stets zu Diensten'
         }))
 
