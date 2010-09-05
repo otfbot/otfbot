@@ -48,8 +48,7 @@ class botService(service.MultiService):
         """
             Starts the service. It supports a unix socket and a tcp networking
             port. Configure it by setting tcpServer.modes in the config file:
-            - socket
-            - tcp
+            socket, tcp
 
             unix socket: You can set the path where the socket file is
             created by setting tcpServer.socket.path to a filesystem path

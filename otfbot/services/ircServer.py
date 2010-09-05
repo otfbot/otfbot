@@ -30,7 +30,9 @@ from otfbot.lib import chatMod
 from otfbot.lib.pluginSupport import pluginSupport
 
 class MyTCPServer(internet.TCPServer):
-
+    """
+        TCPServer, which has self.root, self.parent and self.factory
+    """
     def __init__(self, root, parent, *args, **kwargs):
         self.root=root
         self.parent=parent
@@ -38,6 +40,9 @@ class MyTCPServer(internet.TCPServer):
         internet.TCPServer.__init__(self, *args, **kwargs)
 
 class botService(service.MultiService):
+    """
+        botService spawning MYTCPServer instances using Server as protocol
+    """
 
     name="ircServer"
 
@@ -66,7 +71,9 @@ class botService(service.MultiService):
 
 
 class Server(IRCUser, pluginSupport):
-
+    """
+        the server protocol, implemending pluginSupport and IRCUser
+    """
     pluginSupportName="ircServer"
     pluginSupportPath="otfbot/plugins/ircServer"
 
@@ -141,7 +148,7 @@ class ircServerFactory(protocol.ServerFactory):
         """ 
             builds the protocol and appends the instance to parent.intances
 
-            @returns the instance
+            @return: the instance
         """
         p=self.protocol(self.root, self.parent)
         self.parent.instances.append(p)
