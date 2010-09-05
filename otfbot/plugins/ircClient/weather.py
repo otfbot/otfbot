@@ -121,7 +121,7 @@ class YahooWeatherParser(xml.sax.handler.ContentHandler):
 
 def get_location_code(location):
     """ Fetch Location code """
-    loc_enc = urllib.quote_plus(location)
+    loc_enc = urllib.quote_plus(location.encode("UTF-8"))
     url = "http://xoap.weather.com/search/search?where=%s" % loc_enc
     return urlutils.download(url).addCallback(parse_location_code)
 
