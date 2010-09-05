@@ -141,7 +141,7 @@ class ircServerFactory(protocol.ServerFactory):
         """ 
             builds the protocol and appends the instance to parent.intances
 
-            @returns the instance
+            @return the instance
         """
         p=self.protocol(self.root, self.parent)
         self.parent.instances.append(p)
