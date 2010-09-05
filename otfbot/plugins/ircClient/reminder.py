@@ -26,12 +26,16 @@ from datetime import datetime
     Remind the user after X minutes, displaying a message
 """
 
+class Meta:
+    service_depends = ['scheduler']
+
 class Plugin(chatMod.chatMod):
     """ reminder plugin """
     def __init__(self, bot):
         self.bot=bot
         self.messages={}
-        self.bot.depends_on_service('scheduler', 'without scheduler the reminder-plugin cannot work')
+        self.bot.depends_on_service('scheduler', \
+            'without scheduler the reminder-plugin cannot work')
         self.scheduler = self.bot.root.getServiceNamed('scheduler')
 
     @callback
