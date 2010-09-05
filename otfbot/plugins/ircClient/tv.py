@@ -66,6 +66,9 @@ class Plugin(chatMod.chatMod):
         filterstandard = 0
         programm = []
         ltime = time.localtime()
+        if not self.tv:
+            self.bot.sendmsg(channel, "no tvdata, yet!")
+            return
         if command == "tv":
             o = options.split(" ")
             o1 = o[0].replace(".","").replace(":","")
