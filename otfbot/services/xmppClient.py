@@ -22,7 +22,8 @@
 """
 
 from twisted.application import service
-from wokkel.xmppim import MessageProtocol, AvailablePresence
+from wokkel.xmppim import MessageProtocol, AvailablePresence,\
+        PresenceClientProtocol, RosterClientProtocol
 from twisted.words.protocols.jabber import jid
 from wokkel.client import XMPPClient
 from twisted.words.xish import domish
@@ -60,6 +61,11 @@ class botService(service.MultiService):
             self.protocol=Bot(root, self)
             self.messageProtocol=myMessageProtocol(self.protocol)
             self.messageProtocol.setHandlerParent(self.client)
+            self.presenceClientProtocol=myPresenceClientProtocol(self.protocol)
+            self.presenceClientProtocol.setHandlerParent(self.client)
+            self.rosterClientProtocol=myRosterClientProtocol(self.protocol)
+            self.rosterClientProtocol.setHandlerParent(self.client)
+
             self.protocol.mP=self.messageProtocol
             self.client.setServiceParent(self)
         except Exception, e:
@@ -96,6 +102,28 @@ class myMessageProtocol(MessageProtocol):
             self.bot.connectionLost(reason)
         except Exception, e:
             self.bot.logerror(self.bot.logger, "messageProtocol", e)
+
+class myRosterClientProtocol(RosterClientProtocol):
+    def __init__(self, bot):
+        self.bot=bot
+
+    def onRosterSet(self, item):
+        self.bot.logger.debug(repr(item))
+
+class myPresenceClientProtocol(PresenceClientProtocol):
+    def __init__(self, bot):
+        self.bot=bot
+        PresenceClientProtocol.__init__(self)
+
+    def _onPresence(self, presence):
+        self.bot.logger.debug(repr(presence.getAttribute("type")))
+        PresenceClientProtocol._onPresence(presence)
+
+    def subscribedReceived(self, entity):
+        self.bot.logger.debug("test")
+        self.subscribe(entity)
+        self.subscribed(entity)
+        self.update_presence()
 
 class Bot(pluginSupport):
     """
