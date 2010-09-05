@@ -23,7 +23,7 @@
 import os
 
 
-def loadProperties(propertiesFile, ambiguous=False):
+def loadProperties(propertiesFile, ambiguous=False, enc="ISO-8859-15"):
     """ Loads data from a file into a dict
 
         The data in the file should have the format
@@ -40,7 +40,7 @@ def loadProperties(propertiesFile, ambiguous=False):
         return {}
     if os.path.exists(propertiesFile):
         propFile = open(propertiesFile, "r")
-        content = propFile.read()
+        content = unicode(propFile.read(), enc, errors='replace')
         propFile.close()
         for line in content.split("\n"):
             if len(line) > 1 and line[0] != "#":
