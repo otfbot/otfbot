@@ -29,11 +29,9 @@ from twisted.words.xish import domish
 
 import logging
 import gettext
+import traceback
 
 from otfbot.lib.pluginSupport import pluginSupport
-
-
-
 
 
 class botService(service.MultiService):
@@ -84,11 +82,20 @@ class myMessageProtocol(MessageProtocol):
         self.bot=bot
         MessageProtocol.__init__(self)
     def onMessage(self, *args, **kwargs):
-        self.bot.onMessage(*args, **kwargs)
+        try:
+            self.bot.onMessage(*args, **kwargs)
+        except Exception, e:
+            self.bot.logerror(self.bot.logger, "messageProtocol", e)
     def connectionMade(self):
-        self.bot.connectionMade()
+        try:
+            self.bot.connectionMade()
+        except Exception, e:
+            self.bot.logerror(self.bot.logger, "messageProtocol", e)
     def connectionLost(self, reason):
-        self.bot.connectionLost(reason)
+        try:
+            self.bot.connectionLost(reason)
+        except Exception, e:
+            self.bot.logerror(self.bot.logger, "messageProtocol", e)
 
 class Bot(pluginSupport):
     """
@@ -176,8 +183,8 @@ class Bot(pluginSupport):
                         "command": command, "options": options})
                 except Exception, e:
                     self.logerror(self.logger, "xmppClient", e)
-            self._apirunner("query", {'user': msg['from'],
-                'channel': msg['to'], 'msg': body})
+            self._apirunner("query", {'user': user,
+                'channel': channel, 'msg': body})
 
     #ircClient compatiblity
     def sendmsg(self, channel, msg, encoding="UTF-8", fallback="ISO-8859-1"):
@@ -186,10 +193,11 @@ class Bot(pluginSupport):
             so some ircClient plugins will work with xmppClient
         """
         try:
-            try:
-                msg=unicode(msg, encoding)
-            except UnicodeDecodeError, e:
-                msg=unicode(msg, fallback)
+            if type(msg) != unicode:
+                try:
+                    msg=unicode(msg, encoding)
+                except UnicodeDecodeError, e:
+                    msg=unicode(msg, fallback)
             #self.logger.debug("To: %s"%channel)
             #self.logger.debug("From: %s"%(self.myjid+"/otfbot"))
             #self.logger.debug(msg)
@@ -201,6 +209,10 @@ class Bot(pluginSupport):
             self.mP.send(message)
         except Exception, e:
             self.logerror(self.logger, "xmppClient", e)
+            tb_list = traceback.format_stack(limit=6)
+            for entry in tb_list:
+                for line in entry.strip().split("\n"):
+                    self.logger.error(line)
 
     def get_gettext(self, channel=None):
         """
