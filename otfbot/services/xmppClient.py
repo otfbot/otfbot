@@ -69,7 +69,8 @@ class botService(service.MultiService):
         try:
             service.MultiService.startService(self)
         except Exception, e:
-            self.logger.error(e)
+            self.logerror(self.logger, "xmppClient", e)
+
     def serviceOnline(self, servicename):
         if self.protocol:
             self.protocol.serviceOnline(servicename)
@@ -162,7 +163,7 @@ class Bot(MessageProtocol, pluginSupport):
                     self._apirunner("command", {"user": user, "channel": user,
                         "command": command, "options": options})
                 except Exception, e:
-                    self.logger.error(e)
+                    self.logerror(self.logger, "xmppClient", e)
             self._apirunner("query", {'user': msg['from'],
                 'channel': msg['to'], 'msg': body})
 
@@ -187,7 +188,7 @@ class Bot(MessageProtocol, pluginSupport):
             message.addElement('body', content=msg)
             self.send(message)
         except Exception, e:
-            self.logger.error(e)
+            self.logerror(self.logger, "xmppClient", e)
 
     def get_gettext(self, channel=None):
         """
