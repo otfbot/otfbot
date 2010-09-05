@@ -139,7 +139,10 @@ class Bot(pluginSupport):
         """
         self.logger.debug("Connected!")
         # send initial presence
-        self.mP.send(AvailablePresence())
+        self.mP.send(AvailablePresence(statuses={
+            'en': 'at your service',
+            'de': 'stets zu Diensten'
+        }))
         self._apirunner("connectionMade", {})
 
     def connectionLost(self, reason):
