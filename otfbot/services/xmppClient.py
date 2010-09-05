@@ -110,7 +110,8 @@ class Bot(MessageProtocol, pluginSupport):
         for pluginName in ircPlugins:
             plugin=self.startPlugin(pluginName,\
                 package="otfbot.plugins.ircClient")
-            plugin.start()
+            if plugin:
+                plugin.start()
 
     def connectionMade(self):
         """
@@ -133,6 +134,7 @@ class Bot(MessageProtocol, pluginSupport):
 
     def serviceOnline(self, servicename):
         self.logger.debug("%s went online" % servicename)
+        self.startPlugins()
 
     def onMessage(self, msg):
         """

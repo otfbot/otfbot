@@ -26,6 +26,9 @@ try:
 except ImportError:
 		HAS_PYXMLTV=False
 
+class Meta:
+    service_depends=['scheduler'] #ircClient is only an implicit dependency.
+
 class Plugin(chatMod.chatMod):
 	def __init__(self,bot):
 		self.bot = bot
