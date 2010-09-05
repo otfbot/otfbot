@@ -250,6 +250,8 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def query(self, user, channel, msg):
+        if msg[0] == "!":
+            return
         if not self.bot.config.get("ignoreQuery", True, "ki", self.bot.network):
             ## ignoreQuery should be set to True if you're using auth.
             ## Else the ki also saves your username and password and maybe posts it in public!
