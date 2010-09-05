@@ -139,7 +139,7 @@ class pluginSupport:
         if not self.classes:
             self.classes = []
         for c in self.classes:
-            if (not package and c.__name__ == name) or c.__name__ == package+"."+name:
+            if (not package and c.__name__ == name) or (package and c.__name__ == package+"."+name):
                 return c
         if not package:
             #otfbot.plugins.service
