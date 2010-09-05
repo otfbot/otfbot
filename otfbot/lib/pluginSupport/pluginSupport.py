@@ -139,7 +139,7 @@ class pluginSupport:
         if not self.classes:
             self.classes = []
         for c in self.classes:
-            if c.__name__ == name:
+            if (not package and c.__name__ == name) or c.__name__ == package+"."+name:
                 return c
         if not package:
             #otfbot.plugins.service
@@ -238,6 +238,18 @@ class pluginSupport:
         pluginClass = self.importPlugin(pluginName, package=package)
         if not pluginClass:
             return None#import error, should already be logged in importPlugin
+        if self._getClassName(pluginClass) in self.plugins:
+            #self.logger.debug("plugin %s already loaded" %\
+            #    self._getClassName(pluginClass))
+            return self.plugins[self._getClassName(pluginClass)]
+        if hasattr(pluginClass, "Meta"):
+            if hasattr(pluginClass.Meta, "service_depends"):
+                if not set(pluginClass.Meta.service_depends).issubset(self.root.namedServices.keys()):
+                    self.logger.debug("%s (still) has unsatisfied dependencies: %s" \
+                        % (self._getClassName(pluginClass), \
+                        list(set(pluginClass.Meta.service_depends)\
+                        -set(self.root.namedServices.keys()))))
+                    return None
         if hasattr(pluginClass, "Plugin"):
         # and hasattr(pluginClass.Plugin.ircClientPlugin) (?)
             try:
