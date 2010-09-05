@@ -217,7 +217,7 @@ class pyNiall:
             cleanup method to commit all unwritten entries to the database
         """
         self.db.commit()
-        #self.db.close()
+        self.db.close()
 
 def init_db(name):
     """
