@@ -119,7 +119,7 @@ class myPresenceClientProtocol(PresenceClientProtocol):
         self.bot.logger.debug(repr(presence.getAttribute("type")))
         PresenceClientProtocol._onPresence(presence)
 
-    def subscribedReceived(self, entity):
+    def subscribeReceived(self, entity):
         self.bot.logger.debug("test")
         self.subscribe(entity)
         self.subscribed(entity)
@@ -198,8 +198,11 @@ class Bot(pluginSupport):
         if msg.body and not body[:5] == "?OTR:":
             user=msg['from']
             channel=msg['to']
-            self._apirunner("query", {'user': user,
-                'channel': channel, 'msg': body})
+            try:
+                self._apirunner("query", {'user': user,
+                    'channel': channel, 'msg': body})
+            except Exception, e:
+                self.logerror(self.logger, "xmppClient", e)
             #like in IRCClient XXX: common library function?
             if body[0] == self.config.get("commandChar", "!", "main").encode("UTF-8"):
                 tmp = body[1:].split(" ", 1)
