@@ -174,7 +174,7 @@ class Bot(pluginSupport):
             XMPP connection successfully established
         """
         self.logger.info("Connected!")
-        self.presenceClientProtoco.update_presence()
+        self.presenceClientProtocol.update_presence()
         self._apirunner("connectionMade", {})
 
     def connectionLost(self, reason):
