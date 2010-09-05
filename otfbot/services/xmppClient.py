@@ -49,6 +49,7 @@ class botService(service.MultiService):
         self.config = self.root.getServiceNamed('config')
         self.config.set("enabled", False, "main", network="xmpp")
         service.MultiService.__init__(self)
+        self.protocol=None
         try:
             self.myjid=self.config.get("jid", "", "main.xmppClient")
             password=self.config.get("password", "", "main.xmppClient")
@@ -69,6 +70,11 @@ class botService(service.MultiService):
             service.MultiService.startService(self)
         except Exception, e:
             self.logger.error(e)
+    def serviceOnline(self, servicename):
+        if self.protocol:
+            self.protocol.serviceOnline(servicename)
+        else:
+            self.logger.debug("I have no protocol and i want to cry")
 
 class Bot(MessageProtocol, pluginSupport):
     """
@@ -90,13 +96,17 @@ class Bot(MessageProtocol, pluginSupport):
         self.myjid=parent.myjid
         pluginSupport.__init__(self, root, parent)
         MessageProtocol.__init__(self)
-        self.startPlugins()
-        ircPlugins=self.config.get("xmppClientIRCPlugins", [], "main")
 
         #ircClient compatiblity
         self.nickname=self.myjid
         self.network="xmpp"
         self.translations={}
+
+        self.startPlugins()
+
+    def startPlugins(self):
+        pluginSupport.startPlugins(self)
+        ircPlugins=self.config.get("xmppClientIRCPlugins", [], "main")
         for pluginName in ircPlugins:
             plugin=self.startPlugin(pluginName,\
                 package="otfbot.plugins.ircClient")
@@ -120,6 +130,9 @@ class Bot(MessageProtocol, pluginSupport):
         """
         self.logger.debug("Disconnected")
         self._apirunner("connectionLost", {'reason': reason})
+
+    def serviceOnline(self, servicename):
+        self.logger.debug("%s went online" % servicename)
 
     def onMessage(self, msg):
         """

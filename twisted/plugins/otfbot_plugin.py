@@ -160,6 +160,9 @@ class MyServiceMaker(object):
                     service_instances.append(srv)
                     started.append(service_name)
                     corelogger.info("started service %s"%service_name)
+                    for service in service_instances:
+                        if hasattr(service, "serviceOnline"):
+                            service.serviceOnline(service_name)
             
             for s in started: #remove from TO-START list
                 service_names.remove(s)
