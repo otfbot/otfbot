@@ -159,8 +159,6 @@ class Bot(pluginSupport):
         for pluginName in ircPlugins:
             plugin=self.startPlugin(pluginName,\
                 package="otfbot.plugins.ircClient")
-            if plugin:
-                plugin.start()
 
     def connectionMade(self):
         """
@@ -195,12 +193,15 @@ class Bot(pluginSupport):
             @param msg: the message
         """
         self._apirunner("onMessage", {'msg': msg})
-        body=unicode(msg.body).encode("UTF-8")
+        body=unicode(msg.body)
         if msg.body and not body[:5] == "?OTR:":
             user=msg['from']
             channel=msg['to']
-            self._apirunner("query", {'user': user,
-                'channel': channel, 'msg': body})
+            try:
+                self._apirunner("query", {'user': user,
+                    'channel': channel, 'msg': body})
+            except Exception, e:
+                self.logerror(self.logger, "xmppClient", e)
             #like in IRCClient XXX: common library function?
             if body[0] == self.config.get("commandChar", "!", "main").encode("UTF-8"):
                 tmp = body[1:].split(" ", 1)
