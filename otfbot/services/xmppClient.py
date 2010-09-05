@@ -108,7 +108,8 @@ class myRosterClientProtocol(RosterClientProtocol):
         self.bot=bot
 
     def onRosterSet(self, item):
-        self.bot.logger.debug(repr(item))
+        pass
+        #self.bot.logger.debug(repr(item))
 
 class myPresenceClientProtocol(PresenceClientProtocol):
     def __init__(self, bot):
@@ -116,11 +117,11 @@ class myPresenceClientProtocol(PresenceClientProtocol):
         PresenceClientProtocol.__init__(self)
 
     def _onPresence(self, presence):
-        self.bot.logger.debug(repr(presence.getAttribute("type")))
+        #self.bot.logger.debug(repr(presence.getAttribute("type")))
         PresenceClientProtocol._onPresence(presence)
 
-    def subscribeReceived(self, entity):
-        self.bot.logger.debug("test")
+    def subscribedReceived(self, entity):
+        #self.bot.logger.debug("test")
         self.subscribe(entity)
         self.subscribed(entity)
         self.update_presence()
@@ -180,7 +181,7 @@ class Bot(pluginSupport):
             @param reason: string why the connection was lost
             @type reason: str
         """
-        self.logger.debug("Disconnected")
+        self.logger.debug("Disconnected %s"%str(reason))
         self._apirunner("connectionLost", {'reason': reason})
 
     def serviceOnline(self, servicename):
@@ -198,11 +199,8 @@ class Bot(pluginSupport):
         if msg.body and not body[:5] == "?OTR:":
             user=msg['from']
             channel=msg['to']
-            try:
-                self._apirunner("query", {'user': user,
-                    'channel': channel, 'msg': body})
-            except Exception, e:
-                self.logerror(self.logger, "xmppClient", e)
+            self._apirunner("query", {'user': user,
+                'channel': channel, 'msg': body})
             #like in IRCClient XXX: common library function?
             if body[0] == self.config.get("commandChar", "!", "main").encode("UTF-8"):
                 tmp = body[1:].split(" ", 1)
