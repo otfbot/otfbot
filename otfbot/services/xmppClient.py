@@ -244,7 +244,7 @@ class Bot(pluginSupport):
             message['from'] = self.myjid+"/otfbot"
             message['type'] = 'chat'
             message.addElement('body', content=msg)
-            self.mP.send(message)
+            self.messageProtocol.send(message)
             self._apirunner("privmsg", {'user': self.nickname, \
                 'channel': channel, 'msg': msg})
             self._apirunner("query", {'user': self.nickname, \
