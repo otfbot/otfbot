@@ -47,10 +47,10 @@ class Plugin(chatMod.chatMod):
         #TODO: blocking
         if not os.path.isdir(self.datadir):
             os.makedirs(self.datadir)
-        try:
-            locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
-        except:
-            locale.setlocale(locale.LC_ALL, "")
+        #try:
+        #    locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
+        #except:
+        #    locale.setlocale(locale.LC_ALL, "")
         # saves the hour, to detect daychanges
         self.day = self.ts("%d")
         #for c in self.bot.channels:
