@@ -139,14 +139,14 @@ class Plugin(chatMod.chatMod):
     def postNews(self, channel, url, feedPostMax):
         had_new = False #new urls? needed for wait-time modification
         numPostUrls = feedPostMax
-        channels = self.bot.getChannelUserDict().keys()
+        channels = self.bot.channels
         for (url, headline) in self.feedHeadlines[url]:
             if channel in channels:
                 if not url in self.readUrls[channel]:
                     if numPostUrls > 0:
                         numPostUrls -= 1
-                        self.bot.sendmsg(channel.encode("UTF-8"), (url +\
-                            " - " + headline).encode("UTF-8"), "UTF-8")
+                        self.bot.sendmsg(channel, (url +\
+                            " - " + headline))
                         #TODO: config option to choose?
                         #with this line, all urls will be posted, but the
                         #queue may get longer and longer
@@ -221,7 +221,7 @@ class Plugin(chatMod.chatMod):
                         options[0], "feed", self.bot.network, channel)
                 else:
                     self.bot.sendmsg(channel, "Error: Syntax "+
-                        "!addfeed url postMax minWait maxWait factor")
+                        u"!addfeed url postMax minWait maxWait factor")
                     return
                 self.bot.config.set("numFeeds", num, "feed",\
                     self.bot.network, channel)
