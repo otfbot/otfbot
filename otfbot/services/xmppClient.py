@@ -231,31 +231,36 @@ class Bot(pluginSupport):
             sendmsg method simulating the ircClient.Bot.sendmsg method.
             so some ircClient plugins will work with xmppClient
         """
-        try:
-            if type(msg) != unicode:
-                try:
-                    msg=unicode(msg, encoding)
-                except UnicodeDecodeError, e:
-                    msg=unicode(msg, fallback)
-            #self.logger.debug("To: %s"%channel)
-            #self.logger.debug("From: %s"%(self.myjid+"/otfbot"))
-            #self.logger.debug(msg)
-            message=domish.Element((None, "message"))
-            message['to'] = channel
-            message['from'] = self.myjid+"/otfbot"
-            message['type'] = 'chat'
-            message.addElement('body', content=msg)
-            self.messageProtocol.send(message)
-            self._apirunner("privmsg", {'user': self.nickname, \
-                'channel': channel, 'msg': msg})
-            self._apirunner("query", {'user': self.nickname, \
-                'channel': channel, 'msg': msg})
-        except Exception, e:
-            self.logerror(self.logger, "xmppClient", e)
-            tb_list = traceback.format_stack(limit=6)
-            for entry in tb_list:
-                for line in entry.strip().split("\n"):
-                    self.logger.error(line)
+        if type(msg)==list:
+            msglist=msg
+        else:
+            msglist=[msg]
+        for msg in msglist:
+            try:
+                if type(msg) != unicode:
+                    try:
+                        msg=unicode(msg, encoding)
+                    except UnicodeDecodeError, e:
+                        msg=unicode(msg, fallback)
+                #self.logger.debug("To: %s"%channel)
+                #self.logger.debug("From: %s"%(self.myjid+"/otfbot"))
+                #self.logger.debug(msg)
+                message=domish.Element((None, "message"))
+                message['to'] = channel
+                message['from'] = self.myjid+"/otfbot"
+                message['type'] = 'chat'
+                message.addElement('body', content=msg)
+                self.messageProtocol.send(message)
+                self._apirunner("privmsg", {'user': self.nickname, \
+                    'channel': channel, 'msg': msg})
+                self._apirunner("query", {'user': self.nickname, \
+                    'channel': channel, 'msg': msg})
+            except Exception, e:
+                self.logerror(self.logger, "xmppClient", e)
+                tb_list = traceback.format_stack(limit=6)
+                for entry in tb_list:
+                    for line in entry.strip().split("\n"):
+                        self.logger.error(line)
 
     def get_gettext(self, channel=None):
         """
