@@ -62,9 +62,9 @@ class Plugin(chatMod.chatMod):
     def command(self, user, channel, command, options):
         try:
             user = user.split("!")[0]
-            public = 0
-            alle = 0
-            filterstandard = 0
+            public = False
+            all = False
+            filterstandard = False
             programm = []
             ltime = time.localtime()
             if not self.tv:
@@ -74,23 +74,23 @@ class Plugin(chatMod.chatMod):
                 o = options.split(" ")
                 o1 = o[0].replace(".","").replace(":","")
                 if o[len(options.split(" ")) -1] == "public":
-                    public = 1
+                    public = True
                     o.remove("public")
                 if o[len(options.split(" ")) -1] == "all":
-                    alle = 1
-                    public = 0
+                    all = True
+                    public = False
                     o.remove("all")
                 if options == "":
                     o = []
-                if len(o) != 0 and o[0].lower() == "help":
-                    self.bot.sendmsg(user," !tv <- Zeigt das aktuelle TV-Programm an. An dieses Kommando kann 'all' angehaengt werden, dann werden alle bekannten Sender ausgegeben.")
-                    self.bot.sendmsg(user," !tv <uhrzeit> <- Zeigt das Programm fuer <uhrzeit> (hh:mm) an. An dieses Kommando kann 'all' angehaengt werden, dann werden alle bekannten Sender ausgegeben.")
-                    self.bot.sendmsg(user," !tv <uhrzeit> <sendername> <- zeigt das Programm fuer <uhrzeit> auf <sendername> an.")
-                    self.bot.sendmsg(user," !tv <sendername> <- zeigt das aktuelle Programm auf <sendername>.")
-                    self.bot.sendmsg(user," !tv liststations <- zeigt alle verfuegbaren Sender an.")
-                    self.bot.sendmsg(user," !tvsearch <begriff> <- sucht auf allen Sendern nach <begriff>. Optional kann noch der Sender, auf dem gesucht werden soll, als letztes Wort angehaengt werden.")
-                    self.bot.sendmsg(user," Wenn die Ausgabe nicht im Query, sondern im Channel erfolgen soll: 'public' ans Ende des Kommandos anhaengen (nicht moeglich mit Option 'all').")
-                elif len(o) != 0 and o[0].lower() == "liststations":
+                if len(o) != 0 and o[0].lower() == u"help":
+                    self.bot.sendmsg(user, " !tv <- Zeigt das aktuelle TV-Programm an. An dieses Kommando kann 'all' angehaengt werden, dann werden alle bekannten Sender ausgegeben.")
+                    self.bot.sendmsg(user, " !tv <uhrzeit> <- Zeigt das Programm fuer <uhrzeit> (hh:mm) an. An dieses Kommando kann 'all' angehaengt werden, dann werden alle bekannten Sender ausgegeben.")
+                    self.bot.sendmsg(user, " !tv <uhrzeit> <sendername> <- zeigt das Programm fuer <uhrzeit> auf <sendername> an.")
+                    self.bot.sendmsg(user, " !tv <sendername> <- zeigt das aktuelle Programm auf <sendername>.")
+                    self.bot.sendmsg(user, " !tv liststations <- zeigt alle verfuegbaren Sender an.")
+                    self.bot.sendmsg(user, " !tvsearch <begriff> <- sucht auf allen Sendern nach <begriff>. Optional kann noch der Sender, auf dem gesucht werden soll, als letztes Wort angehaengt werden.")
+                    self.bot.sendmsg(user, " Wenn die Ausgabe nicht im Query, sondern im Channel erfolgen soll: 'public' ans Ende des Kommandos anhaengen (nicht moeglich mit Option 'all').")
+                elif len(o) != 0 and o[0].lower() == u"liststations":
                     stations = []
                     for i in self.tv.stations:
                         if self.tv.stations[i][0].lower().replace(" ","") not in self.ignoresender:
@@ -102,10 +102,10 @@ class Plugin(chatMod.chatMod):
                         int(o1)
                         if int(o1) > 2400 or int(o1[2:4]) > 59:
                             self.bot.sendmsg(channel,"corrupted time!")
-                            return 0
+                            return False
                         programm = self.tv.get_programm_at_time(o1 + "00")
                         #programm = self.parse_programm(programm)
-                        filterstandard = not alle
+                        filterstandard = not all
                     except ValueError:
                         if not self.tv.get_station(o1) and o1 != "help":
                             self.bot.sendmsg(channel,"Station not found! See !tv help")
@@ -133,11 +133,9 @@ class Plugin(chatMod.chatMod):
                 elif self.tv:
                     programm = self.tv.get_programm_now()
                     programm = self.parse_programm(programm)
-                    filterstandard = not alle
+                    filterstandard = not all
                 for i in programm:
-                    if filterstandard == 1 and i['station'][0].lower().replace(" ","") not in self.standardsender.encode("UTF-8"):
-                        pass
-                    else:
+                    if not filterstandard or not i['station'][0].lower().replace(" ","") not in self.standardsender.encode("UTF-8"):
                         if not public:
                             if i['language'] != "":
                                 self.bot.sendmsg(user,unicode(str(chr(2)) + i['station'][0] + str(chr(2)) + " (" + str(i['start'][8:10]) + ":" + str(i['start'][10:12]) + "-" + str(i['stop'][8:10]) + ":" + str(i['stop'][10:12]) + "): " + i['title'] + " (" + i['language'] + ")").encode("utf8"))
