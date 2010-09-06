@@ -226,6 +226,9 @@ class Bot(pluginSupport):
                     self.logerror(self.logger, "xmppClient", e)
 
     #ircClient compatiblity
+    def sendme(self, channel, msg, encoding="UTF-8", fallback="ISO-8859-1"):
+        self.sendmsg(channel, msg, encoding, fallback)
+
     def sendmsg(self, channel, msg, encoding="UTF-8", fallback="ISO-8859-1"):
         """
             sendmsg method simulating the ircClient.Bot.sendmsg method.
