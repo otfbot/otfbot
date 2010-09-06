@@ -773,6 +773,15 @@ class Bot(pluginSupport, irc.IRCClient):
         self._apirunner("ctcpQuery", {"user": user, "channel": channel,
                 "messages": messages})
 
+    @syncedChannel(argnum=1)
+    def ctcpUnknownReply(self, user, channel, tag, data):
+        """ called by twisted,
+            if a C{user} sent a ctcp reply
+        """
+        channel = channel.lower()
+        self._apirunner("ctcpReply", {"user": user, "channel": channel,
+            "tag": tag, "data": data})
+
     @syncedAll
     def userRenamed(self, oldname, newname):
         """ called by twisted,
