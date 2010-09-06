@@ -67,7 +67,7 @@ class Plugin(chatMod.chatMod):
             filterstandard = False
             programm = []
             ltime = time.localtime()
-            if not self.tv:
+            if not self.tv and command in ["tv", "tvsearch"]:
                 self.bot.sendmsg(channel, "no tvdata, yet!")
                 return
             if command == "tv":
