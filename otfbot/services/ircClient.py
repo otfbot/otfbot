@@ -802,6 +802,7 @@ class Bot(pluginSupport, irc.IRCClient):
             if the topic was updated
         """
         channel = channel.lower()
+        newTopic=self.toUnicode(newTopic, self.network, channel)
         self._apirunner("topicUpdated", {"user": user,
                 "channel": channel, "newTopic": newTopic})
 
