@@ -264,7 +264,7 @@ class Plugin(chatMod.chatMod):
             if not reply:
                 return
             number = random.randint(1, 1000)
-            chance = int(self.bot.config.get("answerQueryPercent", "70", "ki", self.bot.network)) * 10
+            chance = int(self.bot.config.get("answerQueryPercent", 70, "ki", self.bot.network)) * 10
             delay = len(reply) * 0.3 * float(self.bot.config.get("wait", 2, "ki", self.bot.network)) #a normal user does not type that fast
             if number < chance:
                 #self.bot.sendmsg(user, reply, "UTF-8")
@@ -294,7 +294,7 @@ class Plugin(chatMod.chatMod):
 
         #bot answers random messages
         number = random.randint(1, 1000)
-        chance = int(float(self.bot.config.get("randomPercent", "0", "ki", self.bot.network, channel)) * 10)
+        chance = int(float(self.bot.config.get("randomPercent", 0, "ki", self.bot.network, channel)) * 10)
         israndom = 0
         if number < chance:
             israndom = 1
@@ -328,7 +328,7 @@ class Plugin(chatMod.chatMod):
                 reply = string.lower(reply)
             delay = len(reply) * 0.3 * float(self.bot.config.get("wait", 2, "ki", self.bot.network, channel)) #a normal user does not type that fast
             number = random.randint(1, 1000)
-            chance = int(self.bot.config.get("answerPercent", "50", "ki", self.bot.network, channel)) * 10
+            chance = int(self.bot.config.get("answerPercent", 50, "ki", self.bot.network, channel)) * 10
             if israndom:
                 #self.bot.sendmsg(channel, reply, "UTF-8")
                 self.bot.root.getServiceNamed('scheduler').callLater(delay, self.bot.sendmsg, channel, reply, "UTF-8")

@@ -1,6 +1,6 @@
 ki.module: 'megahal'
 ki.wordpairsFile: 'wordpairs.txt'
-ki.randomPercent: '0'
-ki.answerPercent: '50'
-ki.answerQueryPercent: '70'
+ki.randomPercent: 0
+ki.answerPercent: 50
+ki.answerQueryPercent: 70
 ki.ignore: ''
