@@ -44,7 +44,8 @@ class Plugin(chatMod.chatMod):
     @callback
     def joined(self, channel):
         filename = self.bot.config.getPath("file", datadir, "commands.txt", "commands", self.bot.network, channel)
-        self.commands[channel] = functions.loadProperties(filename, True)
+        enc = self.bot.config.get("fileencoding", "iso-8859-15", "commands", self.bot.network, channel)
+        self.commands[channel] = functions.loadProperties(filename, True, enc)
 
     @callback
     def command(self, user, channel, command, options):
