@@ -73,6 +73,8 @@ class Plugin(chatMod.chatMod):
         self._recalc_peak(channel)
 
     def _recalc_peak(self, channel):
+        if not channel in self.peak:
+            self.peak[channel]=len(self.bot.getUsers(channel))
         if self.peak[channel]<len(self.bot.getUsers(channel)):
             self.peak[channel]=len(self.bot.getUsers(channel))
             self.peak_date[channel]=time.strftime("%d.%m.%Y %H:%M")
