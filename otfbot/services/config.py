@@ -200,9 +200,7 @@ class configService(service.Service):
             self.generic_options[option] = value
             self.generic_options_default[option] = still_default
 
-        #TODO: this is good here, if writeconfig does not destroy
-        #      generic_options, as the current version does
-        #self.writeConfig()
+        self.writeConfig()
 
     def delete(self, option, module=None, network=None, channel=None):
         """
@@ -304,11 +302,13 @@ class configService(service.Service):
             return False
         file = open(self.filename, "w")
         #still_default options
+        generic_options=deepcopy(self.generic_options)
         if not self.getBool("writeDefaultValues", False, "config"):
             for option in self.generic_options_default.keys():
-                if option in self.generic_options and self.generic_options_default[option]:
-                    del(self.generic_options[option])
-        file.write(yaml.dump_all([self.generic_options, self.network_options], 
+                if option in generic_options \
+                and self.generic_options_default[option]:
+                    del(generic_options[option])
+        file.write(yaml.dump_all([generic_options, self.network_options], 
                                  default_flow_style=False))
         file.close()
         return True
