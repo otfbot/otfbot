@@ -656,10 +656,13 @@ class Bot(pluginSupport, irc.IRCClient):
                     u=self.getUserByNick(args[i])
                     if u:
                         # user in channel
-                        if set:
-                            u.setMode(chan, modes[i])
+                        if chan in u.getChannels():
+                            if set:
+                                u.setMode(chan, modes[i])
+                            else:
+                                u.removeMode(chan, modes[i])
                         else:
-                            u.removeMode(chan, modes[i])
+                            self.logger.warning("user %s is not in channel %s"%(u.getHostMask(), chan))
                     else:
                         self.logger.error(args[i] + " not known to me")
                 else: # channelmodes
