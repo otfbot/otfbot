@@ -171,7 +171,7 @@ class megahalResponder(responder):
         @param    msg:    the string to learn
         """
         try:
-            msg = unicode(msg, "UTF-8").encode("iso-8859-15")
+            msg = unicode(msg, "UTF-8").encode("iso-8859-15", errors="ignore")
         except UnicodeEncodeError:
             return
             #pass
@@ -272,7 +272,7 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def action(self, user, channel, msg):
-        self.msg(user,channel,msg)
+        self.msg(user, channel, msg)
     
     @callback
     def msg(self, user, channel, msg):
