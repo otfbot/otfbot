@@ -44,7 +44,8 @@ class Plugin(chatMod.chatMod):
     @callback
     def joined(self, channel):
         filename = self.bot.config.getPath("file", datadir, "commands.txt", "commands", self.bot.network, channel)
-        self.commands[channel] = functions.loadProperties(filename, True)
+        enc = self.bot.config.get("fileencoding", "iso-8859-15", "commands", self.bot.network, channel)
+        self.commands[channel] = functions.loadProperties(filename, True, enc)
 
     @callback
     def command(self, user, channel, command, options):
@@ -62,19 +63,22 @@ class Plugin(chatMod.chatMod):
             answer = self.respond(channel, user, command.lower(), options)
             if answer != "":
                 if answer[0] == ":":
-                    enc = self.bot.config.get("fileencoding", "iso-8859-15", "commands", self.bot.network, channel)
-                    self.bot.sendmsg(channel, answer[1:], enc)
+                    self.bot.sendmsg(channel, answer[1:])
                 else:
-                    enc = self.bot.config.get("fileencoding", "iso-8859-15", "commands", self.bot.network, channel)
-                    self.bot.sendme(channel, answer, enc)
+                    self.bot.sendme(channel, answer)
 
     def start(self):
         self.register_ctl_command(self.reload)
         self.commands = {}
+
+        enc = self.bot.config.get("fileencoding", "iso-8859-15", "commands")
         file = self.bot.config.getPath("file", datadir, "commands.txt", "commands")
-        self.commands["general"] = functions.loadProperties(file, True)
+        self.commands["general"] = functions.loadProperties(file, True, enc)
+
+        enc = self.bot.config.get("fileencoding", "iso-8859-15", "commands", self.bot.network)
         file = self.bot.config.getPath("file", datadir, "commands.txt", "commands", self.bot.network)
-        self.commands["network"] = functions.loadProperties(file, True)
+        self.commands["network"] = functions.loadProperties(file, True, enc)
+
         for chan in self.bot.channels:
             self.joined(chan)
 

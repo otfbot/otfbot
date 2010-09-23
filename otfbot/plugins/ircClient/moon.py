@@ -34,6 +34,7 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def command(self, user, channel, command, options):
+        _=self.bot.get_gettext(channel)
         #http://avila.star-shine.ch/astro/berechnungen.html
         known_fullmoon_date = 915245340 #seconds since 1970
         monthlength = 29.530588
@@ -48,16 +49,16 @@ class Plugin(chatMod.chatMod):
                         day = int(options[2])
                         ts = time.mktime((year, month, day, 0, 0, 0, 0, 0, 0))
                     except ValueError:
-                        self.bot.sendmsg(channel, "Zeitformat: XXXX-XX-XX")
+                        self.bot.sendmsg(channel, _(u"Time format: XXXX-XX-XX"))
                         return
                 else:
-                    self.bot.sendmsg(channel, "Zeitformat: XXXX-XX-XX")
+                    self.bot.sendmsg(channel,  _(u"Time format: XXXX-XX-XX"))
                     return
         phase = (ts - known_fullmoon_date) / (60 * 60 * 24) / monthlength
         phase = phase - int(phase)
 
         if command == "fullmoon" or command == "vollmond":
-            self.bot.sendmsg(channel, "Naechster Vollmond ist in %d Tagen" % (
+            self.bot.sendmsg(channel, _(u"Next fullmoon in %d days") % (
                                             round((1 - phase) * monthlength)))
         elif command == "moon" or command == "mond":
             symbol = ""
@@ -65,26 +66,26 @@ class Plugin(chatMod.chatMod):
 
             if phase < 0.05:
                 symbol = "[ (  ) ]"
-                name = "Vollmond"
+                name = _("fullmoon")
             elif phase < 0.20:
                 symbol = "[ C   ]" #grosser Teil
-                name = "abnehmender Mond"
+                name = _("decreasing moon")
             elif phase < 0.30:
                 symbol = "[ C   ]"
-                name = "Halbmond"
+                name = _("half moon")
             elif phase < 0.45:
                 symbol = "[ (   ]" #kleiner Teil
-                name = "abnehmender Mond"
+                name = _("decreasing moon")
             elif phase < 0.65:
                 symbol = "[     ]"
-                name = "Neumond"
+                name = _("new moon")
             elif phase < 0.80:
                 symbol = "[   ) ]" #kleiner Teil
-                name = "zunehmender Mond"
+                name = _("waxing moon")
             elif phase < 0.80:
                 symbol = "[   D ]"
-                name = "Halbmond"
+                name = _("half moon")
             else:
                 symbol = "[   D ]" #grosser Teil
-                name = "zunehmender Mond"
-            self.bot.sendmsg(channel, "%s %s" % (symbol, name))
+                name = _("waxing moon")
+            self.bot.sendmsg(channel, u"%s %s" % (symbol, name))

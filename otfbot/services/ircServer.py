@@ -24,13 +24,15 @@ from twisted.words.protocols import irc
 from twisted.words.service import IRCUser
 from twisted.application import service, internet
 
-import logging, traceback, sys, time, glob
+import logging, traceback, sys, time, glob, traceback
 
 from otfbot.lib import chatMod
 from otfbot.lib.pluginSupport import pluginSupport
 
 class MyTCPServer(internet.TCPServer):
-
+    """
+        TCPServer, which has self.root, self.parent and self.factory
+    """
     def __init__(self, root, parent, *args, **kwargs):
         self.root=root
         self.parent=parent
@@ -38,6 +40,9 @@ class MyTCPServer(internet.TCPServer):
         internet.TCPServer.__init__(self, *args, **kwargs)
 
 class botService(service.MultiService):
+    """
+        botService spawning MYTCPServer instances using Server as protocol
+    """
 
     name="ircServer"
 
@@ -48,17 +53,27 @@ class botService(service.MultiService):
         service.MultiService.__init__(self)
 
     def startService(self):
-        self.config=self.root.getServiceNamed('config')
-        port=int(self.config.get("port", "6667", "server"))
-        interface=interface=self.config.get("interface", "127.0.0.1", "server")
-        factory=ircServerFactory(self.root, self)
-        serv=MyTCPServer(self.root, self, port=port, factory=factory, interface=interface)
-        self.addService(serv)
-        service.MultiService.startService(self)  
+        try:
+            self.config=self.root.getServiceNamed('config')
+            port=int(self.config.get("port", "6667", "server"))
+            interface=interface=self.config.get("interface", "127.0.0.1", "server")
+            factory=ircServerFactory(self.root, self)
+            serv=MyTCPServer(self.root, self, port=port, factory=factory, interface=interface)
+            self.addService(serv)
+            service.MultiService.startService(self)  
+        except Exception, e:
+            logger=logging.getLogger("server")
+            logger.error(e)
+            tb_list = traceback.format_tb(sys.exc_info()[2])[1:]
+            for entry in tb_list:
+                for line in entry.strip().split("\n"):
+                    logger.error(line)
 
 
 class Server(IRCUser, pluginSupport):
-
+    """
+        the server protocol, implemending pluginSupport and IRCUser
+    """
     pluginSupportName="ircServer"
     pluginSupportPath="otfbot/plugins/ircServer"
 
@@ -133,7 +148,7 @@ class ircServerFactory(protocol.ServerFactory):
         """ 
             builds the protocol and appends the instance to parent.intances
 
-            @returns the instance
+            @return: the instance
         """
         p=self.protocol(self.root, self.parent)
         self.parent.instances.append(p)
