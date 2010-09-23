@@ -180,7 +180,7 @@ class configService(service.Service):
 
         for network in self.network_options.keys():
             for channel in self.network_options[network].keys():
-                if type(self.network_options[network][channel]) == type({}):
+                if type(self.network_options[network][channel]) == dict:
                     if option in self.network_options[network][channel].keys():
                         channels.append((network, channel))
         return (general, networks, channels)
@@ -200,9 +200,7 @@ class configService(service.Service):
             self.generic_options[option] = value
             self.generic_options_default[option] = still_default
 
-        #TODO: this is good here, if writeconfig does not destroy
-        #      generic_options, as the current version does
-        #self.writeConfig()
+        self.writeConfig()
 
     def delete(self, option, module=None, network=None, channel=None):
         """
@@ -241,13 +239,12 @@ class configService(service.Service):
         return ret
 
     def getChannels(self, network):
-        #TODO: Return only channels, which are active
         if network in self.network_options.keys():
             try:
                 options = self.network_options[network].keys()
                 ret = []
                 for option in options:
-                    if type(self.network_options[network][option]) == type({}):
+                    if type(self.network_options[network][option]) == dict:
                         ret.append(option)
                 return ret
             except AttributeError:
@@ -305,11 +302,13 @@ class configService(service.Service):
             return False
         file = open(self.filename, "w")
         #still_default options
+        generic_options=deepcopy(self.generic_options)
         if not self.getBool("writeDefaultValues", False, "config"):
             for option in self.generic_options_default.keys():
-                if option in self.generic_options and self.generic_options_default[option]:
-                    del(self.generic_options[option])
-        file.write(yaml.dump_all([self.generic_options, self.network_options], 
+                if option in generic_options \
+                and self.generic_options_default[option]:
+                    del(generic_options[option])
+        file.write(yaml.dump_all([generic_options, self.network_options], 
                                  default_flow_style=False))
         file.close()
         return True

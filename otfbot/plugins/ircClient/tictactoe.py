@@ -18,17 +18,25 @@
 # (c) 2008 by Alexander Schier
 #
 
+"""
+    Tic-Tac-Toe (X and O) game.
+
+    The only winning move is not to play.
+"""
+
 import random
 from otfbot.lib import chatMod
 from otfbot.lib.pluginSupport.decorators import callback
 
 class Game:
+    """ game implementation """
 
     def __init__(self):
         self.myStones=[]
         self.yourStones=[]
 
     def drawField(self):
+        """ draw the current field with X and O and numbers """
         ret=""
         for y in range(3):
             for x in range(3):
@@ -43,12 +51,18 @@ class Game:
         return ret
 
     def move(self, num):
+        """
+            make a move
+
+            @returns: True if the move is valid, False if not.
+        """
         if not num in self.myStones and not num in self.yourStones:
             self.yourStones+=[num]
             return True
         return False
 
     def neighbours(self, pos):
+        """ calculate the neighbour fields """
         return {
             1: [2,4],
             2: [1,3,5,4,6],
@@ -61,6 +75,7 @@ class Game:
             9: [8,6]}[pos]
 
     def winningField(self, stone, stone2, fields):
+        """ test if a Field wins the game """
         print stone, stone2, fields
         for field in fields:
             stoneset=set([stone, stone2, field])
@@ -77,6 +92,7 @@ class Game:
         return None
 
     def kiMove(self):
+        """ let the artificial intelligence make a move """
         stones=[1,2,3,4,5,6,7,8,9]
         for s in self.myStones:
             stones.remove(s)
@@ -126,6 +142,7 @@ class Game:
     STILL_PLAYING=4
 
     def checkWin(self, lastStone):
+        """ check if a player has won """
         if lastStone in self.myStones:
             for stone2 in self.neighbours(lastStone):
                 if stone2 in self.myStones:
@@ -141,7 +158,9 @@ class Game:
         if len(self.myStones + self.yourStones)==9:
             return self.DRAW_GAME
         return self.STILL_PLAYING
+
     def checkFinished(self, lastStone):
+        """ check if the game is still active """
         status=self.checkWin(lastStone)
         return status != self.STILL_PLAYING
 
@@ -153,6 +172,12 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def command(self, user, channel, command, options):
+        """
+            react on !tictactoe and !xo
+            Syntax: !tictactoe [number]
+            number for making a move, no number just
+            prints the field
+        """
         if command == "tictactoe" or command=="xo":
             if options == "":
                 self.bot.sendmsg(channel, self.game.drawField().split("\n")[:3])

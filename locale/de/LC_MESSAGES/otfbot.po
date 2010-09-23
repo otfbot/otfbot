@@ -1,0 +1,189 @@
+# Deutsche Übersetzung für Otfbot
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-08-31 00:41+CEST\n"
+"PO-Revision-Date: \n"
+"Last-Translator: Thomas Wiegart <thomas@thw23.de>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Basepath: /home/allo/projakte/otfbot\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: auth.py:60
+msgid "Error: could not get portal"
+msgstr "Fehler: Kann kein \"portal\" bekommen"
+
+#: auth.py:68
+msgid "Usage: identify [user] pass"
+msgstr "Nutzung: identify [Username] Passwort"
+
+#: auth.py:78
+msgid "Successfully logged in as %s"
+msgstr "Erfolgreich eingelogged als %s"
+
+#: auth.py:81
+msgid "Login failed: %s"
+msgstr "Login fehlgeschlagen: %s"
+
+#: ddate.py:51
+msgid "Today is %s, the %d day of %s in the YOLD %d"
+msgstr "Heute ist %s, der %d. Tag des %s im JULD %d"
+
+#: eightBall.py:37
+msgid "Signs point to yes"
+msgstr "Zeichen deuten auf ja"
+
+#: eightBall.py:38
+msgid "Yes"
+msgstr "Ja"
+
+#: eightBall.py:39
+msgid "Without a doubt"
+msgstr "Ohne jeden Zweifel"
+
+#: eightBall.py:40
+msgid "As I see it, yes"
+msgstr "Soweit ich sehe, ja"
+
+#: eightBall.py:41
+msgid "Most likely"
+msgstr "Sehr wahrscheinlich"
+
+#: eightBall.py:42
+msgid "You may rely on it"
+msgstr "Du kannst dich darauf verlassen."
+
+#: eightBall.py:43
+msgid "Yes definitely"
+msgstr "Ja, definitiv"
+
+#: eightBall.py:44
+msgid "It is decidedly so"
+msgstr "Es ist entschieden so"
+
+#: eightBall.py:45
+msgid "Outlook good"
+msgstr "Gute Aussichten"
+
+#: eightBall.py:46
+msgid "It is certain"
+msgstr "Es ist sicher"
+
+#: eightBall.py:47
+msgid "My sources say no"
+msgstr "Meine Quellen sagen Nein"
+
+#: eightBall.py:48
+msgid "Very doubtful"
+msgstr "Sehr zweifelhaft"
+
+#: eightBall.py:49
+msgid "Don't count on it"
+msgstr "Zähl nicht drauf"
+
+#: eightBall.py:50
+msgid "Outlook not so good"
+msgstr "Keine guten Aussichten"
+
+#: eightBall.py:51
+msgid "My reply is no"
+msgstr "Meine Antwort ist Nein"
+
+#: eightBall.py:52
+msgid "Reply hazy, try again"
+msgstr "Antwort unklar, versuch es nocheinmal"
+
+#: eightBall.py:53
+msgid "Concentrate and ask again"
+msgstr "Konzentrier dich und frag nocheinmal"
+
+#: eightBall.py:54
+msgid "Better not tell you now"
+msgstr "Das sage ich dir jetzt lieber nicht"
+
+#: eightBall.py:55
+msgid "Cannot predict now"
+msgstr "Kann ich jetzt nicht vorhersagen"
+
+#: eightBall.py:56
+msgid "Ask again later"
+msgstr "Frag später nocheinmal"
+
+#: google.py:57
+msgid "!googlefight word1:word2"
+msgstr "!googlefight wort1:wort2"
+
+#: google.py:79
+msgid "Google Fight!: %s beats %s (%s to %s Hits)"
+msgstr "Googl Fight!: %s siegt ueber %s (%s zu %s Ergebnisse)"
+
+#: math.py:40
+msgid "rolls a die. The result is %i"
+msgstr "würfelt. Das Ergebnis ist: %i"
+
+#: math.py:44
+msgid "rolls dice. The results are: "
+msgstr "würfelt. Die Ergebenisse sind: "
+
+#: moon.py:52
+#: moon.py:55
+msgid "Time format: XXXX-XX-XX"
+msgstr "Zeitformat: XXXX-XX-XX"
+
+#: moon.py:61
+msgid "Next fullmoon in %d days"
+msgstr "Naechster Vollmond in %d Tagen"
+
+#: moon.py:69
+msgid "fullmoon"
+msgstr "Vollmond"
+
+#: moon.py:72
+#: moon.py:78
+msgid "decreasing moon"
+msgstr "abnehmender Mond"
+
+#: moon.py:75
+#: moon.py:87
+msgid "half moon"
+msgstr "Halbmond"
+
+#: moon.py:81
+msgid "new moon"
+msgstr "Vollmond"
+
+#: moon.py:84
+#: moon.py:90
+msgid "waxing moon"
+msgstr "zunehmender Mond"
+
+#: reminder.py:59
+msgid ": ERROR: You need to specify a number of minutes and a reminder text!"
+msgstr ": FEHLER: Es muss die Anzahl der zu wartenden Minuten sowie ein Erinnerungstext eingegeben werden."
+
+#: reminder.py:64
+msgid ": ERROR: invalid number format \"%s\"."
+msgstr ": Fehler: Ungültiges Zahlenformat \"%s\""
+
+#: reminder.py:68
+msgid ": I will remind you in %i minutes"
+msgstr ": Ich werde dich in %i Minute(n) erinnern"
+
+#: reminder.py:79
+#: reminder.py:87
+msgid ": Syntax: !remindmeat YYYY-MM-DD hh:mm <reminder text>"
+msgstr ": Syntax: !remindmeat YYYY-MM-DD hh:mm <Erinnerungstext>"
+
+#: reminder.py:83
+msgid ": I will remind you at %s %s"
+msgstr ": Ich werde dich am %s um %s Uhr erinnern"
+
+#: reminder.py:85
+msgid ": ERROR: You specified a date in the past"
+msgstr ": Fehler: Das angegebene Datum liegt in der Vergangenheit"
+

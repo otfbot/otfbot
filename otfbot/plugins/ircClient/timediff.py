@@ -14,44 +14,45 @@
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
-# (c) 2005, 2006 by Alexander Schier
+# (c) 2010 by Alexander Schier
 #
 
 """
-    Calculate a random number
+    provide time and compare CTCP times
 """
 
 from otfbot.lib import chatMod
 from otfbot.lib.pluginSupport.decorators import callback
 
-import random
-
+from time import mktime, ctime, strptime, time, sleep
 
 class Plugin(chatMod.chatMod):
 
     def __init__(self, bot):
         self.bot = bot
+        self.queries={}
+        self.compare={}
 
     @callback
     def command(self, user, channel, command, options):
         _=self.bot.get_gettext(channel)
-        if command == "wuerfel" or command == "dice":
-            if options == "":
-                answ = _("rolls a die. The result is %i") % random.randint(1, 6)
-                self.bot.sendme(channel, answ)
-            else:
-                num = 2
-                string = _("rolls dice. The results are: ")
+        if command == "time":
+            self.bot.sendmsg(channel, _("my time: %s")%ctime())
+        elif command == "timediff":
+            self.bot.ctcpMakeQuery(user.split("!")[0], [("TIME", None)])
+            self.queries[user]=channel
+
+    @callback
+    def ctcpReply(self, user, channel, tag, data):
+        if tag == "TIME":
+            self.logger.debug(user)
+            if user in self.queries:
                 try:
-                    num = int(options)
+                    _=self.bot.get_gettext(self.queries[user])
+                    timediff = time() - mktime(strptime(data))
+                    self.bot.sendmsg(self.queries[user],
+                      _("my time: %s, your time: %s, %d seconds difference")\
+                      %(ctime(), data, timediff))
                 except ValueError:
-                    num = 2
-                if num > 10:
-                    num = 10
-                for i in range(1, num + 1):
-                    zahl = random.randint(1, 6)
-                    if i < num:
-                        string += str(zahl) + ", "
-                    else:
-                        string += str(zahl)
-                self.bot.sendme(channel, string)
+                    pass
+                del self.queries[user]

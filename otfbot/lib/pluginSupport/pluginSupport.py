@@ -129,7 +129,7 @@ class pluginSupport:
         if not dependency in plugins or service+"."+dependency in pluginsDisabled:
             raise self.PluginMissing(dependency, description)
 
-    def importPlugin(self, name):
+    def importPlugin(self, name, package=None):
         """
             import a plugin
 
@@ -139,9 +139,13 @@ class pluginSupport:
         if not self.classes:
             self.classes = []
         for c in self.classes:
-            if c.__name__ == name:
+            if (not package and c.__name__ == name) or (package and c.__name__ == package+"."+name):
                 return c
-        pkg = self.pluginSupportPath.replace("/", ".") + "." + name #otfbot.plugins.service.plugin
+        if not package:
+            #otfbot.plugins.service
+            package=self.pluginSupportPath.replace("/", ".")
+        #otfbot.plugins.service.plugin
+        pkg = package + "." + name
         try:
             cls = __import__(pkg, fromlist=['*'], globals={'service': self})
             cls.datadir = self.config.get("datadir", "data")
@@ -201,7 +205,7 @@ class pluginSupport:
         for callback in toremove:
             self.callbacks[callbackname].remove(callback)
 
-    def startPlugins(self):
+    def startPlugins(self, package=None):
         """
             initializes all known plugins
         """
@@ -211,7 +215,7 @@ class pluginSupport:
                     [], "main", set_default=False)
         for plginName in plugins:
             if not plginName in self.config.get("pluginsDisabled", [], "main"):
-                self.startPlugin(plginName)
+                self.startPlugin(plginName, package=package)
 
         #then we call .start(), guaranteeing that all other enabled plugins are loaded
         #so start may depend on other plugins, make your dependency explicit with 
@@ -221,7 +225,7 @@ class pluginSupport:
             if hasattr(mod, "start"):
                 mod.start()
 
-    def startPlugin(self, pluginName):
+    def startPlugin(self, pluginName, package=None):
         """
         start the plugin named pluginName
 
@@ -231,9 +235,21 @@ class pluginSupport:
         @param pluginName: the name of the plugin
         @type pluginName: string
         """
-        pluginClass = self.importPlugin(pluginName)
+        pluginClass = self.importPlugin(pluginName, package=package)
         if not pluginClass:
             return None#import error, should already be logged in importPlugin
+        if self._getClassName(pluginClass) in self.plugins:
+            #self.logger.debug("plugin %s already loaded" %\
+            #    self._getClassName(pluginClass))
+            return self.plugins[self._getClassName(pluginClass)]
+        if hasattr(pluginClass, "Meta"):
+            if hasattr(pluginClass.Meta, "service_depends"):
+                if not set(pluginClass.Meta.service_depends).issubset(self.root.namedServices.keys()):
+                    self.logger.debug("%s (still) has unsatisfied dependencies: %s" \
+                        % (self._getClassName(pluginClass), \
+                        list(set(pluginClass.Meta.service_depends)\
+                        -set(self.root.namedServices.keys()))))
+                    return None
         if hasattr(pluginClass, "Plugin"):
         # and hasattr(pluginClass.Plugin.ircClientPlugin) (?)
             try:
@@ -365,7 +381,10 @@ class pluginSupport:
             @param exception: the exception
             @type exception: exception
         """
-        if type(exception) == self.DependencyMissing or type(exception) == self.ModuleMissing or type(exception) == self.ServiceMissing or type(exception) == self.PluginMissing:
+        if type(exception) == self.DependencyMissing or\
+            type(exception) == self.ModuleMissing or\
+            type(exception) == self.ServiceMissing or\
+            type(exception) == self.PluginMissing:
             msg = "Dependency missing in plugin %s: %s. plugin not started."
             logger.warning(msg % (plugin, str(exception)))
             return

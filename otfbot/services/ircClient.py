@@ -30,6 +30,8 @@ import logging
 import string
 import time
 from threading import Lock
+import gettext
+import traceback
 
 from otfbot.lib.pluginSupport import pluginSupport
 from otfbot.lib.user import IrcUser, MODE_CHARS, MODE_SIGNS
@@ -254,6 +256,7 @@ class Bot(pluginSupport, irc.IRCClient):
         # modes for channels
         self.channelmodes = {}
         self.serversupports = {}
+        self.translations = {}
 
         self.syncing_channels=[] #list of channels, which still wait for ENDOFWHO
         self.callback_queue=[] #list of callbacks waiting for ENDOFWHO, structure: [([channels], (function, args, kwargs))]
@@ -336,17 +339,6 @@ class Bot(pluginSupport, irc.IRCClient):
         self.register_ctl_command(self.sendmsg, name="say")
         self.register_ctl_command(self.ping)
 
-    #def startPlugins(self):
-    #    pluginSetting = self.pluginSupportName + "Plugins"
-    #    plugins = self.config.get(pluginSetting, [], "main", set_default=False)
-    #    disabled = self.config.get("pluginsDisabled", [], "main", self.network)
-    #    for pluginName in plugins:
-    #        if not pluginName in disabled:
-    #            self.startPlugin(pluginName)
-
-    def startPlugin(self, pluginName):
-        plugin = pluginSupport.startPlugin(self, pluginName)
-
     def getFactory(self):
         """ get the factory
             @rtype: BotFactory
@@ -376,17 +368,35 @@ class Bot(pluginSupport, irc.IRCClient):
             @ivar fallback: a safe fallback (i.e. iso-8859-15)
         """
         enc = self.config.get("encoding", "UTF-8", "main")
-        try:
-            line = unicode(line, encoding).encode(enc)
-        except UnicodeDecodeError:
-            #self.logger.debug("Unicode Decode Error with String:"+str(msg))
-            #Try with Fallback encoding
-            line = unicode(line, fallback).encode(enc)
-        except UnicodeEncodeError:
-            pass
-            #self.logger.debug("Unicode Encode Error with String:"+str(msg))
-            #use msg as is
+        if not type(line) == unicode:
+            if self.config.getBool("debugUnicode", False):
+                self.logger.debug("output line is not an unicode object")
+                for l in traceback.format_stack(limit=6):
+                    for l2 in l.split("\n"):
+                        if l2.strip():
+                            self.logger.debug(l2)
+            try:
+                line = unicode(line, encoding)
+            except UnicodeDecodeError:
+                line = unicode(line, fallback, errors="replace")
+        line=line.encode(enc)
         return line
+
+    def get_gettext(self, channel=None):
+        lang=self.config.get("language", None, "main", self.network, channel)
+        if not lang in self.translations and lang:
+            if gettext.find("otfbot", "locale", languages=[lang]):
+                self.translations[lang]=gettext.translation("otfbot", "locale",\
+                    languages=[lang])
+            else: #no language file found for requested language
+                lang=None
+        if lang:
+            def _(input):
+                return self.translations[lang].ugettext(input)
+        else:
+            def _(input):
+                return input
+        return _
 
     def sendmsg(self, channel, msg, encoding="UTF-8", fallback="iso-8859-15"):
         """
@@ -471,7 +481,7 @@ class Bot(pluginSupport, irc.IRCClient):
                                    self.network, channel)):
                 pw = self.config.get("password", "", "main", \
                                      self.network, channel)
-                if (pw != ""):
+                if pw:
                     self.join(unicode(channel).encode("iso-8859-1"),
                                             unicode(pw).encode("iso-8859-1"))
                 else:
@@ -527,21 +537,17 @@ class Bot(pluginSupport, irc.IRCClient):
             self.rev_modcharvals = \
                     dict([(v, k) for (k, v) in self.modcharvals.iteritems()])
 
-    def command(self, user, channel, command, options):
-        """callback for !commands
-        @param user: the user, which issues the command
-        @type user: string
-        @param channel: the channel to which the message was sent or my
-                        nickname if it was a private message
-        @type channel: string
-        @param command: the !command without the !
-        @type command: string
-        @param options: eventual options specified
-                        after !command (e.g. "!command foo")
-        @type options: string"""
-        channel = channel.lower()
-        self._apirunner("command", {"user": user, "channel": channel,
-                                    "command": command, "options": options})
+    def toUnicode(self, str, network=None, channel=None):
+        """
+            convert a string to an unicode-object, trying to use the
+            encoding given in config, with fallback to iso-8859-15
+        """
+        try:
+            str=unicode(str, self.config.get("encoding", "UTF-8", "main",
+                network=network, channel=channel))
+        except UnicodeDecodeError:
+            str=unicode(str, "iso-8859-15", errors='replace')
+        return str
 
     @syncedChannel(argnum=1)
     def privmsg(self, user, channel, msg):
@@ -556,11 +562,10 @@ class Bot(pluginSupport, irc.IRCClient):
             @type msg: string
         """
         channel = channel.lower()
-        try:
-            char = msg[0].decode('UTF-8').encode('UTF-8')
-        except UnicodeDecodeError:
-            char = msg[0].decode('iso-8859-15').encode('UTF-8')
-        if char == self.config.get("commandChar", "!", "main").encode("UTF-8"):
+        msg=self.toUnicode(msg, self.network, channel)
+
+        char = msg[0]
+        if char == self.config.get("commandChar", "!", "main"):
             tmp = msg[1:].split(" ", 1)
             command = tmp[0]
             if len(tmp) == 2:
@@ -603,11 +608,12 @@ class Bot(pluginSupport, irc.IRCClient):
             @type msg: string
         """
         channel = channel.lower()
+        msg=self.toUnicode(msg, self.network, channel)
         self._apirunner("noticed", {"user": user,
                                     "channel": channel, "msg": msg})
 
     @syncedChannel(argnum=1)
-    def action(self, user, channel, message):
+    def action(self, user, channel, msg):
         """ called by twisted,
             if we received a action
             @param user: the user which send the action
@@ -619,8 +625,9 @@ class Bot(pluginSupport, irc.IRCClient):
             @type msg: string
         """
         channel = channel.lower()
+        msg=self.toUnicode(msg, self.network, channel)
         self._apirunner("action", {"user": user, "channel": channel,
-                                   "msg": message})
+                                   "msg": msg})
 
     @syncedChannel(argnum=1)
     def modeChanged(self, user, chan, set, modes, args):
@@ -649,10 +656,13 @@ class Bot(pluginSupport, irc.IRCClient):
                     u=self.getUserByNick(args[i])
                     if u:
                         # user in channel
-                        if set:
-                            u.setMode(chan, modes[i])
+                        if chan in u.getChannels():
+                            if set:
+                                u.setMode(chan, modes[i])
+                            else:
+                                u.removeMode(chan, modes[i])
                         else:
-                            u.removeMode(chan, modes[i])
+                            self.logger.warning("user %s is not in channel %s"%(u.getHostMask(), chan))
                     else:
                         self.logger.error(args[i] + " not known to me")
                 else: # channelmodes
@@ -665,7 +675,7 @@ class Bot(pluginSupport, irc.IRCClient):
                         else:
                             #TODO: remove this check if fetching the initial
                             #      state works
-                            if args[i] in self.channelmodes[chan][modes[i]]: 
+                            if modes[i] in self.channelmodes[chan] and args[i] in self.channelmodes[chan][modes[i]]:
                                 self.channelmodes[chan][modes[i]].remove(args[i])
                     else: #flagging or key-value modes
                         if set:
@@ -681,6 +691,7 @@ class Bot(pluginSupport, irc.IRCClient):
         """ called by twisted,
             if the bot was kicked
         """
+        message=self.toUnicode(message, self.network)
         channel = channel.lower()
         self.logger.info("I was kicked from " + channel + " by " + kicker)
         self._apirunner("kickedFrom", {"channel": channel, "kicker": kicker,
@@ -698,6 +709,7 @@ class Bot(pluginSupport, irc.IRCClient):
         """ called by twisted,
             if a user was kicked
         """
+        message=self.toUnicode(message, self.network)
         channel = channel.lower()
         self._apirunner("userKicked", {"kickee": kickee, "channel": channel,
                                        "kicker": kicker, "message": message})
@@ -736,6 +748,7 @@ class Bot(pluginSupport, irc.IRCClient):
         """ called by twisted,
             if a C{user} quits
         """
+        quitMessage=self.toUnicode(quitMessage, self.network)
         self._apirunner("userQuit", {"user": user, "quitMessage": quitMessage})
         if user in self.user_list:
             del(self.user_list[user])
@@ -743,7 +756,7 @@ class Bot(pluginSupport, irc.IRCClient):
             nick=user.split("!")[0]
             user=self.getUserByNick(nick)
             if not user or not user.getHostMask() in self.user_list:
-                logger.debug("user with nick %s quit, but was not in user_list"%nick)
+                self.logger.debug("user with nick %s quit, but was not in user_list"%nick)
                 return
             del(self.user_list[user.getHostMask()])
 
@@ -763,6 +776,15 @@ class Bot(pluginSupport, irc.IRCClient):
         self._apirunner("ctcpQuery", {"user": user, "channel": channel,
                 "messages": messages})
 
+    @syncedChannel(argnum=1)
+    def ctcpUnknownReply(self, user, channel, tag, data):
+        """ called by twisted,
+            if a C{user} sent a ctcp reply
+        """
+        channel = channel.lower()
+        self._apirunner("ctcpReply", {"user": user, "channel": channel,
+            "tag": tag, "data": data})
+
     @syncedAll
     def userRenamed(self, oldname, newname):
         """ called by twisted,
@@ -770,7 +792,7 @@ class Bot(pluginSupport, irc.IRCClient):
         """
         self._apirunner("userRenamed", {"oldname": oldname, "newname": newname})
         user=self.getUserByNick(oldname)
-        if user.getHostMask() in self.user_list:
+        if user and user.getHostMask() in self.user_list:
             del (self.user_list[user.getHostMask()])
         else:
             self.logger.warning("%s not found in user_list!"%user.getHostMask())
@@ -783,6 +805,7 @@ class Bot(pluginSupport, irc.IRCClient):
             if the topic was updated
         """
         channel = channel.lower()
+        newTopic=self.toUnicode(newTopic, self.network, channel)
         self._apirunner("topicUpdated", {"user": user,
                 "channel": channel, "newTopic": newTopic})
 

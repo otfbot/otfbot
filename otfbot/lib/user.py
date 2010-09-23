@@ -126,7 +126,7 @@ class IrcUser(object):
             @ivar channels: the channellist
         """
         self.channels = set([channel.lower() for channel in channels])
-        for channel in channels:
+        for channel in self.channels:
             self.modes[channel]=0
 
     def getChannels(self):
