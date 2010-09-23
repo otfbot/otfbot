@@ -575,12 +575,7 @@ class Bot(pluginSupport, irc.IRCClient):
             self._apirunner("command", {"user": user, "channel": channel,
                                        "command": command, "options": options})
 
-        #FIXME: iirc the first line had a problem, if the bot got a nickchange
-        #       from network and self.nickname != real nickname. the forced
-        #       NICK should be used to update self.nickname and then we can
-        #       use the first line again
-        #if channel.lower() == self.nickname.lower():
-        if not channel.lower()[0] in self.supported.getFeature('CHANTYPES'):
+        if channel.lower() == self.nickname.lower():
             self._apirunner("query", {"user": user,
                                       "channel": channel, "msg": msg})
             return
