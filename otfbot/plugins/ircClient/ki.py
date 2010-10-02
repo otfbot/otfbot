@@ -170,15 +170,7 @@ class megahalResponder(responder):
         @type    msg:    string
         @param    msg:    the string to learn
         """
-        try:
-            msg = unicode(msg, "UTF-8").encode("iso-8859-15", errors="ignore")
-        except UnicodeEncodeError:
-            return
-            #pass
-        except UnicodeDecodeError:
-            return
-            #pass
-        mh_python.learn(msg)
+        mh_python.learn(msg.encode("iso-8859-15"))
     def reply(self, msg):
         """replies to msg, and learns it
         @param    msg: the string to reply to
@@ -186,15 +178,8 @@ class megahalResponder(responder):
         @rtype: string
         @returns the answer of the megahal bot
         """
-        try:
-            string = unicode(msg, "UTF-8").encode("iso-8859-15")
-        except UnicodeEncodeError:
-            return ""
-            #pass
-        except UnicodeDecodeError:
-            return ""
-            #pass
-        return unicode(mh_python.doreply(string), "iso-8859-15").encode("UTF-8")
+        string = msg.encode("iso-8859-15")
+        return unicode(mh_python.doreply(string), "iso-8859-15")
 
     def cleanup(self):
         """clean megahal shutdown"""
