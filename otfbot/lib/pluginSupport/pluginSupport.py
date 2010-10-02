@@ -300,7 +300,6 @@ class pluginSupport:
             stop all Plugins
         """
         for chatPlugin in self.plugins.values():
-            self.logger.debug(chatPlugin.__name__)
             self.stopPlugin(chatPlugin.name)
 
     def stopPlugin(self, pluginName):
