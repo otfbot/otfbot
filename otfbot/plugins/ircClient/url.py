@@ -70,6 +70,7 @@ class Plugin(chatMod.chatMod):
             self.parser=titleExtractor()
         self.parser.reset()
     
+    @callback
     def msg(self, user, channel, msg):
         mask=0        
         # http://www.truerwords.net/2539
