@@ -106,7 +106,7 @@ class botService(service.MultiService):
             self.register_ctl_command(lambda: self.namedServices.keys(),
                                       name="list")
         for network in self.config.getNetworks():
-            if self.config.getBool('enabled', 'True', 'main', network):
+            if self.config.getBool('enabled', False, 'main', network):
                 self.connect(network)
         service.MultiService.startService(self)
 
@@ -477,7 +477,7 @@ class Bot(pluginSupport, irc.IRCClient):
         channelstojoin = self.channels
         self.channels = []
         for channel in channelstojoin:
-            if(self.config.getBool("enabled", "false", "main", \
+            if(self.config.getBool("enabled", False, "main", \
                                    self.network, channel)):
                 pw = self.config.get("password", "", "main", \
                                      self.network, channel)
@@ -519,7 +519,7 @@ class Bot(pluginSupport, irc.IRCClient):
                 self.user_list[user].removeChannel(channel)
         self.channels.remove(channel)
         # disable the channel for the next start of the bot
-        self.config.set("enabled", "False", "main", self.network, channel)
+        self.config.set("enabled", False, "main", self.network, channel)
 
     def isupport(self, options):
         for o in options:
@@ -582,7 +582,7 @@ class Bot(pluginSupport, irc.IRCClient):
         # to be called for messages in channels
         self._apirunner("msg", {"user": user, "channel": channel, "msg": msg})
 
-    @syncedChannelRaw
+    @syncedAll
     def irc_unknown(self, prefix, command, params):
         """ called by twisted
             for every line that has no own callback
@@ -872,6 +872,7 @@ class Bot(pluginSupport, irc.IRCClient):
         """ Overridden to get isupport work correctly """
         self.isupport(params[1:-1])
 
+    @syncedChannelRaw
     def irc_JOIN(self, prefix, params):
         """ Overridden to get the full hostmask """
         nick = string.split(prefix, '!')[0]
