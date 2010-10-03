@@ -37,11 +37,10 @@ class Plugin(chatMod.chatMod):
         self.identify()
 
     def identify(self):
-        if unicode(self.bot.config.get("nickservPassword", "", "identify", 
-            self.bot.network)):
+        password = self.bot.config.get("nickservPassword", None, 
+            "identify", self.bot.network)
+        if password:
             self.logger.info("identifying to nickserv")
-            password = str(self.bot.config.get("nickservPassword", u"", 
-                "identify", self.bot.network))
             self.bot.sendmsg("nickserv", u"identify " + password)
             self.sent_identification = True
         if self.bot.config.getBool("setBotFlag", True, "identify", self.bot.network):
