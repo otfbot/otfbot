@@ -42,7 +42,10 @@ class Plugin(chatMod.chatMod):
         headers=None
         if "preview" in command:
             if options == "":
-                options=self.lasturl
+                if self.lasturl:
+                    options=self.lasturl
+                else:
+                    return
             d=urlutils.download(options, headers={'Accept':'text/html'})
             d.addCallback(self.processPreview, channel)
             d.addErrback(self.error, channel)
@@ -104,4 +107,6 @@ class titleExtractor(HTMLParser):
                 if self.intitle:
                         self.title = data
         def get_result(self):
-                return self.title
+            title=self.title.replace("\n", " ").replace("\r", "")
+            title=re.sub("[ ]+", " ", title)
+            return title
