@@ -872,7 +872,7 @@ class Bot(pluginSupport, irc.IRCClient):
         """ Overridden to get isupport work correctly """
         self.isupport(params[1:-1])
 
-    @syncedChannelRaw
+    #no decorator here, see .joined (!)
     def irc_JOIN(self, prefix, params):
         """ Overridden to get the full hostmask """
         nick = string.split(prefix, '!')[0]
