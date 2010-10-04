@@ -62,7 +62,7 @@ def syncedChannel(argnum=None):
 
 def syncedChannelRaw(func):
     def callSynced(self, *args, **kwargs):
-        channel = args[1][1]
+        channel = args[1][-1]
         if channel in self.syncing_channels:
             self.callback_queue.append(([channel], (func, args, kwargs)))
         else:
@@ -865,7 +865,7 @@ class Bot(pluginSupport, irc.IRCClient):
         """ called by twisted,
             if the bot was invited
         """
-        channel = params[1].lower()
+        channel = params[-1].lower()
         self._apirunner("invitedTo", {"channel": channel, "inviter": prefix})
 
     def irc_RPL_BOUNCE(self, prefix, params):
