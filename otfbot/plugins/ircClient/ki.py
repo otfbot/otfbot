@@ -28,6 +28,7 @@ import urllib, urllib2, socket
 from otfbot.lib import chatMod, functions
 from otfbot.lib.eliza import eliza
 from otfbot.lib.pluginSupport.decorators import callback
+from otfbot.lib.color import filtercolors
 
 import yaml
 
@@ -44,10 +45,6 @@ except ImportError:
 
 class Meta:
     service_depends = ['scheduler']
-
-def filtercolors(string):
-    return string.replace(chr(3) + "1", "").replace(chr(3) + "2", "").replace(chr(3) + "3", "").replace(chr(3) + "4", "").replace(chr(3) + "5", "").replace(chr(3) + "6", "").replace(chr(3) + "7", "").replace(chr(3) + "8", "").replace(chr(3) + "9", "").replace(chr(3) + "10", "").replace(chr(3) + "11", "").replace(chr(3) + "12", "").replace(chr(3) + "13", "").replace(chr(3) + "14", "").replace(chr(3) + "15", "").replace(chr(3), "")
-
 
 class responder:
     """a prototype of a artificial intelligence responder. 
