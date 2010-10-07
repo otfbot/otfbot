@@ -60,8 +60,10 @@ def syncedChannel(argnum=None):
         return callSynced
     return decorator
 
+
 def syncedChannelRaw(func):
     def callSynced(self, *args, **kwargs):
+        assert len(args) >= 2
         channel = args[1][-1]
         if channel in self.syncing_channels:
             self.callback_queue.append(([channel], (func, args, kwargs)))
@@ -84,7 +86,6 @@ class botService(service.MultiService):
         self.root = root
         self.parent = parent
         service.MultiService.__init__(self)
-
 
     def startService(self):
         """ 
@@ -266,6 +267,15 @@ class Bot(pluginSupport, irc.IRCClient):
         self.startPlugins()
         self.register_my_commands()
         self.startTimeoutDetection()
+
+    def _synced_apirunner(self, apifunction, args={}):
+            assert 'channel' in args, args
+            channel=args['channel']
+            if channel in self.syncing_channels:
+                self.callback_queue.append(([channel], (self._apirunner, (apifunction, args,) )))
+            else:
+                self._apirunner(apifunction, args)
+
 
     def handleCommand(self, command, prefix, params):
         """ 
@@ -549,7 +559,8 @@ class Bot(pluginSupport, irc.IRCClient):
             str=unicode(str, "iso-8859-15", errors='replace')
         return str
 
-    @syncedChannel(argnum=1)
+    #no decorator here, we decorate the _apirunner calls instead
+    #this avoids getting nick from queries in the channel-list
     def privmsg(self, user, channel, msg):
         """ called by twisted,
             if we received a message
@@ -572,15 +583,15 @@ class Bot(pluginSupport, irc.IRCClient):
                 options = tmp[1]
             else:
                 options = ""
-            self._apirunner("command", {"user": user, "channel": channel,
+            self._synced_apirunner("command", {"user": user, "channel": channel,
                                        "command": command, "options": options})
 
+        #query?
         if channel.lower() == self.nickname.lower():
             self._apirunner("query", {"user": user,
                                       "channel": channel, "msg": msg})
-            return
-        # to be called for messages in channels
-        self._apirunner("msg", {"user": user, "channel": channel, "msg": msg})
+        else:
+            self._synced_apirunner("msg", {"user": user, "channel": channel, "msg": msg})
 
     @syncedAll
     def irc_unknown(self, prefix, command, params):
