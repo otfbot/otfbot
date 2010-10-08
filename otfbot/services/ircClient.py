@@ -552,6 +552,9 @@ class Bot(pluginSupport, irc.IRCClient):
             convert a string to an unicode-object, trying to use the
             encoding given in config, with fallback to iso-8859-15
         """
+        #if its a query (not a channel)
+        if channel and not channel[0] in self.supported.getFeature('CHANTYPES'):
+            channel=None #prevents config.get from creating a wrong 'channel'
         try:
             str=unicode(str, self.config.get("encoding", "UTF-8", "main",
                 network=network, channel=channel))
@@ -587,7 +590,7 @@ class Bot(pluginSupport, irc.IRCClient):
                                        "command": command, "options": options})
 
         #query?
-        if channel.lower() == self.nickname.lower():
+        if not channel[0] in self.supported.getFeature('CHANTYPES'):
             self._apirunner("query", {"user": user,
                                       "channel": channel, "msg": msg})
         else:
