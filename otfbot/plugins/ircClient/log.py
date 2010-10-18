@@ -24,6 +24,7 @@
 
 from otfbot.lib import chatMod
 from otfbot.lib.pluginSupport.decorators import callback
+from otfbot.lib.color import filtercolors
 
 import time
 import string
@@ -84,7 +85,7 @@ class Plugin(chatMod.chatMod):
         if self.day != self.ts("%d"):
             self.dayChange()
         if channel in self.channels:
-            logmsg = string + "\n"
+            logmsg = filtercolors(string) + "\n"
             if timestamp:
                 logmsg = self.ts() + " " + logmsg
             #TODO: blocking
@@ -92,6 +93,7 @@ class Plugin(chatMod.chatMod):
             self.files[channel].flush()
 
     def logPrivate(self, user, mystring):
+        mystring = filtercolors(mystring)
         dic = self.timemap()
         dic['c'] = string.lower(user)
         filename = Template(self.logpath).safe_substitute(dic)
