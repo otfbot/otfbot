@@ -45,6 +45,7 @@ class Plugin(chatMod.chatMod):
         self.datadir = bot.config.getPath("logdir", datadir, ".", "log")
         default = "$n-$c/$y-$m-$d.log"
         self.logpath = self.datadir + "/" + bot.config.get("path", default, "log")
+        self.doLogPrivate = self.bot.config.getBool("logPrivate", True, "log")
         #TODO: blocking
         if not os.path.isdir(self.datadir):
             os.makedirs(self.datadir)
@@ -93,16 +94,17 @@ class Plugin(chatMod.chatMod):
             self.files[channel].flush()
 
     def logPrivate(self, user, mystring):
-        mystring = filtercolors(mystring)
-        dic = self.timemap()
-        dic['c'] = string.lower(user)
-        filename = Template(self.logpath).safe_substitute(dic)
-        #TODO: blocking
-        if not os.path.exists(os.path.dirname(filename)):
-            os.makedirs(os.path.dirname(filename))
-        file = open(filename, "a")
-        file.write(self.ts() + " " + mystring.encode("UTF-8") + "\n")
-        file.close()
+        if self.doLogPrivate:
+            mystring = filtercolors(mystring)
+            dic = self.timemap()
+            dic['c'] = string.lower(user)
+            filename = Template(self.logpath).safe_substitute(dic)
+            #TODO: blocking
+            if not os.path.exists(os.path.dirname(filename)):
+                os.makedirs(os.path.dirname(filename))
+            file = open(filename, "a")
+            file.write(self.ts() + " " + mystring.encode("UTF-8") + "\n")
+            file.close()
 
     @callback
     def joined(self, channel):
