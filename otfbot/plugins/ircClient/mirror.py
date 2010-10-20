@@ -29,6 +29,12 @@ from otfbot.lib import color
 class Plugin(chatMod.chatMod):
 
     def __init__(self, bot):
+        """
+            Configuration:
+            If you want to mirror channel #a to channel #b then you need to add
+            mirror.mirrorto: network-#b
+            to the channel configuration of #a  where 'network' is the irc network name.
+        """
         self.bot = bot
         self.getbot = lambda network: bot.root.getServiceNamed('ircClient').getServiceNamed(network).protocol
         # the bot is red
