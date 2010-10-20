@@ -40,7 +40,7 @@ import os
 from otfbot.lib import version
 from otfbot.services import config as configService
 
-required_version = twversions.Version('twisted', 9, 0, 0)
+required_version = twversions.Version('twisted', 10, 0, 0)
 if twisted._version.version < required_version:
     print "Get %s or newer to run OTFBot" % required_version
     os._exit(1)
