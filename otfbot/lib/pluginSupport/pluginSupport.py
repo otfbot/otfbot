@@ -300,7 +300,6 @@ class pluginSupport:
             stop all Plugins
         """
         for chatPlugin in self.plugins.values():
-            self.logger.debug(chatPlugin.__name__)
             self.stopPlugin(chatPlugin.name)
 
     def stopPlugin(self, pluginName):
@@ -419,7 +418,7 @@ class pluginSupport:
             # the channel. Network-wide pluginsDisabled is
             # handled by startPlugins
             if hasattr(self, "network"):
-                if "channel" in args:
+                if "channel" in args and args['channel'][0] in '#+!&': #XXX: more/dynamic modes
                     args['channel'] = args['channel'].lower()
                     plugins = self.config.get("pluginsDisabled", [], "main",
                                         self.network, args["channel"],

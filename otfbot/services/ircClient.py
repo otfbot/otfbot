@@ -60,9 +60,11 @@ def syncedChannel(argnum=None):
         return callSynced
     return decorator
 
+
 def syncedChannelRaw(func):
     def callSynced(self, *args, **kwargs):
-        channel = args[1][1]
+        assert len(args) >= 2
+        channel = args[1][-1]
         if channel in self.syncing_channels:
             self.callback_queue.append(([channel], (func, args, kwargs)))
         else:
@@ -85,7 +87,6 @@ class botService(service.MultiService):
         self.parent = parent
         service.MultiService.__init__(self)
 
-
     def startService(self):
         """ 
         start the service
@@ -106,7 +107,7 @@ class botService(service.MultiService):
             self.register_ctl_command(lambda: self.namedServices.keys(),
                                       name="list")
         for network in self.config.getNetworks():
-            if self.config.getBool('enabled', 'True', 'main', network):
+            if self.config.getBool('enabled', False, 'main', network):
                 self.connect(network)
         service.MultiService.startService(self)
 
@@ -266,6 +267,15 @@ class Bot(pluginSupport, irc.IRCClient):
         self.startPlugins()
         self.register_my_commands()
         self.startTimeoutDetection()
+
+    def _synced_apirunner(self, apifunction, args={}):
+            assert 'channel' in args, args
+            channel=args['channel']
+            if channel in self.syncing_channels:
+                self.callback_queue.append(([channel], (self._apirunner, (apifunction, args,) )))
+            else:
+                self._apirunner(apifunction, args)
+
 
     def handleCommand(self, command, prefix, params):
         """ 
@@ -477,7 +487,7 @@ class Bot(pluginSupport, irc.IRCClient):
         channelstojoin = self.channels
         self.channels = []
         for channel in channelstojoin:
-            if(self.config.getBool("enabled", "false", "main", \
+            if(self.config.getBool("enabled", False, "main", \
                                    self.network, channel)):
                 pw = self.config.get("password", "", "main", \
                                      self.network, channel)
@@ -519,7 +529,7 @@ class Bot(pluginSupport, irc.IRCClient):
                 self.user_list[user].removeChannel(channel)
         self.channels.remove(channel)
         # disable the channel for the next start of the bot
-        self.config.set("enabled", "False", "main", self.network, channel)
+        self.config.set("enabled", False, "main", self.network, channel)
 
     def isupport(self, options):
         for o in options:
@@ -542,6 +552,9 @@ class Bot(pluginSupport, irc.IRCClient):
             convert a string to an unicode-object, trying to use the
             encoding given in config, with fallback to iso-8859-15
         """
+        #if its a query (not a channel)
+        if channel and not channel[0] in self.supported.getFeature('CHANTYPES'):
+            channel=None #prevents config.get from creating a wrong 'channel'
         try:
             str=unicode(str, self.config.get("encoding", "UTF-8", "main",
                 network=network, channel=channel))
@@ -549,7 +562,8 @@ class Bot(pluginSupport, irc.IRCClient):
             str=unicode(str, "iso-8859-15", errors='replace')
         return str
 
-    @syncedChannel(argnum=1)
+    #no decorator here, we decorate the _apirunner calls instead
+    #this avoids getting nick from queries in the channel-list
     def privmsg(self, user, channel, msg):
         """ called by twisted,
             if we received a message
@@ -572,22 +586,17 @@ class Bot(pluginSupport, irc.IRCClient):
                 options = tmp[1]
             else:
                 options = ""
-            self._apirunner("command", {"user": user, "channel": channel,
+            self._synced_apirunner("command", {"user": user, "channel": channel,
                                        "command": command, "options": options})
 
-        #FIXME: iirc the first line had a problem, if the bot got a nickchange
-        #       from network and self.nickname != real nickname. the forced
-        #       NICK should be used to update self.nickname and then we can
-        #       use the first line again
-        #if channel.lower() == self.nickname.lower():
-        if not channel.lower()[0] in self.supported.getFeature('CHANTYPES'):
+        #query?
+        if not channel[0] in self.supported.getFeature('CHANTYPES'):
             self._apirunner("query", {"user": user,
                                       "channel": channel, "msg": msg})
-            return
-        # to be called for messages in channels
-        self._apirunner("msg", {"user": user, "channel": channel, "msg": msg})
+        else:
+            self._synced_apirunner("msg", {"user": user, "channel": channel, "msg": msg})
 
-    @syncedChannelRaw
+    @syncedAll
     def irc_unknown(self, prefix, command, params):
         """ called by twisted
             for every line that has no own callback
@@ -870,13 +879,14 @@ class Bot(pluginSupport, irc.IRCClient):
         """ called by twisted,
             if the bot was invited
         """
-        channel = params[1].lower()
+        channel = params[-1].lower()
         self._apirunner("invitedTo", {"channel": channel, "inviter": prefix})
 
     def irc_RPL_BOUNCE(self, prefix, params):
         """ Overridden to get isupport work correctly """
         self.isupport(params[1:-1])
 
+    #no decorator here, see .joined (!)
     def irc_JOIN(self, prefix, params):
         """ Overridden to get the full hostmask """
         nick = string.split(prefix, '!')[0]

@@ -28,6 +28,7 @@ import urllib, urllib2, socket
 from otfbot.lib import chatMod, functions
 from otfbot.lib.eliza import eliza
 from otfbot.lib.pluginSupport.decorators import callback
+from otfbot.lib.color import filtercolors
 
 import yaml
 
@@ -42,10 +43,8 @@ try:
 except ImportError:
     NIALL = 0
 
-
-def filtercolors(string):
-    return string.replace(chr(3) + "1", "").replace(chr(3) + "2", "").replace(chr(3) + "3", "").replace(chr(3) + "4", "").replace(chr(3) + "5", "").replace(chr(3) + "6", "").replace(chr(3) + "7", "").replace(chr(3) + "8", "").replace(chr(3) + "9", "").replace(chr(3) + "10", "").replace(chr(3) + "11", "").replace(chr(3) + "12", "").replace(chr(3) + "13", "").replace(chr(3) + "14", "").replace(chr(3) + "15", "").replace(chr(3), "")
-
+class Meta:
+    service_depends = ['scheduler']
 
 class responder:
     """a prototype of a artificial intelligence responder. 
@@ -170,15 +169,7 @@ class megahalResponder(responder):
         @type    msg:    string
         @param    msg:    the string to learn
         """
-        try:
-            msg = unicode(msg, "UTF-8").encode("iso-8859-15", errors="ignore")
-        except UnicodeEncodeError:
-            return
-            #pass
-        except UnicodeDecodeError:
-            return
-            #pass
-        mh_python.learn(msg)
+        mh_python.learn(msg.encode("iso-8859-15"))
     def reply(self, msg):
         """replies to msg, and learns it
         @param    msg: the string to reply to
@@ -186,15 +177,8 @@ class megahalResponder(responder):
         @rtype: string
         @returns the answer of the megahal bot
         """
-        try:
-            string = unicode(msg, "UTF-8").encode("iso-8859-15")
-        except UnicodeEncodeError:
-            return ""
-            #pass
-        except UnicodeDecodeError:
-            return ""
-            #pass
-        return unicode(mh_python.doreply(string), "iso-8859-15").encode("UTF-8")
+        string = msg.encode("iso-8859-15")
+        return unicode(mh_python.doreply(string), "iso-8859-15")
 
     def cleanup(self):
         """clean megahal shutdown"""

@@ -102,6 +102,8 @@ class configService(service.Service):
         """
         if module:
             option = module + "." + option
+        #do NOT create channel config for queries!
+        assert not channel or channel[0] in '#+!&', channel
 
         #This part tries to get the config value for an option only
         if network in self.network_options:
