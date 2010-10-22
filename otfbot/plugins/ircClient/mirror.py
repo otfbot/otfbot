@@ -23,15 +23,22 @@
 
 from otfbot.lib import chatMod
 from otfbot.lib.pluginSupport.decorators import callback
+from otfbot.lib import color
 
 
 class Plugin(chatMod.chatMod):
+    """
+        Configuration:
+        If you want to mirror channel #a to channel #b then you need to add
+        mirror.mirrorto: network-#b
+        to the channel configuration of #a  where 'network' is the irc network name.
+    """
 
     def __init__(self, bot):
         self.bot = bot
         self.getbot = lambda network: bot.root.getServiceNamed('ircClient').getServiceNamed(network).protocol
-        #x034 (red) is the bot
-        self.colors = ["\x032", "\x033", "\x035", "\x0311", "\x0310", "\x0312", "\x0315", "\x0314", "\x0316", "\x0313", "\x036"]
+        # the bot is red
+        self.colors = ["navy", "green", "brown", "cyan", "teal", "blue", "light_grey", "grey", "pink", "purple"]
 
     def _sendToMirror(self, channel, message):
         """Send a message to the mirrorChannel of the channel"""
@@ -46,10 +53,10 @@ class Plugin(chatMod.chatMod):
     def msg(self, user, channel, msg):
         nick = user.split("!")[0]
         if nick.lower() == self.bot.nickname.lower():
-            nick = "\x034%s\x0F" % nick
+            nick = color.changecolor("red") + nick + color.resetcolors()
         else:
-            color = self.colors[hash(nick) % len(self.colors)]
-            nick = "%s%s\x0F" % (color, nick)
+            nickcolor = self.colors[hash(nick) % len(self.colors)]
+            nick = color.changecolor(nickcolor) + nick + color.resetcolors()
         self._sendToMirror(channel, "< %s> %s" % (nick, msg))
 
     @callback

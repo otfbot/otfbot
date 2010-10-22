@@ -42,7 +42,10 @@ class Plugin(chatMod.chatMod):
         headers=None
         if "preview" in command:
             if options == "":
-                options=self.lasturl
+                if self.lasturl:
+                    options=self.lasturl
+                else:
+                    return
             d=urlutils.download(options, headers={'Accept':'text/html'})
             d.addCallback(self.processPreview, channel)
             d.addErrback(self.error, channel)
@@ -70,6 +73,7 @@ class Plugin(chatMod.chatMod):
             self.parser=titleExtractor()
         self.parser.reset()
     
+    @callback
     def msg(self, user, channel, msg):
         mask=0        
         # http://www.truerwords.net/2539
@@ -103,4 +107,6 @@ class titleExtractor(HTMLParser):
                 if self.intitle:
                         self.title = data
         def get_result(self):
-                return self.title
+            title=self.title.replace("\n", " ").replace("\r", "")
+            title=re.sub("[ ]+", " ", title)
+            return title
