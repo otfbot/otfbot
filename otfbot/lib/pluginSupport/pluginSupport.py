@@ -422,7 +422,7 @@ class pluginSupport:
                 #test if its a channel or a query. the config.get channel
                 #argument MUST NOT be a query name!
                 #RFC2811 section 2.1 says #+!& the only signs valid for channels
-                if "channel" in args and args['channel'][0] in '#+!&':
+                if "channel" in args and (type(args['channel'])==str or type(args['channel'])==unicode) and args['channel'][0] in '#+!&':
                     args['channel'] = args['channel'].lower()
                     plugins = self.config.get("pluginsDisabled", [], "main",
                                         self.network, args["channel"],

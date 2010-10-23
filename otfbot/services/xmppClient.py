@@ -33,6 +33,7 @@ import gettext
 import traceback
 
 from otfbot.lib.pluginSupport import pluginSupport
+from otfbot.lib.user import IrcUser
 
 
 class botService(service.MultiService):
@@ -202,6 +203,12 @@ class Bot(pluginSupport):
         body=unicode(msg.body)
         if msg.body and not body[:5] == "?OTR:":
             user=msg['from']
+            #XXX: how to split? 
+            #a@b/c -> nick=a, host=b, user=c?
+            #nick=a@b user=c, host=""?
+            #for now just everything in nick as it was before
+            #user objects
+            user=IrcUser(user, "", "", "", "xmpp")
             channel=msg['to']
             try:
                 self._apirunner("query", {'user': user,
@@ -220,7 +227,7 @@ class Bot(pluginSupport):
                 #user = user, channel = user, because most commands are
                 #answered in the channel, not to the user
                 try:
-                    self._apirunner("command", {"user": user, "channel": user,
+                    self._apirunner("command", {"user": user, "channel": str(user),
                         "command": command, "options": options})
                 except Exception, e:
                     self.logerror(self.logger, "xmppClient", e)
@@ -254,9 +261,9 @@ class Bot(pluginSupport):
                 message['type'] = 'chat'
                 message.addElement('body', content=msg)
                 self.messageProtocol.send(message)
-                self._apirunner("privmsg", {'user': self.nickname, \
+                self._apirunner("privmsg", {'user': IrcUser(self.nickname, "", "", "", "xmpp"), \
                     'channel': channel, 'msg': msg})
-                self._apirunner("query", {'user': self.nickname, \
+                self._apirunner("query", {'user': IrcUser(self.nickname, "", "", "", "xmpp"), \
                     'channel': channel, 'msg': msg})
             except Exception, e:
                 self.logerror(self.logger, "xmppClient", e)

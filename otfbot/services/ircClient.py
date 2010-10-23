@@ -613,6 +613,7 @@ class Bot(pluginSupport, irc.IRCClient):
 
         #query?
         if not channel[0] in self.supported.getFeature('CHANTYPES'):
+            #TODO: user object for channel?
             self._apirunner("query", {"user": user,
                                       "channel": channel, "msg": msg})
         else:
