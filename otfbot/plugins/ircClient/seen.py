@@ -47,7 +47,7 @@ class Plugin(chatMod.chatMod):
     @callback
     def msg(self, user, channel, msg):
         if channel[0] == "#":
-            self.userdata[0][channel][user.split("!")[0].lower()] = {'msg':msg, 'time':time.time()}
+            self.userdata[0][channel][user.getNick().lower()] = {'msg':msg, 'time':time.time()}
     
     @callback
     def command(self, user, channel, command, options):

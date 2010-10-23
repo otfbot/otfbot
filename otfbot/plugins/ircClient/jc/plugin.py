@@ -44,7 +44,7 @@ class Plugin(chatMod.chatMod):
             self.command(user, self.gamechannel, msg, "")
 
     def command(self, user, channel, command, options):
-        user = user.split("!")[0]
+        user = user.getNick()
         if command == "newgame":
             self.gamechannel = channel
         if command in ['nimm', 'zweifel', 'ich', 'remove', 'newgame', 'startgame', 'zahl', 'karten']:

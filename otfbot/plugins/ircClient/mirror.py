@@ -51,7 +51,7 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def msg(self, user, channel, msg):
-        nick = user.split("!")[0]
+        nick = user.getNick()
         if nick.lower() == self.bot.nickname.lower():
             nick = color.changecolor("red") + nick + color.resetcolors()
         else:
@@ -61,7 +61,7 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def action(self, user, channel, msg):
-        self._sendToMirror(channel, "* %s %s " % (user.split("!")[0], msg))
+        self._sendToMirror(channel, "* %s %s " % (user.getNick(), msg))
 
     @callback
     def kickedFrom(self, channel, kicker, message):
@@ -73,17 +73,17 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def userJoined(self, user, channel):
-        self._sendToMirror(channel, "%s has joined %s" % (user.split("!")[0], channel))
+        self._sendToMirror(channel, "%s has joined %s" % (user.getNick(), channel))
 
     @callback
     def userLeft(self, user, channel):
-        self._sendToMirror(channel, "%s has left %s" % (user.split("!")[0], channel))
+        self._sendToMirror(channel, "%s has left %s" % (user.getNick(), channel))
 
     @callback
     def userQuit(self, user, quitMessage):
         for (network, channel) in self.bot.config.has("mirrorto", "mirror")[2]:
             if self.network == network:
-                self._sendToMirror(channel, "%s has quit [%s]" % (user.split("!")[0], quitMessage))
+                self._sendToMirror(channel, "%s has quit [%s]" % (user.getNick(). quitMessage))
 
     @callback
     def userRenamed(self, oldname, newname):
