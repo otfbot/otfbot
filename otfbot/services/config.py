@@ -103,6 +103,7 @@ class configService(service.Service):
         if module:
             option = module + "." + option
         #do NOT create channel config for queries!
+        #see rfc2811 section 2.1, these four are the only valid channel signs
         assert not channel or channel[0] in '#+!&', channel
 
         #This part tries to get the config value for an option only
