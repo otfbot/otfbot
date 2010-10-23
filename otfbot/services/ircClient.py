@@ -757,14 +757,8 @@ class Bot(pluginSupport, irc.IRCClient):
         """
         channel = channel.lower()
         user=self.resolveUser(user)
-        nick = user.getNick()
-        us = user.split("@", 1)[0].split("!")[1]
-        if user in self.user_list:
-            u = self.user_list[user]
-        else:
-            u = IrcUser(nick, us, user.split("@")[1], nick, self)
-            self.user_list[user]=u
-        u.addChannel(channel)
+
+        user.addChannel(channel)
         self._apirunner("userJoined", {"user": user, "channel": channel})
 
     @syncedChannel(argnum=1)
@@ -843,7 +837,7 @@ class Bot(pluginSupport, irc.IRCClient):
             if the topic was updated
         """
         channel = channel.lower()
-        user=self.resolveUser(user)
+        #user is a string with nick. 
         newTopic=self.toUnicode(newTopic, self.network, channel)
         self._apirunner("topicUpdated", {"user": user,
                 "channel": channel, "newTopic": newTopic})
