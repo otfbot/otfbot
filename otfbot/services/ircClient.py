@@ -562,6 +562,27 @@ class Bot(pluginSupport, irc.IRCClient):
             str=unicode(str, "iso-8859-15", errors='replace')
         return str
 
+    def resolveUser(self, user):
+        assert type(user) == str or type(user) == unicode
+        if user in self.user_list:
+            return self.user_list[user]
+        if "!" in user:
+            nick=user.split("!")[0]
+            user2=self.getUserByNick(nick)
+            if user2:
+                return user2
+            parts=user.split("!")[1].split("@")
+            newuser=IrcUser(nick, parts[0], parts[1], "", self.network)
+            self.user_list[user]=newuser
+            return newuser
+        else:
+            user2=self.getUserByNick(user)
+            if user2:
+                return user2
+            else:
+                #we DO NOT store the incomplete user
+                return IrcUser(user, user, "host", "", self.network)
+
     #no decorator here, we decorate the _apirunner calls instead
     #this avoids getting nick from queries in the channel-list
     def privmsg(self, user, channel, msg):
@@ -577,6 +598,7 @@ class Bot(pluginSupport, irc.IRCClient):
         """
         channel = channel.lower()
         msg=self.toUnicode(msg, self.network, channel)
+        user=self.resolveUser(user)
 
         char = msg[0]
         if char == self.config.get("commandChar", "!", "main"):
@@ -617,6 +639,7 @@ class Bot(pluginSupport, irc.IRCClient):
             @type msg: string
         """
         channel = channel.lower()
+        user=self.resolveUser(user)
         msg=self.toUnicode(msg, self.network, channel)
         self._apirunner("noticed", {"user": user,
                                     "channel": channel, "msg": msg})
@@ -634,6 +657,7 @@ class Bot(pluginSupport, irc.IRCClient):
             @type msg: string
         """
         channel = channel.lower()
+        user=self.resolveUser(user)
         msg=self.toUnicode(msg, self.network, channel)
         self._apirunner("action", {"user": user, "channel": channel,
                                    "msg": msg})
@@ -644,6 +668,7 @@ class Bot(pluginSupport, irc.IRCClient):
             if a usermode was changed
         """
         chan = chan.lower()
+        user=self.resolveUser(user)
         if chan == self.nickname.lower():
             return #TODO: we do not do anything with our usermodes, yet
         mstr = "mode change: user %s channel %s set %s modes %s args %s"
@@ -731,7 +756,8 @@ class Bot(pluginSupport, irc.IRCClient):
             if a C{user} joined the C{channel}
         """
         channel = channel.lower()
-        nick = user.split("!")[0]
+        user=self.resolveUser(user)
+        nick = user.getNick()
         us = user.split("@", 1)[0].split("!")[1]
         if user in self.user_list:
             u = self.user_list[user]
@@ -747,7 +773,8 @@ class Bot(pluginSupport, irc.IRCClient):
             if a C{user} left the C{channel}
         """
         channel = channel.lower()
-        nick = user.split("!")[0]
+        user=self.resolveUser(user)
+        nick = user.getNick()
         self._apirunner("userLeft", {"user": user, "channel": channel})
         self.user_list[user].removeChannel(channel)
         #TODO: remove user, if len( .getChannels())==0?
@@ -782,6 +809,7 @@ class Bot(pluginSupport, irc.IRCClient):
             if a C{user} sent a ctcp query
         """
         channel = channel.lower()
+        user=self.resolveUser(user)
         self._apirunner("ctcpQuery", {"user": user, "channel": channel,
                 "messages": messages})
 
@@ -791,6 +819,7 @@ class Bot(pluginSupport, irc.IRCClient):
             if a C{user} sent a ctcp reply
         """
         channel = channel.lower()
+        user=self.resolveUser(user)
         self._apirunner("ctcpReply", {"user": user, "channel": channel,
             "tag": tag, "data": data})
 
@@ -814,6 +843,7 @@ class Bot(pluginSupport, irc.IRCClient):
             if the topic was updated
         """
         channel = channel.lower()
+        user=self.resolveUser(user)
         newTopic=self.toUnicode(newTopic, self.network, channel)
         self._apirunner("topicUpdated", {"user": user,
                 "channel": channel, "newTopic": newTopic})

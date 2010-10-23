@@ -61,7 +61,7 @@ class Plugin(chatMod.chatMod):
     @callback
     def command(self, user, channel, command, options):
         try:
-            user = user.split("!")[0]
+            user = user.getNick()
             public = False
             all = False
             filterstandard = False

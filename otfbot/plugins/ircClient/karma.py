@@ -180,7 +180,7 @@ class Plugin(chatMod.chatMod):
         return self.karmas[channel][what][0]
 
     def do_karma(self, channel, what, up, reason, user):
-        user = user.split("!")[0]
+        user = user.getNick()
         karma = self.karmas[channel]
         if not what in karma.keys():
             # score, who-up, who-down, why-up, why-down

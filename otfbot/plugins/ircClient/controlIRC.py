@@ -42,7 +42,7 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def query(self, user, channel, msg):
-        nick = user.split("!")[0]
+        nick = user.getNick()
         if user in self.control and msg == "endcontrol":
             del self.control[user]
         if msg == "control" and self.bot.auth(user) > 0:

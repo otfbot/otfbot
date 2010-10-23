@@ -61,7 +61,7 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def command(self, user, channel, command, options):
-        sender = user.split("!")[0]
+        sender = user.getNick()
 
         if command == "foo":
             self.bot.sendmsg(channel, self.admins)

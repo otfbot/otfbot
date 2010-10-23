@@ -80,7 +80,7 @@ class Plugin(chatMod.chatMod):
         regex=re.match(".*((ftp|http|https):(([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%[A-Fa-f0-9]{2}){2,}(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?([A-Za-z0-9$_+!*();/?:~-])).*", msg)
         if regex:
             url=regex.group(1)
-            if string.lower(user.split("!")[0]) != string.lower(self.bot.nickname):
+            if string.lower(user.getNick()) != string.lower(self.bot.nickname):
                 cmd=""
                 if not "tinyurl.com" in url:
                     if len(url) > self.autoTinyLength and self.autoTiny:

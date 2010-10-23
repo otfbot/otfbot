@@ -51,9 +51,9 @@ class Plugin(chatMod.chatMod):
         If no username is given, the nickname is used.
         """
         _=self.bot.get_gettext()
-        if user.lower() == self.bot.nickname.lower():
+        if user.getNick().lower() == self.bot.nickname.lower():
             return
-        nick = user.split("!")[0]
+        nick = user.getNick()
         if msg[0:9] == "identify ":
             portal = self.bot.root.getServiceNamed("auth")
             if not portal:
@@ -67,14 +67,8 @@ class Plugin(chatMod.chatMod):
             else:
                 self.bot.sendmsg(nick, _("Usage: identify [user] pass"))
                 return
-            if not user in self.bot.user_list:
-                u = IrcUser(user.split("!")[0],
-                          user.split("!", 1)[1].split("@")[0],
-                          user.split("!", 1)[1].split("@")[1],
-                          user.split("!")[0], self.bot)
-                self.bot.user_list[user] = u
 
-            d = portal.login(cred, self.bot.user_list[user], IUser)
+            d = portal.login(cred, user, IUser)
             msg = _("Successfully logged in as %s")
             d.addCallback(lambda args: self.bot.sendmsg(nick, msg 
                 % args[1].name))
@@ -87,10 +81,7 @@ class Plugin(chatMod.chatMod):
         """
         Returns the access-level of the given user.
         """
-        if not user in self.bot.user_list:
-            self.logger.warning("User %s not in user_list!"%user)
-            return 0
-        if self.bot.user_list[user].avatar is not None:
+        if user.avatar is not None:
             return 10
         else:
             return 0

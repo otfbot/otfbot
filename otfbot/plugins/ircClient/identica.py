@@ -52,7 +52,7 @@ class Plugin(chatMod.chatMod):
             #TODO: blocking
             self.api.login()
             if command == "iwn" or command == "identicawithnick":
-                options = user.split("!")[0] + ": " + options
+                options = user.getNick() + ": " + options
             options = options[:140]
             #TODO: blocking
             self.api.put_message(options)

@@ -239,7 +239,7 @@ class Plugin(chatMod.chatMod):
         if not self.bot.config.get("ignoreQuery", True, "ki", self.bot.network):
             ## ignoreQuery should be set to True if you're using auth.
             ## Else the ki also saves your username and password and maybe posts it in public!
-            user = user.split("!")[0]
+            user = user.getNick()
             if user[0:len(self.bot.nickname.lower())] == self.bot.nickname.lower():
                 return
             if user.lower() == self.bot.nickname.lower() or string.lower(user) in self.bot.config.get("ignore", [], "ki", self.bot.network):
@@ -260,7 +260,7 @@ class Plugin(chatMod.chatMod):
     
     @callback
     def msg(self, user, channel, msg):
-        user = user.split("!")[0].lower()
+        user = user.getNick().lower()
         if not user in self.nicklist:
             self.nicklist.append(user)
         if user in self.bot.config.get("ignore", [], "ki", self.bot.network, channel):
