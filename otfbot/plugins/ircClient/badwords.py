@@ -46,7 +46,7 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def msg(self, user, channel, msg):
-        nick = user.split("!")[0]
+        nick = user.getNick()
         for word in self.badwords:
             if channel in self.bot.channels:
                 if word != "" and re.search(word, msg, re.I):

@@ -39,7 +39,7 @@ class Plugin(chatMod.chatMod):
         if command == "time":
             self.bot.sendmsg(channel, _("my time: %s")%ctime())
         elif command == "timediff":
-            self.bot.ctcpMakeQuery(user.split("!")[0], [("TIME", None)])
+            self.bot.ctcpMakeQuery(user.getNick(), [("TIME", None)])
             self.queries[user]=channel
 
     @callback
