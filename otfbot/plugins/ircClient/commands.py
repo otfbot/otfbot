@@ -49,7 +49,7 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def command(self, user, channel, command, options):
-        user = user.split("!")[0] #only nick
+        user = user.getNick()
         if self.bot.config.getBool("autoReload", True, "commands", self.bot.network, channel):
             #TODO: blocking
             net_file = self.bot.config.getPath("file", datadir, "commands.txt", "commands", self.bot.network)

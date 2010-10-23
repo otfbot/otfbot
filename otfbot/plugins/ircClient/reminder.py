@@ -55,7 +55,7 @@ class Plugin(chatMod.chatMod):
             add new reminders with !remindme (float) (string), i.e. !remindme 5.0 coffee is ready
         """
         _=self.bot.get_gettext(channel)
-        user = user.split("!")[0]
+        user = user.getNick()
 
         if command == "remindmein":
             options = options.split(" ", 1)
