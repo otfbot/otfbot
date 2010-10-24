@@ -140,6 +140,7 @@ class botService(service.MultiService):
     def disconnect(self, network):
         """ disconnect from a network """
         if network in self.namedServices:
+            self.namedServices[network].protocol.disconnect()
             self.removeService(self.namedServices[network])
             return "Disconnected from " + network
         else:
@@ -165,6 +166,7 @@ class BotFactory(protocol.ReconnectingClientFactory):
         self.network = network
         self.config = root.getServiceNamed('config')
         self.logger = logging.getLogger(network)
+        self.stop = False
 
     def __repr__(self):
         return "<BotFactory for network %s>" % self.network
@@ -181,7 +183,7 @@ class BotFactory(protocol.ReconnectingClientFactory):
         """
         self.protocol = None
         self.service.protocol = None
-        if not reason.check(error.ConnectionDone):
+        if not self.stop:
             mstr = "Got disconnected from %s: %s"
             self.logger.warn(mstr % (connector.host, reason.getErrorMessage()))
             protocol.ReconnectingClientFactory.\
@@ -201,6 +203,12 @@ class BotFactory(protocol.ReconnectingClientFactory):
         self.service.protocol = proto
         self.resetDelay()
         return proto
+
+    def allow_disconnect(self):
+        """
+            stops the factory from reconnecting after disconnect
+        """
+        self.stop = True
 
 #    def stopFactory(self):
 #        #import inspect
@@ -235,6 +243,7 @@ class Bot(pluginSupport, irc.IRCClient):
         self.config = root.getServiceNamed('config')
         self.network = self.parent.network
         self.ircClient = self.parent.parent
+        self.factory = parent
         self.logger = logging.getLogger(self.network)
         pluginSupport.__init__(self, root, parent)
         if self.config.getBool('answerToCTCPVersion', True, 'main', self.network):
@@ -1013,4 +1022,5 @@ class Bot(pluginSupport, irc.IRCClient):
     def disconnect(self):
         """disconnects cleanly from the current network"""
         self._apirunner("stop")
+        self.factory.allow_disconnect()
         self.quit('Bye')
