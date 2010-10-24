@@ -235,7 +235,7 @@ class Plugin(chatMod.chatMod):
                     if not self.is_complete(datadir + "/" + time.strftime("epg_%Y_%m_%d.csv",time.gmtime(time.time()+86400*i))):
                         complete = False
                 except OSError: #FileNotFound
-                    complete = false
+                    complete = False
             if not complete:
                 self.tv = None
                 self.bot.root.getServiceNamed('scheduler').callLater(30,self.processUpdatedData)
