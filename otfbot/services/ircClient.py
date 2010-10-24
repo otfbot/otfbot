@@ -563,25 +563,39 @@ class Bot(pluginSupport, irc.IRCClient):
         return str
 
     def resolveUser(self, user):
+        """
+            resolve a user hostmask (nick!user@host) to a userobject
+            returns a known user, if its in the user_list. creates a new
+            user_list entry, if possible. if only nick is known, it returns a
+            incomplete user and does not store it in the user_list
+        """
         assert type(user) == str or type(user) == unicode
+
+        #best case: hostmask is known
         if user in self.user_list:
             return self.user_list[user]
+        #we have a complete hostmask?
         if "!" in user:
+            #try to get user by nick
             nick=user.split("!")[0]
             user2=self.getUserByNick(nick)
             if user2:
                 return user2
+            #extract the user@host parts
             parts=user.split("!")[1].split("@")
+            #new user, with nick, user, host, and without realname
             newuser=IrcUser(nick, parts[0], parts[1], "", self.network)
-            self.user_list[user]=newuser
+            self.user_list[user]=newuser #store it
             return newuser
         else:
+            #no complete hostmask, try to find a matching nick
             user2=self.getUserByNick(user)
             if user2:
                 return user2
             else:
+                #no user known with this nick, create a temporary user object
                 #we DO NOT store the incomplete user
-                return IrcUser(user, user, "host", "", self.network)
+                return IrcUser(user, user, "", "", self.network)
 
     #no decorator here, we decorate the _apirunner calls instead
     #this avoids getting nick from queries in the channel-list
