@@ -174,10 +174,6 @@ class configService(service.Service):
         channels = []
         if module:
             option = module + "." + option
-        #do NOT create channel config for queries!
-        #see rfc2811 section 2.1, these four are the only valid channel signs
-        if channel and not channel[0] in '#+!&':
-            channel=None
 
         for item in self.generic_options.keys():
             if item == option:
@@ -197,6 +193,11 @@ class configService(service.Service):
                                             channel=None, still_default=False):
         if module:
                 option = module + "." + option
+        #do NOT create channel config for queries!
+        #see rfc2811 section 2.1, these four are the only valid channel signs
+        if channel and not channel[0] in '#+!&':
+            channel=None
+
         if network:
             if channel:
                 self._create_preceding(network, channel)
