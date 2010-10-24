@@ -458,6 +458,51 @@ class Bot(pluginSupport, irc.IRCClient):
             self.describe(channel, line)
             self.action(self.nickname, channel, line)
 
+    ### Work around twisted brainfuck: ###
+    #twisted prepends a # if channel does not start with CHANNEL_PREFIXES
+    #this is a bad idea, so we implement the functions doing this with
+    #a errorlogger and a NO-OP if the channel argument is not a channel.
+    #this prevents joining wrong channels if somewhere queries and channel
+    #arguments mixed up. we already had an annoying bug with the bot joining
+    # #nickserv. this can now be detected in errorlog.
+
+    def join(self, channel, key=None):
+        """
+            wrapper around IRCClient.join, which only allows proper channels
+        """
+        if not channel[0] in irc.CHANNEL_PREFIXES:
+            self.logger.error('cannot join "%s", because it is not a channel'%channel)
+            return
+        return irc.IRCClient.join(self, channel, key)
+
+    def leave(self, channel, reason=None):
+        """
+            wrapper around IRCClient.leave, which only allows proper channels
+        """
+        if not channel[0] in irc.CHANNEL_PREFIXES:
+            self.logger.error('cannot leave "%s", because it is not a channel'%channel)
+            return
+        return irc.IRCClient.leave(self, channel, reason)
+
+    def kick(self, channel, user, reason=None):
+        """
+            wrapper around IRCClient.kick, which only allows proper channels
+        """
+        if not channel[0] in irc.CHANNEL_PREFIXES:
+            self.logger.error('cannot kick user from "%s", because it is not a channel'%channel)
+            return
+        return irc.IRCClient.kick(self, channel, user, reason)
+
+    def topic(self, channel, topic=None):
+        """
+            wrapper around IRCClient.topic, which only allows proper channels
+        """
+        if not channel[0] in irc.CHANNEL_PREFIXES:
+            self.logger.error('cannot change topic of "%s", because it is not a channel'%channel)
+            return
+        return irc.IRCClient.topic(self, channel, topic)
+
+
     # Callbacks
     def connectionMade(self):
         """
