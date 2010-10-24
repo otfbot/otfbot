@@ -780,16 +780,15 @@ class Bot(pluginSupport, irc.IRCClient):
             if a C{user} quits
         """
         quitMessage=self.toUnicode(quitMessage, self.network)
+        user=self.resolveUser(user)
+        nick=user.getNick()
         self._apirunner("userQuit", {"user": user, "quitMessage": quitMessage})
-        if user in self.user_list:
-            del(self.user_list[user])
-        else:
-            nick=user.split("!")[0]
-            user=self.getUserByNick(nick)
-            if not user or not user.getHostMask() in self.user_list:
-                self.logger.debug("user with nick %s quit, but was not in user_list"%nick)
-                return
+        if user.getHostMask() in self.user_list:
             del(self.user_list[user.getHostMask()])
+        elif user.getNick().lower() in self.user_list:
+            del(self.user_list[user.getNick().lower()])
+        else:
+            self.logger.debug("user with nick %s quit, but was not in user_list"%nick)
 
     def yourHost(self, info):
         """ called by twisted
