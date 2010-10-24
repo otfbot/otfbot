@@ -272,7 +272,7 @@ class Bot(pluginSupport, irc.IRCClient):
             assert 'channel' in args, args
             channel=args['channel']
             if channel in self.syncing_channels:
-                self.callback_queue.append(([channel], (self._apirunner, (apifunction, args,) )))
+                self.callback_queue.append(([channel], (self._apirunner, (apifunction, args,), {})))
             else:
                 self._apirunner(apifunction, args)
 
