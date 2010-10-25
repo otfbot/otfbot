@@ -135,13 +135,23 @@ class botService(service.MultiService):
         f.service = serv
         serv.setName(network)
         serv.parent = self
+        #if the connect is invoced via control-service,
+        #set the network to enabled. if not, its enabled anyway
+        self.config.set('enabled', True, 'main', network)
         self.addService(serv)
 
     def disconnect(self, network):
-        """ disconnect from a network """
+        """
+            manually disconnect from a network 
+            @param network: the networkname
+            @type network: str
+        """
         if network in self.namedServices:
             self.namedServices[network].protocol.disconnect()
             self.removeService(self.namedServices[network])
+            #remember, this network was manually disconnected.
+            #the normal bot-stop does not call this function
+            self.config.set('enabled', False, 'main', network)
             return "Disconnected from " + network
         else:
             return "Not connected to " + network
@@ -1020,7 +1030,9 @@ class Bot(pluginSupport, irc.IRCClient):
         self.sendLine("PING %f" % time.time())
 
     def disconnect(self):
-        """disconnects cleanly from the current network"""
+        """
+            disconnects cleanly from the current network
+        """
         self._apirunner("stop")
         self.factory.allow_disconnect()
         self.quit('Bye')
