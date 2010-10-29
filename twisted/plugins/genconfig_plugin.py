@@ -84,9 +84,6 @@ class MyServiceMaker(object):
         # detect services
         path = os.path.abspath(services.__path__[0])
         files = glob.glob(os.path.join(path, "*.py"))
-        #TODO: it's just a hack to get auth and control before ircClient
-        files.sort()
-        #TODO: real solution to service/plugin dependencies!
 
         modules = []
         for file in files:
