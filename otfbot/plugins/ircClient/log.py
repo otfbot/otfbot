@@ -79,7 +79,7 @@ class Plugin(chatMod.chatMod):
         self.day = self.ts("%d")
         self.stop()
         for channel in self.channels:
-            self.joined(channel)
+            self.openLog(channel)
             #self.log(channel, "--- Day changed "+self.ts("%a %b %d %Y"))
 
     def log(self, channel, string, timestamp=True):
@@ -106,8 +106,7 @@ class Plugin(chatMod.chatMod):
             file.write(self.ts() + " " + mystring.encode("UTF-8") + "\n")
             file.close()
 
-    @callback
-    def joined(self, channel):
+    def openLog(self, channel):
         self.channels[string.lower(channel)] = 1
         #self.files[string.lower(channel)]=open(string.lower(channel)+".log", "a")
         self.path[channel] = Template(self.logpath).safe_substitute({'c': channel.replace("/", "_").replace(":", "")}) #replace to handle psyc:// channels
@@ -117,6 +116,10 @@ class Plugin(chatMod.chatMod):
             os.makedirs(os.path.dirname(file))
         self.files[string.lower(channel)] = open(file, "a")
         self.log(channel, "--- Log opened " + self.ts("%a %b %d %H:%M:%S %Y"), False)
+
+    @callback
+    def joined(self, channel):
+        self.openLog(channel)
         self.log(channel, "-!- " + self.bot.nickname + " [" + self.bot.hostmask.split("!")[1] + "] has joined " + channel)
 
     @callback
