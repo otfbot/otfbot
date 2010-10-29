@@ -205,6 +205,7 @@ class Plugin(chatMod.chatMod):
                 for channel in user.getChannels():
                     self.log(channel, "-!- " + oldname + " is now known as " + newname)
 
+    @callback
     def stop(self):
         for channel in self.channels:
             self.log(channel, "--- Log closed " + self.ts("%a %b %d %H:%M:%S %Y"), False)
