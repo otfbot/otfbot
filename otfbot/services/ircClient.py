@@ -135,12 +135,23 @@ class botService(service.MultiService):
         f.service = serv
         serv.setName(network)
         serv.parent = self
+        #if the connect is invoced via control-service,
+        #set the network to enabled. if not, its enabled anyway
+        self.config.set('enabled', True, 'main', network)
         self.addService(serv)
 
     def disconnect(self, network):
-        """ disconnect from a network """
+        """
+            manually disconnect from a network 
+            @param network: the networkname
+            @type network: str
+        """
         if network in self.namedServices:
+            self.namedServices[network].protocol.disconnect()
             self.removeService(self.namedServices[network])
+            #remember, this network was manually disconnected.
+            #the normal bot-stop does not call this function
+            self.config.set('enabled', False, 'main', network)
             return "Disconnected from " + network
         else:
             return "Not connected to " + network
@@ -165,6 +176,7 @@ class BotFactory(protocol.ReconnectingClientFactory):
         self.network = network
         self.config = root.getServiceNamed('config')
         self.logger = logging.getLogger(network)
+        self.stop = False
 
     def __repr__(self):
         return "<BotFactory for network %s>" % self.network
@@ -181,7 +193,7 @@ class BotFactory(protocol.ReconnectingClientFactory):
         """
         self.protocol = None
         self.service.protocol = None
-        if not reason.check(error.ConnectionDone):
+        if not self.stop:
             mstr = "Got disconnected from %s: %s"
             self.logger.warn(mstr % (connector.host, reason.getErrorMessage()))
             protocol.ReconnectingClientFactory.\
@@ -201,6 +213,12 @@ class BotFactory(protocol.ReconnectingClientFactory):
         self.service.protocol = proto
         self.resetDelay()
         return proto
+
+    def allow_disconnect(self):
+        """
+            stops the factory from reconnecting after disconnect
+        """
+        self.stop = True
 
 #    def stopFactory(self):
 #        #import inspect
@@ -235,6 +253,7 @@ class Bot(pluginSupport, irc.IRCClient):
         self.config = root.getServiceNamed('config')
         self.network = self.parent.network
         self.ircClient = self.parent.parent
+        self.factory = parent
         self.logger = logging.getLogger(self.network)
         pluginSupport.__init__(self, root, parent)
         if self.config.getBool('answerToCTCPVersion', True, 'main', self.network):
@@ -272,7 +291,7 @@ class Bot(pluginSupport, irc.IRCClient):
             assert 'channel' in args, args
             channel=args['channel']
             if channel in self.syncing_channels:
-                self.callback_queue.append(([channel], (self._apirunner, (apifunction, args,) )))
+                self.callback_queue.append(([channel], (self._apirunner, (apifunction, args,), {})))
             else:
                 self._apirunner(apifunction, args)
 
@@ -458,6 +477,51 @@ class Bot(pluginSupport, irc.IRCClient):
             self.describe(channel, line)
             self.action(self.nickname, channel, line)
 
+    ### Work around twisted brainfuck: ###
+    #twisted prepends a # if channel does not start with CHANNEL_PREFIXES
+    #this is a bad idea, so we implement the functions doing this with
+    #a errorlogger and a NO-OP if the channel argument is not a channel.
+    #this prevents joining wrong channels if somewhere queries and channel
+    #arguments mixed up. we already had an annoying bug with the bot joining
+    # #nickserv. this can now be detected in errorlog.
+
+    def join(self, channel, key=None):
+        """
+            wrapper around IRCClient.join, which only allows proper channels
+        """
+        if not channel[0] in irc.CHANNEL_PREFIXES:
+            self.logger.error('cannot join "%s", because it is not a channel'%channel)
+            return
+        return irc.IRCClient.join(self, channel, key)
+
+    def leave(self, channel, reason=None):
+        """
+            wrapper around IRCClient.leave, which only allows proper channels
+        """
+        if not channel[0] in irc.CHANNEL_PREFIXES:
+            self.logger.error('cannot leave "%s", because it is not a channel'%channel)
+            return
+        return irc.IRCClient.leave(self, channel, reason)
+
+    def kick(self, channel, user, reason=None):
+        """
+            wrapper around IRCClient.kick, which only allows proper channels
+        """
+        if not channel[0] in irc.CHANNEL_PREFIXES:
+            self.logger.error('cannot kick user from "%s", because it is not a channel'%channel)
+            return
+        return irc.IRCClient.kick(self, channel, user, reason)
+
+    def topic(self, channel, topic=None):
+        """
+            wrapper around IRCClient.topic, which only allows proper channels
+        """
+        if not channel[0] in irc.CHANNEL_PREFIXES:
+            self.logger.error('cannot change topic of "%s", because it is not a channel'%channel)
+            return
+        return irc.IRCClient.topic(self, channel, topic)
+
+
     # Callbacks
     def connectionMade(self):
         """
@@ -562,6 +626,41 @@ class Bot(pluginSupport, irc.IRCClient):
             str=unicode(str, "iso-8859-15", errors='replace')
         return str
 
+    def resolveUser(self, user):
+        """
+            resolve a user hostmask (nick!user@host) to a userobject
+            returns a known user, if its in the user_list. creates a new
+            user_list entry, if possible. if only nick is known, it returns a
+            incomplete user and does not store it in the user_list
+        """
+        assert type(user) == str or type(user) == unicode
+
+        #best case: hostmask is known
+        if user in self.user_list:
+            return self.user_list[user]
+        #we have a complete hostmask?
+        if "!" in user:
+            #try to get user by nick
+            nick=user.split("!")[0]
+            user2=self.getUserByNick(nick)
+            if user2:
+                return user2
+            #extract the user@host parts
+            parts=user.split("!")[1].split("@")
+            #new user, with nick, user, host, and without realname
+            newuser=IrcUser(nick, parts[0], parts[1], "", self.network)
+            self.user_list[user]=newuser #store it
+            return newuser
+        else:
+            #no complete hostmask, try to find a matching nick
+            user2=self.getUserByNick(user)
+            if user2:
+                return user2
+            else:
+                #no user known with this nick, create a temporary user object
+                #we DO NOT store the incomplete user
+                return IrcUser(user, user, "", "", self.network)
+
     #no decorator here, we decorate the _apirunner calls instead
     #this avoids getting nick from queries in the channel-list
     def privmsg(self, user, channel, msg):
@@ -577,6 +676,7 @@ class Bot(pluginSupport, irc.IRCClient):
         """
         channel = channel.lower()
         msg=self.toUnicode(msg, self.network, channel)
+        user=self.resolveUser(user)
 
         char = msg[0]
         if char == self.config.get("commandChar", "!", "main"):
@@ -591,6 +691,7 @@ class Bot(pluginSupport, irc.IRCClient):
 
         #query?
         if not channel[0] in self.supported.getFeature('CHANTYPES'):
+            #TODO: user object for channel?
             self._apirunner("query", {"user": user,
                                       "channel": channel, "msg": msg})
         else:
@@ -617,6 +718,7 @@ class Bot(pluginSupport, irc.IRCClient):
             @type msg: string
         """
         channel = channel.lower()
+        user=self.resolveUser(user)
         msg=self.toUnicode(msg, self.network, channel)
         self._apirunner("noticed", {"user": user,
                                     "channel": channel, "msg": msg})
@@ -634,6 +736,7 @@ class Bot(pluginSupport, irc.IRCClient):
             @type msg: string
         """
         channel = channel.lower()
+        user=self.resolveUser(user)
         msg=self.toUnicode(msg, self.network, channel)
         self._apirunner("action", {"user": user, "channel": channel,
                                    "msg": msg})
@@ -644,6 +747,7 @@ class Bot(pluginSupport, irc.IRCClient):
             if a usermode was changed
         """
         chan = chan.lower()
+        user=self.resolveUser(user)
         if chan == self.nickname.lower():
             return #TODO: we do not do anything with our usermodes, yet
         mstr = "mode change: user %s channel %s set %s modes %s args %s"
@@ -731,14 +835,9 @@ class Bot(pluginSupport, irc.IRCClient):
             if a C{user} joined the C{channel}
         """
         channel = channel.lower()
-        nick = user.split("!")[0]
-        us = user.split("@", 1)[0].split("!")[1]
-        if user in self.user_list:
-            u = self.user_list[user]
-        else:
-            u = IrcUser(nick, us, user.split("@")[1], nick, self)
-            self.user_list[user]=u
-        u.addChannel(channel)
+        user=self.resolveUser(user)
+
+        user.addChannel(channel)
         self._apirunner("userJoined", {"user": user, "channel": channel})
 
     @syncedChannel(argnum=1)
@@ -747,9 +846,10 @@ class Bot(pluginSupport, irc.IRCClient):
             if a C{user} left the C{channel}
         """
         channel = channel.lower()
-        nick = user.split("!")[0]
+        user=self.resolveUser(user)
+        nick = user.getNick()
         self._apirunner("userLeft", {"user": user, "channel": channel})
-        self.user_list[user].removeChannel(channel)
+        user.removeChannel(channel)
         #TODO: remove user, if len( .getChannels())==0?
 
     @syncedAll
@@ -758,16 +858,15 @@ class Bot(pluginSupport, irc.IRCClient):
             if a C{user} quits
         """
         quitMessage=self.toUnicode(quitMessage, self.network)
+        user=self.resolveUser(user)
+        nick=user.getNick()
         self._apirunner("userQuit", {"user": user, "quitMessage": quitMessage})
-        if user in self.user_list:
-            del(self.user_list[user])
-        else:
-            nick=user.split("!")[0]
-            user=self.getUserByNick(nick)
-            if not user or not user.getHostMask() in self.user_list:
-                self.logger.debug("user with nick %s quit, but was not in user_list"%nick)
-                return
+        if user.getHostMask() in self.user_list:
             del(self.user_list[user.getHostMask()])
+        elif user.getNick().lower() in self.user_list:
+            del(self.user_list[user.getNick().lower()])
+        else:
+            self.logger.debug("user with nick %s quit, but was not in user_list"%nick)
 
     def yourHost(self, info):
         """ called by twisted
@@ -782,6 +881,7 @@ class Bot(pluginSupport, irc.IRCClient):
             if a C{user} sent a ctcp query
         """
         channel = channel.lower()
+        user=self.resolveUser(user)
         self._apirunner("ctcpQuery", {"user": user, "channel": channel,
                 "messages": messages})
 
@@ -791,6 +891,7 @@ class Bot(pluginSupport, irc.IRCClient):
             if a C{user} sent a ctcp reply
         """
         channel = channel.lower()
+        user=self.resolveUser(user)
         self._apirunner("ctcpReply", {"user": user, "channel": channel,
             "tag": tag, "data": data})
 
@@ -814,6 +915,7 @@ class Bot(pluginSupport, irc.IRCClient):
             if the topic was updated
         """
         channel = channel.lower()
+        #user is a string with nick. 
         newTopic=self.toUnicode(newTopic, self.network, channel)
         self._apirunner("topicUpdated", {"user": user,
                 "channel": channel, "newTopic": newTopic})
@@ -928,6 +1030,9 @@ class Bot(pluginSupport, irc.IRCClient):
         self.sendLine("PING %f" % time.time())
 
     def disconnect(self):
-        """disconnects cleanly from the current network"""
+        """
+            disconnects cleanly from the current network
+        """
         self._apirunner("stop")
+        self.factory.allow_disconnect()
         self.quit('Bye')

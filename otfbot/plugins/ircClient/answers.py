@@ -45,7 +45,7 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def msg(self, user, channel, msg):
-        user = user.split("!")[0] # only nick
+        user = user.getNick()
         if channel in self.bot.channels: #Do not respond to server messages
             answer = self.respond(user, msg)
             if answer != "":

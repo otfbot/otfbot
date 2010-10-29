@@ -127,7 +127,7 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def msg(self, user, channel, msg):
-        user = user.split("!")[0]
+        user = user.getNick()
         modesign = " " #self.bot.users[channel][user]['modchar']
         if string.lower(channel) == string.lower(self.bot.nickname):
             self.logPrivate(user, "<" + modesign + user + "> " + msg)
@@ -137,7 +137,7 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def query(self, user, channel, msg):
-        user = user.split("!")[0]
+        user = user.getNick()
         if user == self.bot.nickname:
             self.logPrivate(channel, "<" + user + "> " + msg)
         else:
@@ -147,17 +147,17 @@ class Plugin(chatMod.chatMod):
     def noticed(self, user, channel, msg):
         if user != "":
             #self.logger.info(str(user+" : "+channel+" : "+msg))
-            self.logPrivate(user.split("!")[0], "< " + user.split("!")[0] + "> " + msg)
+            self.logPrivate(user.getNick(), "< " + user.getNick() + "> " + msg)
 
     @callback
     def action(self, user, channel, msg):
         #self.logger.debug(user+channel+msg)
-        user = user.split("!")[0]
+        user = user.getNick()
         self.log(channel, " * " + user + " " + msg)
 
     @callback
     def modeChanged(self, user, channel, set, modes, args):
-        user = user.split("!")[0]
+        user = user.getNick()
         sign = "+"
         if not set:
             sign = "-"
@@ -169,11 +169,11 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def userJoined(self, user, channel):
-        self.log(channel, "-!- " + user.split("!")[0] + " [" + user.split("!")[1] + "] has joined " + channel)
+        self.log(channel, "-!- " + user.getNick() + " [" + user.getHostMask().split("!")[1] + "] has joined " + channel)
 
     @callback
     def userLeft(self, user, channel):
-        self.log(channel, "-!- " + user.split("!")[0] + " [" + user.split("!")[1] + "] has left " + channel)
+        self.log(channel, "-!- " + user.getNick() + " [" + user.getHostMask().split("!")[1] + "] has left " + channel)
 
     @callback
     def userQuit(self, user, quitMessage):
@@ -184,7 +184,7 @@ class Plugin(chatMod.chatMod):
         #or nicktracking did not work as expected
         #but even lower(nick) should be unique per network
         else:
-            user=self.bot.getUserByNick(user.split("!")[0])
+            user=self.bot.getUserByNick(user.getNick())
 
         if user:
             for channel in user.getChannels():

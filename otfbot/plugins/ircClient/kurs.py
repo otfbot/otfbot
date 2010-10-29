@@ -44,7 +44,7 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def command(self, user, channel, command, options):
-        nick = user.split("!")[0]
+        nick = user.getNick()
         if command in self.commands and 0 < (time.time() - self.time) < 5:
             self.bot.sendmsg(channel, "Wait a minute ...")
             return
