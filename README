@@ -10,17 +10,19 @@ Requirements
 
 For the core functionality are a *python interpreter* and the following 
 modules necessary. Currently version 2.6 of cPython is used to develop 
-the the bot. If you are encountering problems with other versions of python 
+the the bot. Python 2.5.2 is the lowest tested version of python.
+If you are encountering problems with other versions of python 
 please file a bug.
 
 OTFBot is build around the *twisted framework*, so you need this with a 
-version of 9.0.0 or newer as well. Currently the the ``words``, ``conch`` 
+version of 10.0.0 or newer as well. Currently the the ``words``, ``conch`` 
 and ``web`` modules are used (Debian packages ``python-twisted``, 
 ``python-twisted-bin``, ``python-twisted-conch``, ``python-twisted-core``, 
 ``python-twisted-web`` and ``python-twisted-words``)
 
 As the configuration is stored in a yaml-file, you need the *python-bindings
-for yaml*. If you intend to use a encrypted connection you need also
+for yaml*. libyaml 0.1.1 and python-yaml 3.05 are tested and working.
+If you intend to use a encrypted connection you need also
 ``python-pyopenssl`` and ``python-crypto``.
 
 Some plugins require additional modules. You'll need ``python-feedparser`` 
