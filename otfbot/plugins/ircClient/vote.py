@@ -36,8 +36,10 @@ class Plugin(chatMod.chatMod):
         if command == "newvote":
             if not channel in self.votes:
                 self.votes[channel]=[options, 0, 0, 0, []]
-                self.bot.sendmsg(channel, "Abstimmung: %s (!vote ja/nein/egal)"%options)
-                self.bot.root.getServiceNamed("scheduler").callLater(60, self.voteend, channel)
+                self.bot.sendmsg(channel, 
+                    "Abstimmung: %s (!vote ja/nein/egal)"%options)
+                self.bot.root.getServiceNamed("scheduler").callLater(
+                    60, self.voteend, channel)
             else:
                 self.bot.sendmsg(channel, "Es laeuft bereits eine Abstimmung.")
         elif command == "vote":
@@ -45,7 +47,8 @@ class Plugin(chatMod.chatMod):
                 self.bot.sendmsg(channel, "Es laeuft gerade keine Abstimmung")
                 return
             elif user in self.votes[channel][4]:
-                self.bot.sendmsg(channel, "%s: Du hast schon abgestimmt!"%(user.split("!")[0]))
+                self.bot.sendmsg(channel, 
+                    "%s: Du hast schon abgestimmt!"%(user.getNick()))
             else:
                 self.votes[channel][4].append(user)
                 if options.lower() in ["yes", "ja"]:

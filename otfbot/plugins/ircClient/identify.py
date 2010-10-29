@@ -49,7 +49,7 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def noticed(self, user, channel, msg):
-        user = user.split("!")[0]
+        user = user.getNick()
         if (user.lower() == "nickserv" and self.sent_identification):
             self.logger.debug(user + ": " + msg)
 

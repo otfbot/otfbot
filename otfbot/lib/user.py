@@ -188,6 +188,18 @@ class IrcUser(object):
 
     def getHostMask(self):
         return self.nick + "!" + self.user + "@" + self.host
+    
+    def getNick(self):
+        return self.nick
+    
+    def getUsername(self):
+        return self.user
+
+    def getHost(self):
+        return self.host
 
     def __repr__(self):
         return "<IrcUser %s (%s)>" % (self.getHostMask(), self.name)
+
+    def __str__(self):
+        return self.getHostMask()

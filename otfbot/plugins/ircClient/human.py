@@ -73,7 +73,7 @@ class Plugin(chatMod.chatMod):
                 server.sendmsg(self.network + "-" + channel, server.name, "< %s> " % self.bot.nickname + msg)
             else:
                 #server.sendmsg(self.network+"-"+user, self.bot.server.name, msg)
-                server.sendmsg(self.network + "-" + user, server.name, "< %s> " % user.split("!")[0] + msg)
+                server.sendmsg(self.network + "-" + user, server.name, "< %s> " % user.getNick() + msg)
 
     @callback
     def irc_RPL_ENDOFNAMES(self, prefix, params):
