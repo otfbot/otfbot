@@ -77,7 +77,7 @@ MODE_CHARS = {
     'q': 16}
 
 
-MODE_SIGNS={
+MODE_SIGNS = {
     0: ' ',
     1: '+',
     2: 'h',
@@ -129,7 +129,7 @@ class IrcUser(object):
         """
         self.channels = set([channel.lower() for channel in channels])
         for channel in self.channels:
-            self.modes[channel]=0
+            self.modes[channel] = 0
 
     def getChannels(self):
         """ get the channels list """
@@ -141,7 +141,7 @@ class IrcUser(object):
         """
         assert type(channel) == str
         self.channels.add(channel.lower())
-        self.modes[channel]=0
+        self.modes[channel] = 0
 
     def hasChannel(self, channel):
         return channel.lower() in self.channels
@@ -150,7 +150,7 @@ class IrcUser(object):
         """ remove a channel from the list of channels
             @ivar channel: the channel to remove
         """
-        channel=channel.lower()
+        channel = channel.lower()
         if not channel in self.channels:
             return
         self.channels.remove(channel)
@@ -161,42 +161,41 @@ class IrcUser(object):
             @ivar channel: the channel where the mode is set
             @ivar modechar: the char corrosponding to the mode (i.e. "o")
         """
-        channel=channel.lower()
+        channel = channel.lower()
         assert(channel in self.channels)
         assert(modechar in MODE_CHARS)
         assert(channel in self.modes)
-        self.modes[channel]=self.modes[channel] | MODE_CHARS[modechar]
+        self.modes[channel] = self.modes[channel] | MODE_CHARS[modechar]
 
     def removeMode(self, channel, modechar):
         """ remove the usermode specified by the char modchar on channel
             @ivar channel: the channel where the mode is removed
             @ivar modechar: the char corrosponding to the mode (i.e. "o")
         """
-        channel=channel.lower()
+        channel = channel.lower()
         assert(channel in self.channels)
         assert(modechar in MODE_CHARS)
         # binary: 11...11
-        all_set=reduce(lambda x, y: x+y, MODE_CHARS.values())
-        self.modes[channel]=self.modes[channel] & 
+        all_set = reduce(lambda x, y: x + y, MODE_CHARS.values())
+        self.modes[channel] = self.modes[channel] & \
             (all_set ^ MODE_CHARS[modechar])  # 1..1 ^ modechar = 1..101..1
 
     def getModeSign(self, channel):
-        channel=channel.lower()
+        channel = channel.lower()
         assert(channel in self.channels)
-        ret_sign=""
+        ret_sign = ""
         for sign in MODE_SIGNS:
             # signs are ASCENDING in importance
             if self.modes[channel] & sign:
-                ret_sign=MODE_SIGNS[sign]
+                ret_sign = MODE_SIGNS[sign]
         return ret_sign
-
 
     def getHostMask(self):
         return self.nick + "!" + self.user + "@" + self.host
-    
+
     def getNick(self):
         return self.nick
-    
+
     def getUsername(self):
         return self.user
 

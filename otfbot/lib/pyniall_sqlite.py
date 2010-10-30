@@ -155,7 +155,7 @@ class pyNiall:
                 return self._createRandomSentence(newindex, "")
             self.cur.execute("SELECT word FROM words WHERE id=%s", index)
             word = self.cur.fetchall()[0][0]
-            return self._createRandomSentence(newindex, sentence + " " 
+            return self._createRandomSentence(newindex, sentence + " "
                 + word)
         else:
             if index == -1:  # no sentence end included
@@ -167,9 +167,9 @@ class pyNiall:
             # so we can use forward+" "+backward to build a sentence
             self.cur.execute("SELECT word FROM words WHERE id=%s", newindex)
             word = self.cur.fetchall()[0][0]
-            return self._createRandomSentence(newindex, word + " " 
+            return self._createRandomSentence(newindex, word + " "
                 + sentence, False).strip()
-    
+
     def _createReply(self, msg):
         """
             reply to a message
@@ -194,20 +194,19 @@ class pyNiall:
                 bestwordrank = rank
                 bestword = word
         if bestword:
-            self.cur.execute("SELECT id FROM words WHERE word=%s", 
+            self.cur.execute("SELECT id FROM words WHERE word=%s",
                 [bestword])
             index = self.cur.fetchall()[0][0]
-            return self._createRandomSentence(index, "", False) 
+            return self._createRandomSentence(index, "", False) \
                 + " " + self._createRandomSentence(index, "")
         else:
             return self._createRandomSentence(0, "")
-
 
     def learn(self, msg):
         """
             learn the words from msg
 
-            learns the new words from msg, 
+            learns the new words from msg,
             and add the new relations between the words.
 
             @param msg: the message
@@ -232,12 +231,14 @@ class pyNiall:
         """
         self.learn(msg)
         return self._createReply(msg).strip()
+
     def cleanup(self):
         """
             cleanup method to commit all unwritten entries to the database
         """
         self.db.commit()
         self.db.close()
+
 
 def init_db(name):
     """
@@ -248,10 +249,10 @@ def init_db(name):
     """
     db = sqlite.connect(name)
     cur = db.cursor()
-    cur.execute('CREATE TABLE words (id INTEGER PRIMARY KEY, "
-        "word VARCHAR(255))')
-    cur.execute('CREATE TABLE relations (word1_id INTEGER, "
-        "word2_id INTEGER, ranking INTEGER)')
+    cur.execute('CREATE TABLE words (id INTEGER PRIMARY KEY, '
+        'word VARCHAR(255))')
+    cur.execute('CREATE TABLE relations (word1_id INTEGER, '
+        'word2_id INTEGER, ranking INTEGER)')
     cur.execute('INSERT INTO words VALUES (0, ">")')
     cur.close()
     db.commit()
