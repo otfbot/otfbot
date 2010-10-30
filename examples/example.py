@@ -51,7 +51,6 @@ class Plugin(chatMod.chatMod):
         self.logger.debug('Callback msg called with user=' + repr(user)
             + ' channel=' + repr(channel) + ' msg=' + repr(msg) + '.')
 
-
     def connectionMade(self):
         self.logger.debug('Callback connectionMade called with.')
 

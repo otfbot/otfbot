@@ -18,7 +18,8 @@
 #
 
 """
-    This is an example of the usage of the tcpServer service using unix sockets.
+    This is an example of the usage of the tcpServer service
+    using unix sockets.
 """
 
 import sys
