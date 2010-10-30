@@ -74,16 +74,18 @@ MODE_CHARS = {
     'h': 2,
     'o': 4,
     'a': 8,
-    'q': 16
-}
+    'q': 16}
+
+
 MODE_SIGNS={
     0: ' ',
     1: '+',
     2: 'h',
     4: '@',
     8: '!',
-    16: '&'
-}
+    16: '&'}
+
+
 class IrcUser(object):
     """ Represents the connection of a L{BotUser} via IRC
 
@@ -107,7 +109,7 @@ class IrcUser(object):
         self.avatar = None
         self.realname = realname
         self.channels = set()
-        self.modes = {} #dict channel -> modes
+        self.modes = {}  # dict channel -> modes
 
     def getBotuser(self):
         return self.avatar
@@ -173,15 +175,18 @@ class IrcUser(object):
         channel=channel.lower()
         assert(channel in self.channels)
         assert(modechar in MODE_CHARS)
-        all_set=reduce(lambda x,y:x+y, MODE_CHARS.values()) #binary: 11...11
-        self.modes[channel]=self.modes[channel] & (all_set ^ MODE_CHARS[modechar]) #1..1 ^ modechar = 1..101..1
+        # binary: 11...11
+        all_set=reduce(lambda x, y: x+y, MODE_CHARS.values())
+        self.modes[channel]=self.modes[channel] & 
+            (all_set ^ MODE_CHARS[modechar])  # 1..1 ^ modechar = 1..101..1
 
     def getModeSign(self, channel):
         channel=channel.lower()
         assert(channel in self.channels)
         ret_sign=""
         for sign in MODE_SIGNS:
-            if self.modes[channel] & sign: #signs are ASCENDING in importance
+            # signs are ASCENDING in importance
+            if self.modes[channel] & sign:
                 ret_sign=MODE_SIGNS[sign]
         return ret_sign
 
