@@ -66,8 +66,8 @@ def download(url, file=None, **kwargs):
     @return: A Defered which will call a Callback with the content as argument
 
     """
-    if type(url)==unicode:
-        url=url.encode("UTF-8")
+    if type(url) == unicode:
+        url = url.encode("UTF-8")
     if "agent" not in kwargs:
         kwargs['agent'] = "OTFBot (%s; otfbot.berlios.de)" % _version.short()
     if file:
