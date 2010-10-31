@@ -27,6 +27,7 @@ from twisted.application.service import IServiceMaker, IService
 from twisted.plugin import IPlugin
 from twisted.python import log, usage
 from twisted.python import versions as twversions
+from twisted.internet import reactor
 import twisted
 
 from zope.interface import implements
@@ -129,6 +130,8 @@ class MyServiceMaker(object):
         service_names = cfgS.get("services", [], "main")
         service_classes = {}
         service_instances = []
+
+        reactor.suggestThreadPoolSize(4) #threadpool for reactor.callInThread
 
         for service_name in service_names:
             #corelogger.info("starting Service %s" % service_name)

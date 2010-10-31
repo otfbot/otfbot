@@ -22,6 +22,8 @@
     Log channel conversations to files.
 """
 
+from twisted.internet import reactor
+
 from otfbot.lib import chatMod
 from otfbot.lib.pluginSupport.decorators import callback
 from otfbot.lib.color import filtercolors
@@ -80,31 +82,36 @@ class Plugin(chatMod.chatMod):
         self.stop()
         for channel in self.channels:
             self.openLog(channel)
+            #TODO: this was already commented out. why don't we do this here?
             #self.log(channel, "--- Day changed "+self.ts("%a %b %d %Y"))
 
     def log(self, channel, string, timestamp=True):
-        if self.day != self.ts("%d"):
-            self.dayChange()
-        if channel in self.channels:
-            logmsg = filtercolors(string) + "\n"
-            if timestamp:
-                logmsg = self.ts() + " " + logmsg
-            #TODO: blocking
-            self.files[channel].write(logmsg.encode("UTF-8"))
-            self.files[channel].flush()
+        def real_log(self, channel, string, timestamp):
+            if self.day != self.ts("%d"):
+                self.dayChange()
+            if channel in self.channels:
+                logmsg = filtercolors(string) + "\n"
+                if timestamp:
+                    logmsg = self.ts() + " " + logmsg
+                #TODO: blocking
+                self.files[channel].write(logmsg.encode("UTF-8"))
+                self.files[channel].flush()
+        reactor.callInThread(real_log, self, channel, string, timestamp)
 
     def logPrivate(self, user, mystring):
-        if self.doLogPrivate:
-            mystring = filtercolors(mystring)
-            dic = self.timemap()
-            dic['c'] = string.lower(user)
-            filename = Template(self.logpath).safe_substitute(dic)
-            #TODO: blocking
-            if not os.path.exists(os.path.dirname(filename)):
-                os.makedirs(os.path.dirname(filename))
-            file = open(filename, "a")
-            file.write(self.ts() + " " + mystring.encode("UTF-8") + "\n")
-            file.close()
+        def real_logPrivate(self, user, mystring):
+            if self.doLogPrivate:
+                mystring = filtercolors(mystring)
+                dic = self.timemap()
+                dic['c'] = string.lower(user)
+                filename = Template(self.logpath).safe_substitute(dic)
+                #TODO: blocking
+                if not os.path.exists(os.path.dirname(filename)):
+                    os.makedirs(os.path.dirname(filename))
+                file = open(filename, "a")
+                file.write(self.ts() + " " + mystring.encode("UTF-8") + "\n")
+                file.close()
+        reactor.callInThread(real_logPrivate, self, user, mystring)
 
     def openLog(self, channel):
         self.channels[string.lower(channel)] = 1
