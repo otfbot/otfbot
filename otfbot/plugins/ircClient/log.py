@@ -93,7 +93,6 @@ class Plugin(chatMod.chatMod):
                 logmsg = filtercolors(string) + "\n"
                 if timestamp:
                     logmsg = self.ts() + " " + logmsg
-                #TODO: blocking
                 self.files[channel].write(logmsg.encode("UTF-8"))
                 self.files[channel].flush()
         reactor.callInThread(real_log, self, channel, string, timestamp)
@@ -105,7 +104,6 @@ class Plugin(chatMod.chatMod):
                 dic = self.timemap()
                 dic['c'] = string.lower(user)
                 filename = Template(self.logpath).safe_substitute(dic)
-                #TODO: blocking
                 if not os.path.exists(os.path.dirname(filename)):
                     os.makedirs(os.path.dirname(filename))
                 file = open(filename, "a")
