@@ -29,6 +29,7 @@ from otfbot.lib.pluginSupport.decorators import callback
 from otfbot.lib.color import filtercolors
 
 import time
+import copy
 import string
 import locale
 import os
@@ -61,6 +62,10 @@ class Plugin(chatMod.chatMod):
         #    self.setNetwork()
         #    self.joined(c)
         self.setNetwork()
+        reactor.callInThread(self.logThread)
+        self.logs=[]
+        self.privateLogs=[]
+        self.stopThread=False
 
     def timemap(self):
         return {'y': self.ts("%Y"), 'm': self.ts("%m"), 'd': self.ts("%d")}
@@ -85,7 +90,7 @@ class Plugin(chatMod.chatMod):
             #TODO: this was already commented out. why don't we do this here?
             #self.log(channel, "--- Day changed "+self.ts("%a %b %d %Y"))
 
-    def log(self, channel, string, timestamp=True):
+    def logThread(self):
         def real_log(self, channel, string, timestamp):
             if self.day != self.ts("%d"):
                 self.dayChange()
@@ -95,9 +100,6 @@ class Plugin(chatMod.chatMod):
                     logmsg = self.ts() + " " + logmsg
                 self.files[channel].write(logmsg.encode("UTF-8"))
                 self.files[channel].flush()
-        reactor.callInThread(real_log, self, channel, string, timestamp)
-
-    def logPrivate(self, user, mystring):
         def real_logPrivate(self, user, mystring):
             if self.doLogPrivate:
                 mystring = filtercolors(mystring)
@@ -109,7 +111,22 @@ class Plugin(chatMod.chatMod):
                 file = open(filename, "a")
                 file.write(self.ts() + " " + mystring.encode("UTF-8") + "\n")
                 file.close()
-        reactor.callInThread(real_logPrivate, self, user, mystring)
+        while not self.stopThread:
+            time.sleep(1)
+            logs=copy.copy(self.logs)
+            self.logs=[]
+            privateLogs=copy.copy(self.privateLogs)
+            self.privateLogs=[]
+            for call in logs:
+                real_log(self, call[0], call[1], call[2])
+            for call in privateLogs:
+                real_logPrivate(self, call[0], call[1])
+
+    def log(self, channel, string, timestamp=True):
+        self.logs.append((channel, string, timestamp))
+
+    def logPrivate(self, user, mystring):
+        self.privateLogs.append((user, mystring))
 
     def openLog(self, channel):
         self.channels[string.lower(channel)] = 1
@@ -215,10 +232,15 @@ class Plugin(chatMod.chatMod):
         for channel in self.channels:
             self.log(channel, "--- Log closed " + self.ts("%a %b %d %H:%M:%S %Y"), False)
             self.files[channel].close()
+        self.stopThread=True
 
     @callback
     def connectionMade(self):
         self.setNetwork()
+
+    @callback
+    def connectionLost(self, reason):
+        self.stop()
 
     def setNetwork(self):
         if len(self.bot.network.split(".")) < 3:
