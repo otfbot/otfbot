@@ -23,6 +23,7 @@
 """
 
 from twisted.internet import reactor
+from threading import Lock
 
 from otfbot.lib import chatMod
 from otfbot.lib.pluginSupport.decorators import callback
@@ -66,6 +67,7 @@ class Plugin(chatMod.chatMod):
         self.logs=[]
         self.privateLogs=[]
         self.stopThread=False
+        self.bufferLock=Lock()
 
     def timemap(self):
         return {'y': self.ts("%Y"), 'm': self.ts("%m"), 'd': self.ts("%d")}
@@ -113,20 +115,26 @@ class Plugin(chatMod.chatMod):
                 file.close()
         while not self.stopThread:
             time.sleep(1)
+            self.bufferLock.acquire()
             logs=copy.copy(self.logs)
             self.logs=[]
             privateLogs=copy.copy(self.privateLogs)
             self.privateLogs=[]
+            self.bufferLock.release()
             for call in logs:
                 real_log(self, call[0], call[1], call[2])
             for call in privateLogs:
                 real_logPrivate(self, call[0], call[1])
 
     def log(self, channel, string, timestamp=True):
+        self.bufferLock.acquire()
         self.logs.append((channel, string, timestamp))
+        self.bufferLock.release()
 
     def logPrivate(self, user, mystring):
+        self.bufferLock.acquire()
         self.privateLogs.append((user, mystring))
+        self.bufferLock.release()
 
     def openLog(self, channel):
         self.channels[string.lower(channel)] = 1
