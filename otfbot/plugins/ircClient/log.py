@@ -85,8 +85,8 @@ class Plugin(chatMod.chatMod):
         return wait
 
     def dayChange(self):
+        self.closeLogs()
         self.day = self.ts("%d")
-        self.stop()
         for channel in self.channels:
             self.openLog(channel)
             #TODO: this was already commented out. why don't we do this here?
@@ -235,12 +235,15 @@ class Plugin(chatMod.chatMod):
                 for channel in user.getChannels():
                     self.log(channel, "-!- " + oldname + " is now known as " + newname)
 
-    @callback
-    def stop(self):
+    def closeLogs(self):
         for channel in self.channels:
             self.log(channel, "--- Log closed " + self.ts("%a %b %d %H:%M:%S %Y"), False)
             self.files[channel].close()
+
+    @callback
+    def stop(self):
         self.stopThread=True
+        self.closeLogs()
 
     @callback
     def connectionMade(self):
