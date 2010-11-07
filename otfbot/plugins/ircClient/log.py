@@ -245,6 +245,7 @@ class Plugin(chatMod.chatMod):
     @callback
     def stop(self):
         self.stopThread=True
+        self.bufferCondition.notify()
         self.closeLogs()
 
     @callback
