@@ -21,6 +21,8 @@
 Post Headlines and Links from a Newsfeed
 """
 
+from twisted.internet import reactor
+
 from otfbot.lib import chatMod, urlutils
 from otfbot.lib.pluginSupport.decorators import callback
 
@@ -130,11 +132,12 @@ class Plugin(chatMod.chatMod):
         urlutils.download(url).addCallback(self.parseNews, url)
 
     def parseNews(self, feedcontent, url):
-        #TODO: also a blocking call?
-        parsed = self.feedparser.parse(feedcontent)
-        self.feedHeadlines[url] = []
-        for entry in parsed['entries']:
-            self.feedHeadlines[url].append((entry['link'], entry['title']))
+        def parseNewsThread(self, feedcontent, url):
+            parsed = self.feedparser.parse(feedcontent)
+            self.feedHeadlines[url] = []
+            for entry in parsed['entries']:
+                self.feedHeadlines[url].append((entry['link'], entry['title']))
+        reactor.callInThread(parseNewsThread, self, feedcontent, url)
 
     def postNews(self, channel, url, feedPostMax):
         had_new = False #new urls? needed for wait-time modification

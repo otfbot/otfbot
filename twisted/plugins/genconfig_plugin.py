@@ -84,9 +84,6 @@ class MyServiceMaker(object):
         # detect services
         path = os.path.abspath(services.__path__[0])
         files = glob.glob(os.path.join(path, "*.py"))
-        #TODO: it's just a hack to get auth and control before ircClient
-        files.sort()
-        #TODO: real solution to service/plugin dependencies!
 
         modules = []
         for file in files:
@@ -114,7 +111,7 @@ class MyServiceMaker(object):
         except OSError:
             pass
         authS = auth("userdb", "data/userdb.yaml")
-        sys.stdout.write("create admin user\nname: ")
+        sys.stdout.write("create admin user\nnickname: ")
         user = BotUser(raw_input().strip().lower())
         sys.stdout.write("password (will be echoed in cleartext): ")
         user.setPasswd(raw_input().strip())
