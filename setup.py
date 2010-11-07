@@ -20,6 +20,7 @@ setup(name='otfbot',
         'otfbot.plugins',
         'otfbot.plugins.ircClient',
         'otfbot.lib',
+        'otfbot.lib.pluginSupport',
         'twisted.plugins',
     ],
     package_data={
