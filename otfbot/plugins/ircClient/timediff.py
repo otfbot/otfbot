@@ -45,7 +45,6 @@ class Plugin(chatMod.chatMod):
     @callback
     def ctcpReply(self, user, channel, tag, data):
         if tag == "TIME":
-            self.logger.debug(user)
             if user in self.queries:
                 try:
                     _=self.bot.get_gettext(self.queries[user])

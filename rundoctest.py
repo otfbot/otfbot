@@ -2,7 +2,7 @@ import sys
 from optparse import OptionParser
 
 parser = OptionParser()
-(options, args)=parser.parse_args()
+(options, args) = parser.parse_args()
 if len(args) != 1:
     print "usage: test.py otfbot.plugins.service.somePlugin"
     print "i.e.: test.py otfbot.plugins.ircClient.ki"

@@ -192,12 +192,18 @@ class Plugin(chatMod.chatMod):
 
     def start(self):
         self.channels = []
-        self.wordpairsFile = self.bot.config.getPath("wordpairsFile", datadir, "wordpairs.txt")#XXX: this needs to be utf-8 encoded
-        self.wordpairs = functions.loadProperties(self.wordpairsFile)
-        self.nicklist = [string.lower(self.bot.config.get("nickname", "otfbot", "main", self.bot.network))]
+        self.wordpairsFile = self.bot.config.getPath("wordpairsFile",
+            datadir, "wordpairs.txt")
+        self.wordpairs = functions.loadProperties(self.wordpairsFile, 
+            self.bot.config.get("wordpairsEncoding", "UTF-8", "ki", 
+            self.bot.network) )
+        #TODO: use self.bot.user_list
+        self.nicklist = [string.lower(self.bot.nickname)]
 
-        module = self.bot.config.get("module", "megahal", "ki", self.bot.network)
-        self.logger.debug("ki: using module " + module + ",megahal=" + str(MEGAHAL) + ",niall=" + str(NIALL))
+        module = self.bot.config.get("module", "megahal", "ki", 
+            self.bot.network)
+        self.logger.debug("ki: using module " + module + 
+            ",megahal=" + str(MEGAHAL) + ",niall=" + str(NIALL))
         if module == "niall":
             if NIALL:
                 self.responder = niallResponder(self.bot, datadir)
