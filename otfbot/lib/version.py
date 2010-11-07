@@ -65,4 +65,4 @@ class GitVersion(versions.Version):
             s += "+" + str(svnver) + " (%s)"%ver2name(svnver)
         return s
 
-_version = GitVersion('OTFBot', 1, 0, 0)
+_version = GitVersion('OTFBot', 1, 0, 0, "-rc1")
