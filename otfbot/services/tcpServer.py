@@ -23,6 +23,7 @@
 """
 
 from twisted.internet import protocol
+from twisted.internet.error import CannotListenError
 from twisted.internet.protocol import Factory, Protocol
 from twisted.internet.tcp import Server
 from twisted.protocols.basic import LineOnlyReceiver
@@ -79,7 +80,10 @@ class botService(service.MultiService):
         if "tcp" in modes or "socket" in modes:
             try:
                 service.MultiService.startService(self)
+            except CannotListenError, e:
+                self.logger.warning(e)
             except Exception, e:
+                self.logger.error(repr(e))
                 self.logger.error(e)
 
 
