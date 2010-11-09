@@ -247,9 +247,11 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def stop(self):
+        self.bufferCondition.acquire()
         self.stopThread=True
-        self.bufferCondition.notify()
         self.closeLogs()
+        self.bufferCondition.notify()
+        self.bufferCondition.release()
 
     @callback
     def connectionMade(self):
