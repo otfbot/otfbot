@@ -240,7 +240,10 @@ class Plugin(chatMod.chatMod):
     def closeLogs(self):
         for channel in self.channels:
             self.log(channel, "--- Log closed " + self.ts("%a %b %d %H:%M:%S %Y"), False)
+            self.bufferCondition.acquire()
             self.files[channel].close()
+            self.bufferCondition.notify()
+            self.bufferCondition.release()
 
     @callback
     def stop(self):
