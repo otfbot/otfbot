@@ -4,16 +4,15 @@ from setuptools import setup
 from otfbot.lib import version
 
 setup(name='otfbot',
-     version=version._version.base(),
+     version=version.simple_version,
      description='a modular IRC-Bot',
      long_description='a modular IRC-Bot',
      author='Alexander Schier, Robert Weidlich, Thomas Wiegart',
      author_email='otfbot-dev@list.otfbot.org',
      url="http://www.otfbot.org/",
-     download_url="http://www.otfbot.org/files/otfbot-%s.tar.gz"
-        % version._version.base(),
      license="GPLv2",
-     install_requires=["twisted >=10.0.0", "yaml"],
+     install_requires=["twisted >=10.0.0", "pyyaml", "pyopenssl", "pycrypto", 
+         "pyasn1"],
      packages=[
         'otfbot',
         'otfbot.services',
