@@ -20,49 +20,60 @@
 """ Provides global version information
 """
 
-import sys
-import os.path
+MAJOR=1
+MINOR=0
+MICRO=0
+EXTRA="-rc1"
 
-from twisted.python import versions
-from otfbot.lib.vername import ver2name
+simple_version="%d.%d.%d%s"%(MAJOR, MINOR, MICRO, EXTRA)
+
+try:
+
+    import sys
+    import os.path
+
+    from twisted.python import versions
+    from otfbot.lib.vername import ver2name
 
 
-class GitVersion(versions.Version):
+    class GitVersion(versions.Version):
 
-    def _getSVNVersion(self):
-        mod = sys.modules.get(self.__module__)
-        if mod:
-            f = os.path.dirname(mod.__file__)
-            for i in range(1, 3):
-                f = os.path.split(f)[0]
-            git = os.path.join(f, '.git')
-            if not os.path.exists(git):
-                print "no git dir"
-                return None
-            master = os.path.join(git, 'refs', 'heads', 'master')
-            if not os.path.exists(master):
-                print "no masterref"
-                return None
-            f = open(master, 'r')
-            ver = f.readline().strip()
-            return ver[:7]
+        def _getSVNVersion(self):
+            mod = sys.modules.get(self.__module__)
+            if mod:
+                f = os.path.dirname(mod.__file__)
+                for i in range(1, 3):
+                    f = os.path.split(f)[0]
+                git = os.path.join(f, '.git')
+                if not os.path.exists(git):
+                    print "no git dir"
+                    return None
+                master = os.path.join(git, 'refs', 'heads', 'master')
+                if not os.path.exists(master):
+                    print "no masterref"
+                    return None
+                f = open(master, 'r')
+                ver = f.readline().strip()
+                return ver[:7]
 
-    def _formatSVNVersion(self):
-        ver = self._getSVNVersion()
-        if ver is None:
-            return ''
-        return ' (Git commit %s)' % (ver,)
+        def _formatSVNVersion(self):
+            ver = self._getSVNVersion()
+            if ver is None:
+                return ''
+            return ' (Git commit %s)' % (ver,)
 
-    def short(self):
-        """
-        from twisted.python.versions.Version
-        Return a string in canonical short version format,
-        <major>.<minor>.<micro>[+rSVNVer].
-        """
-        s = self.base()
-        svnver = self._getSVNVersion()
-        if svnver:
-            s += "+" + str(svnver) + " (%s)"%ver2name(svnver)
-        return s
+        def short(self):
+            """
+            from twisted.python.versions.Version
+            Return a string in canonical short version format,
+            <major>.<minor>.<micro>[+rSVNVer].
+            """
+            s = self.base()
+            svnver = self._getSVNVersion()
+            if svnver:
+                s += "+" + str(svnver) + " (%s)"%ver2name(svnver)
+            return s
 
-_version = GitVersion('OTFBot', 1, 0, 0, "-rc1")
+    _version = GitVersion('OTFBot', MAJOR, MINOR, MICRO, EXTRA)
+except ImportError:
+    pass
