@@ -30,6 +30,12 @@ for ``weather``.
 
 xmppClient needs wokkel_. Debian has a package python-wokkel for it.
 
+for building the needed modules from pypi with easy_install you need on debian:
+build-essential libssl-dev python-dev python-setuptools
+
+Note: if installed via pypi, the logging may behave a bit strange at the start. this is a known issue and does not make any trouble except a few very long lines at start of the log.
+see http://www.otfbot.org/bugs/index.php?do=details&task_id=95
+
 
 Setup
 -----
