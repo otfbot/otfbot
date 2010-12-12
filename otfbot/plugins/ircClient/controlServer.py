@@ -38,12 +38,3 @@ class Plugin(chatMod.chatMod):
         for connection in self.bot.root.getServiceNamed('ircServer').services:
             ret.append(connection.kwargs['factory'].protocol)
         return ret
-
-    @callback
-    def irc_unknown(self, prefix, command, params):
-        if command == "PONG":
-            for server in self.getServers():
-                timediff = round(time.time() - float(params[1]), 3)
-                rmsg = "%f sec. to %s." % (timediff, params[0])
-                ruser = self.bot.nickname + "!bot@localhost"
-                server.sendmsg(ruser, "#control", rmsg)
