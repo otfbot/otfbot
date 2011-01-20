@@ -10,7 +10,7 @@ Requirements
 
 For the core functionality are a *python interpreter* and the following 
 modules necessary. Currently version 2.6 of cPython is used to develop 
-the the bot. If you are encountering problems with other versions of python 
+the bot. If you are encountering problems with other versions of python 
 please file a bug.
 
 OTFBot is build around the *twisted framework*, so you need this with a 
