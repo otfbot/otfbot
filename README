@@ -21,7 +21,7 @@ and ``web`` modules are used (Debian packages ``python-twisted``,
 
 As the configuration is stored in a yaml-file, you need the *python-bindings
 for yaml*. If you intend to use a encrypted connection you need also
-``python-pyopenssl`` and ``python-crypto``.
+``python-pyopenssl``, ``pyasn1`` and ``python-crypto``.
 
 Some plugins require additional modules. You'll need ``python-feedparser`` 
 for ``feed``, ``youtube`` and ``zitat``, python-xmltv_ for ``tv``, 
