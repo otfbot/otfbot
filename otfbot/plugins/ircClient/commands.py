@@ -31,6 +31,7 @@ import re
 import random
 import os
 
+
 class Plugin(chatMod.chatMod):
     def __init__(self, bot):
         self.bot = bot
@@ -43,18 +44,23 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def joined(self, channel):
-        filename = self.bot.config.getPath("file", datadir, "commands.txt", "commands", self.bot.network, channel)
-        enc = self.bot.config.get("fileencoding", "iso-8859-15", "commands", self.bot.network, channel)
+        filename = self.bot.config.getPath("file", datadir, "commands.txt",
+            "commands", self.bot.network, channel)
+        enc = self.bot.config.get("fileencoding", "iso-8859-15",
+            "commands", self.bot.network, channel)
         self.commands[channel] = functions.loadProperties(filename, True, enc)
 
     @callback
     def command(self, user, channel, command, options):
         user = user.getNick()
-        if self.bot.config.getBool("autoReload", True, "commands", self.bot.network, channel):
+        if self.bot.config.getBool("autoReload", True, "commands",
+            self.bot.network, channel):
             #TODO: blocking
-            net_file = self.bot.config.getPath("file", datadir, "commands.txt", "commands", self.bot.network)
+            net_file = self.bot.config.getPath("file", datadir, "commands.txt",
+                "commands", self.bot.network)
             network_mtime = os.stat(net_file).st_mtime
-            global_file = self.bot.config.getPath("file", datadir, "commands.txt", "commands")
+            global_file = self.bot.config.getPath("file", datadir,
+                "commands.txt", "commands")
             general_mtime = os.stat(global_file).st_mtime
             if self.mtime < network_mtime or self.mtime < general_mtime:
                 self.reload()
@@ -72,12 +78,16 @@ class Plugin(chatMod.chatMod):
         self.commands = {}
 
         enc = self.bot.config.get("fileencoding", "iso-8859-15", "commands")
-        file = self.bot.config.getPath("file", datadir, "commands.txt", "commands")
+        file = self.bot.config.getPath("file", datadir, "commands.txt",
+            "commands")
         self.commands["general"] = functions.loadProperties(file, True, enc)
 
-        enc = self.bot.config.get("fileencoding", "iso-8859-15", "commands", self.bot.network)
-        file = self.bot.config.getPath("file", datadir, "commands.txt", "commands", self.bot.network)
-        self.commands["network"] = functions.loadProperties(file, True, enc)
+        enc = self.bot.config.get("fileencoding", "iso-8859-15",
+            "commands", self.bot.network)
+        file = self.bot.config.getPath("file", datadir, "commands.txt",
+            "commands", self.bot.network)
+        self.commands["network"] = \
+            functions.loadProperties(file, True, enc)
 
         for chan in self.bot.channels:
             self.joined(chan)
@@ -105,7 +115,8 @@ class Plugin(chatMod.chatMod):
 
         >>> c=Plugin(None)
         >>> c.commands={} #just for the example to work
-        >>> c.commands['general']={"test": ["USER wanted a test"], "test_": ["USER wanted to show OTHER how it works"]}
+        >>> c.commands['general']={"test": ["USER wanted a test"],
+        >>> "test_": ["USER wanted to show OTHER how it works"]}
         >>> c.commands['network']={}
         >>> #example begins here:
         >>> c.respond("", "testuser", "test", "")

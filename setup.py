@@ -11,7 +11,7 @@ setup(name='otfbot',
      author_email='otfbot-dev@list.otfbot.org',
      url="http://www.otfbot.org/",
      license="GPLv2",
-     install_requires=["twisted >=10.0.0", "pyyaml", "pyopenssl", "pycrypto", 
+     install_requires=["twisted >=10.0.0", "pyyaml", "pyopenssl", "pycrypto",
          "pyasn1"],
      download_url="http://www.otfbot.org/files/otfbot-%s.tar.gz"
         % version.simple_version,
