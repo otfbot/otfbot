@@ -38,6 +38,19 @@ HowTo ...
 add Meta info to the file:
 class Meta:
     depends=['otherservice']
+
+- let a service depend on a python module
+just import the module,  if the module is missing, the bot logs a WARNING and does not start the service:
+    i.e WARNING  Service xmppClient cannot be loaded because of missing module: No module named wokkel.xmppim
+
+- provide a better error message on missing python modules
+import the module with a wrapper around the import error, raise a new ImportError with better description:
+try:
+    import somemodule
+except ImportError, e:
+    raise ImportError(unicode(e)+". Download it from http://example.com")
+now the bot will log the new ImportError
+
 - let a plugin depend on a service/python module/other plugin
 use the pluginSupport.depends_on_... methods in __init__. if it fails, the plugin will not be instanced.
 i.e.

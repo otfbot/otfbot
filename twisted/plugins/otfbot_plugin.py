@@ -133,11 +133,20 @@ class MyServiceMaker(object):
 
         reactor.suggestThreadPoolSize(4) #threadpool for reactor.callInThread
 
+        cannot_import=[]
         for service_name in service_names:
-            #corelogger.info("starting Service %s" % service_name)
-            pkg = "otfbot.services." + service_name
-            service_classes[service_name] = __import__(pkg, fromlist=['botService'])
-            corelogger.info("imported %s"%pkg)
+            try:
+                #corelogger.info("starting Service %s" % service_name)
+                pkg = "otfbot.services." + service_name
+                service_classes[service_name] = __import__(pkg, fromlist=['botService'])
+                corelogger.info("imported %s"%pkg)
+            except ImportError, e:
+                corelogger.warning("Service %s cannot be loaded because of missing "
+                    "module: %s"%(service_name, unicode(e)))
+                cannot_import.append(service_name)
+
+        #do not start services where the import failed
+        service_names=list(set(service_names)-set(cannot_import))
 
         for service_name in service_names:
             if hasattr(service_classes[service_name], 'Meta') \
