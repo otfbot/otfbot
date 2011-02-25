@@ -209,7 +209,18 @@ class Plugin(chatMod.chatMod):
     def stop(self):
         for channel in self.channels:
             self.log(channel, "--- Log closed " + self.ts("%a %b %d %H:%M:%S %Y"), False)
+            self.bufferCondition.acquire()
             self.files[channel].close()
+            self.bufferCondition.notify()
+            self.bufferCondition.release()
+
+    @callback
+    def stop(self):
+        self.bufferCondition.acquire()
+        self.stopThread=True
+        self.closeLogs()
+        self.bufferCondition.notify()
+        self.bufferCondition.release()
 
     @callback
     def connectionMade(self):
