@@ -1,3 +1,0 @@
-icecast.statusurl: http://localhost:8000/status2.xsl
-#no default for mountpoint, as there is no default mountpoint in icecast
-#the default from .py file will be written to userconfig.
