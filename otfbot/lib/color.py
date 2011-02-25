@@ -48,8 +48,8 @@ def changecolor(fgcolor, bgcolor=None):
         Returns a string that with the current irc color set to something
         different.
         Expects both arguments to be one of the strings defined in colormap:
-          "white, black, navy, green, red, brown, purple, orange, yellow,
-          light_green, teal, cyan, blue, pink, grey, light_grey"
+        "white, black, navy, green, red, brown, purple, orange, yellow,
+        light_green, teal, cyan, blue, pink, grey, light_grey"
         The background color is optional
     """
     if fgcolor not in colormap:

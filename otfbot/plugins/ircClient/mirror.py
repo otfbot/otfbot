@@ -96,7 +96,7 @@ class Plugin(chatMod.chatMod):
         sign = "+"
         if not set:
             sign = "-"
-        self._sendToMirror(channel, "mode/" + channel + " [" + sign + modes + " " + " ".join(args) + "] by " + user)
+        self._sendToMirror(channel, "mode/" + channel + " [" + sign + modes + " " + " ".join(args) + "] by " + str(user))
 
     @callback
     def joined(self, channel):
