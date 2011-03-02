@@ -109,8 +109,7 @@ class MyServiceMaker(object):
             console.setFormatter(formatter)
             root.addHandler(console)
 
-        plo = log.PythonLoggingObserver()
-        log.startLoggingWithObserver(plo.emit)
+        log.PythonLoggingObserver().start()
 
         corelogger = logging.getLogger('core')
 
