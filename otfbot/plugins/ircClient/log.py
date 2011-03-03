@@ -63,11 +63,11 @@ class Plugin(chatMod.chatMod):
         #    self.setNetwork()
         #    self.joined(c)
         self.setNetwork()
-        reactor.callInThread(self.logThread)
         self.logs=[]
         self.privateLogs=[]
         self.stopThread=False
         self.bufferCondition=Condition()
+        reactor.callInThread(self.logThread)
 
     def timemap(self):
         return {'y': self.ts("%Y"), 'm': self.ts("%m"), 'd': self.ts("%d")}
