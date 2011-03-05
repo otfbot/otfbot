@@ -22,7 +22,7 @@
     Try to emulate a normal user by answering
 """
 
-import string, re, random, time, atexit, os.path
+import string, re, random, time, os.path
 import urllib, urllib2, socket
 
 from otfbot.lib import chatMod, functions
@@ -189,6 +189,7 @@ class megahalResponder(responder):
 class Plugin(chatMod.chatMod):
     def __init__(self, bot):
         self.bot = bot
+        self.exit=False
 
     def start(self):
         self.channels = []
@@ -232,7 +233,6 @@ class Plugin(chatMod.chatMod):
             self.responder = udpResponder(self.bot)
         elif module == "eliza":
             self.responder = elizaResponder(self.bot, datadir)
-        atexit.register(self.responder.cleanup)
 
     @callback
     def joined(self, channel):
@@ -328,10 +328,15 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def connectionLost(self, reason):
-        self.responder.cleanup()
+        if not self.exit:
+            self.exit=True
+            self.responder.cleanup()
 
+    @callback
     def stop(self):
-        self.responder.cleanup()
+        if not self.exit:
+            self.exit=True
+            self.responder.cleanup()
 
 if __name__ == "__main__":
     import doctest
