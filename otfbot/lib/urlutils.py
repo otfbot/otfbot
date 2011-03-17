@@ -69,7 +69,7 @@ def download(url, file=None, **kwargs):
     if type(url) == unicode:
         url = url.encode("UTF-8")
     if "agent" not in kwargs:
-        kwargs['agent'] = "OTFBot (%s; otfbot.berlios.de)" % _version.short()
+        kwargs['agent'] = "OTFBot (%s; otfbot.org)" % _version.short()
     if file:
         return client.downloadPage(url, file, **kwargs)
     else:
