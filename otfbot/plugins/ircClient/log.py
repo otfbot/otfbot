@@ -67,7 +67,7 @@ class Plugin(chatMod.chatMod):
         self.privateLogs=[]
         self.stopThread=False
         self.bufferCondition=Condition()
-        reactor.callInThread(self.logThread)
+        reactor.callInThread(self.logThread, self)
 
     def timemap(self):
         return {'y': self.ts("%Y"), 'm': self.ts("%m"), 'd': self.ts("%d")}
@@ -92,39 +92,43 @@ class Plugin(chatMod.chatMod):
             #TODO: this was already commented out. why don't we do this here?
             #self.log(channel, "--- Day changed "+self.ts("%a %b %d %Y"))
 
-    def logThread(self):
-        def real_log(self, channel, string, timestamp):
-            if self.day != self.ts("%d"):
-                self.dayChange()
-            if channel in self.channels:
-                logmsg = filtercolors(string) + "\n"
-                if timestamp:
-                    logmsg = self.ts() + " " + logmsg
-                self.files[channel].write(logmsg.encode("UTF-8"))
-                self.files[channel].flush()
-        def real_logPrivate(self, user, mystring):
-            if self.doLogPrivate:
-                mystring = filtercolors(mystring)
-                dic = self.timemap()
-                dic['c'] = string.lower(user)
-                filename = Template(self.logpath).safe_substitute(dic)
-                if not os.path.exists(os.path.dirname(filename)):
-                    os.makedirs(os.path.dirname(filename))
-                file = open(filename, "a")
-                file.write(self.ts() + " " + mystring.encode("UTF-8") + "\n")
-                file.close()
-        self.bufferCondition.acquire()
-        while not self.stopThread:
-            self.bufferCondition.wait()
-            logs=copy.copy(self.logs)
-            self.logs=[]
-            privateLogs=copy.copy(self.privateLogs)
-            self.privateLogs=[]
-            for call in logs:
-                real_log(self, call[0], call[1], call[2])
-            for call in privateLogs:
-                real_logPrivate(self, call[0], call[1])
-        self.bufferCondition.release()
+    def logThread(self, plugin):
+        bot=plugin.bot
+        try:
+            def real_log(self, channel, string, timestamp):
+                if self.day != self.ts("%d"):
+                    self.dayChange()
+                if channel in self.channels:
+                    logmsg = filtercolors(string) + "\n"
+                    if timestamp:
+                        logmsg = self.ts() + " " + logmsg
+                    self.files[channel].write(logmsg.encode("UTF-8"))
+                    self.files[channel].flush()
+            def real_logPrivate(self, user, mystring):
+                if self.doLogPrivate:
+                    mystring = filtercolors(mystring)
+                    dic = self.timemap()
+                    dic['c'] = string.lower(user)
+                    filename = Template(self.logpath).safe_substitute(dic)
+                    if not os.path.exists(os.path.dirname(filename)):
+                        os.makedirs(os.path.dirname(filename))
+                    file = open(filename, "a")
+                    file.write(self.ts() + " " + mystring.encode("UTF-8") + "\n")
+                    file.close()
+            self.bufferCondition.acquire()
+            while not self.stopThread:
+                self.bufferCondition.wait()
+                logs=copy.copy(self.logs)
+                self.logs=[]
+                privateLogs=copy.copy(self.privateLogs)
+                self.privateLogs=[]
+                for call in logs:
+                    real_log(self, call[0], call[1], call[2])
+                for call in privateLogs:
+                    real_logPrivate(self, call[0], call[1])
+            self.bufferCondition.release()
+        except Exception, e:
+            bot.logerror(bot.logger, "logThread", e)
 
     def log(self, channel, string, timestamp=True):
         self.bufferCondition.acquire()
