@@ -77,7 +77,7 @@ class Plugin(chatMod.chatMod):
 
     def dayChange(self):
         self.day = self.ts("%d")
-        self.stop()
+        self.closeLogs()
         for channel in self.channels:
             self.openLog(channel)
             #self.log(channel, "--- Day changed "+self.ts("%a %b %d %Y"))
@@ -207,6 +207,9 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def stop(self):
+        self.closeLogs()
+
+    def closeLogs(self):
         for channel in self.channels:
             self.log(channel, "--- Log closed " + self.ts("%a %b %d %H:%M:%S %Y"), False)
             self.files[channel].close()
