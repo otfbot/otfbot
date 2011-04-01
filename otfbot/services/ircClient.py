@@ -965,7 +965,7 @@ class Bot(pluginSupport, irc.IRCClient):
                 try:
                     func(self, *args, **kwargs)
                 except Exception, e:
-                    self.logerror(self.logger, plugin.name, e)
+                    self.logerror(self.logger, func.__name__, e)
             self.sync_lock.release() #the shared resource is the syncing_channels and callback_queue var, not the callbacks themself
 
             for callback in execute_now:
