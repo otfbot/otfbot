@@ -1,0 +1,15 @@
+Source: otfbot
+Section: python
+Priority: extra
+Maintainer: Alexander Schier <alexander_schier@yahoo.de>
+Build-Depends: cdbs, debhelper (>= 7.0.50~), python-setuptools, python2.5, python2.6, python-support
+Standards-Version: 3.9.1
+Homepage: http://www.otfbot.org/
+
+Package: otfbot
+Architecture: any
+Depends: ${misc:Depends}, python, python-twisted-bin, python-twisted-conch, python-twisted-core, python-twisted-web, python-twisted-words, python-crypto, python-pyasn1, python-feedparser
+Description: a modular IRC-Bot written in python
+ OTFBot the friendly bot is a modular IRC-Bot written in python.
+ plugins can be created in minutes and the default plugins already
+ provide many nice functions.
