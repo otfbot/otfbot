@@ -20,7 +20,8 @@ and ``web`` modules are used (Debian packages ``python-twisted``,
 ``python-twisted-web`` and ``python-twisted-words``)
 
 As the configuration is stored in a yaml-file, you need the *python-bindings
-for yaml*. If you intend to use a encrypted connection you need also
+for yaml*. libyaml 0.1.1 and python-yaml 3.05 are tested and working.
+If you intend to use a encrypted connection you need also
 ``python-pyopenssl``, ``pyasn1`` and ``python-crypto``.
 
 Some plugins require additional modules. You'll need ``python-feedparser`` 
@@ -34,6 +35,16 @@ build-essential libssl-dev python-dev python-setuptools
 
 Note: if installed via pypi, the logging may behave a bit strange at the start. this is a known issue and does not make any trouble except a few very long lines at start of the log.
 see http://www.otfbot.org/bugs/index.php?do=details&task_id=95
+
+
+Initialize dropin.cache
+-----------------------
+
+If you installed the bot as root (i.e. via easy_install), run once
+"twistd --help" as root. This avoids error messages because dropin.cache
+cannot be written. If you cannot do this, because the bot is installed by root
+and you're only having user priviledges, just ignore the error messages, the bot
+will run fine nevertheless.
 
 
 Setup
