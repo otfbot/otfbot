@@ -65,6 +65,7 @@ class Plugin(chatMod.chatMod):
         root = fromstring(data)
         result = root.find('.//title').text
         if result:
+            result = re.sub(r'\s+', ' ', result).strip()
             self.bot.sendmsg(channel, "[Link Info] " + result)
     
     @callback
