@@ -16,11 +16,12 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 # 
 # (c) 2008 by Alexander Schier
-# (c) 2008 by Robert Weidlich
+# (c) 2008 - 2011 by Robert Weidlich
 #
 
 import urllib2, re, string
 from HTMLParser import HTMLParser, HTMLParseError
+from lxml.html.soupparser import fromstring
 
 from otfbot.lib import chatMod, urlutils
 from otfbot.lib.pluginSupport.decorators import callback
@@ -29,7 +30,6 @@ class Plugin(chatMod.chatMod):
 
     def __init__(self, bot):
         self.bot = bot
-        self.parser = titleExtractor()
         self.autoTiny=self.bot.config.get("autotiny", False, "url", self.bot.network)
         self.autoTinyLength=int(self.bot.config.get("autoLength", "50", "url", self.bot.network))
         self.autoPreview=self.bot.config.get("autopreview", False, "url", self.bot.network)
@@ -38,7 +38,6 @@ class Plugin(chatMod.chatMod):
     @callback
     def command(self, user, channel, command, options):
         response = ""
-        self.parser= titleExtractor()
         headers=None
         if "preview" in command:
             if options == "":
@@ -63,15 +62,10 @@ class Plugin(chatMod.chatMod):
         self.bot.sendmsg(channel, "[Link Info] "+data )
 
     def processPreview(self, data, channel):
-        try:
-            self.parser.feed(data)
-            if self.parser.get_result() != '':
-                self.bot.sendmsg(channel, "[Link Info] " + self.parser.get_result())
-        except HTMLParseError, e:
-            self.logger.debug(e)
-            del self.parser
-            self.parser=titleExtractor()
-        self.parser.reset()
+        root = fromstring(data)
+        result = root.find('.//title').text
+        if result:
+            self.bot.sendmsg(channel, "[Link Info] " + result)
     
     @callback
     def msg(self, user, channel, msg):
@@ -91,22 +85,3 @@ class Plugin(chatMod.chatMod):
                     cmd+="+preview"
                 self.command(user, channel, cmd, url)
 
-            
-class titleExtractor(HTMLParser):
-        intitle=False
-        title=""
-        def handle_starttag(self, tag, attrs):
-                if tag == "title":
-                        self.intitle=True
-                else:
-                        self.intitle=False
-        def handle_endtag(self, tag):
-                if tag == "title":
-                        self.intitle=False
-        def handle_data(self, data):
-                if self.intitle:
-                        self.title = data
-        def get_result(self):
-            title=self.title.replace("\n", " ").replace("\r", "")
-            title=re.sub("[ ]+", " ", title)
-            return title
