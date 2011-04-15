@@ -39,16 +39,16 @@ class Plugin(chatMod.chatMod):
           "icecast", self.bot.network, channel)
 
         if options == "":
-            mountpoint = self.config.get("defaultMountpoint", "/radio.ogg", "icecast",
+            mountpoint = self.config.get("defaultMountpoint", "/radio.ogg", "icecast", \
               self.bot.network, channel)
         else:
             mountpoint = options
 
         if command == "np" or command == "listeners":
-            urlutils.download(statusurl).addCallback(self.downloadFinished,
+            urlutils.download(statusurl).addCallback(self.downloadFinished, \
               command, channel, mountpoint)
         elif command in ("mountpoints", "mounts"):
-            urlutils.download(statusurl).addCallback(self.downloadFinished,
+            urlutils.download(statusurl).addCallback(self.downloadFinished, \
               "mounts", channel, "")
 
     def downloadFinished(self, data, command, channel, mountpoint):
@@ -56,7 +56,7 @@ class Plugin(chatMod.chatMod):
         try:
             _ = self.bot.get_gettext(channel)
             #remove header info
-            lines = data.replace("</pre>", "")
+            lines = data.replace("</pre>", "")\
             .replace("<pre>", "").split("\n")
 
             #np, listeners need a mountpoint
@@ -74,7 +74,7 @@ class Plugin(chatMod.chatMod):
                               (parts[5], parts[3]))
                             break
                         elif command == "listeners":
-                            self.bot.sendmsg(channel,
+                            self.bot.sendmsg(channel, \
                               _("%s listeners") % (parts[3]))
                             break
                 if not found:
