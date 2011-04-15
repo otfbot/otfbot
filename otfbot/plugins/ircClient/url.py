@@ -57,14 +57,12 @@ class Plugin(chatMod.chatMod):
             d.addErrback(self.error, channel)
 
     def error(self, failure, channel):
-        self.logger.error(failure)
         self.bot.sendmsg(channel, "Error while retrieving informations: "+failure.getErrorMessage())
 
     def processTiny(self, data, channel):
         self.bot.sendmsg(channel, "[Link Info] "+data )
 
-    def checkForHTML(self, args, url, channel):
-        page, header = args
+    def checkForHTML(self, header, url, channel):
         if (urlutils.is_html(header)):
             d=urlutils.download(url, headers={'Accept':'text/html'})
             d.addCallback(self.processPreview, channel)
@@ -72,9 +70,9 @@ class Plugin(chatMod.chatMod):
         else:
             info = ""
             if "content-type" in header:
-                info += u"Mime-Type: %s" % header["content-type"][0]
+                info += u"Mime-Type: %s" % header["content-type"]
             if "content-length" in header:
-                size = urlutils.convert_bytes(header["content-length"][0])
+                size = urlutils.convert_bytes(header["content-length"])
                 info += u", %s" % size
             self.bot.sendmsg(channel, "[Link Info] " + info)
 

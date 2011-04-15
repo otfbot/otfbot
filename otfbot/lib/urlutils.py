@@ -60,7 +60,8 @@ def get_page_with_header(url, contextFactory=None, *args, **kwargs):
     return factory.deferred
 
 def get_headers(url):
-    def cb(page, header):
+    def cb(args):
+        page, header = args
         new_header = {}
         for k in header:
             new_header[k] = header[k][0]
