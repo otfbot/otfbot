@@ -46,8 +46,8 @@ class Plugin(chatMod.chatMod):
                     options=self.lasturl
                 else:
                     return
-            d=urlutils.download(options, headers={'Accept':'text/html'})
-            d.addCallback(self.processPreview, channel)
+            d=urlutils.get_headers(options)
+            d.addCallback(self.checkForHTML, options, channel)
             d.addErrback(self.error, channel)
         if "tinyurl" in command:
             if options == "":
@@ -57,10 +57,26 @@ class Plugin(chatMod.chatMod):
             d.addErrback(self.error, channel)
 
     def error(self, failure, channel):
+        self.logger.error(failure)
         self.bot.sendmsg(channel, "Error while retrieving informations: "+failure.getErrorMessage())
 
     def processTiny(self, data, channel):
         self.bot.sendmsg(channel, "[Link Info] "+data )
+
+    def checkForHTML(self, args, url, channel):
+        page, header = args
+        if (urlutils.is_html(header)):
+            d=urlutils.download(url, headers={'Accept':'text/html'})
+            d.addCallback(self.processPreview, channel)
+            d.addErrback(self.error, channel)
+        else:
+            info = ""
+            if "content-type" in header:
+                info += u"Mime-Type: %s" % header["content-type"][0]
+            if "content-length" in header:
+                size = urlutils.convert_bytes(header["content-length"][0])
+                info += u", %s" % size
+            self.bot.sendmsg(channel, "[Link Info] " + info)
 
     def processPreview(self, data, channel):
         try:
