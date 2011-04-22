@@ -102,7 +102,7 @@ class IrcUser(object):
 
     def __init__(self, nick, user, host, realname, network):
         self.network = network
-        self.name = "anonymous"
+        self.name = None #only known after whois
         self.nick = nick
         self.user = user
         self.host = host
@@ -203,7 +203,10 @@ class IrcUser(object):
         return self.host
 
     def __repr__(self):
-        return "<IrcUser %s (%s)>" % (self.getHostMask(), self.name)
+        name=self.name
+        if not name:
+            name="[name unknown]"
+        return "<IrcUser %s (%s)>" % (self.getHostMask(), name)
 
     def __str__(self):
         return self.getHostMask()
