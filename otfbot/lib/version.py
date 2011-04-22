@@ -23,7 +23,7 @@
 MAJOR=1
 MINOR=0
 MICRO=0
-EXTRA="-rc2"
+EXTRA=""
 
 simple_version="%d.%d.%d%s"%(MAJOR, MINOR, MICRO, EXTRA)
 
