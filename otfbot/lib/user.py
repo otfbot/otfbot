@@ -102,7 +102,7 @@ class IrcUser(object):
 
     def __init__(self, nick, user, host, realname, network):
         self.network = network
-        self.name = "anonymous"
+        self.name = None #only known after whois
         self.nick = nick
         self.user = user
         self.host = host
@@ -110,6 +110,7 @@ class IrcUser(object):
         self.realname = realname
         self.channels = set()
         self.modes = {}  # dict channel -> modes
+        self.data = {} #data stored by plugins
 
     def getBotuser(self):
         return self.avatar
@@ -202,8 +203,23 @@ class IrcUser(object):
     def getHost(self):
         return self.host
 
+    def getData(self, pluginName, key):
+        if not pluginName in self.data or not key in self.data[pluginName]:
+            return None
+        else:
+            return self.data[pluginName][key]
+
+    def setData(self, pluginName, key, value):
+        assert pluginName != None
+        if not pluginName in self.data:
+            self.data[pluginName] = {}
+        self.data[pluginName][key] = value
+
     def __repr__(self):
-        return "<IrcUser %s (%s)>" % (self.getHostMask(), self.name)
+        name=self.name
+        if not name:
+            name="[name unknown]"
+        return "<IrcUser %s (%s)>" % (self.getHostMask(), name)
 
     def __str__(self):
         return self.getHostMask()
