@@ -48,7 +48,7 @@ def syncedChannel(argnum=None):
                 channel=args[argnum]
             else:
                 channel="" #this should never happen
-                self.logger.error("Decorator has no channel property!")
+                self.logger.error("%s Decorator has no channel property!"%(func.__name__))
 
             #self.logger.debug("callSynced, arguments: "+str(args))
             if channel in self.syncing_channels:
