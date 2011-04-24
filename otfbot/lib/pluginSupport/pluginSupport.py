@@ -294,17 +294,17 @@ class pluginSupport:
             it first reloads all plugin classes, then it stops the plugins
             and starts them again using the new version of the class
         """
-        for chatPlugin in self.classes:
-            self.reloadPluginClass(chatPlugin)
-        for chatPlugin in self.plugins.values():
-            self.restartPlugin(chatPlugin.name.split(".")[-1]) #only plugin name
+        for plugin in self.classes:
+            self.reloadPluginClass(plugin)
+        for plugin in self.plugins.values():
+            self.restartPlugin(plugin.name.split(".")[-1]) #only plugin name
 
     def stopPlugins(self):
         """
             stop all Plugins
         """
-        for chatPlugin in self.plugins.values():
-            self.stopPlugin(chatPlugin.name)
+        for plugin in self.plugins.values():
+            self.stopPlugin(plugin.name)
 
     def stopPlugin(self, pluginName):
         """
@@ -314,19 +314,19 @@ class pluginSupport:
             @type pluginName: string
         """
         pkg = self.pluginSupportPath.replace("/", ".") + "." + pluginName #otfbot.plugins.service.plugin
-        pluginName = pkg.replace("otfbot.plugins.", "") #servive.plugin
+        pluginName = pkg.replace("otfbot.plugins.", "") #keeps only "service.plugin"
         if not pluginName in self.plugins.keys():
             return
-        chatPlugin = self.plugins[pluginName]
+        plugin = self.plugins[pluginName]
         self.logger.info("stopping %s" % (pluginName,))
         try:
-            chatPlugin.stop()
+            plugin.stop()
         except Exception, e:
-            self.logerror(self.logger, chatPlugin.name, e)
+            self.logerror(self.logger, plugin.name, e)
 
-        self.unregisterAllCallbacks(chatPlugin)
+        self.unregisterAllCallbacks(plugin)
         del(self.plugins[pluginName])
-        del(chatPlugin)
+        del(plugin)
 
     class WontStart(Exception):
         """
