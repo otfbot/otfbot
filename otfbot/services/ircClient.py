@@ -44,7 +44,7 @@ def syncedChannel(argnum=None):
         def callSynced(self, *args, **kwargs):
             if 'channel' in kwargs:
                 channel = kwargs['channel']
-            elif argnum:
+            elif argnum != None:
                 channel=args[argnum]
             else:
                 channel="" #this should never happen
