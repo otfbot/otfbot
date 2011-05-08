@@ -22,15 +22,11 @@
     Log channel conversations to files.
 """
 
-from twisted.internet import reactor
-from threading import Condition
-
 from otfbot.lib import chatMod
 from otfbot.lib.pluginSupport.decorators import callback
 from otfbot.lib.color import filtercolors
 
 import time
-import copy
 import string
 import locale
 import os
@@ -63,11 +59,6 @@ class Plugin(chatMod.chatMod):
         #    self.setNetwork()
         #    self.joined(c)
         self.setNetwork()
-        self.logs=[]
-        self.privateLogs=[]
-        self.stopThread=False
-        self.bufferCondition=Condition()
-        reactor.callInThread(self.logThread, self)
 
     def timemap(self):
         return {'y': self.ts("%Y"), 'm': self.ts("%m"), 'd': self.ts("%d")}
@@ -85,62 +76,35 @@ class Plugin(chatMod.chatMod):
         return wait
 
     def dayChange(self):
-        self.closeLogs()
         self.day = self.ts("%d")
+        self.closeLogs()
         for channel in self.channels:
             self.openLog(channel)
-            #TODO: this was already commented out. why don't we do this here?
             #self.log(channel, "--- Day changed "+self.ts("%a %b %d %Y"))
 
-    def logThread(self, plugin):
-        bot=plugin.bot
-        try:
-            def real_log(self, channel, string, timestamp):
-                if self.day != self.ts("%d"):
-                    self.dayChange()
-                if channel in self.channels:
-                    logmsg = filtercolors(string) + "\n"
-                    if timestamp:
-                        logmsg = self.ts() + " " + logmsg
-                    self.files[channel].write(logmsg.encode("UTF-8"))
-                    self.files[channel].flush()
-            def real_logPrivate(self, user, mystring):
-                if self.doLogPrivate:
-                    mystring = filtercolors(mystring)
-                    dic = self.timemap()
-                    dic['c'] = string.lower(user)
-                    filename = Template(self.logpath).safe_substitute(dic)
-                    if not os.path.exists(os.path.dirname(filename)):
-                        os.makedirs(os.path.dirname(filename))
-                    file = open(filename, "a")
-                    file.write(self.ts() + " " + mystring.encode("UTF-8") + "\n")
-                    file.close()
-            self.bufferCondition.acquire()
-            while not self.stopThread:
-                self.bufferCondition.wait()
-                logs=copy.copy(self.logs)
-                self.logs=[]
-                privateLogs=copy.copy(self.privateLogs)
-                self.privateLogs=[]
-                for call in logs:
-                    real_log(self, call[0], call[1], call[2])
-                for call in privateLogs:
-                    real_logPrivate(self, call[0], call[1])
-            self.bufferCondition.release()
-        except Exception, e:
-            bot.logerror(bot.logger, "logThread", e)
-
     def log(self, channel, string, timestamp=True):
-        self.bufferCondition.acquire()
-        self.logs.append((channel, string, timestamp))
-        self.bufferCondition.notify()
-        self.bufferCondition.release()
+        if self.day != self.ts("%d"):
+            self.dayChange()
+        if channel in self.channels:
+            logmsg = filtercolors(string) + "\n"
+            if timestamp:
+                logmsg = self.ts() + " " + logmsg
+            #TODO: blocking
+            self.files[channel].write(logmsg.encode("UTF-8"))
+            self.files[channel].flush()
 
     def logPrivate(self, user, mystring):
-        self.bufferCondition.acquire()
-        self.privateLogs.append((user, mystring))
-        self.bufferCondition.notify()
-        self.bufferCondition.release()
+        if self.doLogPrivate:
+            mystring = filtercolors(mystring)
+            dic = self.timemap()
+            dic['c'] = string.lower(user)
+            filename = Template(self.logpath).safe_substitute(dic)
+            #TODO: blocking
+            if not os.path.exists(os.path.dirname(filename)):
+                os.makedirs(os.path.dirname(filename))
+            file = open(filename, "a")
+            file.write(self.ts() + " " + mystring.encode("UTF-8") + "\n")
+            file.close()
 
     def openLog(self, channel):
         self.channels[string.lower(channel)] = 1
@@ -241,29 +205,18 @@ class Plugin(chatMod.chatMod):
                 for channel in user.getChannels():
                     self.log(channel, "-!- " + oldname + " is now known as " + newname)
 
+    @callback
+    def stop(self):
+        self.closeLogs()
+
     def closeLogs(self):
         for channel in self.channels:
             self.log(channel, "--- Log closed " + self.ts("%a %b %d %H:%M:%S %Y"), False)
-            self.bufferCondition.acquire()
             self.files[channel].close()
-            self.bufferCondition.notify()
-            self.bufferCondition.release()
-
-    @callback
-    def stop(self):
-        self.bufferCondition.acquire()
-        self.stopThread=True
-        self.closeLogs()
-        self.bufferCondition.notify()
-        self.bufferCondition.release()
 
     @callback
     def connectionMade(self):
         self.setNetwork()
-
-    @callback
-    def connectionLost(self, reason):
-        self.stop()
 
     def setNetwork(self):
         if len(self.bot.network.split(".")) < 3:
