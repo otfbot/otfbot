@@ -635,7 +635,7 @@ class Bot(pluginSupport, irc.IRCClient):
         """
         assert type(user) == str or type(user) == unicode
 
-        #best case: hostmask is known
+        #1) best case: hostmask is known, we have already a userobject
         if user in self.user_list:
             return self.user_list[user]
         #we have a complete hostmask?
@@ -643,8 +643,11 @@ class Bot(pluginSupport, irc.IRCClient):
             #try to get user by nick
             nick=user.split("!")[0]
             user2=self.getUserByNick(nick)
+            #2) we found a user by the nickname. the nickname is unique,
+            #   so we can return this userobject
             if user2:
                 return user2
+            #3) create a new user and return it
             #extract the user@host parts
             parts=user.split("!")[1].split("@")
             #new user, with nick, user, host, and without realname
@@ -652,17 +655,18 @@ class Bot(pluginSupport, irc.IRCClient):
             self.user_list[user]=newuser #store it
             return newuser
         else:
-            #no complete hostmask, try to find a matching nick
+            #4) no complete hostmask, try to find a matching nick
             user2=self.getUserByNick(user)
             if user2:
                 return user2
             else:
-                #no user known with this nick, create a temporary user object
+                #5) no user known with this nick, create a temporary user object
                 #we DO NOT store the incomplete user
                 return IrcUser(user, user, "", "", self.network)
 
-    #no decorator here, we decorate the _apirunner calls instead
-    #this avoids getting nick from queries in the channel-list
+    #no synced-decorator here, we use _synced_apirunner calls instead
+    #this avoids getting nicknames from queries in the channel-list
+    #when the privmsg call is from a query
     def privmsg(self, user, channel, msg):
         """ called by twisted,
             if we received a message
@@ -750,8 +754,10 @@ class Bot(pluginSupport, irc.IRCClient):
         user=self.resolveUser(user)
         if chan == self.nickname.lower():
             return #TODO: we do not do anything with our usermodes, yet
-        mstr = "mode change: user %s channel %s set %s modes %s args %s"
+        # DEBUG
+        # mstr = "mode change: user %s channel %s set %s modes %s args %s"
         # self.logger.debug(mstr % (user, chan, set, modes, args))
+
         if len(modes) != len(args):
             self.logger.debug("length of modes and args mismatched")
         elif user == chan: # my modes
@@ -804,6 +810,7 @@ class Bot(pluginSupport, irc.IRCClient):
         """ called by twisted,
             if the bot was kicked
         """
+        #TODO: use resolveUser for kicker?
         message=self.toUnicode(message, self.network)
         channel = channel.lower()
         self.logger.info("I was kicked from " + channel + " by " + kicker)
@@ -822,6 +829,7 @@ class Bot(pluginSupport, irc.IRCClient):
         """ called by twisted,
             if a user was kicked
         """
+        #TODO: resolveUser for kicker, kickee?
         message=self.toUnicode(message, self.network)
         channel = channel.lower()
         self._apirunner("userKicked", {"kickee": kickee, "channel": channel,
@@ -900,6 +908,8 @@ class Bot(pluginSupport, irc.IRCClient):
         """ called by twisted,
             if a user changed his nick
         """
+        #TODO: apirunner with resolved user?! 
+        #before or after updateding user_list?
         self._apirunner("userRenamed", {"oldname": oldname, "newname": newname})
         user=self.getUserByNick(oldname)
         if user and user.getHostMask() in self.user_list:
@@ -915,6 +925,9 @@ class Bot(pluginSupport, irc.IRCClient):
             if the topic was updated
         """
         channel = channel.lower()
+        #TODO: resolveUser for user? Caveat: maybe not in channel (i.e. "ChanServ")
+        #or something like the channel-name itself
+
         #user is a string with nick. 
         newTopic=self.toUnicode(newTopic, self.network, channel)
         self._apirunner("topicUpdated", {"user": user,
@@ -985,6 +998,7 @@ class Bot(pluginSupport, irc.IRCClient):
             if the bot was invited
         """
         channel = params[-1].lower()
+        #TODO: resolveUser for inviter?
         self._apirunner("invitedTo", {"channel": channel, "inviter": prefix})
 
     def irc_RPL_BOUNCE(self, prefix, params):
