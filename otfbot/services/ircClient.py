@@ -611,7 +611,7 @@ class Bot(pluginSupport, irc.IRCClient):
             self.rev_modcharvals = \
                     dict([(v, k) for (k, v) in self.modcharvals.iteritems()])
 
-    def toUnicode(self, str, network=None, channel=None):
+    def toUnicode(self, the_string, network=None, channel=None):
         """
             convert a string to an unicode-object, trying to use the
             encoding given in config, with fallback to iso-8859-15
@@ -620,11 +620,11 @@ class Bot(pluginSupport, irc.IRCClient):
         if channel and not channel[0] in self.supported.getFeature('CHANTYPES'):
             channel=None #prevents config.get from creating a wrong 'channel'
         try:
-            str=unicode(str, self.config.get("encoding", "UTF-8", "main",
+            the_string=unicode(the_string, self.config.get("encoding", "UTF-8", "main",
                 network=network, channel=channel))
         except UnicodeDecodeError:
-            str=unicode(str, "iso-8859-15", errors='replace')
-        return str
+            the_string=unicode(the_string, "iso-8859-15", errors='replace')
+        return the_string
 
     def resolveUser(self, user):
         """
