@@ -124,7 +124,7 @@ class pluginSupport:
                     service + "Plugins",
                     [], "main", set_default=False)
 
-        pluginsDisabled = self.config.get("pluginsDisabled", [], "main")
+        pluginsDisabled = self.config.get("pluginsDisabled", [], "main", set_default=False)
 
         if not dependency in plugins or service+"."+dependency in pluginsDisabled:
             raise self.PluginMissing(dependency, description)
@@ -218,7 +218,7 @@ class pluginSupport:
                     self.pluginSupportName + "Plugins",
                     [], "main", set_default=False)
         for plginName in plugins:
-            if not plginName in self.config.get("pluginsDisabled", [], "main"):
+            if not plginName in self.config.get("pluginsDisabled", [], "main", set_default=False):
                 self.startPlugin(plginName, package=package)
 
         #then we call .start(), guaranteeing that all other enabled plugins are loaded
