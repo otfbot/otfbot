@@ -219,7 +219,7 @@ class pluginSupport:
                     [], "main", set_default=False)
         for plginName in plugins:
             if not plginName in self.config.get("pluginsDisabled", [], "main", set_default=False):
-                self.startPlugin(plginName, package=package)
+                self.startPlugin(plginName, package=package, autostart=False)
 
         #then we call .start(), guaranteeing that all other enabled plugins are loaded
         #so start may depend on other plugins, make your dependency explicit with 
@@ -229,7 +229,7 @@ class pluginSupport:
             if hasattr(mod, "start"):
                 mod.start()
 
-    def startPlugin(self, pluginName, package=None):
+    def startPlugin(self, pluginName, package=None, autostart=True):
         """
         start the plugin named pluginName
 
@@ -272,6 +272,8 @@ class pluginSupport:
                 # exception occured (e.g. dependency missing
                 # or initialization error)
                 return None
+        if autostart:
+            return self.plugins[self._getClassName(pluginClass)].start()
         return self.plugins[self._getClassName(pluginClass)]
 
     def reloadPluginClass(self, pluginClass):
