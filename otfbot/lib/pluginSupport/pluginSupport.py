@@ -273,7 +273,7 @@ class pluginSupport:
                 # or initialization error)
                 return None
         if autostart:
-            return self.plugins[self._getClassName(pluginClass)].start()
+            self.plugins[self._getClassName(pluginClass)].start()
         return self.plugins[self._getClassName(pluginClass)]
 
     def reloadPluginClass(self, pluginClass):
