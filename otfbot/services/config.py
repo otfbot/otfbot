@@ -60,6 +60,10 @@ class configService(service.Service):
                 self.generic_options_default[option] = False
         except IOError:
             pass #does not exist
+        except StopIteration:
+            self.logger.warn("invalid config: "
+                "config does not contain two sections.")
+
 
     def _create_preceding(self, network, channel=None):
         """
