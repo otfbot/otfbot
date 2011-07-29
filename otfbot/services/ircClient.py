@@ -800,7 +800,9 @@ class Bot(pluginSupport, irc.IRCClient):
                         if set:
                             self.channelmodes[chan][modes[i]] = args[i]
                         else:
-                            del self.channelmodes[chan][modes[i]]
+                            #TODO: the "if" should not be needed when the modes are queries on join
+                            if chan in self.channelmodes and modes[i] in self.channelmodes[chan]:
+                                del self.channelmodes[chan][modes[i]]
         self._apirunner("modeChanged", {"user": user, "channel": chan,
                                         "set": set, "modes": modes,
                                         "args": [str(arg) for arg in args]})
