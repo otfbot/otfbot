@@ -20,7 +20,6 @@
 #
 
 import urllib2, re, string
-from HTMLParser import HTMLParser, HTMLParseError
 from lxml.html.soupparser import fromstring
 
 from otfbot.lib import chatMod, urlutils
@@ -36,7 +35,9 @@ class Plugin(chatMod.chatMod):
         self.lasturl=""
 
     @callback
-    def command(self, user, channel, command, options):
+    def command(self, user, channel, command, options, auto=False):
+        # auto = True means, the command was invoced via autoTiny/autoPreview.
+        # then the plugin should NOT post anything, if an error occured.
         response = ""
         headers=None
         if "preview" in command:
@@ -46,14 +47,16 @@ class Plugin(chatMod.chatMod):
                 else:
                     return
             d=urlutils.get_headers(options)
-            d.addCallback(self.checkForHTML, options, channel)
-            d.addErrback(self.error, channel)
+            d.addCallback(self.checkForHTML, options, channel, auto)
+            if not auto:
+                d.addErrback(self.error, channel)
         if "tinyurl" in command:
             if options == "":
                 options = self.lasturl
             d=urlutils.download("http://tinyurl.com/api-create.php?url="+options)
             d.addCallback(self.processTiny, channel)
-            d.addErrback(self.error, channel)
+            if not auto:
+                d.addErrback(self.error, channel)
 
     def error(self, failure, channel):
         self.bot.sendmsg(channel, "Error while retrieving informations: "+failure.getErrorMessage())
@@ -61,11 +64,12 @@ class Plugin(chatMod.chatMod):
     def processTiny(self, data, channel):
         self.bot.sendmsg(channel, "[Link Info] "+data )
 
-    def checkForHTML(self, header, url, channel):
+    def checkForHTML(self, header, url, channel, auto):
         if (urlutils.is_html(header)):
             d=urlutils.download(url, headers={'Accept':'text/html'})
             d.addCallback(self.processPreview, channel)
-            d.addErrback(self.error, channel)
+            if not auto:
+                d.addErrback(self.error, channel)
         else:
             info = ""
             if "content-type" in header:
@@ -86,7 +90,7 @@ class Plugin(chatMod.chatMod):
     def msg(self, user, channel, msg):
         mask=0        
         # http://www.truerwords.net/2539
-        regex=re.match(".*((ftp|http|https):(([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%[A-Fa-f0-9]{2}){2,}(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?([A-Za-z0-9$_+!*();/?:~-])).*", msg)
+        regex=re.match(".*((http|https)://.*)([ \t].*|$)", msg)
         if regex:
             url=regex.group(1)
             if string.lower(user.getNick()) != string.lower(self.bot.nickname):
@@ -98,5 +102,5 @@ class Plugin(chatMod.chatMod):
                         self.lasturl=url
                 if self.autoPreview:
                     cmd+="+preview"
-                self.command(user, channel, cmd, url)
+                self.command(user, channel, cmd, url, auto=True)
 
