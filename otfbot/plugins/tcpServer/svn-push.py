@@ -27,6 +27,9 @@ from otfbot.lib.pluginSupport import plugin
 from otfbot.lib import chatMod
 import logging
 
+class Meta:
+    service_depends=['ircClient']
+
 
 class Plugin(plugin.Plugin):
     """

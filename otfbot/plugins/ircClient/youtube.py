@@ -26,6 +26,8 @@ from otfbot.lib.pluginSupport.decorators import callback
 import logging
 import urllib
 
+class Meta:
+    module_depends=['feedparser']
 
 class Plugin(chatMod.chatMod):
     def __init__(self, bot):

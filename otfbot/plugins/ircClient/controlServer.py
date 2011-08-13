@@ -26,6 +26,8 @@ from otfbot.lib.pluginSupport.decorators import callback
 
 import time
 
+class Meta:
+    service_depends=['ircServer']
 
 class Plugin(chatMod.chatMod):
 

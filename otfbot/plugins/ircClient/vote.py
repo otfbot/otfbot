@@ -24,11 +24,12 @@ cast a vote with !votecast question and collect answers
 from otfbot.lib import chatMod
 from otfbot.lib.pluginSupport.decorators import callback
 
+class Meta:
+    service_depends = ['scheduler']
 
 class Plugin(chatMod.chatMod):
     def __init__(self, bot):
         self.bot=bot
-        self.bot.depends_on_service("scheduler")
         self.votes={}
 
     @callback

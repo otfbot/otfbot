@@ -249,10 +249,21 @@ class pluginSupport:
         if hasattr(pluginClass, "Meta"):
             if hasattr(pluginClass.Meta, "service_depends"):
                 if not set(pluginClass.Meta.service_depends).issubset(self.root.namedServices.keys()):
-                    self.logger.debug("%s (still) has unsatisfied dependencies: %s" \
+                    self.logger.warn("%s (still) has unsatisfied dependencies: %s" \
                         % (self._getClassName(pluginClass), \
                         list(set(pluginClass.Meta.service_depends)\
                         -set(self.root.namedServices.keys()))))
+                    return None
+            if hasattr(pluginClass.Meta, "module_depends"):
+                missing_mods=[]
+                for mod in pluginClass.Meta.module_depends:
+                    try:
+                        __import__(mod)
+                    except ImportError:
+                        missing_mods+=[mod]
+                if len(missing_mods):
+                    self.logger.warn("%s has unsatisfied module dependencies: %s" \
+                        % (self._getClassName(pluginClass), ", ".join(missing_mods)))
                     return None
         if hasattr(pluginClass, "Plugin"):
         # and hasattr(pluginClass.Plugin.ircClientPlugin) (?)

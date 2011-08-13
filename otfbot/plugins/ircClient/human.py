@@ -26,6 +26,8 @@
 from otfbot.lib import chatMod
 from otfbot.lib.pluginSupport.decorators import callback
 
+class Meta:
+    service_depends=['ircServer']
 
 def sendNames(server, network, channel):
     # same as in serverpart!

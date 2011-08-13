@@ -28,6 +28,10 @@ from otfbot.lib.pluginSupport.decorators import callback
 
 import time
 
+class Meta:
+    service_depends=['scheduler']
+    module_depends=['feedparser']
+
 
 class Plugin(chatMod.chatMod):
 
