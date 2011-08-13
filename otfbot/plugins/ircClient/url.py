@@ -50,6 +50,8 @@ class Plugin(chatMod.chatMod):
             d.addCallback(self.checkForHTML, options, channel, auto)
             if not auto:
                 d.addErrback(self.error, channel)
+            else:
+                d.addErrback(self.log_error, channel)
         if "tinyurl" in command:
             if options == "":
                 options = self.lasturl
@@ -57,9 +59,14 @@ class Plugin(chatMod.chatMod):
             d.addCallback(self.processTiny, channel)
             if not auto:
                 d.addErrback(self.error, channel)
+            else:
+                d.addErrback(self.log_error, channel)
 
     def error(self, failure, channel):
         self.bot.sendmsg(channel, "Error while retrieving informations: "+failure.getErrorMessage())
+
+    def log_error(self, failure, channel):
+        self.logger.debug("Error while retrieving informations: "+failure.getErrorMessage())
 
     def processTiny(self, data, channel):
         self.bot.sendmsg(channel, "[Link Info] "+data )
@@ -70,6 +77,8 @@ class Plugin(chatMod.chatMod):
             d.addCallback(self.processPreview, channel)
             if not auto:
                 d.addErrback(self.error, channel)
+            else:
+                d.addErrback(self.log_error, channel)
         else:
             info = ""
             if "content-type" in header:
