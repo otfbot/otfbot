@@ -33,6 +33,8 @@ try:
 except ImportError:
     HAS_PYSVN = False
 
+class Meta:
+    module_depends=['pysvn']
 
 class Plugin(chatMod.chatMod):
     """
