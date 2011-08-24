@@ -121,15 +121,18 @@ class botService(service.MultiService):
         f = BotFactory(self.root, self, network)
         sname = self.config.get("server", "localhost", "main", network)
         port = int(self.config.get('port', 6667, 'main', network))
+        bindaddress = self.config.get('bind', None, 'main', network)
+        if bindaddress:
+            bindaddress=(bindaddress, 0)
         if (self.config.getBool('ssl', False, 'main', network)):
             s = ssl.ClientContextFactory()
-            serv = internet.SSLClient(host=sname, port=port,
-                                      factory=f, contextFactory=s)
+            serv = internet.SSLClient(host=sname, port=port, factory=f, 
+                                           bindAddress=bindaddress, contextFactory=s)
             repr = "<IRC Connection with SSL to %s:%s>"
             serv.__repr__ = lambda: repr % (sname, port)
             serv.factory=f
         else:
-            serv = internet.TCPClient(host=sname, port=port, factory=f)
+            serv = internet.TCPClient(host=sname, port=port, bindAddress=bindaddress, factory=f)
             serv.__repr__ = lambda: "<IRC Connection to %s:%s>" % (sname, port)
             serv.factory=f
         f.service = serv
