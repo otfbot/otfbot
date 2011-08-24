@@ -26,8 +26,8 @@ If you intend to use a encrypted connection you need also
 
 Some plugins require additional modules. You'll need ``python-feedparser`` 
 for ``feed``, ``youtube`` and ``quotesfromweb``, python-xmltv_ for ``tv``, 
-``pysvn`` for ``svn``, python bindings for megahal for ``ki`` or pywapi_
-for ``weather``.
+``pysvn`` for ``svn``, python bindings for megahal for ``ki`` ``lxml`` with 
+soupparser for ``url``-plugin or pywapi_ for ``weather``.
 xmppClient needs wokkel_. Debian has a package python-wokkel for it.
 
 for building the needed modules from pypi with easy_install you need on debian:
