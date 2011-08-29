@@ -154,12 +154,19 @@ class pluginSupport:
             self.logger.debug("Imported plugin " + self._getClassName(cls))
             return self.classes[-1]
         except ImportError, e:
-            self.logger.warning("Cannot import plugin " + name)
-            self.logger.debug(str(e))
+            self.logger.warning("Cannot import plugin %s, because of"
+                " an ImportError" % name)
+            self.logger.debug("%s: %s" % (name, str(e)) )
             return None
         except SyntaxError, e:
-            self.logger.warning("Cannot import plugin " + name)
-            self.logerror(self.logger, name, e)
+            self.logger.warning("Cannot import plugin %s, because of"
+                " syntax errors" % name)
+            self.logerror(self.logger, name, str(e))
+            return None
+        except NameError, e:
+            self.logger.warning("Cannot import plugin %s, because of"
+                " NameError" % name)
+            self.logerror(self.logger, name, str(e))
             return None
 
     def callbackRegistered(self, module, callbackname):

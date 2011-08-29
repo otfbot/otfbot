@@ -67,7 +67,7 @@ class Plugin(chatMod.chatMod):
             except ValueError:
                 self.bot.sendmsg(channel, user+_(": ERROR: invalid number format \"%s\".") %options[0])
                 return
-            text = str(options[1])
+            text = options[1]
             
             self.bot.sendmsg(channel, user+_(": I will remind you in %i minutes") % wait)
             self.scheduler.callLater(wait*60, self.remind, user, channel, text)
@@ -82,7 +82,7 @@ class Plugin(chatMod.chatMod):
                 except ValueError:
                      self.bot.sendmsg(channel, user+_(": Syntax: !remindmeat YYYY-MM-DD hh:mm <reminder text>"))
                      return
-                text = str(options[2])
+                text = options[2]
                 if self.scheduler.callAtDatetime(dt, self.remind, user, channel, text) != False:
                     self.bot.sendmsg(channel, user+_(": I will remind you at %s %s") % (options[0],options[1]))
                 else:
