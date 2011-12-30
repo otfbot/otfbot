@@ -51,7 +51,7 @@ class Plugin(chatMod.chatMod):
         timediff = self.timestamps[channel][-1] - self.timestamps[channel][0]
         if timediff == 0:
             return 0
-        return len(self.timestamps) / (timediff / 60.0)
+        return len(self.timestamps[channel]) / (timediff / 60.0)
 
     @callback
     def joined(self, channel):
