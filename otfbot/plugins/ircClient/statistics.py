@@ -36,17 +36,23 @@ class Plugin(chatMod.chatMod):
     def msg(self, user, channel, msg):
         self.addTs(channel)
 
+    def removeOldTimestamps(self, channel):
+        while len(self.timestamps[channel]) and new_timestamp -  self.timestamps[channel][0] > 5*60:
+            self.timestamps[channel].pop(0)
+
     def addTs(self, channel):
         new_timestamp = int(time.time())
         if not channel in self.timestamps:
             self.timestamps[channel] = [new_timestamp]
         else:
             self.timestamps[channel].append(new_timestamp)
-        while len(self.timestamps[channel]) and new_timestamp -  self.timestamps[channel][0] > 5*60:
-            self.timestamps[channel].pop(0)
+        self.removeOldTimestamps(channel)
 
     def getLinesPerMinute(self, channel):
-        if not channel in self.timestamps or len(self.timestamps[channel]) < 2:
+        if not channel in self.timestamps:
+            return 0
+        self.removeOldTimestamps(channel)
+        if len(self.timestamps[channel]) < 2:
             return 0
         timediff = self.timestamps[channel][-1] - self.timestamps[channel][0]
         if timediff == 0:
