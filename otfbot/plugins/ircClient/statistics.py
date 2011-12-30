@@ -30,35 +30,28 @@ class Plugin(chatMod.chatMod):
         self.bot=bot
         self.peak={}
         self.peak_date={}
-        self.linesperminute = {}
-        self.new_lines = {}
-        self.timestamp = {}
+        self.timestamps = {}
 
     @callback
     def msg(self, user, channel, msg):
-        self.calcLPM(channel)
-        self.new_lines[channel][-1] += 1
+        self.addTs(channel)
 
-    def calcLPM(self, channel):
+    def addTs(self, channel):
         new_timestamp = int(time.time())
-        if not channel in self.timestamp:
-            self.timestamp[channel] = new_timestamp
-        if not channel in self.new_lines:
-            self.new_lines[channel] = [0, 0, 0, 0, 0]
-        no_lines = reduce(lambda x, y: x + y, self.new_lines[channel][:-1])
-        timediff = new_timestamp - self.timestamp[channel]
-        if timediff >0:
-            self.linesperminute[channel] = no_lines * 60 / 4.0 / timediff
-        if timediff >=60:
-            self.new_lines[channel] = self.new_lines[channel][1:]
-            self.new_lines[channel].append(0)
-            self.timestamp[channel] = new_timestamp
+        if not channel in self.timestamps:
+            self.timestamps[channel] = [new_timestamp]
+        else:
+            self.timestamps[channel].append(new_timestamp)
+        while len(self.timestamps[channel]) and new_timestamp -  self.timestamps[channel][0] > 5*60:
+            self.timestamps[channel].pop(0)
 
     def getLinesPerMinute(self, channel):
-        self.calcLPM(channel)
-        if not channel in self.linesperminute:
-            self.linesperminute[channel] = 0
-        return self.linesperminute[channel]
+        if not channel in self.timestamps or len(self.timestamps[channel]) < 2:
+            return 0
+        timediff = self.timestamps[channel][-1] - self.timestamps[channel][0]
+        if timediff == 0:
+            return 0
+        return len(self.timestamps) / (timediff / 60.0 / 5.0)
 
     @callback
     def joined(self, channel):
