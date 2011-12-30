@@ -37,6 +37,7 @@ class Plugin(chatMod.chatMod):
         self.addTs(channel)
 
     def removeOldTimestamps(self, channel):
+        new_timestamp = int(time.time())
         while len(self.timestamps[channel]) and new_timestamp -  self.timestamps[channel][0] > 5*60:
             self.timestamps[channel].pop(0)
 
