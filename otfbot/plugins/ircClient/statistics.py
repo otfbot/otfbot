@@ -31,6 +31,7 @@ class Plugin(chatMod.chatMod):
         self.peak={}
         self.peak_date={}
         self.timestamps = {}
+        self.AVERAGE_MINUTES = 5.0
 
     @callback
     def msg(self, user, channel, msg):
@@ -38,7 +39,7 @@ class Plugin(chatMod.chatMod):
 
     def removeOldTimestamps(self, channel):
         new_timestamp = int(time.time())
-        while len(self.timestamps[channel]) and new_timestamp -  self.timestamps[channel][0] > 5*60:
+        while len(self.timestamps[channel]) and new_timestamp -  self.timestamps[channel][0] > self.AVERAGE_MINUTES*60:
             self.timestamps[channel].pop(0)
 
     def addTs(self, channel):
@@ -55,10 +56,7 @@ class Plugin(chatMod.chatMod):
         self.removeOldTimestamps(channel)
         if len(self.timestamps[channel]) < 2:
             return 0
-        timediff = self.timestamps[channel][-1] - self.timestamps[channel][0]
-        if timediff == 0:
-            return 0
-        return len(self.timestamps[channel]) / (timediff / 60.0)
+        return len(self.timestamps[channel]) / self.AVERAGE_MINUTES
 
     @callback
     def joined(self, channel):
