@@ -54,8 +54,6 @@ class Plugin(chatMod.chatMod):
         if not channel in self.timestamps:
             return 0
         self.removeOldTimestamps(channel)
-        if len(self.timestamps[channel]) < 2:
-            return 0
         return len(self.timestamps[channel]) / self.AVERAGE_MINUTES
 
     @callback
