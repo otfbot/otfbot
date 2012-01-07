@@ -35,19 +35,19 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def msg(self, user, channel, msg):
-        self.addTs(channel)
+        self.addTs(channel, user)
 
     def removeOldTimestamps(self, channel):
         new_timestamp = int(time.time())
-        while len(self.timestamps[channel]) and new_timestamp -  self.timestamps[channel][0] > self.AVERAGE_MINUTES*60:
+        while len(self.timestamps[channel]) and new_timestamp -  self.timestamps[channel][0][0] > self.AVERAGE_MINUTES*60:
             self.timestamps[channel].pop(0)
 
-    def addTs(self, channel):
+    def addTs(self, channel, user):
         new_timestamp = int(time.time())
         if not channel in self.timestamps:
-            self.timestamps[channel] = [new_timestamp]
+            self.timestamps[channel] = [(new_timestamp, user)]
         else:
-            self.timestamps[channel].append(new_timestamp)
+            self.timestamps[channel].append((new_timestamp, user))
         self.removeOldTimestamps(channel)
 
     def getLinesPerMinute(self, channel):
@@ -55,6 +55,12 @@ class Plugin(chatMod.chatMod):
             return 0
         self.removeOldTimestamps(channel)
         return len(self.timestamps[channel]) / self.AVERAGE_MINUTES
+
+    def getActiveUsersCount(self, channel):
+        if not channel in self.timestamps:
+            return 0
+        self.removeOldTimestamps(channel)
+        return len(set(map(lambda x:x[1], self.timestamps[channel])))
 
     @callback
     def joined(self, channel):
@@ -81,3 +87,5 @@ class Plugin(chatMod.chatMod):
             self.bot.sendmsg(channel, "Maximale Nutzerzahl (%s) erreicht am %s"%(self.peak[channel], self.peak_date[channel]))
         elif command == "lpm":
             self.bot.sendmsg(channel, "aktuelle Zeilen pro Minute: %s"%(self.getLinesPerMinute(channel)))
+        elif command == "activeusers":
+            self.bot.sendmsg(channel, "Aktive Nutzer: %s"%(self.getActiveUsersCount(channel)))

@@ -58,4 +58,11 @@ class Plugin(plugin.Plugin):
                     for channel in network.protocol.channels:
                         if not wfile.closed:
                             wfile.write("%s.%s: %s\n"%(network.name, channel, network.protocol.plugins['ircClient.statistics'].getLinesPerMinute(channel)))
+        if path=='/active_users':
+            #TODO: duplicate code, refactor me!
+            for network in self.wps.root.getServiceNamed("ircClient").services:
+                if network and network.protocol: #no NoneType Exception on disconnected network
+                    for channel in network.protocol.channels:
+                        if not wfile.closed:
+                            wfile.write("%s.%s: %s\n"%(network.name, channel, network.protocol.plugins['ircClient.statistics'].getActiveUsersCount(channel)))
 #app.getServiceNamed("ircClient").services[0].protocol.plugins['plugins.ircClient.ki']
