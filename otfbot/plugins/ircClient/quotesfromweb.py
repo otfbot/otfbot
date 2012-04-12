@@ -49,13 +49,20 @@ class Plugin(chatMod.chatMod):
             desc = desc.replace(re.findall('<p.*class=".+">.+</p>',desc)[0],"")
             self.bot.msg(channel,"\"" + desc + "\" (" + zitat['title'].encode("utf8") + ")")
             return
-        elif command == "sprichwort":
-            url=urllib2.urlopen("http://www.sprichwortrekombinator.de")
-        elif command == "proverb":
-            url=urllib2.urlopen("http://proverb.gener.at/or/")
+        elif command == "sprichwort" or command == "proverb":
+            if command == "sprichwort":
+                url=urllib2.urlopen("http://www.sprichwortrekombinator.de")
+            elif command == "proverb":
+                url=urllib2.urlopen("http://proverb.gener.at/or/")
+            data=url.read()
+            url.close()
+            sprichwort=re.search("<div class=\"spwort\">([^<]*)<\/div>", data, re.S).group(1)
+            self.bot.sendmsg(channel, sprichwort)
+        elif command == "commitmsg":
+            url=urllib2.urlopen("http://whatthecommit.com/")
+            data=url.read()
+            url.close()
+            msg = re.search("<p>(.*)", data).group(1)
+            self.bot.sendmsg(channel, msg)
         else:
             return
-        data=url.read()
-        url.close()
-        sprichwort=re.search("<div class=\"spwort\">([^<]*)<\/div>", data, re.S).group(1)
-        self.bot.sendmsg(channel, sprichwort)
