@@ -29,6 +29,7 @@ from twisted.application import internet, service
 from twisted.internet import reactor
 
 import yaml #needed for parsing dicts from set config
+import shlex
 
 class botService(service.MultiService):
     """ allows to control the behaviour of the bot during runtime
@@ -56,12 +57,12 @@ class botService(service.MultiService):
         """
 
         if name is None:
-            name=f.__name__
+            name = f.__name__
         if not namespace:
-            if not f.__name__ in self.commandTree:
-                self.commandTree[f.__name__] = f
+            if not name in self.commandTree:
+                self.commandTree[name] = f
             else:
-                self.logger.info("Not overwriting existing Handler for "+f.__name__)
+                self.logger.info("Not overwriting existing Handler for %s" % name)
             #namespace=[]
         else:
             if not type(namespace) == list:
@@ -92,7 +93,9 @@ class botService(service.MultiService):
             the string is parsed into commands, and they are searched in the commandList-tree
             the function returns an answerstring or that the command was ambigious
         """
-        s=string.split(" ")
+        # necessary since shlex does not support unicode prior to python 2.7.3
+        string = string.encode("utf-8")
+        s = shlex.split(string)
         if not type(s) == list:
             s=[s,]
         if s[0] in self.commandList:
