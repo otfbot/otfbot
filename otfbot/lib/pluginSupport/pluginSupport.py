@@ -37,6 +37,11 @@ class pluginSupport:
     pluginSupportName = "[UNSET]"
     pluginSupportPath = "[UNSET]"
 
+    FURTHER_PROCESSING = 0
+    NO_FURTHER_PROCESSING = 1
+    FURTHER_PROCESSING_THIS_RESULT = 2
+    FURTHER_PROCESSING_THIS_ARGS = 4
+
     def __init__(self, root, parent):
         """
             sets root and parent, and stores references to config and control service in vars
@@ -346,7 +351,7 @@ class pluginSupport:
 
         self.unregisterAllCallbacks(plugin)
         del(self.plugins[pluginName])
-        del(plugin)
+        del plugin
 
     class WontStart(Exception):
         """
@@ -421,7 +426,7 @@ class pluginSupport:
             for line in entry.strip().split("\n"):
                 logger.error(line)
 
-    def _apirunner(self, apifunction, args={}):
+    def _apirunner(self, apifunction, args=None):
         """
             Pass all calls to plugin callbacks through this method, they
             are checked whether they should be executed or not.
@@ -435,6 +440,8 @@ class pluginSupport:
         """
         if apifunction not in self.callbacks:
             return
+        if not args: args = {}
+        resultmaxprio = None
         for plugin_and_priority in self.callbacks[apifunction]:
             plugin = plugin_and_priority[0] #(module, priority)
             # self.logger.debug("running "+apifunction+" for plugin "+str(mod))
@@ -454,24 +461,53 @@ class pluginSupport:
                     if plugin.name in plugins:
                         continue
             try:
+                # a function can return a statuscode or a tuble (statuscode, result) where statuscode can be one of the values below
                 result = getattr(plugin, apifunction)(**args)
-                #TODO: this should be extended something like this:
-                # a function can return None (further processing) or
-                # (result, statuscode), where statuscode is a constant:
-                # - NO_FURTHER_PROCESSING (return result)
-                # - FURTHER_PROCESSING_THIS_RESULT (returns result, after
-                #   invocing all other plugins)
-                # - FURTHER_PROCESSING (invoce all other plugins, return
-                #   the result from the last plugin,
-                #   which returned something
+
                 #TODO: there may be conflicting statuscodes, so we need
                 #      priorities in statuscodes and maybe
                 #      detection of such problems on registerCallback
 
-                # and this is the very simple form, just for now:
                 if result:
+                    statuscode = self.FURTHER_PROCESSING
+                    newresult = None
+                    if type(result) == int:
+                        statuscode = result
+                    else:
+                        if type(result) == tuple and len(result) > 1:
+                            statuscode = result[0]
+                            newresult = result[1]
+
+                    # invoke all other plugins
+                    if statuscode == self.FURTHER_PROCESSING:
+                        continue
+
+                    # abort invoking other plugins and return this result
+                    if statuscode == self.NO_FURTHER_PROCESSING:
+                        if resultmaxprio:
+                            return resultmaxprio
+                        return newresult
+
+                    # return this result after invoking all other plugins
+                    if statuscode == self.FURTHER_PROCESSING_THIS_RESULT:
+                        if not resultmaxprio:
+                            resultmaxprio = newresult
+                        continue
+
+                    # merge args with returned result (to give the possibility to let
+                    # plugins change data) and invoke all other plugins
+                    if statuscode == self.FURTHER_PROCESSING_THIS_ARGS:
+                        if type(newresult) == dict:
+                            args = dict(args.items() + newresult.items())
+                        continue
+
                     # stop further execution on first plugin which
                     # returns something
+                    if resultmaxprio:
+                        return resultmaxprio
                     return result
+
             except Exception, e:
                 self.logerror(self.logger, plugin.name, e)
+
+        return resultmaxprio
