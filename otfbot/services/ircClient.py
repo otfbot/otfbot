@@ -541,7 +541,7 @@ class Bot(pluginSupport, irc.IRCClient):
             @type reason:    twisted.python.failure.Failure
         """
         self.logger.info("lost connection: " + str(reason))
-        irc.IRCClient.connectionLost(self)
+        irc.IRCClient.connectionLost(self, reason)
         self._apirunner("connectionLost", {"reason": reason})
         self.stopPlugins()
 
