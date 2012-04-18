@@ -51,15 +51,14 @@ class Plugin(chatMod.chatMod):
             self.bot.sendmsg(nick, welcome)
         elif user in self.control:
             output = self.control[user].handle_command(msg)
-            if output == None:
+            if output is None:
                 output = "None"
             self.bot.sendmsg(nick, output)
 
     @callback
     def command(self, user, channel, command, options):
         if self.bot.auth(user) > 0:
-            cmd = []
-            cmd.append(command)
+            cmd = [command]
             control = self.bot.root.getServiceNamed("control")
             if options and options != "":
                 cmd.append(options)
