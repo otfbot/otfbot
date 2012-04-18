@@ -1044,7 +1044,9 @@ class Bot(pluginSupport, irc.IRCClient):
 
     def sendLine(self, line):
         self.lastLine = time.time()
-        self._apirunner("sendLine", {"line": line})
+        result = self._apirunner("sendLine", {"line": line})
+        if type(result) == dict and "line" in result:
+            line = result["line"]
         #self.logger.debug(str(line))
         irc.IRCClient.sendLine(self, line)
 
