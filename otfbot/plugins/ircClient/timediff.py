@@ -48,10 +48,11 @@ class Plugin(chatMod.chatMod):
             if user in self.queries:
                 try:
                     _=self.bot.get_gettext(self.queries[user])
-                    timediff = time() - mktime(strptime(data))
+                    mytime = time()
+                    timediff = mytime - mktime(strptime(data))
                     self.bot.sendmsg(self.queries[user],
                       _("my time: %s, your time: %s, %d seconds difference")\
-                      %(ctime(), data, timediff))
+                      %(ctime(mytime), data, timediff))
                 except ValueError:
                     pass
                 del self.queries[user]
