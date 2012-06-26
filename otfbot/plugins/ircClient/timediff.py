@@ -24,7 +24,7 @@
 from otfbot.lib import chatMod
 from otfbot.lib.pluginSupport.decorators import callback
 
-from time import mktime, ctime, strptime, time, sleep
+from time import mktime, ctime, strptime, time
 
 class Plugin(chatMod.chatMod):
 
