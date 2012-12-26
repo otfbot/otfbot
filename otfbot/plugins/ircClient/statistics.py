@@ -37,6 +37,10 @@ class Plugin(chatMod.chatMod):
     def msg(self, user, channel, msg):
         self.addTs(channel, user)
 
+    @callback
+    def msg(self, user, channel, msg):
+        self.addTs(channel, user)
+
     def removeOldTimestamps(self, channel):
         new_timestamp = int(time.time())
         while len(self.timestamps[channel]) and new_timestamp -  self.timestamps[channel][0][0] > self.AVERAGE_MINUTES*60:
