@@ -17,7 +17,7 @@
   owner /path/to/otfbot/data/** rwk,
   owner /path/to/otfbot/error.log rw,
   owner /path/to/otfbot/otfbot.yaml w,
-  owner /home/allo/projekte/otfbot/twistd.pid rw,
+  owner /path/to/otfbot/twistd.pid rw,
   /usr/bin/ r,
   /usr/bin/python2.6 ix,
   /usr/bin/twistd r,
