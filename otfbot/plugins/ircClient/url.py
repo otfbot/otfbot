@@ -30,8 +30,9 @@ class Plugin(chatMod.chatMod):
     def __init__(self, bot):
         self.bot = bot
         self.autoTiny=self.bot.config.get("autotiny", False, "url", self.bot.network)
-        self.autoTinyLength=int(self.bot.config.get("autoLength", "50", "url", self.bot.network))
+        self.autoTinyLength=int(self.bot.config.get("autoLength", 50, "url", self.bot.network))
         self.autoPreview=self.bot.config.get("autopreview", False, "url", self.bot.network)
+        self.previewMaxLength = max(4, self.bot.config.get("previewMaxLength", 200, "url", self.bot.network))
         self.lasturl=""
 
     @callback
@@ -93,6 +94,8 @@ class Plugin(chatMod.chatMod):
         result = root.find('.//title').text
         if result:
             result = re.sub(r'\s+', ' ', result).strip()
+            if len(result) > self.previewMaxLength:
+                result = result[:self.previewMaxLength - 4]+" ..."
             self.bot.sendmsg(channel, "[Link Info] " + result)
     
     @callback
