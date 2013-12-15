@@ -598,6 +598,10 @@ class Bot(pluginSupport, irc.IRCClient):
         # disable the channel for the next start of the bot
         self.config.set("enabled", False, "main", self.network, channel)
 
+    def nickChanged(self, nick):
+        irc.IRCClient.nickChanged(self, nick)
+        self._apirunner("nickChanged", {'nick': nick})
+
     def isupport(self, options):
         for o in options:
             kv = o.split('=', 1)
@@ -1034,11 +1038,15 @@ class Bot(pluginSupport, irc.IRCClient):
         """ Overridden to get the full hostmask """
         self.userQuit(prefix, params[0])
 
+    def irc_RPL_ENDOFMOTD(self, prefix, params):
+        self._apirunner("connected")
+        irc.IRCClient.irc_RPL_ENDOFMOTD(self, prefix, params)
+
     def lineReceived(self, line):
         """ called by twisted
             for every line which was received from the IRC-Server
         """
-        #self.logger.debug(str(line))
+        # self.logger.debug("RECV: "+str(line))
         self._apirunner("lineReceived", {"line": line})
         irc.IRCClient.lineReceived(self, line)
 
@@ -1047,7 +1055,7 @@ class Bot(pluginSupport, irc.IRCClient):
         result = self._apirunner("sendLine", {"line": line})
         if type(result) == dict and "line" in result:
             line = result["line"]
-        #self.logger.debug(str(line))
+        # self.logger.debug("SEND: "+str(line))
         irc.IRCClient.sendLine(self, line)
 
     def ping(self):

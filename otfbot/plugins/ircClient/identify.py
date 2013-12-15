@@ -39,13 +39,21 @@ class Plugin(chatMod.chatMod):
     def identify(self):
         password = self.bot.config.get("nickservPassword", None, 
             "identify", self.bot.network)
-        if password:
+        nickname = self.bot.config.get("nickname", "OtfBot", 
+            'main', self.network)
+        self.logger.info("names: %s %s" % (nickname, self.bot.nickname))
+        if password and nickname == self.bot.nickname:
             self.logger.info("identifying to nickserv")
             self.bot.sendmsg("nickserv", u"identify " + password)
             self.sent_identification = True
         if self.bot.config.getBool("setBotFlag", True, "identify", self.bot.network):
             self.logger.info("setting usermode +b")
             self.bot.mode(self.bot.nickname, 1, "B")
+
+    @callback
+    def nickChanged(self, nick):
+        self.logger.info("nick changed, identifying")
+        self.identify()
 
     @callback
     def noticed(self, user, channel, msg):
