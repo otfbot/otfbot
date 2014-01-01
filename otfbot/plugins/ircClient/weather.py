@@ -16,176 +16,44 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 # (c) 2005, 2006 by Alexander Schier
-# (c) 2007 by Robert Weidlich
+# (c) 2007, 2014 by Robert Weidlich
 
-import xml.sax
-import xml.sax.handler
-import urllib
-import string
-import re
 import time
-import os.path
+import urllib2
 
-from twisted.internet import defer
-import yaml
+from twisted.internet.defer import inlineCallbacks, returnValue
+import twisted.web.client
+twisted.web.client._HTTP11ClientFactory.noisy = False
 
-from otfbot.lib import chatMod, functions, urlutils
+import treq
+from lxml import etree
+
+from otfbot.lib import chatMod
 from otfbot.lib.pluginSupport.decorators import callback
 
 
-class CityCodeParser(xml.sax.handler.ContentHandler):
-    """Parses the answer of the CityCode Search"""
-
-    def __init__(self):
-        self.content = []
-
-        self.inSearch = 0
-        self.inLoc = 0
-
-        self.currentLoc = -1
-        self.currentLocText = ""
-
-    def startElement(self, name, attributes):
-        if name == "search":
-            self.inSearch = 1
-        if name == "loc":
-            self.inLoc = 1
-            self.currentLoc += 1
-            self.content.append({'code': attributes.getValue('id')})
-
-    def characters(self, data):
-        if self.inSearch:
-            if self.inLoc:
-                self.currentLocText += data
-
-    def endElement(self, name):
-        if name == "search":
-            self.inSearch = 0
-        if name == "loc":
-            self.content[self.currentLoc]['text'] = self.currentLocText
-            self.currentLocText = ""
-            self.inLoc = 0
-
-
-class YahooWeatherParser(xml.sax.handler.ContentHandler):
-    """Parses the actual weatherdata into a dict"""
-    _attrs = ["yweather:location", "yweather:units",
-              "yweather:wind", "yweather:atmosphere",
-              "yweather:astronomy", "yweather:condition",
-              "geo:lat", "geo:long"]
-
-    def __init__(self):
-        self.content = {}
-
-        self.inChannel = 0
-        self.inItem = 0
-        self.Item = ""
-        self.inSub = 0
-        self.Sub = ""
-
-        self.currentText = ""
-
-    def startElement(self, name, attributes):
-        if name == "channel":
-            self.inChannel = 1
-        if name == "item":
-            self.inItem = 1
-        if name in ["title", "description", "lastBuildDate", "ttl"]:
-            if not name == self.inItem:
-                self.inSub = 1
-                self.Sub = name
-        if name in self._attrs:
-            vals = {}
-            for attr in attributes.getNames():
-                vals[attr] = attributes.getValue(attr)
-            self.content[name.split(":")[1]] = vals
-
-    def characters(self, data):
-        if self.inChannel:
-            if self.inItem:
-                pass
-            if self.inSub:
-                self.currentText += data
-
-    def endElement(self, name):
-        if name == "channel":
-            self.inChannel = 0
-        if name == "item":
-            self.inItem = 0
-        if name == self.Sub:
-            self.inSub = 0
-            self.content[self.Sub] = self.currentText
-            self.currentText = ""
-            self.inSub = 0
-
-
-def get_location_code(location):
-    """ Fetch Location code """
-    loc_enc = urllib.quote_plus(location.encode("UTF-8"))
-    url = "http://xoap.weather.com/search/search?where=%s" % loc_enc
-    return urlutils.download(url).addCallback(parse_location_code)
-
-
-def parse_location_code(content):
-    """ Parse Location code response """
-    try:
-        handler = CityCodeParser()
-        xml.sax.parseString(content, handler)
-        return defer.succeed(handler.content)
-    except xml.sax._exceptions.SAXParseException:
-        print "CityCodeParser: Parse Exception"
-        return defer.succeed([{}])
-
-
-def get_weather(location):
-    """wrapperfunction for YahooWeatherParser"""
-    return get_location_code(location).addCallback(fetch_weather)
-
-
-def fetch_weather(codes):
-    """
-        Get the weather from Yahoo! Weather.
-    """
-    if len(codes) < 1:
-        return defer.succeed([])
-    url = "http://xml.weather.yahoo.com/forecastrss/%s_c.xml" \
-                % str(codes[0]['code'])
-    return urlutils.download(url).addCallback(parse_weather)
-
-
-def parse_weather(weather):
-    try:
-        handler = YahooWeatherParser()
-        xml.sax.parseString(weather, handler)
-        return defer.succeed(handler.content)
-    except xml.sax._exceptions.SAXParseException:
-        print "YahooWeatherParser: Parse Exception"
-        return defer.succeed([])
-
-
-### otfBot-Modulecode ####
 weathercodes = {
-    0: "Tornado", 1: "Tropensturm", 2: "Hurrikan", 3: "ernsthafte Gewitter",
-    4: "Gewitter", 5: "Regen und Schnee", 6: "Regen und Graupelschauer",
-    7: "Schnee und Graupelschauer", 8: "gefriender Nieselregen",
-    9: "Nieselregen", 10: "gefrierender Regen", 11: "Schauer", 12: "Schauer",
-    13: "Schneegest\xf6ber", 14: "leichte Schneeschauer", 15: "Schneesturm",
-    16: "Schnee", 17: "Hagel", 18: "Graupelschauer", 19: "starker Nebel",
-    20: "Nebel", 21: "schwacher Nebel", 22: "Qualmig", 23: "St\xfcrmisch",
-    24: "Windig", 25: "Kalt", 26: "Bew\xf6lkt",
-    27: "\xfcberwiegend bew\xf6lkt", 28: "\xfcberwiegend bew\xf6lkt",
-    29: "Teils bew\xf6lkt", 30: "Teils bew\xf6lkt", 31: "Klar", 32: "Sonnig",
-    33: "Heiter", 34: "Heiter", 35: "Regen und Hagel", 36: "Heiss",
-    37: "vereinzelte Gewitter", 38: "verstreute Gewitter",
-    39: "verstreute Gewitter", 40: "vereinzelte Schauer",
-    41: "starker Schneefall", 42: "vereinzelt Schnee und Regen",
-    43: "starker Schneefall", 44: "teils Bew\xf6lkt", 45: "Gewitter",
-    46: "Schneeschauer", 47: "vereinzelte Gewitter", 3200: "Unbekannt"}
+    0: u"Tornado", 1: u"Tropensturm", 2: u"Hurrikan", 3: u"ernsthafte Gewitter",
+    4: u"Gewitter", 5: u"Regen und Schnee", 6: u"Regen und Graupelschauer",
+    7: u"Schnee und Graupelschauer", 8: u"gefriender Nieselregen",
+    9: u"Nieselregen", 10: u"gefrierender Regen", 11: u"Schauer", 12: u"Schauer",
+    13: u"Schneegest\xf6ber", 14: u"leichte Schneeschauer", 15: u"Schneesturm",
+    16: u"Schnee", 17: u"Hagel", 18: u"Graupelschauer", 19: u"starker Nebel",
+    20: u"Nebel", 21: u"schwacher Nebel", 22: u"Qualmig", 23: u"St\xfcrmisch",
+    24: u"Windig", 25: u"Kalt", 26: u"Bew\xf6lkt",
+    27: u"\xfcberwiegend bew\xf6lkt", 28: u"\xfcberwiegend bew\xf6lkt",
+    29: u"Teils bew\xf6lkt", 30: u"Teils bew\xf6lkt", 31: u"Klar", 32: u"Sonnig",
+    33: u"Heiter", 34: u"Heiter", 35: u"Regen und Hagel", 36: u"Heiss",
+    37: u"vereinzelte Gewitter", 38: u"verstreute Gewitter",
+    39: u"verstreute Gewitter", 40: u"vereinzelte Schauer",
+    41: u"starker Schneefall", 42: u"vereinzelt Schnee und Regen",
+    43: u"starker Schneefall", 44: u"teils Bew\xf6lkt", 45: u"Gewitter",
+    46: u"Schneeschauer", 47: u"vereinzelte Gewitter", 3200: u"Unbekannt"}
 
 
-def getDirection(deg):
-    dirs = ["N", "NNO", "NO", "NOO", "O", "SOO", "SO", "SSO",
-            "S", "SSW", "SW", "SWW", "W", "NWW", "NW", "NNW", "N"]
+def get_direction(deg):
+    dirs = [u"N", u"NNO", u"NO", u"NOO", u"O", u"SOO", u"SO", u"SSO",
+            u"S", u"SSW", u"SW", u"SWW", u"W", u"NWW", u"NW", u"NNW", u"N"]
     d = 11.25
     i = 0
     while d < 372:
@@ -196,12 +64,110 @@ def getDirection(deg):
 
 
 class Plugin(chatMod.chatMod):
+    '''
+       This plugin fetches the current weather from yahoo apis. For the places api
+       you need to get an appid token from yahoo at 
+       https://developer.apps.yahoo.com/wsregapp/
+    '''
 
     def __init__(self, bot):
         self.bot = bot
         self.time = time.time()
-        self.commands = ["wetter"]
+        self.commands = ["wetter", "ort"]
         self.lastweather = {}
+        self.appid = self.bot.config.get(
+            "appid", "", "weather", self.bot.network)
+
+    @inlineCallbacks
+    def get_weather(self, woeid):
+        baseurl = 'http://weather.yahooapis.com/forecastrss'
+        params = {'w': woeid, 'u': 'c'}
+        result = yield treq.get(baseurl, params=params)
+        content = yield treq.text_content(result)
+
+        # lxml cannot parse unicode documents
+        utf8_parser = etree.XMLParser(encoding="utf-8")
+        root = etree.fromstring(content.encode("utf8"), parser=utf8_parser)
+
+        content = {}
+
+        for element in root.xpath("//yweather:*", namespaces=root.nsmap):
+            # remove namespace from tagname
+            tagname = element.tag[element.tag.rfind('}') + 1:]
+            if not tagname in content:
+                content[tagname] = []
+            content[tagname].append(element.attrib)
+
+        returnValue(content)
+
+    def weather_to_string(self, location, weather):
+        data = {}
+        data.update(location)
+        data.update(weather)
+        data['conditionstr'] = weathercodes[int(data['condition'][0]['code'])]
+        data['winddirection'] = get_direction(
+            int(data['wind'][0]['direction']))
+
+        template = u"Wetter f\xfcr {name} ({country}/{admin1}): {conditionstr}, "
+        template += u"{condition[0][temp]}\xb0{units[0][temperature]} "
+        template += u"gef\xfchlt {wind[0][chill]}\xb0{units[0][temperature]}, "
+        template += u"Wind: {wind[0][speed]}{units[0][speed]} aus {winddirection}, "
+        template += u"Luftfeuchte: {atmosphere[0][humidity]}%"
+
+        return template.format(**data)
+
+    @inlineCallbacks
+    def get_weather_wrapper(self, string, channel):
+        try:
+            location = yield self.get_woeid(string)
+            if location:
+                weather = yield self.get_weather(location["woeid"])
+                self.bot.sendmsg(
+                    channel, self.weather_to_string(location, weather))
+            else:
+                self.bot.sendmsg(channel, "Keinen passenden Ort gefunden")
+        except Exception as e:
+            self.bot.sendmsg(
+                channel, "Some error occured while fetching the weather.")
+            self.logger.error(e)
+
+    @inlineCallbacks
+    def get_woeid(self, string):
+        baseurl = 'http://where.yahooapis.com/v1'
+        endpoint = '/places'
+        qstring = urllib2.quote(string.encode("utf8"))
+        query = "$and(.q('%s','de'),.type(7));count=1" % qstring
+        params = {
+            'appid': self.appid,
+            'format': "json",
+            'lang': "de",
+            'view': "long"
+        }
+        url = "%s%s%s" % (baseurl, endpoint, query)
+
+        result = yield treq.get(url, params=params)
+        content = yield treq.json_content(result)
+        if content["places"]["count"] == 0:
+            returnValue(None)
+        else:
+            returnValue(content["places"]["place"][0])
+
+    @inlineCallbacks
+    def get_woeid_wrapper(self, string, channel):
+        try:
+            result = yield self.get_woeid(string)
+        except Exception as e:
+            self.bot.sendmsg(
+                channel, "Some error occured during fetching the city for the weather.")
+            print e
+        if result:
+            self.bot.sendmsg(channel, u"Found a place named %s (%s/%s) with woeid %i" % (
+                result["name"],
+                result["country"],
+                result["admin1"],
+                result["woeid"]))
+        else:
+            self.bot.sendmsg(channel, u"No place found")
 
     @callback
     def command(self, user, channel, command, options):
@@ -209,29 +175,14 @@ class Plugin(chatMod.chatMod):
         if channel in self.commands and 0 < (time.time() - self.time) < 5:
             self.bot.sendmsg(channel, u"Wait a minute ...")
             return
+
         self.time = time.time()
         if command == "wetter":
             if not len(options) and nick in self.lastweather:
                 options = self.lastweather[nick]
             elif len(options):
                 self.lastweather[nick] = options
-            get_weather(options).addCallback(self.send_answer, channel).addErrback(defer.logError)
+            self.get_weather_wrapper(options, channel)
 
-    def send_answer(self, c, channel):
-        if len(c) < 1 or 'location' not in c:
-            self.bot.sendmsg(channel, u"Keinen passenden Ort gefunden")
-        else:
-            answ = "Wetter f\xfcr " + str(c['location']['city'])
-            if len(c['location']['country']) > 0:
-                answ += " (" + str(c['location']['country']) + ")"
-            answ += ": " + str(weathercodes[int(c['condition']['code'])])
-            answ += ", " + str(c['condition']['temp']) + "\xb0"
-            answ += str(c['units']['temperature'])
-            answ += " gef\xfchlt " + str(c['wind']['chill']) + "\xb0"
-            answ += str(c['units']['temperature']) + ", Wind: "
-            answ += str(c['wind']['speed']) + str(c['units']['speed'])
-            answ += " aus " + str(getDirection(int(c['wind']['direction'])))
-            answ += ", Luftfeuchte: " + str(c['atmosphere']['humidity']) + "%"
-            if not type(answ)==unicode:
-                answ=unicode(answ, "iso-8859-1")
-            self.bot.sendmsg(channel, answ)
+        if command == "ort":
+            self.get_woeid_wrapper(options, channel)
