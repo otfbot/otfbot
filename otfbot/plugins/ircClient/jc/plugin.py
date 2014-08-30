@@ -21,6 +21,7 @@
 
 from otfbot.lib import chatMod
 from game import Game
+from otfbot.lib.pluginSupport.decorators import callback
 
 
 class Plugin(chatMod.chatMod):
@@ -29,12 +30,14 @@ class Plugin(chatMod.chatMod):
     def __init__(self, bot):
         self.bot = bot
 
+    @callback
     def start(self):
         """ initialize the vars of the plugin """
         self.game = Game()
         self.game.logger=self.logger
         self.gamechannel = ""
 
+    @callback
     def query(self, user, channel, msg):
         """ parse query lines into commands. "command bla" will be treated like "!command bla" in public """
         if " " in msg:
@@ -43,6 +46,7 @@ class Plugin(chatMod.chatMod):
         else:
             self.command(user, self.gamechannel, msg, "")
 
+    @callback
     def command(self, user, channel, command, options):
         user = user.getNick()
         if command == "newgame":
