@@ -1,0 +1,10 @@
+PyYaml
+Twisted
+feedparser
+treq
+lxml
+pyOpenSSL
+cryptography
+requests
+BeautifulSoup
+pycrypto
