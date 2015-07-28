@@ -13,15 +13,20 @@
 # You should have received a copy of the GNU General Public License
 # along with OtfBot; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-# 
+#
 # (c) 2005 - 2010 by Alexander Schier
+# (c) 2015 by Robert Weidlich
 #
 
-from otfbot.lib import chatMod
-class Plugin(chatMod.chatMod):
-    def __init__(self, wps):
-        self.wps=wps
-        wps.registerCallback(self, 'GET')
-    def GET(self, path, headers, rfile, wfile, handler):
-        if path=='/hello.html':
-            wfile.write("<h1>Hello World!</h1>")
+from otfbot.lib.pluginSupport import plugin
+from otfbot.lib.pluginSupport.decorators import callback
+
+
+class Plugin(plugin.Plugin):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @callback
+    def GET(self, path, headers, request):
+        if path == '/hello.html':
+            return (self.bot.NO_FURTHER_PROCESSING, "<h1>Hello World!</h1>")
