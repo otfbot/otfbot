@@ -23,6 +23,7 @@
 """
 
 import urllib2
+import urlparse
 from twisted.web import client
 client.HTTPClientFactory.noisy = False
 
@@ -30,8 +31,6 @@ from twisted.internet import defer
 from otfbot.lib import version
 from twisted.internet import reactor
 _version = version._version
-
-from twisted.web.client import _parse
 
 def get_page_with_header(url, contextFactory=None, *args, **kwargs):
     """
@@ -44,15 +43,15 @@ def get_page_with_header(url, contextFactory=None, *args, **kwargs):
     """
     if type(url) == unicode:
         url = url.encode("utf-8")
-    scheme, host, port, path = _parse(url)
+    purl = urlparse.urlparse(url)
     factory = client.HTTPClientFactory(url, *args, **kwargs)
-    if scheme == 'https':
+    if purl.scheme == 'https':
         from twisted.internet import ssl
         if contextFactory is None:
             contextFactory = ssl.ClientContextFactory()
-        reactor.connectSSL(host, port, factory, contextFactory)
+        reactor.connectSSL(purl.hostname, purl.port or 443, factory, contextFactory)
     else:
-        reactor.connectTCP(host, port, factory)
+        reactor.connectTCP(purl.hostname, purl.port or 80, factory)
         
     def cb(page):
         return defer.succeed((page, factory.response_headers))
