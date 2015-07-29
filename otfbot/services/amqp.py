@@ -43,6 +43,7 @@ from txamqp.client import TwistedDelegate
 from txamqp.protocol import AMQClient
 
 import txamqp
+import simplejson
 
 # TODO: support plugins, cleanup
 
@@ -59,7 +60,6 @@ def my_callback(msg):
     print msg.fields[-1]
     print "Callback received: ", msg
 
-
 class botService(service.MultiService):
     name = "amqp"
 
@@ -68,19 +68,22 @@ class botService(service.MultiService):
         self.parent = parent
         service.MultiService.__init__(self)
 
-    def post_message(self, msg):
+    def handle_command(self, msg):
         routing_key = msg.fields[-1]
-        keys = routing_key.split(".", 1)
-        if len(keys) == 2:
-            channel = '#%s' % keys[1]
-        network = keys[0]
-        irc = self.root.getServiceNamed("ircClient")
-        if network in irc.namedServices.keys():
-            ircnet = irc.getServiceNamed(network)
-            if channel in ircnet.protocol.channels:
-                ircnet.protocol.sendmsg(channel, msg.content.body)
-                return
-        self.logger.error("No destination for %s found" % routing_key)
+        try:
+            content = simplejson.loads(msg.content.body)
+            if "commands" in content:
+                if not isinstance(content['commands'], (list, tuple)):
+                    content['commands']=[content['commands'],]
+                for c in content['commands']:
+                    rv = self.controlservice.handle_command(c)
+                    if rv:
+                        self.logger.warning("Error while executing command %s: %s" % (c, rv))
+            else:
+                self.logger.warning("No command in amqp-message found")                    
+        except simplejson.JSONDecodeError:
+            self.logger.warning("Could not decode json data")
+            return
 
     def startService(self):
         """
@@ -93,7 +96,7 @@ class botService(service.MultiService):
         self.logger = logging.getLogger(self.name)
         self.config = self.root.getServiceNamed('config')
 
-#        self.controlservice = self.root.getServiceNamed('control')
+        self.controlservice = self.root.getServiceNamed('control')
 #        if not self.controlservice:
 #            logger.warning("cannot register control-commands as " +
 #                            "no control-service is available")
@@ -135,14 +138,14 @@ class botService(service.MultiService):
             serv.factory = f
         else:
             serv = internet.TCPClient(host=__host, port=__port, factory=f)
-            serv.__repr__ = lambda: "<IRC Connection to %s:%s>" % (__host, __port)
+            serv.__repr__ = lambda: "<AMQP Connection to %s:%s>" % (__host, __port)
             serv.factory = f
         f.service = serv
         serv.setName("amqp")
         serv.parent = self
 
         print "connecting signals"
-        f.read("otfbot", "#", self.post_message)
+        f.read("otfbot", "otfbot", self.handle_command)
 
         self.addService(serv)
 
