@@ -23,7 +23,7 @@
 MAJOR=1
 MINOR=1
 MICRO=0
-EXTRA="-git"
+EXTRA="+git"
 
 simple_version="%d.%d.%d%s"%(MAJOR, MINOR, MICRO, EXTRA)
 
