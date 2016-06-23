@@ -73,101 +73,44 @@ class Plugin(chatMod.chatMod):
     def __init__(self, bot):
         self.bot = bot
         self.time = time.time()
-        self.commands = ["wetter", "ort"]
+        self.commands = ["wetter", ]
         self.lastweather = {}
-        self.appid = self.bot.config.get(
-            "appid", "", "weather", self.bot.network)
 
-    @inlineCallbacks
-    def get_weather(self, woeid):
-        baseurl = 'http://weather.yahooapis.com/forecastrss'
-        params = {'w': woeid, 'u': 'c'}
-        result = yield treq.get(baseurl, params=params)
-        content = yield treq.text_content(result)
-
-        # lxml cannot parse unicode documents
-        utf8_parser = etree.XMLParser(encoding="utf-8")
-        root = etree.fromstring(content.encode("utf8"), parser=utf8_parser)
-
-        content = {}
-
-        for element in root.xpath("//yweather:*", namespaces=root.nsmap):
-            # remove namespace from tagname
-            tagname = element.tag[element.tag.rfind('}') + 1:]
-            if not tagname in content:
-                content[tagname] = []
-            content[tagname].append(element.attrib)
-
-        returnValue(content)
-
-    def weather_to_string(self, location, weather):
+    def weather_to_string(self, result):
         data = {}
-        data.update(location)
-        data.update(weather)
-        data['conditionstr'] = weathercodes[int(data['condition'][0]['code'])]
+        data.update(result)
+        data.update(result["item"])
+        data['conditionstr'] = weathercodes[int(data['condition']['code'])]
         data['winddirection'] = get_direction(
-            int(data['wind'][0]['direction']))
+            int(data['wind']['direction']))
 
-        template = u"Wetter f\xfcr {name} ({country}/{admin1}): {conditionstr}, "
-        template += u"{condition[0][temp]}\xb0{units[0][temperature]} "
-        template += u"gef\xfchlt {wind[0][chill]}\xb0{units[0][temperature]}, "
-        template += u"Wind: {wind[0][speed]}{units[0][speed]} aus {winddirection}, "
-        template += u"Luftfeuchte: {atmosphere[0][humidity]}%"
+        template = u"Wetter f\xfcr {location[city]} ({location[country]}/{location[region]}): {conditionstr}, "
+        template += u"{condition[temp]}\xb0{units[temperature]} "
+        template += u"gef\xfchlt {wind[chill]}\xb0{units[temperature]}, "
+        template += u"Wind: {wind[speed]}{units[speed]} aus {winddirection}, "
+        template += u"Luftfeuchte: {atmosphere[humidity]}%"
 
         return template.format(**data)
 
     @inlineCallbacks
     def get_weather_wrapper(self, string, channel):
         try:
-            location = yield self.get_woeid(string)
-            if location:
-                weather = yield self.get_weather(location["woeid"])
+            baseurl = "https://query.yahooapis.com/v1/public/yql?"
+            yql_query = "select * from weather.forecast where woeid in (select woeid from geo.places(1) where text='%s') and u='c'"
+
+            params = {'q': yql_query % string, 'format': 'json'}
+            result = yield treq.get(baseurl, params=params)
+            content = yield result.json()
+
+            if content["query"]["results"]:
                 self.bot.sendmsg(
-                    channel, self.weather_to_string(location, weather))
+                    channel, self.weather_to_string(content["query"]["results"]["channel"]))
             else:
                 self.bot.sendmsg(channel, "Keinen passenden Ort gefunden")
         except Exception as e:
             self.bot.sendmsg(
                 channel, "Some error occured while fetching the weather.")
             self.logger.error(e)
-
-    @inlineCallbacks
-    def get_woeid(self, string):
-        baseurl = 'http://where.yahooapis.com/v1'
-        endpoint = '/places'
-        qstring = urllib2.quote(string.encode("utf8"))
-        query = "$and(.q('%s','de'),.type(7));count=1" % qstring
-        params = {
-            'appid': self.appid,
-            'format': "json",
-            'lang': "de",
-            'view': "long"
-        }
-        url = "%s%s%s" % (baseurl, endpoint, query)
-
-        result = yield treq.get(url, params=params)
-        content = yield treq.json_content(result)
-        if content["places"]["count"] == 0:
-            returnValue(None)
-        else:
-            returnValue(content["places"]["place"][0])
-
-    @inlineCallbacks
-    def get_woeid_wrapper(self, string, channel):
-        try:
-            result = yield self.get_woeid(string)
-        except Exception as e:
-            self.bot.sendmsg(
-                channel, "Some error occured during fetching the city for the weather.")
-            print e
-        if result:
-            self.bot.sendmsg(channel, u"Found a place named %s (%s/%s) with woeid %i" % (
-                result["name"],
-                result["country"],
-                result["admin1"],
-                result["woeid"]))
-        else:
-            self.bot.sendmsg(channel, u"No place found")
 
     @callback
     def command(self, user, channel, command, options):
@@ -184,5 +127,3 @@ class Plugin(chatMod.chatMod):
                 self.lastweather[nick] = options
             self.get_weather_wrapper(options, channel)
 
-        if command == "ort":
-            self.get_woeid_wrapper(options, channel)
