@@ -1,0 +1,24 @@
+#
+# System Unit File to start OTFBot
+# Copy this file to /etc/systemd/system
+# Do "systemctl daemon-reload", "systemctl enable otfbot.service", "systemctl start otfbot.service"
+#
+[Unit]
+Description=OTFBot
+After=network.target
+
+[Service]
+User=otfbot
+Group=nogroup
+WorkingDirectory=/srv/otfbot
+Environment=VIRTUAL_ENV="/srv/venv"
+Environment=PATH="$VIRTUAL_ENV/bin:$PATH"
+ExecStart=/srv/venv/bin/twistd \
+    --nodaemon \
+    --pidfile= \
+    otfbot -c /srv/etc/otfbot.yaml
+
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
