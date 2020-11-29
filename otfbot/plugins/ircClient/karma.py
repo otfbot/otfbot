@@ -30,7 +30,7 @@ import os
 
 def sortedbyvalue(dict):
     """Helper function to return a [(value, key)] list from a dict"""
-    items = [(k, v) for (v, k) in dict.items()]
+    items = [(k, v) for (v, k) in list(dict.items())]
     items.reverse()
     return items
 
@@ -48,7 +48,7 @@ class Plugin(chatMod.chatMod):
         if not os.path.exists(datadir):
             os.makedirs(datadir)
         karmapath = self.bot.config.getPath("file", datadir, "karma.dat", "karma", self.bot.network, channel)
-        if not karmapath in self.karmapaths.keys():
+        if not karmapath in list(self.karmapaths.keys()):
             if os.path.exists(karmapath):
                 #TODO: blocking
                 karmafile = open(karmapath, "r")
@@ -114,7 +114,7 @@ class Plugin(chatMod.chatMod):
         elif command == "why-karmaup" or command == "wku":
             options.strip()
             reasons = ""
-            if options in self.karma.keys():
+            if options in list(self.karma.keys()):
                 num = min(num_reasons, len(self.karma[options][3]))
                 while num > 0:
                     num -= 1
@@ -124,7 +124,7 @@ class Plugin(chatMod.chatMod):
         elif command == "why-karmadown" or command == "wkd":
             options.strip()
             reasons = ""
-            if options in self.karma.keys():
+            if options in list(self.karma.keys()):
                 num = min(num_reasons, len(self.karma[options][4]))
                 while num > 0:
                     num -= 1
@@ -134,7 +134,7 @@ class Plugin(chatMod.chatMod):
         elif command == "who-karmaup":
             options.strip()
             people = ""
-            if options in self.karma.keys():
+            if options in list(self.karma.keys()):
                 items = sortedbyvalue(self.karma[options][1])
                 num = min(num_user, len(items))
                 while num > 0:
@@ -145,7 +145,7 @@ class Plugin(chatMod.chatMod):
         elif command == "who-karmadown":
             options.strip()
             people = ""
-            if options in self.karma.keys():
+            if options in list(self.karma.keys()):
                 items = sortedbyvalue(self.karma[options][2])
                 num = min(num_user, len(items))
                 while num > 0:
@@ -175,19 +175,19 @@ class Plugin(chatMod.chatMod):
         self.bot.sendmsg(channel, "Karma: " + what + ": " + str(self.get_karma(channel, what)))
 
     def get_karma(self, channel, what):
-        if not what in self.karmas[channel].keys():
+        if not what in list(self.karmas[channel].keys()):
             self.karmas[channel][what] = [0, {}, {}, [], []] #same as below!
         return self.karmas[channel][what][0]
 
     def do_karma(self, channel, what, up, reason, user):
         user = user.getNick()
         karma = self.karmas[channel]
-        if not what in karma.keys():
+        if not what in list(karma.keys()):
             # score, who-up, who-down, why-up, why-down
             karma[what] = [0, {}, {}, [], []]
         if up:
             karma[what][0] = int(karma[what][0]) + 1
-            if not user in karma[what][1].keys():
+            if not user in list(karma[what][1].keys()):
                 karma[what][1][user] = 1
             else:
                 karma[what][1][user] += 1
@@ -195,7 +195,7 @@ class Plugin(chatMod.chatMod):
                 karma[what][3].append(str(reason))
         else:
             karma[what][0] = int(karma[what][0]) - 1
-            if not user in karma[what][2].keys():
+            if not user in list(karma[what][2].keys()):
                 karma[what][2][user] = 1
             else:
                 karma[what][2][user] += 1
@@ -203,7 +203,7 @@ class Plugin(chatMod.chatMod):
                 karma[what][4].append(str(reason))
 
     def stop(self):
-        for karmapath in self.karmapaths.keys():
+        for karmapath in list(self.karmapaths.keys()):
             self.saveKarma(self.karmapaths[karmapath])
 
     def start(self):

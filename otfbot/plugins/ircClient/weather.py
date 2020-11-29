@@ -19,7 +19,7 @@
 # (c) 2007, 2014 by Robert Weidlich
 
 import time
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 from twisted.internet.defer import inlineCallbacks, returnValue
 import twisted.web.client
@@ -33,27 +33,27 @@ from otfbot.lib.pluginSupport.decorators import callback
 
 
 weathercodes = {
-    0: u"Tornado", 1: u"Tropensturm", 2: u"Hurrikan", 3: u"ernsthafte Gewitter",
-    4: u"Gewitter", 5: u"Regen und Schnee", 6: u"Regen und Graupelschauer",
-    7: u"Schnee und Graupelschauer", 8: u"gefriender Nieselregen",
-    9: u"Nieselregen", 10: u"gefrierender Regen", 11: u"Schauer", 12: u"Schauer",
-    13: u"Schneegest\xf6ber", 14: u"leichte Schneeschauer", 15: u"Schneesturm",
-    16: u"Schnee", 17: u"Hagel", 18: u"Graupelschauer", 19: u"starker Nebel",
-    20: u"Nebel", 21: u"schwacher Nebel", 22: u"Qualmig", 23: u"St\xfcrmisch",
-    24: u"Windig", 25: u"Kalt", 26: u"Bew\xf6lkt",
-    27: u"\xfcberwiegend bew\xf6lkt", 28: u"\xfcberwiegend bew\xf6lkt",
-    29: u"Teils bew\xf6lkt", 30: u"Teils bew\xf6lkt", 31: u"Klar", 32: u"Sonnig",
-    33: u"Heiter", 34: u"Heiter", 35: u"Regen und Hagel", 36: u"Heiss",
-    37: u"vereinzelte Gewitter", 38: u"verstreute Gewitter",
-    39: u"verstreute Gewitter", 40: u"vereinzelte Schauer",
-    41: u"starker Schneefall", 42: u"vereinzelt Schnee und Regen",
-    43: u"starker Schneefall", 44: u"teils Bew\xf6lkt", 45: u"Gewitter",
-    46: u"Schneeschauer", 47: u"vereinzelte Gewitter", 3200: u"Unbekannt"}
+    0: "Tornado", 1: "Tropensturm", 2: "Hurrikan", 3: "ernsthafte Gewitter",
+    4: "Gewitter", 5: "Regen und Schnee", 6: "Regen und Graupelschauer",
+    7: "Schnee und Graupelschauer", 8: "gefriender Nieselregen",
+    9: "Nieselregen", 10: "gefrierender Regen", 11: "Schauer", 12: "Schauer",
+    13: "Schneegest\xf6ber", 14: "leichte Schneeschauer", 15: "Schneesturm",
+    16: "Schnee", 17: "Hagel", 18: "Graupelschauer", 19: "starker Nebel",
+    20: "Nebel", 21: "schwacher Nebel", 22: "Qualmig", 23: "St\xfcrmisch",
+    24: "Windig", 25: "Kalt", 26: "Bew\xf6lkt",
+    27: "\xfcberwiegend bew\xf6lkt", 28: "\xfcberwiegend bew\xf6lkt",
+    29: "Teils bew\xf6lkt", 30: "Teils bew\xf6lkt", 31: "Klar", 32: "Sonnig",
+    33: "Heiter", 34: "Heiter", 35: "Regen und Hagel", 36: "Heiss",
+    37: "vereinzelte Gewitter", 38: "verstreute Gewitter",
+    39: "verstreute Gewitter", 40: "vereinzelte Schauer",
+    41: "starker Schneefall", 42: "vereinzelt Schnee und Regen",
+    43: "starker Schneefall", 44: "teils Bew\xf6lkt", 45: "Gewitter",
+    46: "Schneeschauer", 47: "vereinzelte Gewitter", 3200: "Unbekannt"}
 
 
 def get_direction(deg):
-    dirs = [u"N", u"NNO", u"NO", u"NOO", u"O", u"SOO", u"SO", u"SSO",
-            u"S", u"SSW", u"SW", u"SWW", u"W", u"NWW", u"NW", u"NNW", u"N"]
+    dirs = ["N", "NNO", "NO", "NOO", "O", "SOO", "SO", "SSO",
+            "S", "SSW", "SW", "SWW", "W", "NWW", "NW", "NNW", "N"]
     d = 11.25
     i = 0
     while d < 372:
@@ -84,11 +84,11 @@ class Plugin(chatMod.chatMod):
         data['winddirection'] = get_direction(
             int(data['wind']['direction']))
 
-        template = u"Wetter f\xfcr {location[city]} ({location[country]}/{location[region]}): {conditionstr}, "
-        template += u"{condition[temp]}\xb0{units[temperature]} "
-        template += u"gef\xfchlt {wind[chill]}\xb0{units[temperature]}, "
-        template += u"Wind: {wind[speed]}{units[speed]} aus {winddirection}, "
-        template += u"Luftfeuchte: {atmosphere[humidity]}%"
+        template = "Wetter f\xfcr {location[city]} ({location[country]}/{location[region]}): {conditionstr}, "
+        template += "{condition[temp]}\xb0{units[temperature]} "
+        template += "gef\xfchlt {wind[chill]}\xb0{units[temperature]}, "
+        template += "Wind: {wind[speed]}{units[speed]} aus {winddirection}, "
+        template += "Luftfeuchte: {atmosphere[humidity]}%"
 
         return template.format(**data)
 
@@ -116,7 +116,7 @@ class Plugin(chatMod.chatMod):
     def command(self, user, channel, command, options):
         nick = user.getNick()
         if channel in self.commands and 0 < (time.time() - self.time) < 5:
-            self.bot.sendmsg(channel, u"Wait a minute ...")
+            self.bot.sendmsg(channel, "Wait a minute ...")
             return
 
         self.time = time.time()

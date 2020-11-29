@@ -29,15 +29,12 @@ from twisted.words.service import WordsRealm, InMemoryWordsRealm
 from twisted.words.iwords import IGroup, IUser
 from twisted.cred.portal import Portal, IRealm
 
-from zope.interface import implements
-
 from otfbot.lib.user import BotUser
 
 import logging, yaml, hashlib
 
 
 class YamlWordsRealm(InMemoryWordsRealm):
-    implements(checkers.ICredentialsChecker)   
     credentialInterfaces = (
         credentials.IUsernamePassword,
     )
@@ -72,7 +69,7 @@ class YamlWordsRealm(InMemoryWordsRealm):
         reactor.callInThread(self.save)        
 
     def requestAvatarId(self, creds):
-        u = self.getUser(unicode(creds.username))
+        u = self.getUser(str(creds.username))
         u.addErrback(error.UnauthorizedLogin)
         u.addCallback(self._checkpw, creds)
         return u
@@ -118,8 +115,8 @@ class YamlWordsRealm(InMemoryWordsRealm):
         try:
             f=open(self.file, "r")
             file_h=yaml.load_all(f)
-            self.users=file_h.next()
-            self.groups=file_h.next()
+            self.users=next(file_h)
+            self.groups=next(file_h)
             f.close()
         except IOError:
             self.users={}
@@ -141,7 +138,7 @@ class botService(service.MultiService, portal.Portal):
         """
             starts the service and loads the userlist
         """
-        print "auth service started"
+        print("auth service started")
         self.config=self.root.getServiceNamed('config')
         self.realm = YamlWordsRealm("userdb",self.config.get("datadir","data")+"/userdb.yaml")
         portal.Portal.__init__(self, self.realm)

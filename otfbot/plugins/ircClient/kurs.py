@@ -28,7 +28,7 @@ from otfbot.lib.pluginSupport.decorators import callback
 
 import string
 import re
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import time
 
 
@@ -50,11 +50,11 @@ class Plugin(chatMod.chatMod):
             return
         self.time = time.time()
         if command == "kurs":
-            d = urlutils.download(self.ku % urllib.quote_plus(options))
+            d = urlutils.download(self.ku % urllib.parse.quote_plus(options))
             d.addCallback(self.parseKurs, channel)
             d.addErrback(self.error, channel)
         if command == "wkn":
-            d = urlutils.download(self.wknu % urllib.quote_plus(options))
+            d = urlutils.download(self.wknu % urllib.parse.quote_plus(options))
             d.addCallback(self.parseWKN, channel)
             d.addErrback(self.error, channel)
 

@@ -24,10 +24,10 @@
 from otfbot.lib import chatMod
 from otfbot.lib.pluginSupport.decorators import callback
 
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import re
-from HTMLParser import HTMLParser
-from HTMLParser import HTMLParseError
+from html.parser import HTMLParser
+from html.parser import HTMLParseError
 
 
 class versionIDExtractor(HTMLParser):
@@ -84,7 +84,7 @@ class Plugin(chatMod.chatMod):
             url = self.config.get("url", "", "flyspray", self.bot.network, channel)
             if url:
                 #TODO: Blocking
-                handle = urllib2.urlopen(url + "index.php?do=details&task_id=%d" % bugid)
+                handle = urllib.request.urlopen(url + "index.php?do=details&task_id=%d" % bugid)
                 if handle.geturl() == url:
                     self.bot.sendmsg(channel, "Invalid Bug ID")
                     return
@@ -102,7 +102,7 @@ class Plugin(chatMod.chatMod):
             try:
                 url = self.config.get("url", "", "flyspray", self.bot.network, channel)
                 if url:
-                    parser.feed(urllib2.urlopen(url).read())
+                    parser.feed(urllib.request.urlopen(url).read())
                     self.bot.sendmsg(channel, parser.get_result())
             except HTMLParseError:
                 pass

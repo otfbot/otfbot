@@ -61,7 +61,7 @@ class Plugin(chatMod.chatMod):
         self.ircClient = self.bot.root.getServiceNamed("ircClient")
 
         networks = self.bot.config.get("svn-push.networks",
-                                       self.ircClient.namedServices.keys(),
+                                       list(self.ircClient.namedServices.keys()),
                                        "main")
         if not self.bot.network in networks:
             raise self.bot.WontStart("apparently it is not needed here...")

@@ -38,7 +38,7 @@ def filtercolors(input):
     """
         Filters all irc colors out of a given string
     """
-    for i in xrange(1, 16):
+    for i in range(1, 16):
         input = input.replace(chr(3) + str(i), "")
     return input
 

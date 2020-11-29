@@ -33,8 +33,8 @@ def sendNames(server, network, channel):
     # same as in serverpart!
     getClient = lambda network: server.root.getServiceNamed('ircClient').getServiceNamed(network).factory.protocol
 
-    if network in server.root.getServiceNamed('ircClient').namedServices.keys():
-        names = [server.root.getServiceNamed('ircClient').namedServices[network].protocol.users[channel][nickname]['modchar'].strip() + nickname for nickname in getClient(network).users[channel].keys()]
+    if network in list(server.root.getServiceNamed('ircClient').namedServices.keys()):
+        names = [server.root.getServiceNamed('ircClient').namedServices[network].protocol.users[channel][nickname]['modchar'].strip() + nickname for nickname in list(getClient(network).users[channel].keys())]
         server.names(server.name, "#" + network + "-" + channel, names)
 
 

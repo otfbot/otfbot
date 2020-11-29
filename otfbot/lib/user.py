@@ -24,6 +24,7 @@
 
 from twisted.words import service
 import hashlib
+from functools import reduce
 
 
 class BotUser(service.User):
@@ -177,7 +178,7 @@ class IrcUser(object):
         assert(channel in self.channels)
         assert(modechar in MODE_CHARS)
         # binary: 11...11
-        all_set = reduce(lambda x, y: x + y, MODE_CHARS.values())
+        all_set = reduce(lambda x, y: x + y, list(MODE_CHARS.values()))
         self.modes[channel] = self.modes[channel] & \
             (all_set ^ MODE_CHARS[modechar])  # 1..1 ^ modechar = 1..101..1
 

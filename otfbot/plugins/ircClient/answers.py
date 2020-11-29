@@ -65,7 +65,7 @@ class Plugin(chatMod.chatMod):
             @param msg: the message which needs a response
         """
         answer = ""
-        for key in self.answers.keys():
+        for key in list(self.answers.keys()):
             if re.search(key, msg, re.I):
                 answer = self.answers[key]
                 answer = re.sub("USER", user, answer)

@@ -64,7 +64,7 @@ class Plugin(chatMod.chatMod):
         if not channel in self.timestamps:
             return 0
         self.removeOldTimestamps(channel)
-        return len(set(map(lambda x:x[1], self.timestamps[channel])))
+        return len(set([x[1] for x in self.timestamps[channel]]))
 
     @callback
     def joined(self, channel):

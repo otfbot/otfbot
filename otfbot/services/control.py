@@ -159,7 +159,7 @@ class botService(service.MultiService):
         if namespace != "":
             namespace+=" "
         topics=[]
-        for topic in commandTree.keys():
+        for topic in list(commandTree.keys()):
             if type(commandTree[topic])==dict:
                 topics.append("%s%s ..."%(namespace, topic))
             else:

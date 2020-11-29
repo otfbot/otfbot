@@ -40,7 +40,7 @@ def loadProperties(propertiesFile, ambiguous=False, enc="ISO-8859-15"):
         return {}
     if os.path.exists(propertiesFile):
         propFile = open(propertiesFile, "r")
-        content = unicode(propFile.read(), enc, errors='replace')
+        content = propFile.read()
         propFile.close()
         for line in content.split("\n"):
             if len(line) > 1 and line[0] != "#":

@@ -61,7 +61,7 @@ class botService(service.MultiService):
             serv=MyTCPServer(self.root, self, port=port, factory=factory, interface=interface)
             self.addService(serv)
             service.MultiService.startService(self)  
-        except Exception, e:
+        except Exception as e:
             logger=logging.getLogger("server")
             logger.error(e)
             tb_list = traceback.format_tb(sys.exc_info()[2])[1:]
@@ -127,7 +127,7 @@ class Server(IRCUser, pluginSupport):
 
     def stop(self):
         self._apirunner("stop")
-        for mod in self.plugins.keys():
+        for mod in list(self.plugins.keys()):
             del(self.plugins[mod])
         self.plugins={}
 

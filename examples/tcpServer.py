@@ -30,7 +30,7 @@ import socket
 USAGE = " <filename of unix socket> [stuff to send to tcpServer service]"
 
 if len(sys.argv) < 2 or not os.path.exists(sys.argv[1]):
-    print sys.argv[0] + USAGE
+    print(sys.argv[0] + USAGE)
     exit(1)
 
 s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)

@@ -36,7 +36,7 @@ class Plugin(plugin.Plugin):
         if path == '/users':
             ircClient = self.wps.root.getServiceNamed("ircClient")
             ns = ircClient.namedServices
-            for n in ns.keys():
+            for n in list(ns.keys()):
                 if not ns[n] or not ns[n].protocol:
                     self.logger.warning("Error, %s is not connected." % n)
                     continue

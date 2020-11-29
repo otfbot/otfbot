@@ -22,8 +22,8 @@
    Some functions to simplify handling of HTTP-requests
 """
 
-import urllib2
-import urlparse
+import urllib.request, urllib.error, urllib.parse
+import urllib.parse
 from twisted.web import client
 client.HTTPClientFactory.noisy = False
 
@@ -41,9 +41,9 @@ def get_page_with_header(url, contextFactory=None, *args, **kwargs):
 
     See HTTPClientFactory to see what extra args can be passed.
     """
-    if type(url) == unicode:
+    if type(url) == str:
         url = url.encode("utf-8")
-    purl = urlparse.urlparse(url)
+    purl = urllib.parse.urlparse(url)
     factory = client.HTTPClientFactory(url, *args, **kwargs)
     if purl.scheme == 'https':
         from twisted.internet import ssl
@@ -115,7 +115,7 @@ def download(url, file=None, **kwargs):
     @return: A Defered which will call a Callback with the content as argument
 
     """
-    if type(url) == unicode:
+    if type(url) == str:
         url = url.encode("UTF-8")
     if "agent" not in kwargs:
         kwargs['agent'] = "OTFBot (%s; otfbot.org)" % _version.short()

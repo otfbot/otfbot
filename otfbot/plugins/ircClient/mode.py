@@ -39,7 +39,7 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def command(self, user, channel, command, options):
-        if self.bot.auth(user) > 2 and command in self.modes.keys():
+        if self.bot.auth(user) > 2 and command in list(self.modes.keys()):
             if options != "":
                 self.bot.mode(channel, self.modes[command]["set"], self.modes[command]["char"], None, options)
             else:

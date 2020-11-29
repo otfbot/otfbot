@@ -6,6 +6,6 @@ lxml
 pyOpenSSL
 cryptography
 requests
-BeautifulSoup
+beautifulsoup4
 pycrypto
 service_identity

@@ -22,8 +22,8 @@
     Try to emulate a normal user by answering
 """
 
-import string, re, random, time, atexit, os.path
-import urllib, urllib2, socket
+import re, random, time, atexit, os.path
+import urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse, socket
 
 from otfbot.lib import chatMod, functions
 from otfbot.lib.eliza import eliza
@@ -81,7 +81,7 @@ def ascii_string(msg):
             "Ö": "Oe",
             "ß": "ss"}
     msg = filtercolors(msg)
-    for key in mapping.keys():
+    for key in list(mapping.keys()):
         msg = re.sub(key, mapping[key], msg)
         try:
             msg = re.sub(key.decode("iso-8859-15").encode("utf-8"), mapping[key], msg)
@@ -119,10 +119,10 @@ class webResponder(responder):
         self.bot = bot
     def learn(self, msg):
         url = self.bot.config.get("url", "", "ki", self.bot.network)
-        urllib2.urlopen(url + urllib.quote(msg)).read()
+        urllib.request.urlopen(url + urllib.parse.quote(msg)).read()
     def reply(self, msg):    
         url = self.bot.config.get("url", "", "ki", self.bot.network)
-        return ascii_string(urllib2.urlopen(url + urllib.quote(msg)).read())
+        return ascii_string(urllib.request.urlopen(url + urllib.parse.quote(msg)).read())
 
 class niallResponder(responder):
     def __init__(self, bot, datadir):
@@ -178,7 +178,7 @@ class megahalResponder(responder):
         @returns the answer of the megahal bot
         """
         string = msg.encode("iso-8859-15")
-        return unicode(mh_python.doreply(string), "iso-8859-15")
+        return str(mh_python.doreply(string), "iso-8859-15")
 
     def cleanup(self):
         """clean megahal shutdown"""
@@ -198,7 +198,7 @@ class Plugin(chatMod.chatMod):
             self.bot.config.get("wordpairsEncoding", "UTF-8", "ki", 
             self.bot.network) )
         #TODO: use self.bot.user_list
-        self.nicklist = [string.lower(self.bot.nickname)]
+        self.nicklist = [self.bot.nickname.lower()]
 
         module = self.bot.config.get("module", "megahal", "ki", 
             self.bot.network)
@@ -248,7 +248,7 @@ class Plugin(chatMod.chatMod):
             user = user.getNick()
             if user[0:len(self.bot.nickname.lower())] == self.bot.nickname.lower():
                 return
-            if user.lower() == self.bot.nickname.lower() or string.lower(user) in self.bot.config.get("ignore", [], "ki", self.bot.network):
+            if user.lower() == self.bot.nickname.lower() or user.lower() in self.bot.config.get("ignore", [], "ki", self.bot.network):
                 return
             reply = self.responder.reply(msg)
             if not reply:
@@ -289,18 +289,18 @@ class Plugin(chatMod.chatMod):
         if number < chance:
             israndom = 1
         #bot answers if it hears its name
-        ishighlighted = self.bot.nickname.lower() in string.lower(msg)
+        ishighlighted = self.bot.nickname.lower() in msg.lower()
             
 
         #test, if it starts with user:
         for nick in self.nicklist:
-            if string.lower(msg[0:len(nick)]) == nick:
+            if msg[0:len(nick)].lower() == nick:
                 msg = msg[len(nick) + 1:] #cut of len of nick + one char (":", ",", " ", etc.)
 
         if len(msg) and msg[0] == " ": 
             msg = msg[1:]
 
-        channel = string.lower(channel)
+        channel = channel.lower()
         if ishighlighted or israndom:
             reply = self.responder.reply(msg)
         else:
@@ -309,13 +309,13 @@ class Plugin(chatMod.chatMod):
         if reply:
             #reply=re.sub(" "+self.bot.nickname, " "+user, reply) #more secure to match only the name
             reply = re.sub(self.bot.nickname.lower(), user, str(reply), re.I) 
-            for key in self.wordpairs.keys():
+            for key in list(self.wordpairs.keys()):
                 reply = re.sub(key, self.wordpairs[key], reply, re.I)
             
             reply = re.sub("Http", "http", reply, re.I) #fix for nice urls
 
-            if reply == string.upper(reply): #no UPPERCASE only Posts
-                reply = string.lower(reply)
+            if reply == reply.upper(): #no UPPERCASE only Posts
+                reply = reply.lower()
             delay = len(reply) * 0.3 * float(self.bot.config.get("wait", 2, "ki", self.bot.network, channel)) #a normal user does not type that fast
             number = random.randint(1, 1000)
             chance = int(self.bot.config.get("answerPercent", 50, "ki", self.bot.network, channel)) * 10

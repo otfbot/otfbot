@@ -25,7 +25,7 @@
 from otfbot.lib import chatMod
 from otfbot.lib.pluginSupport.decorators import callback
 
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import re
 
 
@@ -51,15 +51,15 @@ class Plugin(chatMod.chatMod):
             return
         elif command == "sprichwort" or command == "proverb":
             if command == "sprichwort":
-                url=urllib2.urlopen("http://www.sprichwortrekombinator.de")
+                url=urllib.request.urlopen("http://www.sprichwortrekombinator.de")
             elif command == "proverb":
-                url=urllib2.urlopen("http://proverb.gener.at/or/")
+                url=urllib.request.urlopen("http://proverb.gener.at/or/")
             data=url.read()
             url.close()
             sprichwort=re.search("<div class=\"spwort\">([^<]*)<\/div>", data, re.S).group(1)
             self.bot.sendmsg(channel, sprichwort)
         elif command == "commitmsg":
-            url=urllib2.urlopen("http://whatthecommit.com/")
+            url=urllib.request.urlopen("http://whatthecommit.com/")
             data=url.read()
             url.close()
             msg = re.search("<p>(.*)", data).group(1)

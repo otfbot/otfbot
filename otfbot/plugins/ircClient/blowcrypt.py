@@ -113,10 +113,10 @@ class Plugin(chatMod.chatMod):
         res = ''
         while s:
             left, right = struct.unpack('>LL', s[:8])
-            for i in xrange(6):
+            for i in range(6):
                 res += self.B64[right & 0x3f]
                 right >>= 6
-            for i in xrange(6):
+            for i in range(6):
                 res += self.B64[left & 0x3f]
                 left >>= 6
             s = s[8:]

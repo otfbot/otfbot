@@ -90,5 +90,5 @@ class Plugin(chatMod.chatMod):
                     if not parts[0] in ("Global", "MountPoint"):
                         mounts.append(parts[0])
                 self.bot.sendmsg(channel, " ".join(mounts))
-        except Exception, e:
+        except Exception as e:
             self.logger.error(e)

@@ -51,12 +51,12 @@ class configService(service.Service):
 
         try:
             configs = yaml.load_all(open(filename, "r"))
-            self.generic_options = configs.next()
+            self.generic_options = next(configs)
             if not is_subconfig:
-                self.network_options = configs.next()
+                self.network_options = next(configs)
                 if not self.network_options:
                     self.network_options = {}
-            for option in self.generic_options.keys():
+            for option in list(self.generic_options.keys()):
                 self.generic_options_default[option] = False
         except IOError:
             pass #does not exist
@@ -179,17 +179,17 @@ class configService(service.Service):
         if module:
             option = module + "." + option
 
-        for item in self.generic_options.keys():
+        for item in list(self.generic_options.keys()):
             if item == option:
                 general = True
-        for network in self.network_options.keys():
-            if option in self.network_options[network].keys():
+        for network in list(self.network_options.keys()):
+            if option in list(self.network_options[network].keys()):
                 networks.append(network)
 
-        for network in self.network_options.keys():
-            for channel in self.network_options[network].keys():
+        for network in list(self.network_options.keys()):
+            for channel in list(self.network_options[network].keys()):
                 if type(self.network_options[network][channel]) == dict:
-                    if option in self.network_options[network][channel].keys():
+                    if option in list(self.network_options[network][channel].keys()):
                         channels.append((network, channel))
         return (general, networks, channels)
 
@@ -247,14 +247,14 @@ class configService(service.Service):
 
     def getNetworks(self):
         ret = []
-        for network in self.network_options.keys():
+        for network in list(self.network_options.keys()):
             ret.append(network)
         return ret
 
     def getChannels(self, network):
-        if network in self.network_options.keys():
+        if network in list(self.network_options.keys()):
             try:
-                options = self.network_options[network].keys()
+                options = list(self.network_options[network].keys())
                 ret = []
                 for option in options:
                     if type(self.network_options[network][option]) == dict:
@@ -317,7 +317,7 @@ class configService(service.Service):
         #still_default options
         generic_options=deepcopy(self.generic_options)
         if not self.getBool("writeDefaultValues", False, "config"):
-            for option in self.generic_options_default.keys():
+            for option in list(self.generic_options_default.keys()):
                 if option in generic_options \
                 and self.generic_options_default[option]:
                     del(generic_options[option])
@@ -338,7 +338,7 @@ def loadConfig(myconfigfile, modulesconfigdirglob):
         #something like plugins/*/*.yaml
         for file in glob.glob(modulesconfigdirglob):
             tmp = configService(file, is_subconfig=True)
-            for option in tmp.generic_options.keys():
+            for option in list(tmp.generic_options.keys()):
                 if not myconfig.has(option)[0]:
                     myconfig.set(option, tmp.get(option, ""), still_default=True)
             del(tmp)

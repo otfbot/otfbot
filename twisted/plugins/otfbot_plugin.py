@@ -30,7 +30,7 @@ from twisted.python import versions as twversions
 from twisted.internet import reactor
 import twisted
 
-from zope.interface import implements
+from zope.interface import implementer
 
 import logging
 import logging.handlers
@@ -50,7 +50,7 @@ except:
     current_version = twisted._version.__version__
 
 if current_version < required_version:
-    print "Get %s or newer to run OTFBot" % required_version
+    print("Get %s or newer to run OTFBot" % required_version)
     os._exit(1)
 
 class Options(usage.Options):
@@ -68,8 +68,8 @@ class MyMultiService(service.MultiService):
             return None
         return self.namedServices[name]
 
+@implementer(IServiceMaker, IPlugin)
 class MyServiceMaker(object):
-    implements(IServiceMaker, IPlugin)
     tapname = "otfbot"
     description = "OtfBot - The friendly Bot"
     options = Options
@@ -80,8 +80,8 @@ class MyServiceMaker(object):
 
         cfgS = configService.loadConfig(options['config'], "plugins/*/*.yaml")
         if not cfgS:
-            print "Could not load configuration. Check the path or create" + \
-                 " a new one by running 'twistd gen-otfbot-config'"
+            print("Could not load configuration. Check the path or create" + \
+                 " a new one by running 'twistd gen-otfbot-config'")
             os._exit(1)
         cfgS.setServiceParent(application)
 
@@ -146,9 +146,9 @@ class MyServiceMaker(object):
                 pkg = "otfbot.services." + service_name
                 service_classes[service_name] = __import__(pkg, fromlist=['botService'])
                 corelogger.info("imported %s"%pkg)
-            except ImportError, e:
+            except ImportError as e:
                 corelogger.warning("Service %s cannot be loaded because of missing "
-                    "module: %s"%(service_name, unicode(e)))
+                    "module: %s"%(service_name, str(e)))
                 cannot_import.append(service_name)
 
         #do not start services where the import failed

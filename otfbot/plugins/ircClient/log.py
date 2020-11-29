@@ -90,31 +90,30 @@ class Plugin(chatMod.chatMod):
             if timestamp:
                 logmsg = self.ts() + " " + logmsg
             #TODO: blocking
-            self.files[channel].write(logmsg.encode("UTF-8"))
+            self.files[channel].write(logmsg)
             self.files[channel].flush()
 
     def logPrivate(self, user, mystring):
         if self.doLogPrivate:
             mystring = filtercolors(mystring)
             dic = self.timemap()
-            dic['c'] = string.lower(user)
+            dic['c'] = user.lower()
             filename = Template(self.logpath).safe_substitute(dic)
             #TODO: blocking
             if not os.path.exists(os.path.dirname(filename)):
                 os.makedirs(os.path.dirname(filename))
             file = open(filename, "a")
-            file.write(self.ts() + " " + mystring.encode("UTF-8") + "\n")
+            file.write(self.ts() + " " + mystring + "\n")
             file.close()
 
     def openLog(self, channel):
-        self.channels[string.lower(channel)] = 1
-        #self.files[string.lower(channel)]=open(string.lower(channel)+".log", "a")
+        self.channels[channel.lower()] = 1
         self.path[channel] = Template(self.logpath).safe_substitute({'c': channel.replace("/", "_").replace(":", "")}) #replace to handle psyc:// channels
         file = Template(self.path[channel]).safe_substitute(self.timemap())
         #TODO: blocking
         if not os.path.exists(os.path.dirname(file)):
             os.makedirs(os.path.dirname(file))
-        self.files[string.lower(channel)] = open(file, "a")
+        self.files[channel.lower()] = open(file, "a")
         self.log(channel, "--- Log opened " + self.ts("%a %b %d %H:%M:%S %Y"), False)
 
     @callback
@@ -125,14 +124,14 @@ class Plugin(chatMod.chatMod):
     @callback
     def left(self, channel):
         self.log(channel, "-!- " + self.bot.nickname + "[" + self.bot.hostmask.split("!")[1] + "] has left " + channel)
-        del self.channels[string.lower(channel)]
-        self.files[string.lower(channel)].close()
+        del self.channels[channel.lower()]
+        self.files[channel.lower()].close()
 
     @callback
     def msg(self, user, channel, msg):
         user = user.getNick()
         modesign = " " #self.bot.users[channel][user]['modchar']
-        if string.lower(channel) == string.lower(self.bot.nickname):
+        if channel.lower() == self.bot.nickname.lower():
             self.logPrivate(user, "<" + modesign + user + "> " + msg)
         elif len(channel) > 0 and channel[0] == "#":
             #modesign=self.bot.users[channel][user]['modchar']
@@ -200,7 +199,7 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def userRenamed(self, oldname, newname):
-        for user in self.bot.user_list.values():
+        for user in list(self.bot.user_list.values()):
             if user.nick.lower() == oldname.lower():
                 for channel in user.getChannels():
                     self.log(channel, "-!- " + oldname + " is now known as " + newname)

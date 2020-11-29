@@ -76,7 +76,7 @@ class Game:
 
     def winningField(self, stone, stone2, fields):
         """ test if a Field wins the game """
-        print stone, stone2, fields
+        print(stone, stone2, fields)
         for field in fields:
             stoneset=set([stone, stone2, field])
             for i in [1,4,7]:
@@ -105,7 +105,7 @@ class Game:
                     winning=self.winningField(stone, stone2, stones)
                     if winning:
                         self.myStones+=[winning]
-                        print "set stone %s, because it finishes a line"%winning
+                        print("set stone %s, because it finishes a line"%winning)
                         return winning
         #defensive
         for stone in self.yourStones:
@@ -114,7 +114,7 @@ class Game:
                     winning=self.winningField(stone, stone2, stones)
                     if winning:
                         self.myStones+=[winning]
-                        print "set stone %s, because it stops the human from finishing a line with %s,%s,%s"%(winning, stone, stone2, winning)
+                        print("set stone %s, because it stops the human from finishing a line with %s,%s,%s"%(winning, stone, stone2, winning))
                         return winning
         #offensive, find good combinations
         for stone in self.myStones:
@@ -129,12 +129,12 @@ class Game:
                 stones3.remove(stone2)
                 if self.winningField(stone, stone2, stones3): #if we set stone2, we could get a winning move
                     self.myStones+=[stone2]
-                    print "set stone %s, because it could lead to a win"%stone2
+                    print("set stone %s, because it could lead to a win"%stone2)
                     return stone2
         #just random
         stone=random.choice(stones)
         self.myStones+=[stone]
-        print "set stone %s, because i have not other idea what to do"%stone
+        print("set stone %s, because i have not other idea what to do"%stone)
         return stone
     HUMAN_WIN=1
     COMPUTER_WIN=2

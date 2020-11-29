@@ -30,7 +30,7 @@ class Plugin(chatMod.chatMod):
         except OSError:
             pass
         try:
-            f = file(datadir + "/users", "rb")
+            f = open(datadir + "/users", "rb")
             self.userdata = pickle.load(f)
             f.close()
         except IOError:

@@ -54,11 +54,11 @@ class Meta:
 
 def my_callback(msg):
 
-    print msg.content.body
-    print type(msg.fields)
-    print type(msg.method)
-    print msg.fields[-1]
-    print "Callback received: ", msg
+    print(msg.content.body)
+    print(type(msg.fields))
+    print(type(msg.method))
+    print(msg.fields[-1])
+    print("Callback received: ", msg)
 
 class botService(service.MultiService):
     name = "amqp"
@@ -144,7 +144,7 @@ class botService(service.MultiService):
         serv.setName("amqp")
         serv.parent = self
 
-        print "connecting signals"
+        print("connecting signals")
         f.read("otfbot", "otfbot", self.handle_command)
 
         self.addService(serv)
@@ -248,13 +248,13 @@ class AmqpProtocol(AMQClient):
         d.addErrback(self._read_item_err)
 
     def _channel_open_failed(self, error):
-        print "Channel open failed:", error
+        print("Channel open failed:", error)
 
     def _got_channel_failed(self, error):
-        print "Error getting channel:", error
+        print("Error getting channel:", error)
 
     def _authentication_failed(self, error):
-        print "AMQP authentication failed:", error
+        print("AMQP authentication failed:", error)
 
     @inlineCallbacks
     def _send_message(self, exchange, routing_key, msg):
@@ -268,7 +268,7 @@ class AmqpProtocol(AMQClient):
         d.addErrback(self._send_message_err)
 
     def _send_message_err(self, error):
-        print "Sending message failed", error
+        print("Sending message failed", error)
 
     def _read_item(self, item, queue, callback):
         """Callback function which is called when an item is read."""
@@ -281,7 +281,7 @@ class AmqpProtocol(AMQClient):
         callback(item)
 
     def _read_item_err(self, error):
-        print "Error reading item: ", error
+        print("Error reading item: ", error)
 
 
 class AmqpFactory(protocol.ReconnectingClientFactory):
@@ -322,11 +322,11 @@ class AmqpFactory(protocol.ReconnectingClientFactory):
         return p
 
     def clientConnectionFailed(self, connector, reason):
-        print "Connection failed."
+        print("Connection failed.")
         protocol.ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
 
     def clientConnectionLost(self, connector, reason):
-        print "Client connection lost."
+        print("Client connection lost.")
         self.p = None
 
         protocol.ReconnectingClientFactory.clientConnectionFailed(self, connector, reason)

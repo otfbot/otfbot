@@ -97,7 +97,7 @@ class Plugin(chatMod.chatMod):
             self.bot.network, channel))
         if numFeeds > 0:
             self.logger.debug("Found " + str(numFeeds) + " Feed-Urls:")
-            for i in xrange(1, numFeeds + 1):
+            for i in range(1, numFeeds + 1):
                 self.loadSource(i, channel)
 
     def getWaitTime(self, curWait, minWait, maxWait, factor, hadNew):
@@ -228,7 +228,7 @@ class Plugin(chatMod.chatMod):
                         options[0], "feed", self.bot.network, channel)
                 else:
                     self.bot.sendmsg(channel, "Error: Syntax "+
-                        u"!addfeed url postMax minWait maxWait factor")
+                        "!addfeed url postMax minWait maxWait factor")
                     return
                 self.bot.config.set("numFeeds", num, "feed",\
                     self.bot.network, channel)

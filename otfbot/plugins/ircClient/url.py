@@ -19,7 +19,7 @@
 # (c) 2008 - 2011 by Robert Weidlich
 #
 
-import urllib2, re, string
+import urllib.request, urllib.error, urllib.parse, re, string
 from lxml.html.soupparser import fromstring
 
 from otfbot.lib import chatMod, urlutils
@@ -83,10 +83,10 @@ class Plugin(chatMod.chatMod):
         else:
             info = ""
             if "content-type" in header:
-                info += u"Mime-Type: %s" % header["content-type"]
+                info += "Mime-Type: %s" % header["content-type"]
             if "content-length" in header:
                 size = urlutils.convert_bytes(header["content-length"])
-                info += u", %s" % size
+                info += ", %s" % size
             self.bot.sendmsg(channel, "[Link Info] " + info)
 
     def processPreview(self, data, channel):

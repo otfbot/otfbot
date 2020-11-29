@@ -31,7 +31,7 @@ import string
 def sendNames(server, network, channel):
     getClient=lambda network: server.root.getServiceNamed('ircClient').namedServices[network].factory.protocol
 
-    if network in server.root.getServiceNamed('ircClient').namedServices.keys():
+    if network in list(server.root.getServiceNamed('ircClient').namedServices.keys()):
         ircClient=server.root.getServiceNamed('ircClient')
         users=ircClient.namedServices[network].factory.protocol.getUsers(channel)
         names=[user.nick for user in users]
@@ -89,7 +89,7 @@ class Plugin(chatMod.chatMod):
                 else:
                     self.getClient(network).join(channel)
                 self.server.join(self.server.getHostmask(), "#%s-%s"%(network, channel))
-                if channel in self.getClient(network).users.keys():
+                if channel in list(self.getClient(network).users.keys()):
                     sendNames(self.server, network, channel)
                 #else: #should not be needed, every join produces a names list, which is maintained over /nick /part, etc.
                 #    self.server.bot.ipc[network].names(channel) #invoke now, names will be in callback on chatMod

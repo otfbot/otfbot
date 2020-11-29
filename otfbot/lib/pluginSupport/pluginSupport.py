@@ -22,7 +22,26 @@
 
 import sys
 import traceback
-from plugin import *
+from .plugin import *
+
+def cmp_to_key(mycmp):
+    'Convert a cmp= function into a key= function'
+    class K:
+        def __init__(self, obj, *args):
+            self.obj = obj
+        def __lt__(self, other):
+            return mycmp(self.obj, other.obj) < 0
+        def __gt__(self, other):
+            return mycmp(self.obj, other.obj) > 0
+        def __eq__(self, other):
+            return mycmp(self.obj, other.obj) == 0
+        def __le__(self, other):
+            return mycmp(self.obj, other.obj) <= 0
+        def __ge__(self, other):
+            return mycmp(self.obj, other.obj) >= 0
+        def __ne__(self, other):
+            return mycmp(self.obj, other.obj) != 0
+    return K
 
 
 class pluginSupport:
@@ -76,7 +95,7 @@ class pluginSupport:
             self.register_ctl_command(self.stopPlugin)
             self.register_ctl_command(self.restartPlugin)
             self.register_ctl_command(self.reloadPlugins)
-            self.register_ctl_command(lambda: self.plugins.keys(),
+            self.register_ctl_command(lambda: list(self.plugins.keys()),
                                                     name="listPlugins")
 
     def depends(self, dependency, description=""):
@@ -158,17 +177,17 @@ class pluginSupport:
             self.classes.append(cls)
             self.logger.debug("Imported plugin " + self._getClassName(cls))
             return self.classes[-1]
-        except ImportError, e:
+        except ImportError as e:
             self.logger.warning("Cannot import plugin %s, because of"
                 " an ImportError" % name)
             self.logger.debug("%s: %s" % (name, str(e)) )
             return None
-        except SyntaxError, e:
+        except SyntaxError as e:
             self.logger.warning("Cannot import plugin %s, because of"
                 " syntax errors" % name)
             self.logerror(self.logger, name, str(e))
             return None
-        except NameError, e:
+        except NameError as e:
             self.logger.warning("Cannot import plugin %s, because of"
                 " NameError" % name)
             self.logerror(self.logger, name, str(e))
@@ -203,11 +222,11 @@ class pluginSupport:
         # callback, do not register again
         if not self.callbackRegistered(module, callbackname):
             self.callbacks[callbackname].append((module, priority))
-            self.callbacks[callbackname].sort(cmp=lambda a, b: b[1] - a[1])
+            self.callbacks[callbackname].sort(key=cmp_to_key(lambda a, b: b[1] - a[1]))
 
     def unregisterAllCallbacks(self, module):
         """ unregister all callbacks for a module """
-        for callbackname in self.callbacks.keys():
+        for callbackname in list(self.callbacks.keys()):
             self.unregisterCallback(module, callbackname)
 
     def unregisterCallback(self, module, callbackname):
@@ -237,7 +256,7 @@ class pluginSupport:
         #so start may depend on other plugins, make your dependency explicit with 
         #depends_on_plugin in __init__ to prevent otfbot from loading the plugin, if the
         #dependency is not satisfied
-        for mod in self.plugins.values():
+        for mod in list(self.plugins.values()):
             if hasattr(mod, "start"):
                 mod.start()
 
@@ -260,7 +279,7 @@ class pluginSupport:
             return self.plugins[self._getClassName(pluginClass)]
         if hasattr(pluginClass, "Meta"):
             if hasattr(pluginClass.Meta, "service_depends"):
-                if not set(pluginClass.Meta.service_depends).issubset(self.root.namedServices.keys()):
+                if not set(pluginClass.Meta.service_depends).issubset(list(self.root.namedServices.keys())):
                     self.logger.warn("%s (still) has unsatisfied dependencies: %s" \
                         % (self._getClassName(pluginClass), \
                         list(set(pluginClass.Meta.service_depends)\
@@ -290,7 +309,7 @@ class pluginSupport:
                 for func in dir(mod):
                     if hasattr(getattr(mod, func), "is_callback"):
                         self.registerCallback(mod, func, priority=getattr(mod, func).priority)
-            except Exception, e:
+            except Exception as e:
                 self.logerror(self.logger, self._getClassName(pluginClass), e)
                 # exception occured (e.g. dependency missing
                 # or initialization error)
@@ -308,7 +327,7 @@ class pluginSupport:
         """stop and start again a plugin"""
         #pkg = self.pluginSupportPath.replace("/", ".") + "." + pluginName #otfbot.plugins.service.plugin
         #pluginName =  #servive.plugin
-        if self.pluginSupportName+"."+pluginName in self.plugins.keys():
+        if self.pluginSupportName+"."+pluginName in list(self.plugins.keys()):
             self.stopPlugin(pluginName)
             self.startPlugin(pluginName)
 
@@ -321,14 +340,14 @@ class pluginSupport:
         """
         for plugin in self.classes:
             self.reloadPluginClass(plugin)
-        for plugin in self.plugins.values():
+        for plugin in list(self.plugins.values()):
             self.restartPlugin(plugin.name.split(".")[-1]) #only plugin name
 
     def stopPlugins(self):
         """
             stop all Plugins
         """
-        for plugin in self.plugins.values():
+        for plugin in list(self.plugins.values()):
             self.stopPlugin(plugin.name)
 
     def stopPlugin(self, pluginName):
@@ -340,13 +359,13 @@ class pluginSupport:
         """
         pkg = self.pluginSupportPath.replace("/", ".") + "." + pluginName #otfbot.plugins.service.plugin
         pluginName = pkg.replace("otfbot.plugins.", "") #keeps only "service.plugin"
-        if not pluginName in self.plugins.keys():
+        if not pluginName in list(self.plugins.keys()):
             return
         plugin = self.plugins[pluginName]
         self.logger.info("stopping %s" % (pluginName,))
         try:
             plugin.stop()
-        except Exception, e:
+        except Exception as e:
             self.logerror(self.logger, plugin.name, e)
 
         self.unregisterAllCallbacks(plugin)
@@ -453,7 +472,7 @@ class pluginSupport:
                 #test if its a channel or a query. the config.get channel
                 #argument MUST NOT be a query name!
                 #RFC2811 section 2.1 says #+!& the only signs valid for channels
-                if "channel" in args and (type(args['channel'])==str or type(args['channel'])==unicode) and args['channel'][0] in '#+!&':
+                if "channel" in args and (type(args['channel'])==str or type(args['channel'])==str) and args['channel'][0] in '#+!&':
                     args['channel'] = args['channel'].lower()
                     plugins = self.config.get("pluginsDisabled", [], "main",
                                         self.network, args["channel"],
@@ -498,7 +517,7 @@ class pluginSupport:
                     # plugins change data) and invoke all other plugins
                     if statuscode == self.FURTHER_PROCESSING_THIS_ARGS:
                         if type(newresult) == dict:
-                            args = dict(args.items() + newresult.items())
+                            args = dict(list(args.items()) + list(newresult.items()))
                         continue
 
                     # stop further execution on first plugin which
@@ -507,7 +526,7 @@ class pluginSupport:
                         return resultmaxprio
                     return result
 
-            except Exception, e:
+            except Exception as e:
                 self.logerror(self.logger, plugin.name, e)
 
         return resultmaxprio

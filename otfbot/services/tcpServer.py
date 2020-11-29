@@ -80,9 +80,9 @@ class botService(service.MultiService):
         if "tcp" in modes or "socket" in modes:
             try:
                 service.MultiService.startService(self)
-            except CannotListenError, e:
+            except CannotListenError as e:
                 self.logger.warning(e)
-            except Exception, e:
+            except Exception as e:
                 self.logger.error(repr(e))
                 self.logger.error(e)
 

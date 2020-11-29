@@ -50,7 +50,7 @@ class Plugin(plugin.Plugin):
         self.networks = []
         # check if networks have been configured, otherwise take all networks
         networks = self.bot.config.get("svn-push.networks",
-                                      self.ircClient.namedServices.keys(),
+                                      list(self.ircClient.namedServices.keys()),
                                       "main")
         for network in networks:
             try:

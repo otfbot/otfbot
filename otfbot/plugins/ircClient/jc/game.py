@@ -82,7 +82,7 @@ class User:
             @param cards: a dict with cardtype->num_cards
             @type cards: dict
         """
-        for card in cards.keys():
+        for card in list(cards.keys()):
             self.cards[card] += cards[card]
 
     def giveCards(self, cards):
@@ -92,11 +92,11 @@ class User:
             @param cards: a dict with cardtype->num_cards
             @type cards: dict
         """
-        for card in cards.keys():
+        for card in list(cards.keys()):
             if self.cards[card] < cards[card]:
                 #if the exception occurs, no money is given!
                 raise DoesNotHaveException(card)
-        for card in cards.keys():
+        for card in list(cards.keys()):
             self.cards[card] -= cards[card]
 
     def __str__(self):
@@ -119,27 +119,27 @@ class userTestCase(unittest.TestCase):
     def testGive(self):
         self.user = User("user")
         self.user.giveCards({'1': 1, 'Z': 2})
-        self.assertEquals(self.user.cards['1'], 3)
-        self.assertEquals(self.user.cards['Z'], 0)
+        self.assertEqual(self.user.cards['1'], 3)
+        self.assertEqual(self.user.cards['Z'], 0)
 
     def testGiveDoesNotHave(self):
         raised_exception = False
         self.user = User("user")
         try:
             self.user.giveCards({'Z': 3, '1': 1})
-        except DoesNotHaveException, e:
-            self.assertEquals(e.message, 'Z')
+        except DoesNotHaveException as e:
+            self.assertEqual(e.message, 'Z')
             raised_exception = True
         self.assertTrue(raised_exception)
 
     def testGetCards(self):
         self.user = User("user")
         self.user.getCards({'1': 5})
-        self.assertEquals(self.user.cards['1'], 9)
+        self.assertEqual(self.user.cards['1'], 9)
         raised_exception = False
         try:
             self.user.giveCards({'1': 7})
-        except DoesNotHaveException, e:
+        except DoesNotHaveException as e:
             raised_exception = True
         self.assertTrue(not raised_exception)
 
@@ -176,13 +176,13 @@ def char2word(char):
 class helpersTestCase(unittest.TestCase):
 
     def testString2Worth(self):
-        self.assertEquals(string2worth("1Z5Z2"), 8)
+        self.assertEqual(string2worth("1Z5Z2"), 8)
 
     def testString2Cards(self):
-        self.assertEquals(string2cards("1Z5Z2"), {'1': 1, '2': 1, '5': 1, 'Z': 2})
+        self.assertEqual(string2cards("1Z5Z2"), {'1': 1, '2': 1, '5': 1, 'Z': 2})
 
     def testString2Worth(self):
-        self.assertEquals(string2worth("1Z5Z2"), 8)
+        self.assertEqual(string2worth("1Z5Z2"), 8)
 
 class State:
     """ a state, which provides an input-method, and transits to other states on certain events """
@@ -221,7 +221,7 @@ class PaybackState(State):
                     self.game.execute_next = True
                     self.game.setState(SelectPlayerState(self.game))
                     return ret
-                except DoesNotHaveException, e:
+                except DoesNotHaveException as e:
                     return [("Du hast versucht eine %s karte zu legen, die du nicht hast." % char2word(e.message), False)]
 
 
@@ -255,11 +255,11 @@ class LostTestCase(unittest.TestCase):
         self.game.userlist.append(User("user3"))
         self.game.userlist.append(User("user4"))
         self.game.setState(LostState(self.game, "user4", "user1"))
-        self.assertEquals(self.game.state.last_cards_to.__class__, User)
+        self.assertEqual(self.game.state.last_cards_to.__class__, User)
         output = self.game.state.input("", "", "")
-        self.assertEquals(output, [(self.game.messages.get(Messages.LOSE) % "user4", True)])
-        self.assertEquals(self.game.userlist[0].cards['1'], 8) #user1 gets the cards
-        self.assertEquals(self.game.current_user, 0) #next user, index 0
+        self.assertEqual(output, [(self.game.messages.get(Messages.LOSE) % "user4", True)])
+        self.assertEqual(self.game.userlist[0].cards['1'], 8) #user1 gets the cards
+        self.assertEqual(self.game.current_user, 0) #next user, index 0
 
     def testFirstPlayerLose(self):
         self.game = Game()
@@ -269,13 +269,13 @@ class LostTestCase(unittest.TestCase):
         self.game.userlist.append(User("user3"))
         self.game.userlist.append(User("user4"))
         self.game.setState(LostState(self.game, "user1", "user4"))
-        self.assertEquals(self.game.state.last_cards_to.__class__, User)
+        self.assertEqual(self.game.state.last_cards_to.__class__, User)
         output = self.game.state.input("", "", "")
-        self.assertEquals(output, [(self.game.messages.get(Messages.LOSE) % "user1", True)])
-        self.assertEquals(len(self.game.userlist), 3)
-        self.assertEquals([str(user) for user in self.game.userlist], ["user2", "user3", "user4"])
-        self.assertEquals(self.game.userlist[2].cards['1'], 8) #user4 at index 3 gets the cards
-        self.assertEquals(self.game.current_user, 0) #next user, now the index 0
+        self.assertEqual(output, [(self.game.messages.get(Messages.LOSE) % "user1", True)])
+        self.assertEqual(len(self.game.userlist), 3)
+        self.assertEqual([str(user) for user in self.game.userlist], ["user2", "user3", "user4"])
+        self.assertEqual(self.game.userlist[2].cards['1'], 8) #user4 at index 3 gets the cards
+        self.assertEqual(self.game.current_user, 0) #next user, now the index 0
 
     def testMiddlePlayerLose(self):
         self.game = Game()
@@ -285,13 +285,13 @@ class LostTestCase(unittest.TestCase):
         self.game.userlist.append(User("user3"))
         self.game.userlist.append(User("user4"))
         self.game.setState(LostState(self.game, "user2", "user4"))
-        self.assertEquals(self.game.state.last_cards_to.__class__, User)
+        self.assertEqual(self.game.state.last_cards_to.__class__, User)
         output = self.game.state.input("", "", "")
-        self.assertEquals(output, [(self.game.messages.get(Messages.LOSE) % "user2", True)])
-        self.assertEquals(len(self.game.userlist), 3)
-        self.assertEquals([str(user) for user in self.game.userlist], ["user1", "user3", "user4"])
-        self.assertEquals(self.game.userlist[2].cards['1'], 8) #user4 at index 3 gets the cards
-        self.assertEquals(self.game.current_user, 1) #user3 now at index 1
+        self.assertEqual(output, [(self.game.messages.get(Messages.LOSE) % "user2", True)])
+        self.assertEqual(len(self.game.userlist), 3)
+        self.assertEqual([str(user) for user in self.game.userlist], ["user1", "user3", "user4"])
+        self.assertEqual(self.game.userlist[2].cards['1'], 8) #user4 at index 3 gets the cards
+        self.assertEqual(self.game.current_user, 1) #user3 now at index 1
 
 class PaidState(State):
 
@@ -360,7 +360,7 @@ class NeedToPayState(State):
                     self.game.setState(PaidState(self.game, cards2)) #put them into the state
                     #return self.game.messages.get(Messages.PAYED % (user, string2numCards(options)))
                     return [(self.game.messages.get(Messages.PAYED % (user, string2numCards(options))), True)]
-                except DoesNotHaveException, e:
+                except DoesNotHaveException as e:
                     which = e.message
                     how_many = cards2[e.message]
                     return [(self.game.messages.get(Messages.DOES_NOT_HAVE_ENOUGH) % (how_many, which, self.game.victim.cards[which], which), False)]
@@ -467,12 +467,12 @@ class gameTestCase(unittest.TestCase):
             correct_output = [(correct_output, True)]
         for index in range(len(correct_output)):
             #print output[index]
-            self.assertEquals(output[index], correct_output[index])
+            self.assertEqual(output[index], correct_output[index])
 
     def testNewgame(self):
         self.assertPublicOutput(self.game.input(self.nick, "newgame"), self.messages.get(Messages.NEW_GAME))
         self.assertTrue(len(self.game.userlist) == 0, self.game.userlist)
-        self.assertEquals(self.game.state.__class__, WaitingForPlayersState)
+        self.assertEqual(self.game.state.__class__, WaitingForPlayersState)
 
     def testJoin(self):
         self.testNewgame()
@@ -487,7 +487,7 @@ class gameTestCase(unittest.TestCase):
     def testCannotStart(self):
         self.testPart()
         self.assertPublicOutput(self.game.input(self.nick, "startgame"), self.messages.get(Messages.CANNOT_START))
-        self.assertEquals(self.game.state.__class__, WaitingForPlayersState)
+        self.assertEqual(self.game.state.__class__, WaitingForPlayersState)
 
     def testStart(self):
         self.testJoin()
@@ -501,19 +501,19 @@ class gameTestCase(unittest.TestCase):
                 (self.game.messages.get(Messages.YOU_NEED_TO_PAY % self.nick), self.nick2)
                 ]
         )
-        self.assertEquals(self.game.state.__class__, NeedToPayState)
+        self.assertEqual(self.game.state.__class__, NeedToPayState)
 
     def testPayment(self):
         self.testStart()
-        self.assertEquals(self.game.input(self.nick2, "zahl", "55555"),
+        self.assertEqual(self.game.input(self.nick2, "zahl", "55555"),
                 [(self.game.messages.get(Messages.DOES_NOT_HAVE_ENOUGH) % (5, 5, 1, 5), False)]) #private
-        self.assertEquals(self.game.state.__class__, NeedToPayState)
-        self.assertEquals(worth(self.game.state.cards), 0)
+        self.assertEqual(self.game.state.__class__, NeedToPayState)
+        self.assertEqual(worth(self.game.state.cards), 0)
 
         self.assertPublicOutput(self.game.input(self.nick2, "zahl", "2Z"), self.messages.get(Messages.PAYED % (self.nick2, 2)))
-        self.assertEquals(self.game.victim.cards['Z'], 1)
-        self.assertEquals(self.game.victim.cards['2'], 1)
-        self.assertEquals(self.game.state.__class__, PaidState)
+        self.assertEqual(self.game.victim.cards['Z'], 1)
+        self.assertEqual(self.game.victim.cards['2'], 1)
+        self.assertEqual(self.game.state.__class__, PaidState)
 
     def testAccept(self):
         self.testPayment()
@@ -526,9 +526,9 @@ class gameTestCase(unittest.TestCase):
             (self.messages.get(Messages.VICTIM_CHOOSEN % self.nick), True),
             (self.game.messages.get(Messages.YOU_NEED_TO_PAY % self.nick2), self.nick)
         ])
-        self.assertEquals(self.game.userlist[self.game.userlist.index(self.nick)].cards['2'], 3)
-        self.assertEquals(self.game.userlist[self.game.userlist.index(self.nick)].cards['Z'], 3)
-        self.assertEquals(self.game.state.__class__, NeedToPayState) # Game skipped over SelectPlayerState
+        self.assertEqual(self.game.userlist[self.game.userlist.index(self.nick)].cards['2'], 3)
+        self.assertEqual(self.game.userlist[self.game.userlist.index(self.nick)].cards['Z'], 3)
+        self.assertEqual(self.game.state.__class__, NeedToPayState) # Game skipped over SelectPlayerState
 
     def testDoubt_correct(self):
         self.testPayment()
@@ -545,7 +545,7 @@ class gameTestCase(unittest.TestCase):
             (self.messages.get(Messages.VICTIM_CHOOSEN % self.nick), True),
             (self.game.messages.get(Messages.YOU_NEED_TO_PAY % self.nick2), self.nick)
         ])
-        self.assertEquals(self.game.state.__class__, NeedToPayState) #Game skipped over SelectPlayerState
+        self.assertEqual(self.game.state.__class__, NeedToPayState) #Game skipped over SelectPlayerState
 
     def testDoubt_toolittle(self):
         self.testPayment()
@@ -557,9 +557,9 @@ class gameTestCase(unittest.TestCase):
             (self.messages.get(Messages.VICTIM_CHOOSEN) % self.nick2, True),
             (self.game.messages.get(Messages.YOU_NEED_TO_PAY % self.nick), self.nick2)
         ])
-        self.assertEquals(self.game.state.__class__, NeedToPayState) #not skipped, but an additional payment is needed
-        self.assertEquals(self.game.state.cards['Z'], 1)
-        self.assertEquals(self.game.state.cards['2'], 1)
+        self.assertEqual(self.game.state.__class__, NeedToPayState) #not skipped, but an additional payment is needed
+        self.assertEqual(self.game.state.cards['Z'], 1)
+        self.assertEqual(self.game.state.cards['2'], 1)
 
     def testDoubt_toomuch(self):
         self.testPayment()
@@ -569,7 +569,7 @@ class gameTestCase(unittest.TestCase):
             (self.messages.get(Messages.DICE) % (self.nick, 1), True),
             (self.messages.get(Messages.MONEY_TOOMUCH) % (2, self.nick), True),
         ])
-        self.assertEquals(self.game.state.__class__, PaybackState)
+        self.assertEqual(self.game.state.__class__, PaybackState)
 
     def testPayback(self):
         self.testDoubt_toomuch()
@@ -578,7 +578,7 @@ class gameTestCase(unittest.TestCase):
             (self.messages.get(Messages.PAYBACK) % (self.nick, 5, self.nick2), True),
             (self.messages.get(Messages.CARLOTTA) % (self.nick, char2word('Z')), True),
         ])
-        self.assertEquals(self.game.carlotta_cards.count('Z'), 0)
+        self.assertEqual(self.game.carlotta_cards.count('Z'), 0)
 
         #restore old state
         self.carlotta_cards = ['5', '2', '2', '1', '1', 'Z']
@@ -592,7 +592,7 @@ class gameTestCase(unittest.TestCase):
             (self.messages.get(Messages.CARLOTTA) % (self.nick, char2word('Z')), True),
             (self.messages.get(Messages.CARLOTTA_EMPTY), True),
         ])
-        self.assertEquals(len(self.game.carlotta_cards), 0)
+        self.assertEqual(len(self.game.carlotta_cards), 0)
 
         #restore old state
         self.carlotta_cards = ['5', '2', '2', '1', '1', 'Z']
@@ -615,7 +615,7 @@ class gameTestCase(unittest.TestCase):
             (self.messages.get(Messages.VICTIM_CHOOSEN % self.nick2), True),
             (self.game.messages.get(Messages.YOU_NEED_TO_PAY % self.nick3), self.nick2)
         ])
-        self.assertEquals(self.game.state.__class__, NeedToPayState)
+        self.assertEqual(self.game.state.__class__, NeedToPayState)
 
         #restore
         self.game.userlist[self.game.current_user].cards = cards_backup

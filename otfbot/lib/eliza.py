@@ -32,18 +32,18 @@ class eliza:
 
     def setPatterns(self, pat):
         self.patterns = {}
-        for key in pat.keys():
+        for key in list(pat.keys()):
             self.patterns[re.compile(key, re.I)] = pat[key]
 
     def reply(self, input):
-        for regex in self.patterns.keys():
+        for regex in list(self.patterns.keys()):
             match = regex.match(input)
             if match:
                 answer = random.choice(self.patterns[regex])
                 if "%s" in answer:
                     answer = answer % match.groups()
                 if answer[-2] in '.?!':
-                    for refl in self.reflections.keys():
+                    for refl in list(self.reflections.keys()):
                         answer = answer.replace(refl, self.reflections[refl])
                     answer = answer[:-1]
                 return answer

@@ -38,7 +38,7 @@ from twisted.plugin import IPlugin
 from twisted.internet import reactor
 from twisted.python import usage
 
-from zope.interface import implements
+from zope.interface import implementer
 
 import sys
 import glob
@@ -49,8 +49,8 @@ class Options(usage.Options):
     optParameters = [["config", "c", "otfbot.yaml", "Location of configfile"]]
 
 
+@implementer(IServiceMaker, IPlugin)
 class MyServiceMaker(object):
-    implements(IServiceMaker, IPlugin)
     tapname = "gen-otfbot-config"
     description = "Generate a basic configuration for OtfBot"
     options = Options
@@ -93,14 +93,14 @@ class MyServiceMaker(object):
         config.set("services", modules, 'main')
 
         sys.stdout.write("Network Name: ")
-        name = raw_input().strip()
+        name = input().strip()
         config.set('enabled', True, 'main', name)
         sys.stdout.write("Server hostname: ")
-        config.set('server', raw_input().strip(), 'main', name)
+        config.set('server', input().strip(), 'main', name)
         sys.stdout.write("First Channel: ")
-        config.set('enabled', True, 'main', name, raw_input().strip())
+        config.set('enabled', True, 'main', name, input().strip())
         sys.stdout.write("Nickname: ")
-        config.set('nickname', raw_input().strip(), 'main')
+        config.set('nickname', input().strip(), 'main')
         config.set('encoding', 'UTF-8', 'main')
 
         config.set('errfile', 'error.log', 'logging')
@@ -112,9 +112,9 @@ class MyServiceMaker(object):
             pass
         authS = auth("userdb", "data/userdb.yaml")
         sys.stdout.write("create admin user\nnickname: ")
-        user = BotUser(raw_input().strip().lower())
+        user = BotUser(input().strip().lower())
         sys.stdout.write("password (will be echoed in cleartext): ")
-        user.setPasswd(raw_input().strip())
+        user.setPasswd(input().strip().encode("utf-8"))
         authS.addUser(user)
         authS.save()
 

@@ -44,7 +44,7 @@ from otfbot.lib import chatMod
 from otfbot.lib import functions
 from otfbot.lib.pluginSupport.decorators import callback
 import twisted.internet.task as timehook # ugh
-import shutil, time, random, string, os
+import shutil, time, random, os
 import math, pickle, atexit
 import operator
 
@@ -123,7 +123,7 @@ class Plugin(chatMod.chatMod):
 		def add(self, player, favoritee):
 			if player==favoritee:
 				return False
-			if self.favdict.has_key(player):
+			if player in self.favdict:
 				favoritees=self.favdict.get(player,"[]")
 				findex=self.findex(favoritees, favoritee)
 				if findex > -1:
@@ -137,7 +137,7 @@ class Plugin(chatMod.chatMod):
 				self.favdict[player]=[[favoritee,1],]
 				
 		def getlist(self, player):
-			if self.favdict.has_key(player):
+			if player in self.favdict:
 				return sorted(self.favdict.get(player,"[]"),key=operator.itemgetter(1),reverse=True)
 			else:
 				return False
@@ -147,7 +147,7 @@ class Plugin(chatMod.chatMod):
 					pickle.dump(self.favdict,sfile)
 					sfile.close()
 				except IOError:
-					print "Error writing to file "+favfile+"(check permission)"
+					print("Error writing to file "+favfile+"(check permission)")
 				finally:
 					sfile.close()
 					pass
@@ -158,7 +158,7 @@ class Plugin(chatMod.chatMod):
 					self.favdict=pickle.load(lfile)
 					lfile.close()
 				except IOError:
-					print "Cannot read "+favfile+"(will be created)"
+					print("Cannot read "+favfile+"(will be created)")
 				finally:
 					pass
 		def clear(self, acthof): #will remove any "favoritee" in fav.dict if not found in "HoF"
@@ -169,7 +169,7 @@ class Plugin(chatMod.chatMod):
 				for players in acthof:
 				  isin.append(players[0]) #all players in hof
 				
-				for playername,favlist in self.favdict.iteritems():
+				for playername,favlist in self.favdict.items():
 					li=0
 					for fav, val in favlist:
 					    if fav not in isin:
@@ -209,9 +209,9 @@ class Plugin(chatMod.chatMod):
 				sfile=open(nipbufferfile+".dat", "w")
 				for player in self.question:
 					player=str(player)
-					if self.question.has_key(player) and self.answer.has_key(player):
+					if player in self.question and player in self.answer:
 						tip=""
-						if self.tip.has_key(player):
+						if player in self.tip:
 							tip=self.tip[player]
 						sfile.write(player+"#"+str(self.question[player])+"#"+str(self.answer[player])+"#"+tip+"\n")
 				sfile.close()
@@ -560,11 +560,11 @@ class Plugin(chatMod.chatMod):
 				cchannel=self.GAMECHANNEL
 			else:
 				cchannel=ochannel
-			for color in self.colors.keys():
+			for color in list(self.colors.keys()):
 				if cmsg.count(color):
 					val=self.colors.get(color, "")
 					cmsg = cmsg.replace(color,val)
-			for pre in self.pres.keys():
+			for pre in list(self.pres.keys()):
 				if cmsg.count(pre):
 					val=self.pres.get(pre, "")
 					cmsg = cmsg.replace(pre, val)
@@ -748,7 +748,7 @@ class Plugin(chatMod.chatMod):
 				c=1
 				self.gamemaster=""
 				if not refby=="end_of_quiz": 			#avoids double msg while autoremove gamemaster as gameadmin
-					if not self.answers.has_key(delnick): 	#avoids eog while gamemaster had sent in question AND answer
+					if delnick not in self.answers: 	#avoids eog while gamemaster had sent in question AND answer
 						self.end_of_quiz() 		
 
 			if c: 	#changed
@@ -794,7 +794,7 @@ class Plugin(chatMod.chatMod):
 					wplayers=wplayers+" "+player
 		if self.phase==WAITING_FOR_ANSWERS:
 			for player in self.players:
-				if not player in self.answers.keys():
+				if not player in list(self.answers.keys()):
 					wplayers=wplayers+" "+player
 		if self.phase==WAITING_FOR_QUESTION:  # or self.phase==WAITING_FOR_QUIZMASTER_ANSWER:
 			wplayers=str(self.gamemaster)
@@ -839,7 +839,7 @@ class Plugin(chatMod.chatMod):
 
 		self.nipmsg("PRE_G#UNDERLINE#Mögliche #BOLD#Antworten#BOLD# sind:#UNDERLINE#  ".decode(self.NIPencoding)+"  (#DRED#Aufforderung abwarten!#DRED#)")
 		
-		users=self.answers.keys()
+		users=list(self.answers.keys())
 		random.shuffle(users)
 		for user in users:
 			self.nipmsg("PRE_C#BOLD#"+str(count)+"#BOLD#. "+self.answers[user])
@@ -853,13 +853,13 @@ class Plugin(chatMod.chatMod):
 		#just send negative values for qty if you want to "punish" a player
 		# if qty is 0 self.score[user] will be used to calc gameround points
 		if  qty!=None:
-			if str(player) in self.allscore.keys():
+			if str(player) in list(self.allscore.keys()):
 				self.allscore[player]+=qty
 			else:
 				self.allscore[player]=qty
 		else: #round "allscore" calculation
-			if str(player) in self.answeruser.values(): #we are evil at that point - no point for no given answer
-				if player in self.allscore.keys():
+			if str(player) in list(self.answeruser.values()): #we are evil at that point - no point for no given answer
+				if player in list(self.allscore.keys()):
 					self.allscore[player]+=self.score[player]
 				else:
 					self.allscore[player]=self.score[player]
@@ -899,7 +899,7 @@ class Plugin(chatMod.chatMod):
 					if self.splitpoints: #show only if wanted scoreS(splitted) not score ;)
 						pscores="#DGREY#("+self.scores[player]+")#NORM#" #maybe good to use in add_allscore with eval() - later
 				
-				if str(player) in self.answeruser.values(): #we are !evil, no points for no given nip answer but guessing ;)
+				if str(player) in list(self.answeruser.values()): #we are !evil, no points for no given nip answer but guessing ;)
 					self.nipmsg("PRE_S"+player+" bekommt #BOLD#"+str(pscore)+"#BOLD##NORM# "+pword+" "+pscores)
 				else:
 					self.nipmsg("PRE_P"+player+" #UNDERLINE#bekäme#UNDERLINE##BOLD# ".decode(self.NIPencoding)+str(pscore)+"#BOLD##NORM# "+pword+"#DGREY# (Keine mögl. Antwort geliefert, keine Pünktchen!)".decode(self.NIPencoding))
@@ -912,13 +912,13 @@ class Plugin(chatMod.chatMod):
 
 	def check_for_answer(self):
 		for player in self.players:
-			if not player in self.answeruser.values():
-				if self.userWarnCnt.has_key(player):
+			if not player in list(self.answeruser.values()):
+				if player in self.userWarnCnt:
 					self.userWarnCnt[player]+=1
 				else:
 					self.userWarnCnt[player]=1
 			else:
-				if self.userWarnCnt.has_key(player):
+				if player in self.userWarnCnt:
 					self.userWarnCnt[player]=0
 
 	
@@ -934,7 +934,7 @@ class Plugin(chatMod.chatMod):
 		else:
 			#self.bot.logger.debug("autoremoving player")	
 			for player in self.players:
-				if player in self.userWarnCnt.keys():
+				if player in list(self.userWarnCnt.keys()):
 					if int(self.userWarnCnt.get(player,0))>=self.userWarnMax:
 						self.del_player(player,"autoremoving")
 
@@ -956,7 +956,7 @@ class Plugin(chatMod.chatMod):
 			gmaster=self.gamemasterold #maybe he has "removed"
 		if self.gamemaster!="":
 			gmaster=self.gamemaster
-		if not self.answers.has_key(gmaster):
+		if gmaster not in self.answers:
 			return "PRE_X"+self.TGAMEMASTER+" "+gmaster+" hatte keine "+self.TNIPQUESTION
 
 	def add_new_players(self):
@@ -1036,7 +1036,7 @@ class Plugin(chatMod.chatMod):
 			while ( a < len(self.kcs)):
 				kc=self.kcs[a]    
 				a+=1
-				if kc[:len(cmd)]==string.lower(cmd):
+				if kc[:len(cmd)]==cmd.lower():
 					hit=kc
 					i+=1
 					if i >=2: #not unique
@@ -1261,7 +1261,7 @@ class Plugin(chatMod.chatMod):
 						
 					elif command=="vote":
 						if not self.phase==NO_GAME:
-							if string.lower(options[:3].strip())=="end" or string.lower(options[:5].strip())=="abort":
+							if options[:3].strip().lower() == "end" or options[:5].strip().lower() == "abort":
 								self.vote_for_end(user)
 				
 					elif command=="autoremove":
@@ -1459,10 +1459,10 @@ class Plugin(chatMod.chatMod):
 						SCOREHEAD=self.SCORETABLE+self.create_tab(pointlen-3+self.maxnicklen-12)+"_#UNDERLINE##DGREY#"+" Runde:"+str(self.roundofgame)
 						self.nipmsg("PRE_S"+SCOREHEAD, channel)
 						if len(self.allscore):	
-							points=self.allscore.values()
+							points=list(self.allscore.values())
 							points.sort()
 							points.reverse()
-							players=self.allscore.keys()
+							players=list(self.allscore.keys())
 							for point in points:
 								for player in players:
 									if self.allscore[player]==point:
@@ -1730,8 +1730,8 @@ class Plugin(chatMod.chatMod):
 			if self.GAMECHANNEL==channel:
 				
 				if self.phase==WAITING_FOR_PLAYERS and user!=self.bot.nickname: #add player with "ich" in first 42characters while startphase
-					if len(string.lower(msg).split("ich")[:42]) > 1: # parses *ich* just do that on WAITING_FOR_PLAYERS (startphase)
-						if len(string.lower(msg).split("nicht")[:24]) > 1: #yag
+					if len(msg.lower().split("ich")[:42]) > 1: # parses *ich* just do that on WAITING_FOR_PLAYERS (startphase)
+						if len(msg.lower().split("nicht")[:24]) > 1: #yag
 							if not user in self.players:
 								self.nipmsg("PRE_H Och schade "+user)
 							else:
@@ -1803,7 +1803,7 @@ class Plugin(chatMod.chatMod):
 						thof[pair[0]]=int(pair[1])
 						hof.append("")
 						cnt+=1
-				pairs = sorted((key,value) for (value,key) in thof.iteritems())
+				pairs = sorted((key,value) for (value,key) in thof.items())
 				hcnt=len(pairs)-1 
 				for value, key in pairs:
 					hof[hcnt]=key,value
@@ -1848,8 +1848,8 @@ class Plugin(chatMod.chatMod):
 	
 	def nip_hof_update(self, hofdataf):
 		if len(self.allscore):
-			points=self.allscore.values()
-			players=self.allscore.keys()
+			points=list(self.allscore.values())
+			players=list(self.allscore.keys())
 			for player in players:
 				point=self.allscore[player]
 				updateplayer=self.isinhof(str(player))
@@ -1887,14 +1887,14 @@ class Plugin(chatMod.chatMod):
 
 	def save_score(self,force=None):
 		#saving game scoring table for another external "HoF statistic" 4later use
-		if len(self.allscore.values()) > 0: #no need to save empty scoretable
+		if len(list(self.allscore.values())) > 0: #no need to save empty scoretable
 			self.bot.logger.debug("Saving score table")
 			ts=time.strftime('%Y%m%d_%H%M%S')
 			scorefile=self.niparchivdir+'NIPScore.'+ts
 			try:
 				sf=open(scorefile, "w")
 				sf.write("GameStartTime="+str(self.starttime)+"\nGameStopTime="+str(time.strftime('%Y/%m/%d %H:%M:%S'))+"\nNo. of Rounds="+str(self.roundofgame)+"\n")
-				for key, value in self.allscore.items():
+				for key, value in list(self.allscore.items()):
 					sf.write(str(key)+"="+str(value)+"\n")
 				sf.close()
 			except IOError:

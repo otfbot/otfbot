@@ -72,13 +72,13 @@ class botService(service.MultiService):
             self.protocol.presenceClientProtocol=self.presenceClientProtocol
 
             self.client.setServiceParent(self)
-        except Exception, e:
+        except Exception as e:
             self.logger.error(e)
 
     def startService(self):
         try:
             service.MultiService.startService(self)
-        except Exception, e:
+        except Exception as e:
             self.logerror(self.logger, "xmppClient", e)
 
     def serviceOnline(self, servicename):
@@ -94,17 +94,17 @@ class myMessageProtocol(MessageProtocol):
     def onMessage(self, *args, **kwargs):
         try:
             self.bot.onMessage(*args, **kwargs)
-        except Exception, e:
+        except Exception as e:
             self.bot.logerror(self.bot.logger, "messageProtocol", e)
     def connectionMade(self):
         try:
             self.bot.connectionMade()
-        except Exception, e:
+        except Exception as e:
             self.bot.logerror(self.bot.logger, "messageProtocol", e)
     def connectionLost(self, reason):
         try:
             self.bot.connectionLost(reason)
-        except Exception, e:
+        except Exception as e:
             self.bot.logerror(self.bot.logger, "messageProtocol", e)
 
 class myRosterClientProtocol(RosterClientProtocol):
@@ -124,7 +124,7 @@ class myPresenceClientProtocol(PresenceClientProtocol):
             self.subscribe(entity) #let them see our status
             self.subscribed(entity) #request their status
             self.update_presence() #send presence again
-        except Exception, e:
+        except Exception as e:
             self.bot.logger.error(e)
 
     def unsubscribeReceived(self, entity):
@@ -200,7 +200,7 @@ class Bot(pluginSupport):
             @param msg: the message
         """
         self._apirunner("onMessage", {'msg': msg})
-        body=unicode(msg.body)
+        body=str(msg.body)
         if msg.body and not body[:5] == "?OTR:":
             user=msg['from']
             #XXX: how to split? 
@@ -213,7 +213,7 @@ class Bot(pluginSupport):
             try:
                 self._apirunner("query", {'user': user,
                     'channel': channel, 'msg': body})
-            except Exception, e:
+            except Exception as e:
                 self.logerror(self.logger, "xmppClient", e)
             #like in IRCClient XXX: common library function?
             if body[0] == self.config.get("commandChar", "!", "main").encode("UTF-8"):
@@ -229,7 +229,7 @@ class Bot(pluginSupport):
                 try:
                     self._apirunner("command", {"user": user, "channel": str(user),
                         "command": command, "options": options})
-                except Exception, e:
+                except Exception as e:
                     self.logerror(self.logger, "xmppClient", e)
 
     #ircClient compatiblity
@@ -247,11 +247,11 @@ class Bot(pluginSupport):
             msglist=[msg]
         for msg in msglist:
             try:
-                if type(msg) != unicode:
+                if type(msg) != str:
                     try:
-                        msg=unicode(msg, encoding)
-                    except UnicodeDecodeError, e:
-                        msg=unicode(msg, fallback)
+                        msg=str(msg, encoding)
+                    except UnicodeDecodeError as e:
+                        msg=str(msg, fallback)
                 #self.logger.debug("To: %s"%channel)
                 #self.logger.debug("From: %s"%(self.myjid+"/otfbot"))
                 #self.logger.debug(msg)
@@ -265,7 +265,7 @@ class Bot(pluginSupport):
                     'channel': channel, 'msg': msg})
                 self._apirunner("query", {'user': IrcUser(self.nickname, "", "", "", "xmpp"), \
                     'channel': channel, 'msg': msg})
-            except Exception, e:
+            except Exception as e:
                 self.logerror(self.logger, "xmppClient", e)
                 tb_list = traceback.format_stack(limit=6)
                 for entry in tb_list:

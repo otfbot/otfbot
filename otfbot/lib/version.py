@@ -46,11 +46,11 @@ try:
                     f = os.path.split(f)[0]
                 git = os.path.join(f, '.git')
                 if not os.path.exists(git):
-                    print "no git dir"
+                    print("no git dir")
                     return None
                 master = os.path.join(git, 'refs', 'heads', 'master')
                 if not os.path.exists(master):
-                    print "no masterref"
+                    print("no masterref")
                     return None
                 f = open(master, 'r')
                 ver = f.readline().strip()

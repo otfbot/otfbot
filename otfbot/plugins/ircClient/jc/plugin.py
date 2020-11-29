@@ -20,7 +20,7 @@
 """ Johnny-Controletti-like game about money, debt and counterfeited money """
 
 from otfbot.lib import chatMod
-from game import Game
+from .game import Game
 from otfbot.lib.pluginSupport.decorators import callback
 
 

@@ -27,7 +27,6 @@ from twisted.internet import protocol, reactor, error, ssl
 from twisted.words.protocols import irc
 
 import logging
-import string
 import time
 from threading import Lock
 import gettext
@@ -104,7 +103,7 @@ class botService(service.MultiService):
         else:
             self.register_ctl_command(self.connect)
             self.register_ctl_command(self.disconnect)
-            self.register_ctl_command(lambda: self.namedServices.keys(),
+            self.register_ctl_command(lambda: list(self.namedServices.keys()),
                                       name="list")
         for network in self.config.getNetworks():
             if self.config.getBool('enabled', False, 'main', network):
@@ -268,7 +267,6 @@ class Bot(pluginSupport, irc.IRCClient):
         self.realname = self.config.get("realname", "A Bot", "main", self.network)
         self.password = self.config.get('password', None, 'main', self.network)
         self.nickname = self.config.get("nickname", "OtfBot", 'main', self.network)
-        self.nickname = unicode(self.nickname).encode("iso-8859-1")
         self.hostmask=""
         self.channels = self.config.getChannels(self.network) or []
         self.lineRate = 1.0 / float(self.config.get("linesPerSecond", "2", "main", self.network))
@@ -313,7 +311,7 @@ class Bot(pluginSupport, irc.IRCClient):
                 method(prefix, params)
             else:
                 self.irc_unknown(prefix, command, params)
-        except Exception, e:
+        except Exception as e:
             self.logerror(self.logger, self.pluginSupportName, e)
             
 
@@ -331,14 +329,14 @@ class Bot(pluginSupport, irc.IRCClient):
         """
         ret=[]
         if not channel:
-            return self.user_list.values()
+            return list(self.user_list.values())
         for user in self.user_list:
             if self.user_list[user].hasChannel(channel):
                 ret.append(self.user_list[user])
         return ret
 
     def getUserByNick(self, nick):
-        for user in self.user_list.values():
+        for user in list(self.user_list.values()):
             if user.nick.lower() == nick.lower():
                 return user
         return None
@@ -387,7 +385,7 @@ class Bot(pluginSupport, irc.IRCClient):
             @return: the level of access rights (0 = nothing, 10 = everything)
         """
         level = 0
-        for plugin in self.plugins.values():
+        for plugin in list(self.plugins.values()):
             if hasattr(plugin, "auth"):
                 level=max(plugin.auth(user), level)
         return level
@@ -400,7 +398,7 @@ class Bot(pluginSupport, irc.IRCClient):
             @ivar fallback: a safe fallback (i.e. iso-8859-15)
         """
         enc = self.config.get("encoding", "UTF-8", "main")
-        if not type(line) == unicode:
+        if not type(line) == str:
             if self.config.getBool("debugUnicode", False):
                 self.logger.debug("output line is not an unicode object")
                 for l in traceback.format_stack(limit=6):
@@ -408,9 +406,9 @@ class Bot(pluginSupport, irc.IRCClient):
                         if l2.strip():
                             self.logger.debug(l2)
             try:
-                line = unicode(line, encoding)
+                line = str(line, encoding)
             except UnicodeDecodeError:
-                line = unicode(line, fallback, errors="replace")
+                line = str(line, fallback, errors="replace")
         line=line.encode(enc)
         return line
 
@@ -559,10 +557,9 @@ class Bot(pluginSupport, irc.IRCClient):
                 pw = self.config.get("password", "", "main", \
                                      self.network, channel)
                 if pw:
-                    self.join(unicode(channel).encode("iso-8859-1"),
-                                            unicode(pw).encode("iso-8859-1"))
+                    self.join(channel, pw)
                 else:
-                    self.join(unicode(channel).encode("iso-8859-1"))
+                    self.join(channel)
 
     #this MUST NOT be decorated with synced! This starts the WHO request, syncing the callback would block the bot
     def joined(self, channel):
@@ -614,24 +611,29 @@ class Bot(pluginSupport, irc.IRCClient):
                 self.modchars[1 ** i] = mode[i]
                 self.modcharvals[i ** i] = sym[i]
             self.rev_modchars = \
-                    dict([(v, k) for (k, v) in self.modchars.iteritems()])
+                    dict([(v, k) for (k, v) in self.modchars.items()])
             self.rev_modcharvals = \
-                    dict([(v, k) for (k, v) in self.modcharvals.iteritems()])
+                    dict([(v, k) for (k, v) in self.modcharvals.items()])
 
     def toUnicode(self, the_string, network=None, channel=None):
         """
             convert a string to an unicode-object, trying to use the
             encoding given in config, with fallback to iso-8859-15
         """
-        #if its a query (not a channel)
-        if channel and not channel[0] in self.supported.getFeature('CHANTYPES'):
-            channel=None #prevents config.get from creating a wrong 'channel'
-        try:
-            the_string=unicode(the_string, self.config.get("encoding", "UTF-8", "main",
-                network=network, channel=channel))
-        except UnicodeDecodeError:
-            the_string=unicode(the_string, "iso-8859-15", errors='replace')
+        # TODO: is this correct? python3 has unicode by default
+        # but what does twisted do?
+        assert type(the_string) == str
         return the_string
+
+        #if its a query (not a channel)
+#        if channel and not channel[0] in self.supported.getFeature('CHANTYPES'):
+#            channel=None #prevents config.get from creating a wrong 'channel'
+#        try:
+#            the_string=str(the_string, self.config.get("encoding", "UTF-8", "main",
+#                network=network, channel=channel))
+#        except UnicodeDecodeError:
+#            the_string=str(the_string, "iso-8859-15", errors='replace')
+#        return the_string
 
     def resolveUser(self, user):
         """
@@ -640,7 +642,7 @@ class Bot(pluginSupport, irc.IRCClient):
             user_list entry, if possible. if only nick is known, it returns a
             incomplete user and does not store it in the user_list
         """
-        assert type(user) == str or type(user) == unicode
+        assert type(user) == str or type(user) == str
 
         #1) best case: hostmask is known, we have already a userobject
         if user in self.user_list:
@@ -986,7 +988,7 @@ class Bot(pluginSupport, irc.IRCClient):
                 (channels, (func, args, kwargs))=callback
                 try:
                     func(self, *args, **kwargs)
-                except Exception, e:
+                except Exception as e:
                     self.logerror(self.logger, plugin.name, e)
             self.sync_lock.release() #the shared resource is the syncing_channels and callback_queue var, not the callbacks themself
 
@@ -1017,7 +1019,7 @@ class Bot(pluginSupport, irc.IRCClient):
     #no decorator here, see .joined (!)
     def irc_JOIN(self, prefix, params):
         """ Overridden to get the full hostmask """
-        nick = string.split(prefix, '!')[0]
+        nick = prefix.split("!")[0]
         channel = params[-1]
         if nick.lower() == self.nickname.lower():
             self.hostmask=prefix
@@ -1027,7 +1029,7 @@ class Bot(pluginSupport, irc.IRCClient):
 
     def irc_PART(self, prefix, params):
         """ Overridden to get the full hostmask """
-        nick = string.split(prefix, '!')[0]
+        nick = prefix.split("!")[0]
         channel = params[0]
         if nick.lower() == self.nickname.lower():
             self.left(channel)

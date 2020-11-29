@@ -45,7 +45,7 @@ def ver2name(ver):
     assert type(ver) == str
     assert len(ver) == 7
     name=""
-    for i in xrange(3):
+    for i in range(3):
         name+=consonants[hex.index(ver[i*2])] #consonant matching the hex digit
         if i==2: #last vowal?
             #use both digits modulo 5, vowel will be ignored for parsing the name
@@ -66,7 +66,7 @@ def name2ver(name):
     name=name.lower()
     assert len(name)==9
     ver=""
-    for i in xrange(3):
+    for i in range(3):
         ver+=hex[consonants.index(name[3*i])]
         ver+=hex[consonants.index(name[3*i+2])]
     ver+=hex[vowels2.index( (name[1], name[4]) )]
@@ -99,12 +99,12 @@ if __name__ == '__main__':
         def testRandom(self):
             ver=hashlib.md5(str(random.random())).hexdigest()[:7]
             name=ver2name(ver)
-            self.assertEquals(ver, name2ver(name))
+            self.assertEqual(ver, name2ver(name))
         def testStatic(self):
-            self.assertEquals(ver2name("474c8b9"), "Helhusmur")
-            self.assertEquals(name2ver("Helhusmur"), "474c8b9")
+            self.assertEqual(ver2name("474c8b9"), "Helhusmur")
+            self.assertEqual(name2ver("Helhusmur"), "474c8b9")
             for i in "aeiou":
                 #last vowel is not important for parsing
-                self.assertEquals(name2ver("Helhusm"+i+"r"), "474c8b9")
+                self.assertEqual(name2ver("Helhusm"+i+"r"), "474c8b9")
     unittest.main()
             

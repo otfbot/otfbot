@@ -24,7 +24,7 @@ search on youtube with !youtube search phrase
 from otfbot.lib import chatMod, urlutils
 from otfbot.lib.pluginSupport.decorators import callback
 import logging
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 class Meta:
     module_depends=['feedparser']
@@ -56,5 +56,5 @@ class Plugin(chatMod.chatMod):
         if command=="youtube" and options:
             urlutils.download("http://gdata.youtube.com/feeds/"+
                 "base/videos?q=%s&client=ytapi-youtube-search&alt=rss&v=2"
-                %urllib.quote(options.encode("UTF-8"))).addCallback(
+                %urllib.parse.quote(options.encode("UTF-8"))).addCallback(
                     self.downloadFinished, channel)

@@ -82,7 +82,7 @@ class Plugin(chatMod.chatMod):
                     o.remove("all")
                 if options == "":
                     o = []
-                if len(o) != 0 and o[0].lower() == u"help":
+                if len(o) != 0 and o[0].lower() == "help":
                     self.bot.sendmsg(user, " !tv <- Zeigt das aktuelle TV-Programm an. An dieses Kommando kann 'all' angehaengt werden, dann werden alle bekannten Sender ausgegeben.")
                     self.bot.sendmsg(user, " !tv <uhrzeit> <- Zeigt das Programm fuer <uhrzeit> (hh:mm) an. An dieses Kommando kann 'all' angehaengt werden, dann werden alle bekannten Sender ausgegeben.")
                     self.bot.sendmsg(user, " !tv <uhrzeit> <sendername> <- zeigt das Programm fuer <uhrzeit> auf <sendername> an.")
@@ -90,7 +90,7 @@ class Plugin(chatMod.chatMod):
                     self.bot.sendmsg(user, " !tv liststations <- zeigt alle verfuegbaren Sender an.")
                     self.bot.sendmsg(user, " !tvsearch <begriff> <- sucht auf allen Sendern nach <begriff>. Optional kann noch der Sender, auf dem gesucht werden soll, als letztes Wort angehaengt werden.")
                     self.bot.sendmsg(user, " Wenn die Ausgabe nicht im Query, sondern im Channel erfolgen soll: 'public' ans Ende des Kommandos anhaengen (nicht moeglich mit Option 'all').")
-                elif len(o) != 0 and o[0].lower() == u"liststations":
+                elif len(o) != 0 and o[0].lower() == "liststations":
                     stations = []
                     for i in self.tv.stations:
                         if self.tv.stations[i][0].lower().replace(" ","") not in self.ignoresender:
@@ -138,15 +138,15 @@ class Plugin(chatMod.chatMod):
                     if not filterstandard or not i['station'][0].lower().replace(" ","") not in self.standardsender.encode("UTF-8"):
                         if not public:
                             if i['language'] != "":
-                                self.bot.sendmsg(user,unicode(str(chr(2)) + i['station'][0] + str(chr(2)) + " (" + str(i['start'][8:10]) + ":" + str(i['start'][10:12]) + "-" + str(i['stop'][8:10]) + ":" + str(i['stop'][10:12]) + "): " + i['title'] + " (" + i['language'] + ")").encode("utf8"))
+                                self.bot.sendmsg(user,str(str(chr(2)) + i['station'][0] + str(chr(2)) + " (" + str(i['start'][8:10]) + ":" + str(i['start'][10:12]) + "-" + str(i['stop'][8:10]) + ":" + str(i['stop'][10:12]) + "): " + i['title'] + " (" + i['language'] + ")").encode("utf8"))
                             else:
-                                self.bot.sendmsg(user,unicode(str(chr(2)) + i['station'][0] + str(chr(2)) + " (" + str(i['start'][8:10]) + ":" + str(i['start'][10:12]) + "-" + str(i['stop'][8:10]) + ":" + str(i['stop'][10:12]) + "): " + i['title']).encode("utf8"))
+                                self.bot.sendmsg(user,str(str(chr(2)) + i['station'][0] + str(chr(2)) + " (" + str(i['start'][8:10]) + ":" + str(i['start'][10:12]) + "-" + str(i['stop'][8:10]) + ":" + str(i['stop'][10:12]) + "): " + i['title']).encode("utf8"))
                         else:
                             #+ str(i['start'][6:8]) + "." + str(i['start'][4:6]) + "., "
                             if i['language'] != "":
-                                self.bot.sendmsg(channel,unicode(str(chr(2)) + i['station'][0] + str(chr(2)) + " (" + str(i['start'][8:10]) + ":" + str(i['start'][10:12]) + "-" + str(i['stop'][8:10]) + ":" + str(i['stop'][10:12]) + "): " + i['title'] + " (" + i['language'] + ")").encode("utf8"))
+                                self.bot.sendmsg(channel,str(str(chr(2)) + i['station'][0] + str(chr(2)) + " (" + str(i['start'][8:10]) + ":" + str(i['start'][10:12]) + "-" + str(i['stop'][8:10]) + ":" + str(i['stop'][10:12]) + "): " + i['title'] + " (" + i['language'] + ")").encode("utf8"))
                             else:
-                                self.bot.sendmsg(channel,unicode(str(chr(2)) + i['station'][0] + str(chr(2)) + " (" + str(i['start'][8:10]) + ":" + str(i['start'][10:12]) + "-" + str(i['stop'][8:10]) + ":" + str(i['stop'][10:12]) + "): " + i['title']).encode("utf8"))
+                                self.bot.sendmsg(channel,str(str(chr(2)) + i['station'][0] + str(chr(2)) + " (" + str(i['start'][8:10]) + ":" + str(i['start'][10:12]) + "-" + str(i['stop'][8:10]) + ":" + str(i['stop'][10:12]) + "): " + i['title']).encode("utf8"))
             elif command.lower() == "tvsearch":
                 o = options.split(" ")
                 if not self.tv.get_station(o[len(options.split(" ")) -1]): ##ueberprueft, ob letztes wort sendername ist
@@ -173,12 +173,12 @@ class Plugin(chatMod.chatMod):
                                 result.append(i)
                 for i in result[:3]:
                     if i['language'] != "":
-                        self.bot.sendmsg(channel,unicode(str(chr(2)) + i['station'][0] + str(chr(2)) + " (" + str(i['start'][6:8]) + "." + str(i['start'][4:6]) + "., " + str(i['start'][8:10]) + ":" + str(i['start'][10:12]) + "-" + str(i['stop'][8:10]) + ":" + str(i['stop'][10:12]) + "): " + i['title'] + " (" + i['language'] + ")").encode("utf8"))
+                        self.bot.sendmsg(channel,str(str(chr(2)) + i['station'][0] + str(chr(2)) + " (" + str(i['start'][6:8]) + "." + str(i['start'][4:6]) + "., " + str(i['start'][8:10]) + ":" + str(i['start'][10:12]) + "-" + str(i['stop'][8:10]) + ":" + str(i['stop'][10:12]) + "): " + i['title'] + " (" + i['language'] + ")").encode("utf8"))
                     else:
-                        self.bot.sendmsg(channel,unicode(str(chr(2)) + i['station'][0] + str(chr(2)) + " (" + str(i['start'][6:8]) + "." + str(i['start'][4:6]) + "., " + str(i['start'][8:10]) + ":" + str(i['start'][10:12]) + "-" + str(i['stop'][8:10]) + ":" + str(i['stop'][10:12]) + "): " + i['title']).encode("utf8"))
+                        self.bot.sendmsg(channel,str(str(chr(2)) + i['station'][0] + str(chr(2)) + " (" + str(i['start'][6:8]) + "." + str(i['start'][4:6]) + "., " + str(i['start'][8:10]) + ":" + str(i['start'][10:12]) + "-" + str(i['stop'][8:10]) + ":" + str(i['stop'][10:12]) + "): " + i['title']).encode("utf8"))
                 if result == []:
                     self.bot.sendmsg(channel,"keine passende Sendung gefunden!")
-        except Exception, e:
+        except Exception as e:
             self.logger.error(e)
             tb_list = traceback.format_tb(sys.exc_info()[2])[1:]
             for entry in tb_list:
@@ -244,7 +244,7 @@ class Plugin(chatMod.chatMod):
                 try:
                     self.tv = tv_otr(datadir, self.days, self.bot)
                 except:
-                    self.bot.logger.info(sys.exec_info())
+                    self.bot.logger.info(sys.exc_info())
         elif self.source == "xmltv":
             try:
                 self.tv = tv_xmltv(self.xmltvfile)
