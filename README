@@ -91,11 +91,10 @@ us to include it into the repository.
 Contact
 -------
 
-You can contact the developers via IRC in #otfbot at irc.freenode.net, via
-a mailing-list_ or by filing a bug into the bug-tracker_
+You can contact the developers via IRC in #otfbot at irc.libera.chat or by filing
+a bug into the bug-tracker_
 
 
 .. _python-xmltv: http://www.funktronics.ca/python-xmltv/
-.. _mailing-list: http://list.otfbot.org/mailman/listinfo/otfbot-dev
 .. _bug-tracker: http://www.otfbot.org/bugs/
 .. _wokkel: http://wokkel.ik.nu/downloads
