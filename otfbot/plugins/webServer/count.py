@@ -60,14 +60,14 @@ class Plugin(plugin.Plugin):
                     # wfile.write("%s.%s.ops: %s\n"%(n, c, ops))
                     # wfile.write("%s.%s.hops: %s\n"%(n, c, hops))
                     # wfile.write("%s.%s.voices: %s\n"%(n, c, voices))
-            return (self.wps.NO_FURTHER_PROCESSING, res)
+            return (self.wps.NO_FURTHER_PROCESSING, bytes(res, "ascii"))
         if path == '/lines':
             for network in self.wps.root.getServiceNamed("ircClient").services:
                 if network and network.protocol:  # no NoneType Exception on disconnected network
                     for channel in network.protocol.channels:
                         res += "%s.%s: %s\n" % (network.name, channel, network.protocol.plugins[
                                                 'ircClient.statistics'].getLinesPerMinute(channel))
-            return (self.wps.NO_FURTHER_PROCESSING, res)
+            return (self.wps.NO_FURTHER_PROCESSING, bytes(res, "ascii"))
         if path == '/active_users':
             # TODO: duplicate code, refactor me!
             for network in self.wps.root.getServiceNamed("ircClient").services:
@@ -75,5 +75,5 @@ class Plugin(plugin.Plugin):
                     for channel in network.protocol.channels:
                         res += "%s.%s: %s\n" % (network.name, channel, network.protocol.plugins[
                                                 'ircClient.statistics'].getActiveUsersCount(channel))
-            return (self.wps.NO_FURTHER_PROCESSING, res)
+            return (self.wps.NO_FURTHER_PROCESSING, bytes(res, "ascii"))
 # app.getServiceNamed("ircClient").services[0].protocol.plugins['plugins.ircClient.ki']

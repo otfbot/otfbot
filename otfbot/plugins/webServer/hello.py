@@ -29,4 +29,4 @@ class Plugin(plugin.Plugin):
     @callback
     def GET(self, path, headers, request):
         if path == '/hello.html':
-            return (self.bot.NO_FURTHER_PROCESSING, "<h1>Hello World!</h1>")
+            return (self.bot.NO_FURTHER_PROCESSING, bytes("<h1>Hello World!</h1>", "utf-8"))

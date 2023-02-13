@@ -50,7 +50,7 @@ class configService(service.Service):
             return
 
         try:
-            configs = yaml.load_all(open(filename, "r"))
+            configs = yaml.load_all(open(filename, "r"), Loader=yaml.Loader)
             self.generic_options = next(configs)
             if not is_subconfig:
                 self.network_options = next(configs)

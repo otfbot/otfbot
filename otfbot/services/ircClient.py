@@ -390,28 +390,6 @@ class Bot(pluginSupport, irc.IRCClient):
                 level=max(plugin.auth(user), level)
         return level
 
-    def encode_line(self, line, encoding, fallback):
-        """
-            encode a line, trying to use encoding, falling back to fallback
-            @ivar line: the line to encode
-            @ivar encoding: the assumed encoding (i.e. UTF-8)
-            @ivar fallback: a safe fallback (i.e. iso-8859-15)
-        """
-        enc = self.config.get("encoding", "UTF-8", "main")
-        if not type(line) == str:
-            if self.config.getBool("debugUnicode", False):
-                self.logger.debug("output line is not an unicode object")
-                for l in traceback.format_stack(limit=6):
-                    for l2 in l.split("\n"):
-                        if l2.strip():
-                            self.logger.debug(l2)
-            try:
-                line = str(line, encoding)
-            except UnicodeDecodeError:
-                line = str(line, fallback, errors="replace")
-        line=line.encode(enc)
-        return line
-
     def get_gettext(self, channel=None):
         lang=self.config.get("language", None, "main", self.network, channel)
         if not lang in self.translations and lang:
@@ -446,8 +424,6 @@ class Bot(pluginSupport, irc.IRCClient):
         if not type(msg) == list:
             msg = [msg]
         for line in msg:
-            line = self.encode_line(line, encoding, fallback)
-
             #From the RFC:
             # IRC messages are always lines of characters terminated with a
             # CR-LF (Carriage Return - Line Feed) pair, and these messages
@@ -474,7 +450,6 @@ class Bot(pluginSupport, irc.IRCClient):
         if not type(action) == list:
             action = [action]
         for line in action:
-            line = self.encode_line(line, encoding, fallback)
             self.describe(channel, line)
             self.action(self.nickname, channel, line)
 
@@ -620,20 +595,17 @@ class Bot(pluginSupport, irc.IRCClient):
             convert a string to an unicode-object, trying to use the
             encoding given in config, with fallback to iso-8859-15
         """
-        # TODO: is this correct? python3 has unicode by default
-        # but what does twisted do?
-        assert type(the_string) == str
-        return the_string
-
+        if type(the_string) == str:
+            return the_string
         #if its a query (not a channel)
-#        if channel and not channel[0] in self.supported.getFeature('CHANTYPES'):
-#            channel=None #prevents config.get from creating a wrong 'channel'
-#        try:
-#            the_string=str(the_string, self.config.get("encoding", "UTF-8", "main",
-#                network=network, channel=channel))
-#        except UnicodeDecodeError:
-#            the_string=str(the_string, "iso-8859-15", errors='replace')
-#        return the_string
+        if channel and not channel[0] in self.supported.getFeature('CHANTYPES'):
+            channel=None #prevents config.get from creating a wrong 'channel'
+        try:
+            the_string=str(the_string, self.config.get("encoding", "UTF-8", "main",
+                network=network, channel=channel))
+        except UnicodeDecodeError:
+            the_string=str(the_string, "iso-8859-15", errors='replace')
+        return the_string
 
     def resolveUser(self, user):
         """

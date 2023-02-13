@@ -45,7 +45,7 @@ class Plugin(chatMod.chatMod):
         nick = user.getNick()
         if user in self.control and msg == "endcontrol":
             del self.control[user]
-        if msg == "control" and self.bot.auth(user) > 0:
+        if msg == "control" and user and self.bot.auth(user) > 0:
             self.control[user] = self.bot.root.getServiceNamed("control")
             welcome = "Entered configuration modus. type 'endcontrol' to exit"
             self.bot.sendmsg(nick, welcome)
@@ -57,7 +57,7 @@ class Plugin(chatMod.chatMod):
 
     @callback
     def command(self, user, channel, command, options):
-        if self.bot.auth(user) > 0:
+        if user and self.bot.auth(user) > 0:
             cmd = [command]
             control = self.bot.root.getServiceNamed("control")
             if options and options != "":
@@ -80,6 +80,6 @@ class Plugin(chatMod.chatMod):
     @callback
     def invitedTo(self, channel, inviter):
         self.logger.info("I was invited to " + channel + " by " + inviter)
-        if self.bot.auth(inviter) > 0:
+        if inviter and self.bot.auth(inviter) > 0:
             self.logger.info("Accepting invitation.")
             self.bot.join(channel)

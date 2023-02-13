@@ -95,6 +95,6 @@ class Plugin(chatMod.chatMod):
         self.save_data()
     
     def save_data(self):
-        f = file(datadir + "/users", "wb")
+        f = open(datadir + "/users", "wb")
         pickle.dump(self.userdata, f)
         f.close()

@@ -114,7 +114,7 @@ class YamlWordsRealm(InMemoryWordsRealm):
         """
         try:
             f=open(self.file, "r")
-            file_h=yaml.load_all(f)
+            file_h=yaml.load_all(f, Loader=yaml.Loader)
             self.users=next(file_h)
             self.groups=next(file_h)
             f.close()

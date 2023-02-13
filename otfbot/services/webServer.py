@@ -41,11 +41,11 @@ class Root(pluginSupport, resource.Resource):
 
     def render(self, request):
         kwargs = {
-            'path': request.path,
-            'headers': request.received_headers,
+            'path': str(request.path, "utf-8"),
+            'headers': request.getAllHeaders(),
             'request': request
         }
-        return self._apirunner(request.method, kwargs)
+        return self._apirunner(str(request.method, "ascii"), kwargs)
 
 
 class botService(service.MultiService):
