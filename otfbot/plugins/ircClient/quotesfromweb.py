@@ -35,32 +35,24 @@ class Plugin(chatMod.chatMod):
 
     def __init__(self,bot):
         self.bot = bot
-        self.feedparser = self.bot.depends_on_module("feedparser")
     
     @callback
     def command(self, user, channel, command, options):
         """
             Handels the commands !zitat, !sprichwort and !proverb and posts appropriate phrases in the channel
         """
-        if command.lower() == "zitat":
-            zitat=self.feedparser.parse(self.quoteurl)
-            zitat=zitat['entries'][0]
-            desc = zitat['description'].replace('<p class="q_pate"><a href="http://www.all4quotes.com/paten-information/b3967a0e938dc2a6340e258630febd5a/" target="_blank" title="Treffsichere Textlinkwerbung">Werden Sie Zitatepate&trade;</a></p>',"").encode("utf8")
-            desc = desc.replace(re.findall('<p.*class=".+">.+</p>',desc)[0],"")
-            self.bot.msg(channel,"\"" + desc + "\" (" + zitat['title'].encode("utf8") + ")")
-            return
-        elif command == "sprichwort" or command == "proverb":
+        if command == "sprichwort" or command == "proverb":
             if command == "sprichwort":
                 url=urllib.request.urlopen("http://www.sprichwortrekombinator.de")
             elif command == "proverb":
                 url=urllib.request.urlopen("http://proverb.gener.at/or/")
-            data=url.read()
+            data=url.read().decode("utf-8", errors="replace")
             url.close()
             sprichwort=re.search("<div class=\"spwort\">([^<]*)<\/div>", data, re.S).group(1)
             self.bot.sendmsg(channel, sprichwort)
         elif command == "commitmsg":
             url=urllib.request.urlopen("http://whatthecommit.com/")
-            data=url.read()
+            data=url.read().decode("utf-8", errors="replace")
             url.close()
             msg = re.search("<p>(.*)", data).group(1)
             self.bot.sendmsg(channel, msg)
