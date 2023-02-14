@@ -387,7 +387,7 @@ class Bot(pluginSupport, irc.IRCClient):
         level = 0
         for plugin in list(self.plugins.values()):
             if hasattr(plugin, "auth"):
-                level=max(plugin.auth(user), level)
+                level=max(plugin.auth(user) or 0, level)
         return level
 
     def get_gettext(self, channel=None):

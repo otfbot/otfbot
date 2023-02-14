@@ -19,7 +19,7 @@
 # (c) 2008 - 2011 by Robert Weidlich
 #
 
-import urllib.request, urllib.error, urllib.parse, re, string
+import urllib.request, urllib.error, urllib.parse, re
 from lxml.html.soupparser import fromstring
 
 from otfbot.lib import chatMod, urlutils
@@ -105,7 +105,7 @@ class Plugin(chatMod.chatMod):
         regex=re.match(".*((http|https)://.*)([ \t].*|$)", msg)
         if regex:
             url=regex.group(1)
-            if string.lower(user.getNick()) != string.lower(self.bot.nickname):
+            if user.getNick().lower() != self.bot.nickname.lower():
                 cmd=""
                 if not "tinyurl.com" in url:
                     if len(url) > self.autoTinyLength and self.autoTiny:

@@ -41,9 +41,9 @@ def get_page_with_header(url, contextFactory=None, *args, **kwargs):
 
     See HTTPClientFactory to see what extra args can be passed.
     """
-    if type(url) == str:
-        url = url.encode("utf-8")
     purl = urllib.parse.urlparse(url)
+    if type(url) == str:
+        url = bytes(url, "utf-8")
     factory = client.HTTPClientFactory(url, *args, **kwargs)
     if purl.scheme == 'https':
         from twisted.internet import ssl
@@ -65,13 +65,15 @@ def get_headers(url):
         for k in header:
             new_header[k] = header[k][0]
         return defer.succeed(new_header)
-    d = get_page_with_header(url, method='HEAD')
+    if type(url) == str:
+        url = bytes(url, "utf-8")
+    d = get_page_with_header(url, method=b'HEAD')
     d.addCallback(cb)
     return d
 
 def is_html(headers):
     if not "content-type" in headers:
-        return false
+        return False
     return headers["content-type"].lower()[:9] == "text/html"
 
 def convert_bytes(bytes):
@@ -104,6 +106,8 @@ def download_if_html(url):
             return download(url)
         else:
             return defer.succeed("")
+    if type(url) == str:
+        url = bytes(url, "utf-8")
     d = get_headers(url)
     d.addCallback(cb)
     return d
@@ -115,10 +119,10 @@ def download(url, file=None, **kwargs):
     @return: A Defered which will call a Callback with the content as argument
 
     """
-    if type(url) == str:
-        url = url.encode("UTF-8")
     if "agent" not in kwargs:
         kwargs['agent'] = "OTFBot (%s; otfbot.org)" % _version.short()
+    if type(url) == str:
+        url = bytes(url, "utf-8")
     if file:
         return client.downloadPage(url, file, **kwargs)
     else:
